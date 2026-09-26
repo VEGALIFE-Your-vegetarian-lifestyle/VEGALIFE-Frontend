@@ -1,11 +1,12 @@
+import { Routes, Route } from "react-router-dom";
+import CategoryManagement from "./pages/admin/CategoryManagement";
+
 function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold">
-        Vegetarian Support Application
-      </h1>
-    </div>
-  )
+    <Routes>
+      <Route path="/admin/categories" element={<CategoryManagement />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
