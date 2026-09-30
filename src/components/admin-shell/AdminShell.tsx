@@ -1,12 +1,14 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { FileText, LayoutDashboard, Leaf, MapPin, Menu, MessageSquare, Tags, Users, Video } from "lucide-react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { FileText, LayoutDashboard, Leaf, LogOut, MapPin, Menu, MessageSquare, Tags, Users, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 import { useUiStore } from "@/stores/uiStore";
+import { logout } from "@/services/authService";
 
 const navItems = [
     { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, ready: false },
-    { to: "/admin/users", label: "Người dùng", icon: Users, ready: false },
+    { to: "/admin/users", label: "Người dùng", icon: Users, ready: true },
     { to: "/admin/posts", label: "Bài viết", icon: FileText, ready: true },
     { to: "/admin/videos", label: "Video", icon: Video, ready: true },
     { to: "/admin/comments", label: "Bình luận", icon: MessageSquare, ready: false },
@@ -18,6 +20,8 @@ const itemClass = "flex h-10 items-center gap-3 rounded-lg px-3 text-sm text-dar
 
 export function AdminShell() {
     const { sidebarCollapsed, toggleSidebar } = useUiStore();
+    const { clearAuth } = useAuth();
+    const navigate = useNavigate();
 
     return (
         <div className="min-h-screen bg-background">
@@ -34,6 +38,22 @@ export function AdminShell() {
                 </div>
                 <div className="flex items-center gap-3">
                     <span className="hidden text-sm text-dark sm:block">Quản trị viên</span>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Đăng xuất"
+                        onClick={async () => {
+                            try {
+                                await logout();
+                            } catch {
+                                // ignore
+                            }
+                            clearAuth();
+                            navigate("/login", { replace: true });
+                        }}
+                    >
+                        <LogOut className="h-5 w-5 text-dark" />
+                    </Button>
                     <div
                         aria-hidden="true"
                         className="flex h-10 w-10 items-center justify-center rounded-full bg-vegan-green text-sm font-medium text-white"
