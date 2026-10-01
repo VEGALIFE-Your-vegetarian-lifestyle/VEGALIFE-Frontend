@@ -1,0 +1,36 @@
+{
+    "title": "Hồ sơ",
+    "editTitle": "Chỉnh sửa hồ sơ",
+    "back": "Quay lại",
+    "logout": "Đăng xuất",
+    "createPost": "Tạo bài viết",
+    "save": "Lưu thay đổi",
+    "saving": "Đang lưu...",
+    "success": "Cập nhật hồ sơ thành công",
+    "failed": "Cập nhật hồ sơ thất bại",
+    "fields": {
+        "heightCm": "Chiều cao (cm)",
+        "weightKg": "Cân nặng (kg)",
+        "age": "Tuổi",
+        "gender": "Giới tính",
+        "description": "Giới thiệu",
+        "avatarUrl": "URL avatar"
+    },
+    "placeholders": {
+        "avatarUrl": "https://example.com/avatar.jpg",
+        "description": "Giới thiệu về bản thân..."
+    },
+    "genderOptions": {
+        "placeholder": "Chọn giới tính",
+        "male": "Nam",
+        "female": "Nữ",
+        "other": "Khác"
+    },
+    "bmi": "Chỉ số BMI",
+    "bmiCategories": {
+        "underweight": "Thiếu cân",
+        "normal": "Bình thường",
+        "overweight": "Thừa cân",
+        "obese": "Béo phì"
+    }
+}

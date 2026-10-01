@@ -47,6 +47,17 @@ export interface RegisterResponse {
     email: string;
 }
 
+export interface VerifyEmailRequest {
+    email: string;
+    otp: string;
+}
+
+export interface VerifyEmailResponse {
+    userId: string;
+    username: string;
+    email: string;
+}
+
 export interface LoginRequest {
     identifier: string;
     password: string;
@@ -54,6 +65,10 @@ export interface LoginRequest {
 
 export interface RefreshTokenRequest {
     refreshToken: string;
+}
+
+export interface ResendVerifyEmailRequest {
+    email: string;
 }
 
 export interface ForgotPasswordRequest {

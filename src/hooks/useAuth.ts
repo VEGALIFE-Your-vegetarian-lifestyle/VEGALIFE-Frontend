@@ -1,14 +1,15 @@
-import { useAuthStore } from "@/stores/authStore";
 import { useMemo } from "react";
+import { useAuthStore } from "@/stores/authStore";
 
 export function useAuth() {
-    const { user, accessToken, profile, setAuth, clearAuth, setAccessToken, setProfile } = useAuthStore();
+    const { user, accessToken, profile, rememberMe, setAuth, clearAuth, setAccessToken, setProfile } = useAuthStore();
 
     return useMemo(
         () => ({
             user,
             accessToken,
             profile,
+            rememberMe,
             isAuthenticated: !!accessToken && !!user,
             isAdmin: user?.role === "ADMIN",
             setAuth,
@@ -16,6 +17,6 @@ export function useAuth() {
             setAccessToken,
             setProfile,
         }),
-        [user, accessToken, profile, setAuth, clearAuth, setAccessToken, setProfile],
+        [user, accessToken, profile, rememberMe, setAuth, clearAuth, setAccessToken, setProfile],
     );
 }

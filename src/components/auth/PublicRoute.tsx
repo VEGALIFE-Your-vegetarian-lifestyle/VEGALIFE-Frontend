@@ -9,7 +9,7 @@ export function PublicRoute({ children }: PublicRouteProps) {
     const { isAuthenticated, isAdmin } = useAuth();
 
     if (isAuthenticated) {
-        return <Navigate to={isAdmin ? "/admin/posts" : "/profile"} replace />;
+        return <Navigate to={isAdmin ? "/admin/dashboard" : "/"} replace />;
     }
 
     return <>{children}</>;

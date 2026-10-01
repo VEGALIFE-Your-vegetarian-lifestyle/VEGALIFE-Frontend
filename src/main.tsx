@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 import App from "./App.tsx";
 import "./index.css";
+import "./i18n";
 
 const queryClient = new QueryClient();
 
@@ -13,7 +14,7 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <App />
-        <Toaster richColors position="top-right" />
+        <Toaster richColors position="top-right" duration={2000} />
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

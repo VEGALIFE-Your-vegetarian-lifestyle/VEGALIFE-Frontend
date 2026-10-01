@@ -1,0 +1,12 @@
+{
+    "required": "Vui lòng nhập trường này",
+    "email": "Email không hợp lệ",
+    "minLength": "Phải có ít nhất {{count}} ký tự",
+    "maxLength": "Tối đa {{count}} ký tự",
+    "passwordMatch": "Mật khẩu không khớp",
+    "heightRange": "Chiều cao phải từ 0 đến 300 cm",
+    "weightRange": "Cân nặng phải từ 0 đến 500 kg",
+    "ageRange": "Tuổi phải từ 1 đến 150",
+    "descriptionMaxLength": "Giới thiệu tối đa 2000 ký tự",
+    "invalidUrl": "URL không hợp lệ"
+}

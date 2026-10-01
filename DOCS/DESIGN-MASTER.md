@@ -1,8 +1,8 @@
 # VEGALIFE — Frontend Design Master
 
-> **Version:** 1.0.0-MVP  
-> **Last Updated:** 2026-09-29  
-> **Tech Stack:** React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · shadcn/ui · Zustand · TanStack Query  
+> **Version:** 1.1.0  
+> **Last Updated:** 2026-10-01  
+> **Tech Stack:** React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · Zustand · TanStack Query  
 > **Icon Library:** Lucide React  
 > **Notifications:** Sonner (toasts)  
 > **Forms:** Formik + Yup  
@@ -198,17 +198,19 @@ Rule: Always show current page as last item, non-clickable. Minimum 2 levels dee
 
 | Color | Hex | Role | Usage |
 |-------|-----|------|-------|
-| **Primary Green** | `#2E9D68` | Main brand color | Primary buttons, active navigation, links, important actions |
-| **Light Green** | `#E8F5EE` | Subtle state color | Soft backgrounds, selected states, badges, tags, vegetarian highlights |
-| **Cream** | `#FFF8E7` | Warm accent | Food-related sections, recipe cards, secondary highlights, subtle visual accents |
+| **Primary Green** | `#2A7D3F` | Main brand color | Primary buttons, active navigation, links, important actions |
+| **Light Green** | `#E8F5EC` | Subtle state color | Soft backgrounds, selected states, badges, tags, vegetarian highlights |
+| **Cream** | `#FEF9E7` | Warm accent | Food-related sections, recipe cards, secondary highlights, subtle visual accents |
 | **Terracotta** | `#D9795B` | Secondary accent (sparingly) | Food categories, small visual details, highlights |
-| **Dark** | `#20352B` | Text color | Headings, primary text, navigation text, important content |
-| **Background** | `#FCFBF7` | Surface color | Main application background — dominates the interface |
+| **Dark** | `#1F2937` | Text color | Headings, primary text, navigation text, important content |
+| **Background** | `#F7F9FB` | Surface color | Main application background — dominates the interface |
+| **Surface** | `#FFFFFF` | Elevated surface | Cards, modals, topbar, sidebar |
+| **Muted Background** | `#F0F2F5` | Secondary background | Alternate sections, skeletons |
 
 **Color Usage Rules:**
 - ✅ Primary Green is the dominant brand color
 - ✅ Dark is the main text color
-- ✅ Background (#FCFBF7) should dominate the overall interface
+- ✅ Background (#F7F9FB) should dominate the overall interface
 - ✅ Light Green for subtle vegetarian/nutrition states
 - ✅ Cream adds warmth and natural food feeling
 - ✅ Terracotta used SPARINGLY as an accent
@@ -228,37 +230,41 @@ natural · healthy · warm · modern · vegetarian lifestyle
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--background` | `#FCFBF7` | Page/app background |
-| `--foreground` | `#20352B` | Primary text |
-| `--primary` | `#2E9D68` | Primary actions, links, active states |
+| `--background` | `#F7F9FB` | Page/app background |
+| `--foreground` | `#1F2937` | Primary text |
+| `--surface` | `#FFFFFF` | Cards, modals, elevated surfaces |
+| `--muted-bg` | `#F0F2F5` | Secondary/alternate backgrounds |
+| `--primary` | `#2A7D3F` | Primary actions, links, active states |
 | `--primary-foreground` | `#FFFFFF` | Text on primary bg |
-| `--secondary` | `#F5F4F0` | Secondary backgrounds |
-| `--secondary-foreground` | `#20352B` | Text on secondary bg |
-| `--muted` | `#F5F4F0` | Muted backgrounds |
-| `--muted-foreground` | `#6B6560` | Placeholder, disabled text |
-| `--accent` | `#E8F5EE` | Hover/focus highlights |
+| `--secondary` | `#F0F2F5` | Secondary backgrounds |
+| `--secondary-foreground` | `#1F2937` | Text on secondary bg |
+| `--muted` | `#F0F2F5` | Muted backgrounds |
+| `--muted-foreground` | `#6B7280` | Placeholder, disabled text |
+| `--accent` | `#E8F5EC` | Hover/focus highlights |
 | `--destructive` | `#D9795B` | Delete, error actions |
 | `--destructive-foreground` | `#FFFFFF` | Text on destructive bg |
-| `--border` | `#E0DDD5` | Borders, dividers |
-| `--input` | `#E0DDD5` | Input backgrounds |
-| `--ring` | `#2E9D68` | Focus ring |
+| `--border` | `#E6E8EC` | Borders, dividers |
+| `--input` | `#E6E8EC` | Input backgrounds |
+| `--ring` | `#2A7D3F` | Focus ring |
 
 **Brand Variants (Tailwind):**
 
 | Class | Value | Usage |
 |-------|-------|-------|
-| `bg-vegan-green` | `#2E9D68` | Primary buttons, CTA |
-| `hover:bg-vegan-green-hover` | `#268A5A` | Button hover state |
-| `active:bg-vegan-green-active` | `#1F7A4D` | Button active/pressed |
-| `bg-vegan-green-light` | `#E8F5EE` | Selected items, badges |
-| `text-vegan-green-muted` | `#A8D5BC` | Subtle green text/icons |
-| `bg-lightgreen` | `#E8F5EE` | Nutrition states, soft highlights |
-| `bg-cream` | `#FFF8E7` | Recipe cards, warm sections |
+| `bg-vegan-green` | `#2A7D3F` | Primary buttons, CTA |
+| `hover:bg-vegan-green-hover` | `#236B35` | Button hover state |
+| `active:bg-vegan-green-active` | `#1E5A2D` | Button active/pressed |
+| `bg-vegan-green-light` | `#E8F5EC` | Selected items, badges |
+| `text-vegan-green-muted` | `#A8D4B5` | Subtle green text/icons |
+| `bg-lightgreen` | `#E8F5EC` | Nutrition states, soft highlights |
+| `bg-cream` | `#FEF9E7` | Recipe cards, warm sections |
 | `bg-terracotta` | `#D9795B` | Food category tags (sparse) |
 | `hover:bg-terracotta-hover` | `#C46A4E` | Terracotta hover |
-| `text-dark` | `#20352B` | Headings, body text |
-| `hover:text-dark-hover` | `#1A2B23` | Text hover |
-| `bg-background` | `#FCFBF7` | Page background |
+| `text-dark` | `#1F2937` | Headings, body text |
+| `hover:text-dark-hover` | `#18232F` | Text hover |
+| `bg-background` | `#F7F9FB` | Page background |
+| `bg-surface` | `#FFFFFF` | Card/modal/topbar background |
+| `bg-muted-bg` | `#F0F2F5` | Alternate/section backgrounds |
 
 #### Spacing (4px Grid)
 
@@ -286,10 +292,11 @@ natural · healthy · warm · modern · vegetarian lifestyle
 | Size | Value | Usage |
 |------|-------|-------|
 | `none` | `0` | Tables, code blocks |
-| `sm` | `4px` | Inputs, small badges |
-| `md` | `6px` | — |
-| `default` | `8px` | Cards, buttons, modals |
-| `lg` | `12px` | Large cards, image containers |
+| `sm` | `8px` | Inputs, small badges |
+| `md` | `12px` | — |
+| `default` | `16px` | Cards, buttons, modals |
+| `lg` | `24px` | Large cards, image containers |
+| `xl` | `32px` | Hero images, feature cards |
 | `full` | `9999px` | Avatars, pills, tags |
 
 #### Shadows
