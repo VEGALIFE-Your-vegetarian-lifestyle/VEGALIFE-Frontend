@@ -2,6 +2,7 @@ import { useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Check, Eye, EyeOff, FileText, Search, Trash2, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { PostStatusBadge } from "@/components/blog/PostStatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useListParams } from "@/hooks/useListParams";
-import { approvePost, deletePost, getPosts, hidePost, rejectPost, republishPost } from "@/services/postService";
+import { useNavigate } from "react-router-dom";
+import { approvePost, createPost, deletePost, getPosts, hidePost, rejectPost, republishPost } from "@/services/postService";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { ErrorState } from "@/shared/components/ErrorState";
@@ -25,6 +27,8 @@ import { RejectPostDialog } from "./RejectPostDialog";
 const PAGE_SIZE = 8;
 
 export default function PostsPage() {
+    const { t } = useTranslation("admin");
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { page, q, status, debouncedQ, setQ, setStatus, setPage, clearFilters } = useListParams();
     const [preview, setPreview] = useState<Post | null>(null);
@@ -103,9 +107,9 @@ export default function PostsPage() {
     return (
         <div>
             <PageHeader
-                breadcrumb={["Admin", "Bài viết"]}
-                title="Quản lý bài viết"
-                description="Duyệt, ẩn hoặc xóa bài viết của cộng đồng."
+                breadcrumb={["Admin", t("posts.title")]}
+                title={t("posts.title")}
+                description={t("posts.description")}
             />
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row">

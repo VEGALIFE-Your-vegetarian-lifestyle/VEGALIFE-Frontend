@@ -1,68 +1,83 @@
 @import "tailwindcss";
 
-/* VEGALIFE design tokens — lấy từ tailwind.config.js của nhóm (Tailwind v4 khai báo trong @theme) */
+/* VEGALIFE design tokens — modern green, light background, rounded, clean */
 @theme {
-  --color-vegan-green: #2e9d68;
-  --color-vegan-green-hover: #268a5a;
-  --color-vegan-green-active: #1f7a4d;
-  --color-vegan-green-light: #e8f5ee;
-  --color-vegan-green-muted: #a8d5bc;
-  --color-lightgreen: #e8f5ee;
-  --color-cream: #fff8e7;
-  --color-terracotta: #d9795b;
-  --color-terracotta-hover: #c46a4e;
-  --color-dark: #20352b;
-  --color-dark-hover: #1a2b23;
-  --color-background: #fcfbf7;
+    /* Primary green scale */
+    --color-vegan-green: #2a7d3f;
+    --color-vegan-green-hover: #236b35;
+    --color-vegan-green-active: #1e5a2d;
+    --color-vegan-green-light: #e8f5ec;
+    --color-vegan-green-muted: #a8d4b5;
+    --color-vegan-green-subtle: #f0f9f3;
 
-  --color-foreground: #20352b;
-  --color-border: #e0ddd5;
-  --color-input: #e0ddd5;
-  --color-ring: #2e9d68;
-  --color-primary: #2e9d68;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f5f4f0;
-  --color-secondary-foreground: #20352b;
-  --color-muted: #f5f4f0;
-  --color-muted-foreground: #6b6560;
-  --color-accent: #e8f5ee;
-  --color-accent-foreground: #20352b;
-  --color-destructive: #d9795b;
-  --color-destructive-foreground: #ffffff;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #20352b;
-  --color-card: #ffffff;
-  --color-card-foreground: #20352b;
+    /* Secondary palette */
+    --color-lightgreen: #e8f5ec;
+    --color-cream: #fef9e7;
+    --color-terracotta: #d9795b;
+    --color-terracotta-hover: #c46a4e;
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+    /* Neutrals */
+    --color-dark: #1f2937;
+    --color-dark-hover: #18232f;
+    --color-background: #f7f9fb;
+    --color-surface: #ffffff;
+    --color-muted-bg: #f0f2f5;
 
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    /* Semantic */
+    --color-foreground: #1f2937;
+    --color-border: #e6e8ec;
+    --color-input: #e6e8ec;
+    --color-ring: #2a7d3f;
+    --color-primary: #2a7d3f;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #f0f2f5;
+    --color-secondary-foreground: #1f2937;
+    --color-muted: #f0f2f5;
+    --color-muted-foreground: #6b7280;
+    --color-accent: #e8f5ec;
+    --color-accent-foreground: #1f2937;
+    --color-destructive: #d9795b;
+    --color-destructive-foreground: #ffffff;
+    --color-popover: #ffffff;
+    --color-popover-foreground: #1f2937;
+    --color-card: #ffffff;
+    --color-card-foreground: #1f2937;
+
+    /* Radii */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-2xl: 32px;
+    --radius-full: 9999px;
+
+    /* Typography */
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-border);
-  }
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-border);
+    }
 
-  body {
-    margin: 0;
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-  }
+    body {
+        margin: 0;
+        background-color: var(--color-background);
+        color: var(--color-foreground);
+        font-family: var(--font-sans);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

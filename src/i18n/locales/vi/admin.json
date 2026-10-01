@@ -1,0 +1,108 @@
+{
+    "dashboard": {
+        "title": "Tổng quan",
+        "subtitle": "Xem nhanh số liệu nền tảng và các mục quản trị.",
+        "totalCategories": "Tổng danh mục",
+        "activeCategories": "Đang hoạt động",
+        "softDeletedCategories": "Đã xóa mềm",
+        "associatedContent": "Nội dung liên kết",
+        "quickManagement": "Quản lý nhanh",
+        "guideTitle": "Hướng dẫn",
+        "openCategoryManagement": "Mở quản lý danh mục",
+        "adminLabel": "Quản trị viên"
+    },
+    "categories": {
+        "title": "Quản lý danh mục",
+        "description": "Danh mục đang được dùng chỉ có thể ngừng sử dụng, không xóa hẳn.",
+        "createCategory": "Tạo danh mục",
+        "exportCsv": "Export CSV",
+        "tabs": {
+            "all": "Tất cả",
+            "active": "Đang hoạt động",
+            "deleted": "Đã xóa mềm"
+        },
+        "searchPlaceholder": "Tìm theo tên hoặc UUID",
+        "sort": {
+            "newest": "Mới nhất",
+            "name": "Tên A-Z",
+            "content": "Số nội dung"
+        },
+        "columns": {
+            "uuid": "Mã UUID",
+            "name": "Tên",
+            "description": "Mô tả",
+            "content": "Nội dung",
+            "status": "Trạng thái",
+            "createdAt": "Ngày tạo",
+            "actions": "Thao tác"
+        },
+        "status": {
+            "active": "Đang dùng",
+            "deleted": "Ngừng sử dụng"
+        },
+        "actions": {
+            "edit": "Sửa",
+            "retire": "Ngừng sử dụng",
+            "restore": "Khôi phục",
+            "permanentlyDelete": "Xóa"
+        },
+        "empty": {
+            "title": "Chưa có danh mục nào",
+            "description": "Tạo danh mục đầu tiên để phân loại bài viết và video."
+        },
+        "toast": {
+            "created": "Đã tạo danh mục",
+            "updated": "Đã cập nhật danh mục",
+            "retired": "Đã ngừng sử dụng danh mục",
+            "restored": "Đã khôi phục danh mục",
+            "deleted": "Đã xóa vĩnh viễn danh mục",
+            "copied": "Đã sao chép mã danh mục",
+            "exported": "Đã xuất CSV",
+            "failed": "Thao tác thất bại. Vui lòng thử lại."
+        }
+    },
+    "posts": {
+        "title": "Bài viết",
+        "description": "Duyệt, ẩn hoặc xóa bài viết của cộng đồng.",
+        "create": {
+            "title": "Tạo bài viết",
+            "description": "Tạo bài viết blog hoặc video mới.",
+            "button": "Tạo bài viết"
+        },
+        "form": {
+            "contentFormat": "Định dạng nội dung",
+            "typeBlog": "Bài viết & Công thức",
+            "typeVideo": "Video hướng dẫn nấu ăn",
+            "titleLabel": "Tiêu đề bài viết",
+            "titlePlaceholder": "Nhập tiêu đề bài viết",
+            "contentLabel": "Nội dung",
+            "contentPlaceholderBlog": "Viết nội dung blog tại đây...",
+            "contentPlaceholderVideo": "Nhập mô tả video (tùy chọn)...",
+            "featuredImageUrlLabel": "URL ảnh bìa",
+            "featuredImageUrlPlaceholder": "https://example.com/image.jpg",
+            "videoUrlLabel": "URL video",
+            "videoUrlPlaceholder": "https://example.com/video.mp4",
+            "mediaIdLabel": "Media ID",
+            "mediaIdPlaceholder": "Nhập media UUID",
+            "categoryLabel": "Danh mục",
+            "categoryPlaceholder": "Chọn danh mục",
+            "categorySelected": "đã chọn",
+            "noCategories": "Chưa có danh mục active.",
+            "removeCategory": "Xóa danh mục",
+            "saveDraft": "Lưu nháp",
+            "publish": "Đăng bài",
+            "invalidUrl": "URL không hợp lệ",
+            "uploadImage": "Tải ảnh lên",
+            "uploading": "Đang tải...",
+            "uploadFailed": "Tải ảnh thất bại",
+            "invalidImageType": "Vui lòng chọn file ảnh",
+            "imageTooLarge": "Ảnh không được vượt quá 5MB",
+            "removeImage": "Xóa ảnh",
+            "videoSourceRequired": "Vui lòng nhập video URL hoặc Media ID"
+        },
+        "toast": {
+            "created": "Đã tạo bài viết",
+            "failed": "Tạo bài viết thất bại. Vui lòng thử lại."
+        }
+    }
+}

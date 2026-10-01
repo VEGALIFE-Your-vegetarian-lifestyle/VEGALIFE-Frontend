@@ -1,0 +1,36 @@
+{
+    "title": "Profile",
+    "editTitle": "Edit Profile",
+    "back": "Back",
+    "logout": "Logout",
+    "createPost": "Create Post",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "success": "Profile updated successfully",
+    "failed": "Failed to update profile",
+    "fields": {
+        "heightCm": "Height (cm)",
+        "weightKg": "Weight (kg)",
+        "age": "Age",
+        "gender": "Gender",
+        "description": "About",
+        "avatarUrl": "Avatar URL"
+    },
+    "placeholders": {
+        "avatarUrl": "https://example.com/avatar.jpg",
+        "description": "Tell us about yourself..."
+    },
+    "genderOptions": {
+        "placeholder": "Select gender",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+    },
+    "bmi": "BMI",
+    "bmiCategories": {
+        "underweight": "Underweight",
+        "normal": "Normal",
+        "overweight": "Overweight",
+        "obese": "Obese"
+    }
+}

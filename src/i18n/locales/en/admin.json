@@ -1,0 +1,108 @@
+{
+    "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Overview of platform metrics and management links.",
+        "totalCategories": "Total Categories",
+        "activeCategories": "Active Categories",
+        "softDeletedCategories": "Soft Deleted",
+        "associatedContent": "Associated Content",
+        "quickManagement": "Quick Management",
+        "guideTitle": "Guide",
+        "openCategoryManagement": "Open category management",
+        "adminLabel": "Admin"
+    },
+    "categories": {
+        "title": "Category Management",
+        "description": "Active categories can only be retired, not permanently deleted.",
+        "createCategory": "Create Category",
+        "exportCsv": "Export CSV",
+        "tabs": {
+            "all": "All",
+            "active": "Active",
+            "deleted": "Soft Deleted"
+        },
+        "searchPlaceholder": "Search by name or UUID",
+        "sort": {
+            "newest": "Newest",
+            "name": "Name A-Z",
+            "content": "Content count"
+        },
+        "columns": {
+            "uuid": "UUID",
+            "name": "Name",
+            "description": "Description",
+            "content": "Content",
+            "status": "Status",
+            "createdAt": "Created At",
+            "actions": "Actions"
+        },
+        "status": {
+            "active": "Active",
+            "deleted": "Inactive"
+        },
+        "actions": {
+            "edit": "Edit",
+            "retire": "Retire",
+            "restore": "Restore",
+            "permanentlyDelete": "Delete"
+        },
+        "empty": {
+            "title": "No categories yet",
+            "description": "Create the first category to classify posts and videos."
+        },
+        "toast": {
+            "created": "Category created",
+            "updated": "Category updated",
+            "retired": "Category retired",
+            "restored": "Category restored",
+            "deleted": "Category permanently deleted",
+            "copied": "Category UUID copied",
+            "exported": "CSV exported",
+            "failed": "Action failed. Please try again."
+        }
+    },
+    "posts": {
+        "title": "Posts",
+        "description": "Review, hide or delete community posts.",
+        "create": {
+            "title": "Create Post",
+            "description": "Create a new blog post or video tutorial.",
+            "button": "Create Post"
+        },
+        "form": {
+            "contentFormat": "Content Format",
+            "typeBlog": "Blog & Recipe Article",
+            "typeVideo": "Cooking Video Tutorial",
+            "titleLabel": "Post Title",
+            "titlePlaceholder": "Enter post title",
+            "contentLabel": "Content",
+            "contentPlaceholderBlog": "Write your blog content here...",
+            "contentPlaceholderVideo": "Enter video description (optional)...",
+            "featuredImageUrlLabel": "Featured Image URL",
+            "featuredImageUrlPlaceholder": "https://example.com/image.jpg",
+            "videoUrlLabel": "Video URL",
+            "videoUrlPlaceholder": "https://example.com/video.mp4",
+            "mediaIdLabel": "Media ID",
+            "mediaIdPlaceholder": "Enter media UUID",
+            "categoryLabel": "Categories",
+            "categoryPlaceholder": "Select categories",
+            "categorySelected": "selected",
+            "noCategories": "No active categories available.",
+            "removeCategory": "Remove category",
+            "saveDraft": "Save Draft",
+            "publish": "Publish Post",
+            "invalidUrl": "Invalid URL",
+            "uploadImage": "Upload image",
+            "uploading": "Uploading...",
+            "uploadFailed": "Image upload failed",
+            "invalidImageType": "Please select an image file",
+            "imageTooLarge": "Image must not exceed 5MB",
+            "removeImage": "Remove image",
+            "videoSourceRequired": "Please provide a video URL or Media ID"
+        },
+        "toast": {
+            "created": "Post created successfully",
+            "failed": "Failed to create post. Please try again."
+        }
+    }
+}
