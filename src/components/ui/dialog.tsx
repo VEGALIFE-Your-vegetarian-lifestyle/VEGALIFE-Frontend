@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ interface DialogProps {
 }
 
 export function Dialog({ open, onClose, title, description, children, className }: DialogProps) {
+    const { t } = useTranslation("common");
     const ref = useRef<HTMLDialogElement>(null);
     const titleId = useId();
 
@@ -45,7 +47,7 @@ export function Dialog({ open, onClose, title, description, children, className 
                             </h2>
                             {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
                         </div>
-                        <Button variant="ghost" size="icon" aria-label="Đóng" onClick={onClose}>
+                        <Button variant="ghost" size="icon" aria-label={t("close")} onClick={onClose}>
                             <X className="h-4 w-4" />
                         </Button>
                     </div>

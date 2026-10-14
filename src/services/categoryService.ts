@@ -1,21 +1,6 @@
 import { api } from "@/services/api";
-import type { Category, CategoryListParams, CategoryPayload, CategorySort, Paginated } from "@/types/category";
-
-interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
-}
-
-interface PageResponse<T> {
-    content: T[];
-    page: number;
-    size: number;
-    totalElements: number;
-    totalPages: number;
-    first: boolean;
-    last: boolean;
-}
+import type { Category, CategoryListParams, CategoryPayload, CategorySort } from "@/types/category";
+import type { ApiResponse, PageResponse, Paginated } from "@/types/common";
 
 // Backend trả về Category cơ bản (chưa có deletedAt)
 interface BackendCategory {
@@ -23,11 +8,6 @@ interface BackendCategory {
     name: string;
     description: string | null;
     createdAt: string;
-}
-
-// Admin trả về đầy đủ deletedAt
-interface AdminCategory extends BackendCategory {
-    deletedAt: string | null;
 }
 
 function sortCategories(items: Category[], sort: CategorySort): Category[] {
@@ -64,8 +44,9 @@ export async function getPublicCategories(params: {
 }
 
 /**
- * GET /api/categories — dùng tạm cho admin list vì backend chưa có /api/admin/categories.
- * ponytail: khi backend có admin endpoint trả deletedAt, switch lại /api/admin/categories.
+ * GET /api/categories — public, chỉ trả category chưa retire.
+ * ponytail: dùng tạm cho admin list vì backend chưa có GET /api/admin/categories.
+ * Hệ quả: không thấy được category đã retire (deletedAt luôn null).
  */
 export async function getCategories(params: CategoryListParams): Promise<Paginated<Category>> {
     const { data } = await api.get<ApiResponse<PageResponse<BackendCategory>>>("/api/categories", {
@@ -73,21 +54,17 @@ export async function getCategories(params: CategoryListParams): Promise<Paginat
             page: Math.max(params.page - 1, 0),
             size: params.size,
             ...(params.q ? { name: params.q } : {}),
-            sort: "createdAt,desc",
         },
     });
 
-    let items: Category[] = data.data.content.map((category) => ({
-        ...category,
-        description: category.description ?? undefined,
-        deletedAt: null,
-    }));
-
-    const status = params.status ?? "all";
-    if (status === "active") items = items.filter((c) => c.deletedAt === null);
-    if (status === "deleted") items = items.filter((c) => c.deletedAt !== null);
-
-    items = sortCategories(items, params.sort ?? "newest");
+    const items = sortCategories(
+        data.data.content.map((category) => ({
+            ...category,
+            description: category.description ?? undefined,
+            deletedAt: null,
+        })),
+        params.sort ?? "newest",
+    );
 
     return {
         data: items,
@@ -106,7 +83,8 @@ export async function createCategory(payload: CategoryPayload): Promise<BackendC
     return data.data;
 }
 
-export async function updateCategory(id: string, payload: CategoryPayload): Promise<BackendCategory> {
+/** PATCH — field bỏ trống giữ nguyên, nên payload nhận một phần. */
+export async function updateCategory(id: string, payload: Partial<CategoryPayload>): Promise<BackendCategory> {
     const body: Partial<CategoryPayload> = {};
     if (payload.name !== undefined) body.name = payload.name.trim();
     if (payload.description !== undefined) body.description = payload.description.trim();
@@ -115,32 +93,31 @@ export async function updateCategory(id: string, payload: CategoryPayload): Prom
     return data.data;
 }
 
+/**
+ * DELETE /api/admin/categories/{categoryId} — soft delete (retire).
+ * Bài đã gắn category vẫn giữ tham chiếu; category retired không gán được cho bài mới.
+ */
 export async function retireCategory(id: string): Promise<void> {
     await api.delete<ApiResponse<null>>(`/api/admin/categories/${id}`);
 }
 
-export async function restoreCategory(id: string): Promise<void> {
-    await api.patch<ApiResponse<AdminCategory>>(`/api/admin/categories/${id}/restore`);
-}
+// ponytail: backend chưa có restore / permanent delete / GET admin categories.
+// Thêm lại khi có endpoint: PATCH .../restore, DELETE .../permanent.
 
-export async function permanentlyDeleteCategory(id: string): Promise<void> {
-    await api.delete<ApiResponse<null>>(`/api/admin/categories/${id}/permanent`);
-}
-
+/** Export CSV từ chính GET /api/categories (không có endpoint export riêng). */
 export async function exportCategoriesCsv(): Promise<string> {
-    const { data } = await api.get<ApiResponse<PageResponse<AdminCategory>>>("/api/admin/categories", {
-        params: { page: 0, size: 1000 },
+    const { data } = await api.get<ApiResponse<PageResponse<BackendCategory>>>("/api/categories", {
+        params: { page: 0, size: 100 },
     });
 
-    const headers = ["ID", "Name", "Description", "Created At", "Deleted At"];
+    const headers = ["ID", "Name", "Description", "Created At"];
     const rows = data.data.content.map((category) => [
         category.id,
         category.name,
         category.description ?? "",
         category.createdAt,
-        category.deletedAt ?? "",
     ]);
     const escape = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    const csv = [headers.join(","), ...rows.map((row) => row.map(escape).join(","))].join("\n");
-    return csv;
+    return [headers.join(","), ...rows.map((row) => row.map(escape).join(","))].join("\n");
 }
+

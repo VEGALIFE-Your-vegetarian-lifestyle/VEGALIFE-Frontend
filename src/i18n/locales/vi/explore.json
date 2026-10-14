@@ -1,0 +1,38 @@
+{
+    "title": "Khám phá",
+    "subtitle": "Khám phá công thức, blog và video nấu ăn từ cộng đồng.",
+    "searchPlaceholder": "Tìm công thức, nguyên liệu hoặc thẻ...",
+    "searchButton": "Tìm kiếm",
+    "filters": "Bộ lọc",
+    "filtersActive": "Bộ lọc ({{count}})",
+    "clearSearch": "Xóa từ khóa",
+    "masterclass": "Lớp chuyên sâu",
+    "verified": "Cơ sở dữ liệu thực vật đã xác minh 100%",
+    "resultsFor": "Hiển thị {{count}} kết quả cho",
+    "sortBy": "Sắp xếp",
+    "sort": {
+        "popular": "Nhiều lượt xem",
+        "recent": "Mới nhất"
+    },
+    "tab": {
+        "all": "Tất cả",
+        "recipe": "Công thức",
+        "blog": "Blog",
+        "video": "Video"
+    },
+    "relatedTitle": "Tìm kiếm liên quan",
+    "relatedSubtitle": "Tiếp tục khám phá nguồn đạm thực vật và cảm hứng chuẩn bị bữa ăn:",
+    "related": {
+        "tempeh": "Món từ tempeh",
+        "highProtein": "Bữa trưa giàu đạm",
+        "crispyTofu": "Đậu hũ chiên giòn",
+        "nutritionalYeast": "Công thức men dinh dưỡng"
+    },
+    "empty": {
+        "title": "Không tìm thấy nội dung ăn chay phù hợp",
+        "description": "Thử tìm với từ khóa rộng hơn như 'Rau chân vịt', 'Cà ri' hoặc 'Mì Ý'.",
+        "action": "Xóa bộ lọc"
+    },
+    "error": "Không thể tải bài viết. Vui lòng thử lại sau.",
+    "votes": "{{count}} phiếu"
+}

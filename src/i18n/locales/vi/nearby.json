@@ -1,0 +1,99 @@
+{
+    "directoryLabel": "Danh bạ cộng đồng thực vật địa phương / Khu vực Tây Bắc Thái Bình Dương",
+    "title": "Địa điểm thuần chay gần đây",
+    "subtitle": "Khám phá nhà hàng thuần thực vật 100%, quán cà phê hữu cơ và cửa hàng chay đặc sản gần bạn.",
+    "locationNotice": "Đã bật quyền truy cập vị trí. Đang hiển thị khoảng cách chính xác từ vị trí GPS hiện tại của bạn.",
+    "changeLocation": "Đổi quyền / Nhập mã bưu chính",
+    "areaPlaceholder": "Trung tâm thành phố (trong bán kính 8 km)",
+    "gpsRefresh": "Làm mới GPS",
+    "splitView": "Chế độ chia đôi",
+    "listOnly": "Chỉ danh sách",
+    "verified": "Đã xác minh",
+    "sortBy": "Sắp xếp theo",
+    "sort": {
+        "distance": "Gần nhất trước",
+        "rating": "Đánh giá cao nhất",
+        "reviews": "Nhiều đánh giá nhất"
+    },
+    "sortStrict": "Sắp xếp cố định: Gần nhất đến xa nhất",
+    "view": {
+        "split": "Chia đôi",
+        "list": "Danh sách",
+        "map": "Bản đồ"
+    },
+    "recipeFinder": {
+        "title": "Tích hợp Recipe Finder",
+        "subtitle": "Ghép món bạn đã thích với bếp gần nhất đang phục vụ món đó hôm nay.",
+        "cta": "Tìm món khớp"
+    },
+    "recipeMatch": "Khớp công thức: {{dish}}",
+    "viewDetails": "Xem chi tiết",
+    "directions": "Chỉ đường",
+    "mapTitle": "Bản đồ VEGALIFE",
+    "mapPlaceholder": "Bản đồ tương tác cần API key của nhà cung cấp bản đồ.",
+    "filter": {
+        "all": "Tất cả địa điểm",
+        "restaurant": "Nhà hàng thuần chay 100%",
+        "cafe": "Quán cà phê chay",
+        "bakery": "Tiệm bánh thực vật",
+        "market": "Cửa hàng hữu cơ & chợ"
+    },
+    "empty": {
+        "title": "Không có địa điểm trong mục này",
+        "description": "Thử bộ lọc khác hoặc mở rộng bán kính tìm kiếm.",
+        "action": "Hiện tất cả địa điểm"
+    },
+    "error": "Không thể tải địa điểm gần đây. Vui lòng thử lại.",
+    "detail": {
+        "back": "Về danh sách địa điểm",
+        "farmDirect": "Trực tiếp từ nông trại",
+        "getDirections": "Chỉ đường",
+        "saveToFavorites": "Lưu yêu thích",
+        "share": "Chia sẻ",
+        "verifiedReviews": "{{count}} đánh giá đã xác minh",
+        "distance": "Khoảng cách",
+        "status": "Trạng thái hôm nay",
+        "openNow": "Đang mở · {{hours}}",
+        "closed": "Đã đóng",
+        "priceLevel": "Mức giá",
+        "ethics": "Tiêu chuẩn",
+        "ethicsValue": "100% Thực vật + Hữu cơ",
+        "aboutTitle": "Giới thiệu {{name}}",
+        "sustainability": {
+            "solar": "100% năng lượng mặt trời",
+            "farmPartners": "35 nông trại đối tác địa phương",
+            "zeroWaste": "Chứng nhận không rác thải"
+        },
+        "photoCount": "{{count}} / 18 ảnh",
+        "galleryLabels": {
+            "interior": "Khu vực dùng bữa",
+            "kitchen": "Bếp mở",
+            "plating": "Trình bày theo mùa"
+        },
+        "insiderTip": "Mẹo từ người trong cuộc",
+        "openNowBadge": "Đang mở",
+        "verifiedNote": "Mọi đánh giá và thông tin chế độ ăn trên trang này đều được đội ngũ VEGALIFE xác minh.",
+        "locationTitle": "Vị trí & Bản đồ",
+        "openInMaps": "Mở trong Google Maps",
+        "parkingNote": "Có chỗ đỗ xe tính phí trên đường NW 12th & NW Kearney.",
+        "transitNote": "Đi bộ 2 phút từ ga tàu điện NW 5th.",
+        "hoursTitle": "Giờ mở cửa",
+        "today": "Hôm nay",
+        "contactTitle": "Liên hệ & Liên kết",
+        "dishesTitle": "Món thực vật phổ biến",
+        "dishesSubtitle": "Món được thực khách bình chọn nhiều nhất, kèm nguyên liệu và thông tin dinh dưỡng.",
+        "communityRecipeMatch": "Khớp công thức cộng đồng",
+        "cookAtHome": "Nấu tại nhà theo công thức VEGALIFE",
+        "dietaryTitle": "Minh bạch chế độ ăn & dị ứng",
+        "dietarySubtitle": "Chúng tôi cung cấp thông tin đã xác minh để mọi thực khách thực vật yên tâm gọi món.",
+        "reviewsTitle": "Đánh giá & Mẹo từ cộng đồng",
+        "totalReviews": "{{count}} đánh giá",
+        "helpful": "Hữu ích",
+        "notFound": {
+            "title": "Không tìm thấy địa điểm",
+            "description": "Địa điểm này không tồn tại trong danh bạ.",
+            "action": "Về danh sách"
+        },
+        "error": "Không thể tải địa điểm này. Vui lòng thử lại."
+    }
+}

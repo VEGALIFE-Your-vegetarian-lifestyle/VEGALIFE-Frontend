@@ -115,54 +115,42 @@ Không có lỗi → Dự án sẵn sàng phát triển!
 
 ## Cấu trúc thư mục
 
-```
+```text
 src/
-├── assets/           # Ảnh, icon, font, file tĩnh
-│
 ├── components/       # UI components (reusable)
-│   ├── theme-provider/    # Dark/Light mode
-│   ├── admin-shell/       # Layout admin
-│   ├── user-shell/        # Layout user
-│   ├── public-shell/      # Layout public (không login)
-│   ├── topbar/            # Thanh điều hướng
-│   ├── chatbot/           # Chatbot UI
-│   ├── meal-plan/         # Meal plan UI
-│   ├── blog/              # Blog components
-│   ├── video/             # Video components
-│   ├── restaurant/        # Restaurant components
-│   ├── profile/           # Profile components
-│   └── ui/                # shadcn/ui components
+│   ├── admin-shell/      # Layout admin (nested routes)
+│   ├── auth/             # ProtectedRoute, PublicRoute, AdminRoute, AuthLayout
+│   ├── blog/             # PostStatusBadge...
+│   ├── editor/           # TipTap editor
+│   ├── media/            # ImageUploader
+│   ├── layout/           # Navbar, Footer — layout chính của app
+│   └── ui/               # Button, Input, Dialog, Table, Select, Badge, Skeleton, Textarea
 │
-├── hooks/            # Custom React hooks
-├── layouts/          # App layouts (Public, User, Admin)
-├── lib/              # Utility functions, helpers
+├── hooks/            # useAuth, useListParams, usePublicCategories, useFeedPosts, useProfile
+├── i18n/             # i18next setup + locales/{en,vi}
+├── lib/              # cn() và helper nhỏ
 ├── pages/            # Page components (mỗi route 1 folder)
-│   ├── Admin/            # Trang admin
-│   ├── auth/             # Login, Register
+│   ├── Admin/            # AdminDashboard, Posts, Videos, Categories, Users, Profile
+│   ├── auth/             # Login, Register, VerifyEmail, ForgotPassword
+│   ├── AiNutritionPage/  # Trợ lý dinh dưỡng (mock)
+│   ├── CreatePostPage/   # Tạo / sửa bài viết
+│   ├── ExplorePage/      # Khám phá
 │   ├── HomePage/         # Trang chủ
-│   ├── BlogPage/         # Danh sách blog
-│   ├── BlogDetailPage/   # Chi tiết blog
-│   ├── CreatePostPage/   # Tạo bài viết
-│   ├── EditPostPage/     # Chỉnh sửa bài viết
-│   ├── VideoPage/        # Danh sách video
-│   ├── VideoDetailPage/  # Chi tiết video
-│   ├── UploadVideoPage/  # Upload video
-│   ├── MealPlanPage/     # Thực đơn
-│   ├── ChatbotPage/      # Chatbot
-│   ├── RestaurantPage/   # Nhà hàng
-│   ├── SearchPage/       # Tìm kiếm
-│   ├── ProfilePage/      # Profile
-│   └── NotFoundPage/     # 404
+│   ├── MyPostsPage/      # Bài viết của tôi
+│   ├── NearbyPage/       # Địa điểm vegan + chi tiết
+│   ├── NotFoundPage/     # 404
+│   ├── PostDetailPage/   # Chi tiết bài viết
+│   └── ProfilePage/      # Hồ sơ cá nhân
 │
-├── providers/        # Context providers (React Query, Theme...)
-├── routes/           # Route definitions & config
-├── services/         # API calls (Axios)
-├── shared/           # Shared resources
-│   ├── components/     # Shared components
-│   └── constants/      # Constants (API endpoints, messages...)
-├── stores/           # Zustand stores (client state)
-├── types/            # TypeScript interfaces & types
-└── utils/            # Helper functions
+├── routes/           # Khai báo route toàn app
+├── services/         # Gọi API, mỗi domain 1 file (api.ts, authService, postService...)
+├── shared/           # Dùng chung
+│   ├── components/     # PageHeader, EmptyState, ErrorState, ConfirmDialog, Pagination...
+│   ├── constants/      # Hằng số dùng chung
+│   └── mocks/          # Dữ liệu giả làm đầy UI
+├── stores/           # Zustand stores (authStore, uiStore)
+├── types/            # TypeScript interfaces & types (common.ts chứa kiểu chung)
+└── utils/            # apiError, formatDate, jwt
 ```
 
 ### Nguyên tắc tổ chức code
@@ -171,13 +159,12 @@ src/
 |---------|----------|-------|
 | `components/` | UI components tái sử dụng | `<Button />`, `<Card />` |
 | `pages/` | Component đại diện cho 1 route | `HomePage.tsx` |
-| `hooks/` | Custom hooks | `useAuth.ts`, `useDebounce.ts` |
+| `hooks/` | Custom hooks | `useAuth.ts`, `useListParams.ts` |
 | `stores/` | Zustand stores | `authStore.ts`, `uiStore.ts` |
-| `services/` | API calls | `api.ts`, `blogService.ts` |
-| `types/` | TypeScript interfaces | `User.ts`, `Blog.ts` |
-| `utils/` | Helper functions | `formatDate.ts`, `validateEmail.ts` |
-| `layouts/` | App layout wrappers | `AdminLayout.tsx` |
-| `providers/` | React context providers | `QueryProvider.tsx` |
+| `services/` | API calls | `api.ts`, `postService.ts` |
+| `shared/` | Component / hằng số / mock dùng chung | `PageHeader.tsx` |
+| `types/` | TypeScript interfaces | `user.ts`, `common.ts` |
+| `utils/` | Helper functions | `formatDate.ts`, `apiError.ts` |
 
 ---
 
@@ -185,15 +172,15 @@ src/
 
 ### Core
 
-| Technology | Version |用途 |
+| Technology | Version | Mục đích |
 |-----------|---------|-----|
 | **React** | 19.x | UI library |
-| **TypeScript** | 5.x+ | Type safety |
-| **Vite** | 5.x | Build tool & dev server |
+| **TypeScript** | 6.x | Type safety |
+| **Vite** | 8.x | Build tool & dev server |
 
 ### Routing & State
 
-| Technology |用途 |
+| Technology | Mục đích |
 |-----------|-----|
 | **React Router DOM** v7 | Client-side routing |
 | **Zustand** v5 | Client state management |
@@ -201,7 +188,7 @@ src/
 
 ### UI & Styling
 
-| Technology |用途 |
+| Technology | Mục đích |
 |-----------|-----|
 | **Tailwind CSS** v4 | Utility-first CSS |
 | **shadcn/ui** | Component library (Radix UI based) |
@@ -213,14 +200,14 @@ src/
 
 ### Forms & Validation
 
-| Technology |用途 |
+| Technology | Mục đích |
 |-----------|-----|
 | **Formik** | Form management |
 | **Yup** | Schema validation |
 
 ### API & Utilities
 
-| Technology |用途 |
+| Technology | Mục đích |
 |-----------|-----|
 | **Axios** | HTTP client |
 | **JSZip** | File compression |
@@ -300,10 +287,10 @@ export function Card({ title, onClick }: Props) {
 | Command | Mô tả |
 |---------|-------|
 | `npm run dev` | Chạy dev server (http://localhost:5173) |
-| `npm run build` | Build production version |
+| `npm run build` | Build production version (`tsc -b && vite build`) |
+| `npm run typecheck` | Chỉ kiểm tra type — nhanh hơn `build` khi cần verify |
 | `npm run preview` | Preview build kết quả |
 | `npm run lint` | Chạy ESLint kiểm tra code quality |
-| `npm run format` | Format code bằng Prettier |
 
 ### Development workflow
 
@@ -319,8 +306,8 @@ npm run lint
 # 4. Fix auto-fixable issues
 npx eslint --fix .
 
-# 5. Format all files
-npm run format
+# 5. Kiểm tra type
+npm run typecheck
 
 # 6. Test build locally
 npm run build

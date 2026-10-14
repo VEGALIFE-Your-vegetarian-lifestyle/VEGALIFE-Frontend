@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatDate } from "@/utils/formatDate";
+import { useTranslation } from "react-i18next";
+import { formatDateLocale } from "@/utils/formatDate";
+import { getApiErrorMessage } from "@/utils/apiError";
 import { useListParams } from "@/hooks/useListParams";
 import { getUsers, restoreUser, suspendUser } from "@/services/adminUserService";
 import { Badge } from "@/components/ui/badge";
@@ -14,25 +16,16 @@ import { ErrorState } from "@/shared/components/ErrorState";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { Pagination } from "@/shared/components/Pagination";
 import { TableSkeleton } from "@/shared/components/TableSkeleton";
-import type { AdminUser, UserRole, UserStatus } from "@/types/user";
+import type { AdminUser, UserStatus } from "@/types/user";
 import { Ban, RefreshCcw, Search, Shield, User } from "lucide-react";
 import { toast } from "sonner";
 
 const PAGE_SIZE = 10;
 
-const STATUS_LABEL: Record<UserStatus, string> = {
-    created: "Đã tạo",
-    activated: "Hoạt động",
-    deactivated: "Đã vô hiệu hóa",
-    suspended: "Đã khóa",
-};
-
-const ROLE_LABEL: Record<UserRole, string> = {
-    ADMIN: "Quản trị viên",
-    USER: "Người dùng",
-};
+const USER_STATUSES: UserStatus[] = ["created", "activated", "deactivated", "suspended"];
 
 export default function UsersPage() {
+    const { t } = useTranslation("admin");
     const queryClient = useQueryClient();
     const { page, q, status, debouncedQ, setQ, setStatus, setPage, clearFilters } = useListParams();
     const [confirm, setConfirm] = useState<{ type: "suspend" | "restore"; user: AdminUser } | null>(null);
@@ -50,24 +43,29 @@ export default function UsersPage() {
 
     const invalidate = () => queryClient.invalidateQueries({ queryKey: ["admin-users"] });
 
+    // BE trả 409 kèm lý do (đã khóa rồi / chưa bị khóa) — hiện nguyên văn thay vì câu chung.
+    const onError = (fallback: string) => (error: unknown) => {
+        toast.error(getApiErrorMessage(error, fallback));
+    };
+
     const suspendMutation = useMutation({
         mutationFn: suspendUser,
         onSuccess: () => {
-            toast.success("Đã khóa tài khoản");
+            toast.success(t("users.toast.suspended"));
             setConfirm(null);
             invalidate();
         },
-        onError: () => toast.error("Không thể khóa tài khoản"),
+        onError: onError(t("users.toast.suspendFailed")),
     });
 
     const restoreMutation = useMutation({
         mutationFn: restoreUser,
         onSuccess: () => {
-            toast.success("Đã mở khóa tài khoản");
+            toast.success(t("users.toast.restored"));
             setConfirm(null);
             invalidate();
         },
-        onError: () => toast.error("Không thể mở khóa tài khoản"),
+        onError: onError(t("users.toast.restoreFailed")),
     });
 
     const handleConfirm = () => {
@@ -88,9 +86,9 @@ export default function UsersPage() {
     return (
         <div>
             <PageHeader
-                breadcrumb={["Admin", "Người dùng"]}
-                title="Quản lý người dùng"
-                description="Xem, tìm kiếm và quản lý trạng thái tài khoản."
+                breadcrumb={[t("common:admin"), t("users.title")]}
+                title={t("users.title")}
+                description={t("users.description")}
             />
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row">
@@ -98,16 +96,17 @@ export default function UsersPage() {
                     <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                         className="pl-9"
-                        placeholder="Tìm theo username hoặc email"
+                        placeholder={t("users.searchPlaceholder")}
+                        aria-label={t("users.searchLabel")}
                         value={q}
                         onChange={(event) => setQ(event.target.value)}
                     />
                 </div>
-                <Select className="sm:w-52" value={status} onChange={(event) => setStatus(event.target.value)}>
-                    <option value="">Tất cả trạng thái</option>
-                    {Object.entries(STATUS_LABEL).map(([value, label]) => (
+                <Select className="sm:w-52" aria-label={t("users.filterLabel")} value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <option value="">{t("users.allStatuses")}</option>
+                    {USER_STATUSES.map((value) => (
                         <option key={value} value={value}>
-                            {label}
+                            {t(`users.status.${value}`)}
                         </option>
                     ))}
                 </Select>
@@ -120,12 +119,12 @@ export default function UsersPage() {
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
-                                <TableHead>Username</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Vai trò</TableHead>
-                                <TableHead>Trạng thái</TableHead>
-                                <TableHead>Ngày tạo</TableHead>
-                                <TableHead className="text-right">Thao tác</TableHead>
+                                <TableHead>{t("users.column.username")}</TableHead>
+                                <TableHead>{t("users.column.email")}</TableHead>
+                                <TableHead>{t("users.column.role")}</TableHead>
+                                <TableHead>{t("users.column.status")}</TableHead>
+                                <TableHead>{t("users.column.createdAt")}</TableHead>
+                                <TableHead className="text-right">{t("users.column.actions")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -139,19 +138,19 @@ export default function UsersPage() {
                                         <TableCell>
                                             <Badge variant={user.role === "ADMIN" ? "default" : "secondary"}>
                                                 <Shield className="mr-1 h-3 w-3" />
-                                                {ROLE_LABEL[user.role]}
+                                                {t(`users.role.${user.role}`)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
                                             <StatusBadge status={user.status} />
                                         </TableCell>
-                                        <TableCell className="whitespace-nowrap">{formatDate(user.createdAt)}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{formatDateLocale(user.createdAt)}</TableCell>
                                         <TableCell>
                                             <div className="flex justify-end gap-2">
                                                 {user.status === "suspended" ? (
                                                     <Button size="sm" variant="outline" onClick={() => setConfirm({ type: "restore", user })}>
                                                         <RefreshCcw className="h-4 w-4" />
-                                                        Mở khóa
+                                                        {t("users.action.unlock")}
                                                     </Button>
                                                 ) : (
                                                     <Button
@@ -160,7 +159,7 @@ export default function UsersPage() {
                                                         onClick={() => setConfirm({ type: "suspend", user })}
                                                     >
                                                         <Ban className="h-4 w-4" />
-                                                        Khóa
+                                                        {t("users.action.lock")}
                                                     </Button>
                                                 )}
                                             </div>
@@ -174,11 +173,11 @@ export default function UsersPage() {
                     {!isLoading && filteredUsers.length === 0 && (
                         <EmptyState
                             icon={User}
-                            title="Không có người dùng nào"
-                            description={hasFilter ? "Không có người dùng khớp với bộ lọc." : "Chưa có người dùng nào trên hệ thống."}
+                            title={t("users.empty.title")}
+                            description={t(hasFilter ? "users.empty.filtered" : "users.empty.all")}
                             action={
                                 <Button variant="outline" onClick={hasFilter ? clearFilters : () => refetch()}>
-                                    {hasFilter ? "Xóa bộ lọc" : "Tải lại"}
+                                    {t(hasFilter ? "common:clearFilter" : "users.empty.reload")}
                                 </Button>
                             }
                         />
@@ -192,13 +191,11 @@ export default function UsersPage() {
 
             <ConfirmDialog
                 open={confirm !== null}
-                title={confirm?.type === "suspend" ? "Khóa tài khoản?" : "Mở khóa tài khoản?"}
-                description={
-                    confirm?.type === "suspend"
-                        ? `Tài khoản "${confirm.user.username}" sẽ bị khóa và không thể đăng nhập.`
-                        : `Tài khoản "${confirm?.user.username}" sẽ được mở khóa trở lại.`
-                }
-                confirmLabel={confirm?.type === "suspend" ? "Khóa tài khoản" : "Mở khóa tài khoản"}
+                title={t(confirm?.type === "suspend" ? "users.confirm.lockTitle" : "users.confirm.unlockTitle")}
+                description={t(confirm?.type === "suspend" ? "users.confirm.lockDescription" : "users.confirm.unlockDescription", {
+                    username: confirm?.user.username ?? "",
+                })}
+                confirmLabel={t(confirm?.type === "suspend" ? "users.confirm.lockConfirm" : "users.confirm.unlockConfirm")}
                 destructive={confirm?.type === "suspend"}
                 loading={suspendMutation.isPending || restoreMutation.isPending}
                 onConfirm={handleConfirm}
@@ -208,13 +205,14 @@ export default function UsersPage() {
     );
 }
 
-function StatusBadge({ status }: { status: UserStatus }) {
-    const variantMap: Record<UserStatus, Parameters<typeof Badge>[0]["variant"]> = {
-        created: "outline",
-        activated: "default",
-        deactivated: "secondary",
-        suspended: "destructive",
-    };
+const STATUS_VARIANT: Record<UserStatus, Parameters<typeof Badge>[0]["variant"]> = {
+    created: "outline",
+    activated: "default",
+    deactivated: "secondary",
+    suspended: "destructive",
+};
 
-    return <Badge variant={variantMap[status]}>{STATUS_LABEL[status]}</Badge>;
+function StatusBadge({ status }: { status: UserStatus }) {
+    const { t } = useTranslation("admin");
+    return <Badge variant={STATUS_VARIANT[status]}>{t(`users.status.${status}`)}</Badge>;
 }

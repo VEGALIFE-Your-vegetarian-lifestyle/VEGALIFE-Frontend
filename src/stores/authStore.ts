@@ -26,10 +26,6 @@ interface StoredAuth {
     rememberMe: boolean;
 }
 
-function getAuthStorageKey(rememberMe: boolean): string {
-    return rememberMe ? "vegalife_auth_persistent" : AUTH_STORAGE_KEY;
-}
-
 function loadStoredAuth(): StoredAuth {
     try {
         const persistent = localStorage.getItem("vegalife_auth_persistent");

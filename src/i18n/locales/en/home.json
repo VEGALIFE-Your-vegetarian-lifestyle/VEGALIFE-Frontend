@@ -1,0 +1,38 @@
+{
+    "badge": "Mindful Plant-First Living",
+    "title": "Your Vegetarian Lifestyle",
+    "subtitle": "Discover wholesome vegetarian blogs, step-by-step culinary videos, and nourishing plant-based recipes crafted for vibrant mindful dining every single day.",
+    "ctaExplore": "Explore Recipes",
+    "ctaAi": "Ask AI Nutrition",
+    "searchPlaceholder": "Search recipes, ingredients (e.g. tofu, spinach), or cooking tags...",
+    "searchButton": "Find Ideas",
+    "metrics": {
+        "recipes": "1,420+ Curated Recipes",
+        "masterclasses": "380+ Kitchen Masterclasses",
+        "nutritionists": "Certified Nutritionist Guides"
+    },
+    "editorsPicks": "Editor's Picks",
+    "featuredTitle": "Featured Content",
+    "featuredSubtitle": "Hand-selected plant-based creations bringing restaurant depth and balanced energy to your table.",
+    "latestTitle": "Latest Recipes & Stories",
+    "latestSubtitle": "Freshly published meals, baking secrets, and cooking tutorials from verified home chefs.",
+    "viewAllFeed": "View all feed",
+    "aiBanner": {
+        "title": "Have pantry leftovers? Let AI plan dinner.",
+        "subtitle": "Input any random vegetables from your fridge and generate macro-balanced vegetarian meal options in seconds.",
+        "cta": "Try AI Kitchen"
+    },
+    "card": {
+        "recipe": "Recipe",
+        "video": "Video",
+        "blog": "Blog",
+        "minRead": "{{count}} min read",
+        "mins": "{{count}} mins",
+        "viewRecipe": "View Recipe",
+        "viewVideo": "View Video",
+        "viewBlog": "View Blog"
+    },
+    "loading": "Loading content...",
+    "error": "Unable to load content. Please try again.",
+    "empty": "No content published yet."
+}

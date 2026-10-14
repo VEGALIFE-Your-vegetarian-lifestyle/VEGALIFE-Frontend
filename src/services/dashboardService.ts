@@ -7,7 +7,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const total = categoriesSeed.length;
     const softDeleted = categoriesSeed.filter((category) => category.deletedAt !== null).length;
     const active = total - softDeleted;
-    const associatedContent = categoriesSeed.reduce((sum, category) => sum + category.contentCount, 0);
+    const associatedContent = categoriesSeed.reduce((sum, category) => sum + (category.contentCount ?? 0), 0);
 
     return {
         totalCategories: total,

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as Yup from "yup";
@@ -10,12 +11,15 @@ import { Input } from "@/components/ui/input";
 import { FormField } from "@/shared/components/FormField";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { forgotPassword, resetPassword, verifyPasswordReset } from "@/services/authService";
+import { getApiErrorMessage } from "@/utils/apiError";
 
 type Step = "email" | "otp" | "newPassword";
 
 const RESEND_DELAY_SECONDS = 30;
+const MIN_PASSWORD = 8;
 
 export default function ForgotPasswordPage() {
+    const { t } = useTranslation("auth");
     const navigate = useNavigate();
     const [step, setStep] = useState<Step>("email");
     const [email, setEmail] = useState("");
@@ -24,60 +28,69 @@ export default function ForgotPasswordPage() {
     const forgotMutation = useMutation({
         mutationFn: (value: string) => forgotPassword({ email: value }),
         onSuccess: () => {
-            toast.success("Mã xác nhận đã được gửi nếu email tồn tại.");
+            toast.success(t("forgotPassword.sent"));
             setResendCountdown(RESEND_DELAY_SECONDS);
             setStep("otp");
         },
         onError: (error: unknown) => {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            const message =
-                axiosError.response?.data?.message ||
-                (error instanceof Error ? error.message : undefined) ||
-                "Không thể gửi yêu cầu. Vui lòng thử lại.";
-            toast.error(message);
+            toast.error(getApiErrorMessage(error, t("forgotPassword.sentFailed")));
         },
     });
 
     const verifyMutation = useMutation({
         mutationFn: (otp: string) => verifyPasswordReset({ email, otp }),
         onSuccess: () => {
-            toast.success("Mã OTP hợp lệ. Vui lòng nhập mật khẩu mới.");
+            toast.success(t("forgotPassword.otpValid"));
             setStep("newPassword");
         },
         onError: (error: unknown) => {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            const message =
-                axiosError.response?.data?.message ||
-                (error instanceof Error ? error.message : undefined) ||
-                "Mã OTP không hợp lệ hoặc đã hết hạn.";
-            toast.error(message);
+            toast.error(getApiErrorMessage(error, t("forgotPassword.otpInvalid")));
         },
     });
 
     const resetMutation = useMutation({
         mutationFn: (newPassword: string) => resetPassword({ email, newPassword }),
         onSuccess: () => {
-            toast.success("Đặt lại mật khẩu thành công. Vui lòng đăng nhập.");
+            toast.success(t("forgotPassword.resetSuccess"));
             navigate("/login", { replace: true });
         },
         onError: (error: unknown) => {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            const message =
-                axiosError.response?.data?.message ||
-                (error instanceof Error ? error.message : undefined) ||
-                "Đặt lại mật khẩu thất bại. Vui lòng thử lại.";
-            toast.error(message);
+            toast.error(getApiErrorMessage(error, t("forgotPassword.resetFailed")));
         },
     });
 
+    const emailSchema = useMemo(
+        () =>
+            Yup.object({
+                email: Yup.string()
+                    .trim()
+                    .required(t("errors.emailRequired"))
+                    .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, t("errors.emailInvalid")),
+            }),
+        [t],
+    );
+
+    const otpSchema = useMemo(
+        () =>
+            Yup.object({
+                otp: Yup.string().required(t("errors.otpRequired")).matches(/^\d{6}$/, t("errors.otpFormat")),
+            }),
+        [t],
+    );
+
+    const passwordSchema = useMemo(
+        () =>
+            Yup.object({
+                newPassword: Yup.string()
+                    .required(t("errors.newPasswordRequired"))
+                    .min(MIN_PASSWORD, t("errors.passwordMin")),
+            }),
+        [t],
+    );
+
     const emailFormik = useFormik({
         initialValues: { email: "" },
-        validationSchema: Yup.object({
-            email: Yup.string()
-                .trim()
-                .required("Vui lòng nhập email")
-                .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Email không hợp lệ (ví dụ: user@example.com)"),
-        }),
+        validationSchema: emailSchema,
         onSubmit: async (values, { setSubmitting }) => {
             setEmail(values.email);
             try {
@@ -90,9 +103,7 @@ export default function ForgotPasswordPage() {
 
     const otpFormik = useFormik({
         initialValues: { otp: "" },
-        validationSchema: Yup.object({
-            otp: Yup.string().required("Vui lòng nhập mã OTP").matches(/^\d{6}$/, "OTP phải là 6 chữ số"),
-        }),
+        validationSchema: otpSchema,
         onSubmit: async (values, { setSubmitting }) => {
             try {
                 await verifyMutation.mutateAsync(values.otp);
@@ -104,11 +115,7 @@ export default function ForgotPasswordPage() {
 
     const passwordFormik = useFormik({
         initialValues: { newPassword: "" },
-        validationSchema: Yup.object({
-            newPassword: Yup.string()
-                .required("Vui lòng nhập mật khẩu mới")
-                .min(8, "Mật khẩu ít nhất 8 ký tự"),
-        }),
+        validationSchema: passwordSchema,
         onSubmit: async (values, { setSubmitting }) => {
             try {
                 await resetMutation.mutateAsync(values.newPassword);
@@ -131,13 +138,16 @@ export default function ForgotPasswordPage() {
         forgotMutation.mutate(email);
     };
 
-    const stepTitle = step === "email" ? "Khôi phục mật khẩu" : step === "otp" ? "Xác nhận OTP" : "Đặt mật khẩu mới";
-    const stepSubtitle =
+    const stepTitle = t(
+        step === "email" ? "forgotPassword.emailTitle" : step === "otp" ? "forgotPassword.otpTitle" : "forgotPassword.newPasswordTitle",
+    );
+    const stepSubtitle = t(
         step === "email"
-            ? "Nhập email để nhận mã xác nhận"
+            ? "forgotPassword.emailSubtitle"
             : step === "otp"
-              ? "Nhập mã OTP đã gửi đến email của bạn"
-              : "Nhập mật khẩu mới";
+              ? "forgotPassword.otpSubtitle"
+              : "forgotPassword.newPasswordSubtitle",
+    );
 
     return (
         <AuthLayout title={stepTitle} subtitle={stepSubtitle}>
@@ -153,7 +163,7 @@ export default function ForgotPasswordPage() {
                 {step === "email" && (
                     <form onSubmit={emailFormik.handleSubmit} noValidate className="space-y-4">
                         <FormField
-                            label="Email"
+                            label={t("forgotPassword.emailLabel")}
                             htmlFor="email"
                             required
                             error={emailFormik.touched.email ? emailFormik.errors.email : undefined}
@@ -170,7 +180,7 @@ export default function ForgotPasswordPage() {
                             />
                         </FormField>
                         <Button type="submit" className="w-full" disabled={forgotMutation.isPending || emailFormik.isSubmitting}>
-                            {forgotMutation.isPending ? "Đang gửi..." : "Gửi mã xác nhận"}
+                            {t(forgotMutation.isPending ? "forgotPassword.sending" : "forgotPassword.sendCode")}
                         </Button>
                     </form>
                 )}
@@ -178,7 +188,7 @@ export default function ForgotPasswordPage() {
                 {step === "otp" && (
                     <form onSubmit={otpFormik.handleSubmit} noValidate className="space-y-4">
                         <FormField
-                            label="Mã OTP"
+                            label={t("forgotPassword.otpLabel")}
                             htmlFor="otp"
                             required
                             error={otpFormik.touched.otp ? otpFormik.errors.otp : undefined}
@@ -195,7 +205,7 @@ export default function ForgotPasswordPage() {
                             />
                         </FormField>
                         <Button type="submit" className="w-full" disabled={verifyMutation.isPending || otpFormik.isSubmitting}>
-                            {verifyMutation.isPending ? "Đang xác nhận..." : "Xác nhận OTP"}
+                            {t(verifyMutation.isPending ? "forgotPassword.confirming" : "forgotPassword.confirmOtp")}
                         </Button>
                         <button
                             type="button"
@@ -204,10 +214,10 @@ export default function ForgotPasswordPage() {
                             className="w-full text-sm text-vegan-green hover:underline disabled:text-muted-foreground disabled:no-underline"
                         >
                             {forgotMutation.isPending
-                                ? "Đang gửi lại..."
+                                ? t("forgotPassword.sending")
                                 : resendCountdown > 0
-                                  ? `Gửi lại mã sau ${resendCountdown}s`
-                                  : "Gửi lại mã OTP"}
+                                  ? t("forgotPassword.resendIn", { seconds: resendCountdown })
+                                  : t("forgotPassword.resend")}
                         </button>
                     </form>
                 )}
@@ -215,7 +225,7 @@ export default function ForgotPasswordPage() {
                 {step === "newPassword" && (
                     <form onSubmit={passwordFormik.handleSubmit} noValidate className="space-y-4">
                         <FormField
-                            label="Mật khẩu mới"
+                            label={t("forgotPassword.newPasswordLabel")}
                             htmlFor="newPassword"
                             required
                             error={passwordFormik.touched.newPassword ? passwordFormik.errors.newPassword : undefined}
@@ -236,14 +246,14 @@ export default function ForgotPasswordPage() {
                             className="w-full"
                             disabled={resetMutation.isPending || passwordFormik.isSubmitting}
                         >
-                            {resetMutation.isPending ? "Đang cập nhật..." : "Đặt lại mật khẩu"}
+                            {t(resetMutation.isPending ? "forgotPassword.resetting" : "forgotPassword.reset")}
                         </Button>
                     </form>
                 )}
 
                 <div className="text-center text-sm">
                     <Link to="/login" className="font-semibold text-vegan-green hover:underline">
-                        Quay lại đăng nhập
+                        {t("forgotPassword.backToLogin")}
                     </Link>
                 </div>
             </div>

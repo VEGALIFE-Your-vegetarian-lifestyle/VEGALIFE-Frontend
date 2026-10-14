@@ -1,0 +1,67 @@
+{
+    "breadcrumbHome": "Home",
+    "backToExplore": "Back to Explore",
+    "backToSearch": "Back to Search Results",
+    "backToMyPosts": "Back to My Posts",
+    "authorBadge": "Verified Plant-Based Author",
+    "publishedOn": "Published {{date}}",
+    "views": "{{count}} views",
+    "readTime": "{{count}} min read",
+    "editPost": "Edit Post",
+    "share": "Share",
+    "savePost": "Save Recipe",
+    "shareCopied": "Link copied to clipboard",
+    "notFound": {
+        "title": "Post not found",
+        "description": "This post does not exist or is no longer published.",
+        "action": "Back to Explore"
+    },
+    "error": "Unable to load this post. Please try again.",
+    "fact": {
+        "prep": "Prep & Cook",
+        "servings": "Servings",
+        "difficulty": "Difficulty",
+        "calories": "Energy"
+    },
+    "nutrition": {
+        "eyebrow": "Nutrition",
+        "title": "Macro Breakdown"
+    },
+    "macro": {
+        "protein": "Protein",
+        "carbs": "Carbohydrates",
+        "fat": "Fats",
+        "fiber": "Fiber"
+    },
+    "ingredients": {
+        "eyebrow": "Ingredients",
+        "title": "What You'll Need",
+        "scaleNote": "Quantities shown at {{count}}x. Scale the batch without touching the method."
+    },
+    "steps": {
+        "eyebrow": "Cooking Instructions",
+        "title": "Step by Step"
+    },
+    "chefSecret": {
+        "title": "Chef's Kitchen Secret"
+    },
+    "comments": {
+        "eyebrow": "Community Notes · {{count}}",
+        "title": "What Cooks Are Saying",
+        "tip": "Insider Tip",
+        "placeholder": "Share your own variation or tip...",
+        "submit": "Post Reply",
+        "loginToComment": "Sign in to join the conversation",
+        "loadMore": "Load more comments",
+        "you": "You",
+        "posted": "Comment posted"
+    },
+    "author": {
+        "followers": "followers",
+        "posts": "posts",
+        "follow": "Follow Chef",
+        "portfolio": "Portfolio"
+    },
+    "relatedTitle": "Related Plant-Based Inspirations",
+    "relatedSubtitle": "More community recipes and stories you might enjoy"
+}

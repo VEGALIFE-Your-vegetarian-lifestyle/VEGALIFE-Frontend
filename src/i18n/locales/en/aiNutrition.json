@@ -1,0 +1,82 @@
+{
+    "badgeIntelligence": "Plant Nutrition Intelligence",
+    "badgeScope": "Dietary Scope Restricted",
+    "badgeDisclaimer": "Not Medical Advice",
+    "title": "AI Nutrition Assistant",
+    "subtitle": "Consult our verified botanical nutrition assistant on vegetarian macros, ingredient swaps, plant-first calories, and wholesome recipes.",
+    "proMember": "Pro Member",
+    "unlimitedInquiries": "Unlimited Verified Nutrition Inquiries",
+    "chat": {
+        "modelName": "VEGALIFE Core Botanical AI",
+        "modelDetail": "Model: GreenHealth 4.2 · Specialized in 4 Plant Domains",
+        "resetContext": "Reset Context",
+        "exportLog": "Export Log",
+        "assistantName": "VEGALIFE Assistant",
+        "greeting": "Welcome back, {{name}}! I am your companion for verified plant-based living. To deliver the highest nutritional accuracy, my domain is strictly calibrated to 4 core areas:",
+        "greetingGuest": "Welcome! I am your companion for verified plant-based living. To deliver the highest nutritional accuracy, my domain is strictly calibrated to 4 core areas:",
+        "voiceInput": "Voice input",
+        "domainLabel": "Domain {{index}}",
+        "domains": {
+            "macros": "Plant Nutrition & Macros",
+            "macrosDetail": "Bioavailability, B12, Iron, Zinc, Omega-3",
+            "swaps": "Ingredient Substitutions",
+            "swapsDetail": "Egg replacers, cashew creams, vegan binders",
+            "bmi": "BMI & Caloric Tracking",
+            "bmiDetail": "Calorie budgeting, energy density optimization",
+            "recipes": "Vegetarian Recipes",
+            "recipesDetail": "Culinary pairings & VEGALIFE community dishes"
+        },
+        "quickStart": "Quick Suggestions To Get Started:",
+        "placeholder": "Ask about plant nutrition, ingredient substitutions, calories, or recipes...",
+        "send": "Send",
+        "supported": "SUPPORTED:",
+        "supportedTags": ["Nutrition & Macros", "Ingredient Swaps", "BMI & Calories", "Recipe Guides"],
+        "knowledgeBase": "Encrypted Plant Knowledge Base",
+        "today": "Today",
+        "you": "You",
+        "pendingReply": "Thinking about your question…",
+        "error": "The assistant is unavailable right now. Please try again."
+    },
+    "quickPrompts": [
+        "How do I optimize non-heme iron absorption in lentil bowls?",
+        "What are the best 1:1 vegan binders for egg-free baking?",
+        "BMI & protein targets for a 65kg vegan runner?",
+        "High-protein quick dinner under 500 kcal with tofu and greens?"
+    ],
+    "bmi": {
+        "title": "BMI & Protein Target",
+        "tool": "Mini Tool",
+        "height": "Height (cm)",
+        "weight": "Weight (kg)",
+        "activity": "Activity Level",
+        "activityOptions": {
+            "sedentary": "Sedentary (desk work)",
+            "light": "Light (1-2 workouts/wk)",
+            "moderate": "Moderate (3-4 workouts/wk)",
+            "active": "Active (5+ workouts/wk)"
+        },
+        "estimated": "Estimated BMI",
+        "healthyRange": "Healthy Range",
+        "dailyTarget": "Daily Plant Protein Target",
+        "perDay": "{{value}} g / day",
+        "chatPlan": "Chat Plan",
+        "chatPlanPrompt": "Build me a daily plant protein plan for my BMI and activity level.",
+        "empty": "—"
+    },
+    "swaps": {
+        "title": "Instant Swap Cheat Sheet",
+        "verified": "1:1 Verified",
+        "from": "From",
+        "to": "To"
+    },
+    "access": {
+        "title": "Access Policy & Quotas",
+        "guestInquiries": "Guest Inquiries:",
+        "guestLimit": "3 Inquiries / day limit",
+        "currentStatus": "Current Status:",
+        "activeMember": "Authenticated Member (Active)",
+        "sessionModel": "Session Model:",
+        "guardrail": "Strict Guardrail On",
+        "notice": "Mandatory Medical Notice: VEGALIFE AI provides informational culinary guidance and macronutrient references. It is not an alternative to licensed clinical healthcare or medical therapy."
+    }
+}

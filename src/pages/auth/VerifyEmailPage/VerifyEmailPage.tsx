@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as Yup from "yup";
@@ -9,46 +11,44 @@ import { Input } from "@/components/ui/input";
 import { FormField } from "@/shared/components/FormField";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { resendVerifyEmail, verifyEmail } from "@/services/authService";
+import { getApiErrorMessage } from "@/utils/apiError";
 import type { ResendVerifyEmailRequest, VerifyEmailRequest } from "@/types/user";
 
-const verifyEmailSchema = Yup.object({
-    email: Yup.string().trim().required("Vui lòng nhập email").email("Email không hợp lệ"),
-    otp: Yup.string().required("Vui lòng nhập mã OTP").matches(/^\d{6}$/, "OTP phải là 6 chữ số"),
-});
-
 export default function VerifyEmailPage() {
+    const { t } = useTranslation("auth");
     const navigate = useNavigate();
     const location = useLocation();
     const emailFromState = (location.state as { email?: string })?.email ?? "";
+    // Đến từ trang đăng ký thì email đã cố định — không cho sửa, tránh gửi OTP sang địa chỉ khác.
+    const emailLocked = Boolean(emailFromState);
+
+    const verifyEmailSchema = useMemo(
+        () =>
+            Yup.object({
+                email: Yup.string().trim().required(t("errors.emailRequired")).email(t("errors.emailInvalid")),
+                otp: Yup.string().required(t("errors.otpRequired")).matches(/^\d{6}$/, t("errors.otpFormat")),
+            }),
+        [t],
+    );
 
     const verifyMutation = useMutation({
         mutationFn: (values: VerifyEmailRequest) => verifyEmail(values),
         onSuccess: () => {
-            toast.success("Xác nhận email thành công. Vui lòng đăng nhập.");
+            toast.success(t("verifyEmail.success"));
             navigate("/login", { replace: true });
         },
         onError: (error: unknown) => {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            const message =
-                axiosError.response?.data?.message ||
-                (error instanceof Error ? error.message : undefined) ||
-                "Xác nhận email thất bại. Vui lòng thử lại.";
-            toast.error(message);
+            toast.error(getApiErrorMessage(error, t("verifyEmail.failed")));
         },
     });
 
     const resendMutation = useMutation({
         mutationFn: (request: ResendVerifyEmailRequest) => resendVerifyEmail(request),
         onSuccess: () => {
-            toast.success("Mã xác nhận mới đã được gửi. Vui lòng kiểm tra email.");
+            toast.success(t("verifyEmail.resent"));
         },
         onError: (error: unknown) => {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            const message =
-                axiosError.response?.data?.message ||
-                (error instanceof Error ? error.message : undefined) ||
-                "Gửi lại mã thất bại. Vui lòng thử lại.";
-            toast.error(message);
+            toast.error(getApiErrorMessage(error, t("verifyEmail.resendFailed")));
         },
     });
 
@@ -63,7 +63,7 @@ export default function VerifyEmailPage() {
     });
 
     return (
-        <AuthLayout title="Xác nhận email" subtitle="Nhập mã OTP đã được gửi đến email của bạn">
+        <AuthLayout title={t("verifyEmail.title")} subtitle={t("verifyEmail.subtitle")}>
             <div className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
                 <div className="flex flex-col items-center gap-2 text-center lg:hidden">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-vegan-green-light">
@@ -73,7 +73,7 @@ export default function VerifyEmailPage() {
 
                 <form onSubmit={formik.handleSubmit} noValidate className="space-y-4">
                     <FormField
-                        label="Email"
+                        label={t("verifyEmail.emailLabel")}
                         htmlFor="email"
                         required
                         error={formik.touched.email ? formik.errors.email : undefined}
@@ -86,12 +86,14 @@ export default function VerifyEmailPage() {
                             value={formik.values.email}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
+                            readOnly={emailLocked}
                             aria-invalid={formik.touched.email && !!formik.errors.email}
+                            className={emailLocked ? "cursor-not-allowed bg-muted text-muted-foreground" : undefined}
                         />
                     </FormField>
 
                     <FormField
-                        label="Mã OTP"
+                        label={t("verifyEmail.otpLabel")}
                         htmlFor="otp"
                         required
                         error={formik.touched.otp ? formik.errors.otp : undefined}
@@ -109,7 +111,7 @@ export default function VerifyEmailPage() {
                     </FormField>
 
                     <Button type="submit" className="w-full" disabled={verifyMutation.isPending || formik.isSubmitting}>
-                        {verifyMutation.isPending ? "Đang xác nhận..." : "Xác nhận email"}
+                        {t(verifyMutation.isPending ? "verifyEmail.submitting" : "verifyEmail.submit")}
                     </Button>
                 </form>
 
@@ -120,10 +122,10 @@ export default function VerifyEmailPage() {
                         disabled={resendMutation.isPending || !formik.values.email}
                         className="font-semibold text-vegan-green hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        {resendMutation.isPending ? "Đang gửi lại..." : "Gửi lại mã xác nhận"}
+                        {t(resendMutation.isPending ? "verifyEmail.resending" : "verifyEmail.resend")}
                     </button>
                     <Link to="/login" className="font-semibold text-vegan-green hover:underline">
-                        Quay lại đăng nhập
+                        {t("verifyEmail.backToLogin")}
                     </Link>
                 </div>
             </div>

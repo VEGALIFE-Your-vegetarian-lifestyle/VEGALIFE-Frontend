@@ -1,0 +1,67 @@
+{
+    "breadcrumbHome": "Trang chủ",
+    "backToExplore": "Về trang Khám phá",
+    "backToSearch": "Về kết quả tìm kiếm",
+    "backToMyPosts": "Về bài viết của tôi",
+    "authorBadge": "Tác giả thực vật đã xác minh",
+    "publishedOn": "Đăng ngày {{date}}",
+    "views": "{{count}} lượt xem",
+    "readTime": "{{count}} phút đọc",
+    "editPost": "Sửa bài viết",
+    "share": "Chia sẻ",
+    "savePost": "Lưu công thức",
+    "shareCopied": "Đã sao chép liên kết",
+    "notFound": {
+        "title": "Không tìm thấy bài viết",
+        "description": "Bài viết không tồn tại hoặc đã ngừng đăng.",
+        "action": "Về trang Khám phá"
+    },
+    "error": "Không thể tải bài viết này. Vui lòng thử lại.",
+    "fact": {
+        "prep": "Sơ chế & nấu",
+        "servings": "Khẩu phần",
+        "difficulty": "Độ khó",
+        "calories": "Năng lượng"
+    },
+    "nutrition": {
+        "eyebrow": "Dinh dưỡng",
+        "title": "Phân bổ dưỡng chất"
+    },
+    "macro": {
+        "protein": "Đạm",
+        "carbs": "Tinh bột",
+        "fat": "Chất béo",
+        "fiber": "Chất xơ"
+    },
+    "ingredients": {
+        "eyebrow": "Nguyên liệu",
+        "title": "Bạn cần chuẩn bị",
+        "scaleNote": "Định lượng đang hiển thị ở mức {{count}}x. Tăng giảm khẩu phần mà không đổi cách làm."
+    },
+    "steps": {
+        "eyebrow": "Hướng dẫn nấu",
+        "title": "Từng bước một"
+    },
+    "chefSecret": {
+        "title": "Bí quyết của đầu bếp"
+    },
+    "comments": {
+        "eyebrow": "Ghi chú cộng đồng · {{count}}",
+        "title": "Người nấu nói gì",
+        "tip": "Mách nhỏ",
+        "placeholder": "Chia sẻ biến tấu hoặc mẹo của bạn...",
+        "submit": "Gửi bình luận",
+        "loginToComment": "Đăng nhập để tham gia thảo luận",
+        "loadMore": "Xem thêm bình luận",
+        "you": "Bạn",
+        "posted": "Đã gửi bình luận"
+    },
+    "author": {
+        "followers": "người theo dõi",
+        "posts": "bài viết",
+        "follow": "Theo dõi đầu bếp",
+        "portfolio": "Trang cá nhân"
+    },
+    "relatedTitle": "Cảm hứng thực vật liên quan",
+    "relatedSubtitle": "Thêm công thức và câu chuyện cộng đồng bạn có thể thích"
+}

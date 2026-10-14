@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
     {
         variants: {
             variant: {
@@ -11,22 +11,34 @@ const buttonVariants = cva(
                 secondary: "bg-secondary text-secondary-foreground hover:bg-muted",
                 outline: "border border-border bg-transparent text-dark hover:bg-accent hover:border-vegan-green-muted",
                 ghost: "text-dark hover:bg-accent",
-                destructive: "bg-terracotta text-white hover:bg-terracotta-hover",
-                cream: "bg-cream text-dark hover:bg-lightgreen",
+                destructive: "bg-danger text-white hover:bg-danger/90",
+                /** Nút "View Recipe / View Video / View Blog" trong card feed. */
+                soft: "bg-lavender text-lavender-strong hover:bg-lavender-hover",
+                /** Nút trắng có viền — "Continue with Google", tab chưa chọn. */
+                white: "border border-border bg-surface text-dark hover:bg-muted-bg",
             },
             size: {
-                sm: "h-9 px-3.5",
-                default: "h-11 min-w-[100px] px-5",
-                lg: "h-12 min-w-[120px] px-6 text-base",
+                xs: "h-8 px-3 text-xs",
+                sm: "h-9 px-3.5 text-sm",
+                default: "h-11 px-5 text-sm",
+                lg: "h-12 px-6 text-base",
                 icon: "h-10 w-10",
+                iconSm: "h-8 w-8",
+            },
+            shape: {
+                default: "rounded-xl",
+                pill: "rounded-full",
+            },
+            block: {
+                true: "w-full",
             },
         },
-        defaultVariants: { variant: "primary", size: "default" },
+        defaultVariants: { variant: "primary", size: "default", shape: "default" },
     },
 );
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {}
 
-export function Button({ className, variant, size, type = "button", ...props }: ButtonProps) {
-    return <button type={type} className={cn(buttonVariants({ variant, size }), className)} {...props} />;
+export function Button({ className, variant, size, shape, block, type = "button", ...props }: ButtonProps) {
+    return <button type={type} className={cn(buttonVariants({ variant, size, shape, block }), className)} {...props} />;
 }

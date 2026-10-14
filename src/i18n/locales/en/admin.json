@@ -9,7 +9,38 @@
         "quickManagement": "Quick Management",
         "guideTitle": "Guide",
         "openCategoryManagement": "Open category management",
-        "adminLabel": "Admin"
+        "adminLabel": "Admin",
+        "metricDescription": {
+            "totalCategories": "All categories in the system",
+            "activeCategories": "Categories currently in use",
+            "softDeletedCategories": "Categories retired from use",
+            "associatedContent": "Posts, recipes and videos linked"
+        },
+        "quickLink": {
+            "categories": "Categories",
+            "posts": "Posts",
+            "videos": "Videos",
+            "users": "Users"
+        },
+        "manageBadge": "Manage",
+        "nav": {
+            "label": "Admin navigation",
+            "comingSoon": "Coming soon",
+            "toggleSidebar": "Toggle sidebar",
+            "dashboard": "Dashboard",
+            "users": "Users",
+            "posts": "Posts",
+            "videos": "Videos",
+            "comments": "Comments",
+            "categories": "Categories",
+            "locations": "Locations",
+            "profile": "Profile"
+        },
+        "guide": {
+            "retire": "Active categories can only be retired, not permanently deleted.",
+            "restore": "Soft-deleted categories can be restored or permanently removed.",
+            "access": "Admins have access to all management sections."
+        }
     },
     "categories": {
         "title": "Category Management",
@@ -50,6 +81,15 @@
             "title": "No categories yet",
             "description": "Create the first category to classify posts and videos."
         },
+        "form": {
+            "createTitle": "Create new category",
+            "editTitle": "Edit category",
+            "nameLabel": "Category name",
+            "namePlaceholder": "Enter category name",
+            "descriptionLabel": "Description",
+            "descriptionPlaceholder": "Enter a short description for the category",
+            "save": "Save changes"
+        },
         "toast": {
             "created": "Category created",
             "updated": "Category updated",
@@ -63,11 +103,14 @@
     },
     "posts": {
         "title": "Posts",
-        "description": "Review, hide or delete community posts.",
+        "description": "Approve, unpublish or delete community posts.",
         "create": {
             "title": "Create Post",
             "description": "Create a new blog post or video tutorial.",
             "button": "Create Post"
+        },
+        "edit": {
+            "title": "Edit Post"
         },
         "form": {
             "contentFormat": "Content Format",
@@ -80,10 +123,7 @@
             "contentPlaceholderVideo": "Enter video description (optional)...",
             "featuredImageUrlLabel": "Featured Image URL",
             "featuredImageUrlPlaceholder": "https://example.com/image.jpg",
-            "videoUrlLabel": "Video URL",
-            "videoUrlPlaceholder": "https://example.com/video.mp4",
-            "mediaIdLabel": "Media ID",
-            "mediaIdPlaceholder": "Enter media UUID",
+            "videoFileLabel": "Video File",
             "categoryLabel": "Categories",
             "categoryPlaceholder": "Select categories",
             "categorySelected": "selected",
@@ -98,11 +138,205 @@
             "invalidImageType": "Please select an image file",
             "imageTooLarge": "Image must not exceed 5MB",
             "removeImage": "Remove image",
-            "videoSourceRequired": "Please provide a video URL or Media ID"
+            "dropzoneTitle": "Drop your cover image here",
+            "dropzoneHint": "PNG or JPG, up to 5MB. A landscape 16:9 shot works best.",
+            "videoUpload": "Upload video",
+            "videoFailed": "Video upload failed",
+            "videoInvalidType": "Please select a video file",
+            "videoTooLarge": "Video must not exceed 100MB",
+            "videoRemove": "Remove video",
+            "videoDropzoneTitle": "Drop your video file here",
+            "videoDropzoneHint": "MP4 or WebM, up to 100MB.",
+            "videoSourceRequired": "Please upload a video file"
         },
         "toast": {
             "created": "Post created successfully",
-            "failed": "Failed to create post. Please try again."
+            "updated": "Post updated successfully",
+            "failed": "Failed to create post. Please try again.",
+            "approved": "Post approved",
+            "rejected": "Post rejected",
+            "unpublished": "Post unpublished",
+            "deleted": "Post deleted",
+            "actionFailed": "Action failed. Please try again."
+        },
+        "list": {
+            "searchPlaceholder": "Search by title or author",
+            "searchLabel": "Search posts",
+            "filterLabel": "Filter by status",
+            "allStatuses": "All statuses",
+            "column": {
+                "title": "Title",
+                "author": "Author",
+                "status": "Status",
+                "moderation": "Moderation",
+                "views": "Views",
+                "createdAt": "Created",
+                "actions": "Actions"
+            },
+            "empty": {
+                "title": "No posts found",
+                "filtered": "No posts match the current filters.",
+                "all": "There are no posts on the system yet.",
+                "clearFilters": "Clear filters",
+                "reload": "Reload"
+            },
+            "action": {
+                "approve": "Approve",
+                "reject": "Reject",
+                "unpublish": "Unpublish",
+                "delete": "Delete"
+            },
+            "confirm": {
+                "deleteTitle": "Delete post?",
+                "deleteDescription": "\"{{title}}\" will be deleted and removed from public view.",
+                "deleteConfirm": "Delete post"
+            }
+        },
+        "reject": {
+            "title": "Reject post",
+            "postLabel": "Post: {{title}}",
+            "reasonLabel": "Rejection reason",
+            "reasonPlaceholder": "Enter the reason for rejecting this post",
+            "reasonHelper": "The reason is stored in the moderation log.",
+            "reasonRequired": "Please enter a rejection reason",
+            "reasonMax": "Reason must not exceed 1000 characters",
+            "submit": "Reject post",
+            "cancel": "Cancel"
+        },
+        "wizard": {
+            "subtitle": "Fill in each step — your progress is tracked in the publishing checklist.",
+            "stepOf": "Step {{step}} of {{total}}",
+            "step1": "Content Format",
+            "step2": "Title & Details",
+            "step3": "Categorization",
+            "step4": "Cover & Visuals",
+            "step5": "Article Content",
+            "typeBlogHint": "Long-form recipe or article with rich text.",
+            "typeVideoHint": "Cooking video with a written description.",
+            "back": "Back",
+            "next": "Continue"
+        },
+        "composer": {
+            "subtitle": "Compose in one scroll — every section is saved together with the publishing checklist.",
+            "draftAutosaved": "Draft autosaved",
+            "section1": "Section 1 · Content Format",
+            "section2": "Section 2 · Title & Details",
+            "section3": "Section 3 · Categorization",
+            "section4": "Section 4 · Cover & Visuals",
+            "section5": "Section 5 · Article Content",
+            "titleSection": "Title & Details",
+            "coverSection": "Cover & Visuals",
+            "typeBlogHint": "Long-form recipe or article with rich text formatting.",
+            "typeVideoHint": "Cooking video with a written description underneath.",
+            "summaryLabel": "Short Summary",
+            "summaryHint": "Appears on feed cards and search results. Keep it under 180 characters.",
+            "summaryPlaceholder": "A crisp one-line description of what makes this dish worth cooking...",
+            "contentNote": "Content is stored as structured rich text, so it renders identically everywhere and cannot carry scripts."
+        },
+        "checklist": {
+            "heading": "Publishing Checklist",
+            "format": "Content format selected",
+            "title": "Title added",
+            "category": "At least one category",
+            "cover": "Cover image uploaded",
+            "content": "Article content written",
+            "videoSource": "Video source provided"
+        },
+        "ai": {
+            "title": "AI Nutrition Snapshot",
+            "description": "Estimated macros appear here once the AI service is available.",
+            "protein": "Protein",
+            "carbs": "Carbs",
+            "fat": "Fat",
+            "fiber": "Fiber"
+        }
+    },
+    "videos": {
+        "title": "Video Management",
+        "description": "Review and delete cooking videos uploaded by users.",
+        "searchPlaceholder": "Search by title or uploader",
+        "searchLabel": "Search videos",
+        "filterLabel": "Filter by upload status",
+        "allStatuses": "All statuses",
+        "column": {
+            "video": "Video",
+            "uploader": "Uploader",
+            "status": "Upload status",
+            "createdAt": "Uploaded",
+            "actions": "Actions"
+        },
+        "action": {
+            "view": "View"
+        },
+        "untitled": "Untitled",
+        "empty": {
+            "title": "No videos yet",
+            "filtered": "No videos match the current filters.",
+            "all": "No videos have been uploaded yet.",
+            "reload": "Reload"
+        },
+        "preview": {
+            "uploadedBy": "Uploaded by @{{username}}",
+            "sample": "Sample video (mock data)"
+        },
+        "confirm": {
+            "deleteTitle": "Delete video?",
+            "deleteDescription": "\"{{title}}\" will be deleted and removed from public view.",
+            "deleteConfirm": "Delete video"
+        },
+        "toast": {
+            "deleted": "Video deleted",
+            "failed": "Action failed. Please try again."
+        }
+    },
+    "users": {
+        "title": "User Management",
+        "description": "View, search and manage account status.",
+        "searchPlaceholder": "Search by username or email",
+        "searchLabel": "Search users",
+        "filterLabel": "Filter by status",
+        "allStatuses": "All statuses",
+        "column": {
+            "username": "Username",
+            "email": "Email",
+            "role": "Role",
+            "status": "Status",
+            "createdAt": "Created",
+            "actions": "Actions"
+        },
+        "status": {
+            "created": "Created",
+            "activated": "Activated",
+            "deactivated": "Deactivated",
+            "suspended": "Suspended"
+        },
+        "role": {
+            "ADMIN": "Admin",
+            "USER": "User"
+        },
+        "action": {
+            "lock": "Lock",
+            "unlock": "Unlock"
+        },
+        "empty": {
+            "title": "No users found",
+            "filtered": "No users match the current filters.",
+            "all": "There are no users on the system yet.",
+            "reload": "Reload"
+        },
+        "confirm": {
+            "lockTitle": "Lock this account?",
+            "lockDescription": "\"{{username}}\" will be locked and unable to sign in.",
+            "lockConfirm": "Lock account",
+            "unlockTitle": "Unlock this account?",
+            "unlockDescription": "\"{{username}}\" will be able to sign in again.",
+            "unlockConfirm": "Unlock account"
+        },
+        "toast": {
+            "suspended": "Account locked",
+            "suspendFailed": "Failed to lock account. Please try again.",
+            "restored": "Account unlocked",
+            "restoreFailed": "Failed to unlock account. Please try again."
         }
     }
 }

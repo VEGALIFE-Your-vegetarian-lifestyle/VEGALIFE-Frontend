@@ -13,3 +13,21 @@ export interface ListParams<S extends string> {
     q?: string;
     status?: S;
 }
+
+/** Wrapper mọi endpoint trả về: `{ success, message, data }`. */
+export interface ApiResponse<T> {
+    success: boolean;
+    message: string;
+    data: T;
+}
+
+/** Trang thô của Spring Page — map sang `Paginated` ở tầng service. */
+export interface PageResponse<T> {
+    content: T[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    first: boolean;
+    last: boolean;
+}

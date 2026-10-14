@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as Yup from "yup";
@@ -10,50 +11,56 @@ import { Input } from "@/components/ui/input";
 import { FormField } from "@/shared/components/FormField";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { register } from "@/services/authService";
+import { getApiErrorMessage } from "@/utils/apiError";
 import type { RegisterRequest } from "@/types/user";
 
-const registerSchema = Yup.object({
-    username: Yup.string()
-        .trim()
-        .required("Vui lòng nhập username")
-        .min(3, "Username phải có ít nhất 3 ký tự")
-        .max(50, "Username tối đa 50 ký tự")
-        .matches(/^[a-zA-Z0-9_.]+$/, "Username chỉ chứa chữ, số, dấu chấm và gạch dưới"),
-    email: Yup.string()
-        .trim()
-        .required("Vui lòng nhập email")
-        .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Email không hợp lệ (ví dụ: user@example.com)")
-        .max(100, "Email tối đa 100 ký tự"),
-    password: Yup.string()
-        .required("Vui lòng nhập mật khẩu")
-        .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-        .matches(/[A-Z]/, "Mật khẩu phải có ít nhất 1 chữ hoa")
-        .matches(/[a-z]/, "Mật khẩu phải có ít nhất 1 chữ thường")
-        .matches(/[0-9]/, "Mật khẩu phải có ít nhất 1 số")
-        .matches(/[^A-Za-z0-9]/, "Mật khẩu phải có ít nhất 1 ký tự đặc biệt"),
-    confirmPassword: Yup.string()
-        .required("Vui lòng xác nhận mật khẩu")
-        .oneOf([Yup.ref("password")], "Mật khẩu xác nhận không khớp"),
-});
+const MIN_USERNAME = 3;
+const MAX_USERNAME = 50;
+const MAX_EMAIL = 100;
+const MIN_PASSWORD = 8;
 
 export default function RegisterPage() {
+    const { t } = useTranslation("auth");
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    const registerSchema = useMemo(
+        () =>
+            Yup.object({
+                username: Yup.string()
+                    .trim()
+                    .required(t("errors.usernameRequired"))
+                    .min(MIN_USERNAME, t("errors.usernameMin"))
+                    .max(MAX_USERNAME, t("errors.usernameMax"))
+                    .matches(/^[a-zA-Z0-9_.]+$/, t("errors.usernameFormat")),
+                email: Yup.string()
+                    .trim()
+                    .required(t("errors.emailRequired"))
+                    .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, t("errors.emailInvalid"))
+                    .max(MAX_EMAIL, t("errors.emailMax")),
+                password: Yup.string()
+                    .required(t("errors.passwordRequired"))
+                    .min(MIN_PASSWORD, t("errors.passwordMin"))
+                    .matches(/[A-Z]/, t("errors.passwordUpper"))
+                    .matches(/[a-z]/, t("errors.passwordLower"))
+                    .matches(/[0-9]/, t("errors.passwordDigit"))
+                    .matches(/[^A-Za-z0-9]/, t("errors.passwordSpecial")),
+                confirmPassword: Yup.string()
+                    .required(t("errors.confirmPasswordRequired"))
+                    .oneOf([Yup.ref("password")], t("errors.passwordMismatch")),
+            }),
+        [t],
+    );
+
     const registerMutation = useMutation({
         mutationFn: (values: RegisterRequest) => register(values),
         onSuccess: (data) => {
-            toast.success("Đăng ký thành công. Vui lòng xác nhận email.");
+            toast.success(t("register.success"));
             navigate("/verify-email", { replace: true, state: { email: data.email } });
         },
         onError: (error: unknown) => {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            const message =
-                axiosError.response?.data?.message ||
-                (error instanceof Error ? error.message : undefined) ||
-                "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.";
-            toast.error(message);
+            toast.error(getApiErrorMessage(error, t("register.failed")));
         },
     });
 
@@ -70,10 +77,26 @@ export default function RegisterPage() {
     });
 
     return (
-        <AuthLayout title="Tạo tài khoản VEGALIFE" subtitle="Tham gia cộng đồng yêu thích lối sống thực vật">
+        <AuthLayout title={t("register.title")} subtitle={t("register.subtitle")}>
+            <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+                <Link
+                    to="/login"
+                    className="rounded-lg px-4 py-2 text-center text-sm font-semibold text-muted-foreground transition hover:text-vegan-green"
+                >
+                    {t("tabs.login")}
+                </Link>
+                <Link
+                    to="/register"
+                    aria-current="page"
+                    className="rounded-lg bg-surface px-4 py-2 text-center text-sm font-semibold text-vegan-green shadow-sm"
+                >
+                    {t("tabs.register")}
+                </Link>
+            </div>
+
             <form onSubmit={formik.handleSubmit} noValidate className="space-y-5">
                 <FormField
-                    label="Username"
+                    label={t("register.usernameLabel")}
                     htmlFor="username"
                     required
                     error={formik.touched.username ? formik.errors.username : undefined}
@@ -82,7 +105,7 @@ export default function RegisterPage() {
                         id="username"
                         name="username"
                         type="text"
-                        placeholder="username"
+                        placeholder={t("register.usernamePlaceholder")}
                         value={formik.values.username}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
@@ -91,7 +114,7 @@ export default function RegisterPage() {
                 </FormField>
 
                 <FormField
-                    label="Email"
+                    label={t("register.emailLabel")}
                     htmlFor="email"
                     required
                     error={formik.touched.email ? formik.errors.email : undefined}
@@ -109,7 +132,7 @@ export default function RegisterPage() {
                 </FormField>
 
                 <FormField
-                    label="Mật khẩu"
+                    label={t("register.passwordLabel")}
                     htmlFor="password"
                     required
                     error={formik.touched.password ? formik.errors.password : undefined}
@@ -130,7 +153,7 @@ export default function RegisterPage() {
                             type="button"
                             onClick={() => setShowPassword((prev) => !prev)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-dark"
-                            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                            aria-label={t(showPassword ? "hidePassword" : "showPassword")}
                         >
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
@@ -138,7 +161,7 @@ export default function RegisterPage() {
                 </FormField>
 
                 <FormField
-                    label="Xác nhận mật khẩu"
+                    label={t("register.confirmPasswordLabel")}
                     htmlFor="confirmPassword"
                     required
                     error={formik.touched.confirmPassword ? formik.errors.confirmPassword : undefined}
@@ -159,7 +182,7 @@ export default function RegisterPage() {
                             type="button"
                             onClick={() => setShowConfirmPassword((prev) => !prev)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-dark"
-                            aria-label={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                            aria-label={t(showConfirmPassword ? "hidePassword" : "showPassword")}
                         >
                             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
@@ -168,14 +191,14 @@ export default function RegisterPage() {
 
                 <Button type="submit" className="w-full" disabled={registerMutation.isPending || formik.isSubmitting}>
                     <UserPlus className="h-4 w-4" />
-                    {registerMutation.isPending ? "Đang đăng ký..." : "Đăng ký"}
+                    {t(registerMutation.isPending ? "register.submitting" : "register.submit")}
                 </Button>
             </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
-                Đã có tài khoản?{" "}
+                {t("haveAccount")}{" "}
                 <Link to="/login" className="font-medium text-vegan-green hover:underline">
-                    Đăng nhập
+                    {t("tabs.login")}
                 </Link>
             </p>
         </AuthLayout>

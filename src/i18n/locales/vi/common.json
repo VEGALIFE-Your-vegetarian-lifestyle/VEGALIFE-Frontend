@@ -13,14 +13,82 @@
     "submit": "Gửi",
     "close": "Đóng",
     "logout": "Đăng xuất",
+    "logoutSuccess": "Đã đăng xuất",
     "home": "Trang chủ",
+    "explore": "Khám phá",
+    "nearby": "Gần đây",
+    "aiNutrition": "AI Dinh dưỡng",
+    "newPost": "Tạo bài viết",
+    "myPosts": "Bài viết của tôi",
     "profile": "Hồ sơ",
     "admin": "Quản trị",
     "login": "Đăng nhập",
     "register": "Đăng ký",
+    "searchPlaceholder": "Tìm công thức, nguyên liệu hoặc thẻ...",
+    "accountMenu": "Menu tài khoản",
+    "openMenu": "Mở menu",
+    "closeMenu": "Đóng menu",
     "orContinueWith": "Hoặc tiếp tục với",
     "featureDeveloping": "Tính năng đang phát triển",
     "loginWithGoogle": "Đăng nhập với Google",
     "emptySearch": "Không tìm thấy kết quả.",
-    "clearFilter": "Xóa bộ lọc"
+    "clearFilter": "Xóa bộ lọc",
+    "error": "Đã có lỗi xảy ra. Vui lòng thử lại.",
+    "footer": {
+        "tagline": "Cộng đồng thuần thực vật cho công thức, lớp học nấu ăn và hướng dẫn dinh dưỡng dựa trên bằng chứng.",
+        "copyright": "© {{year}} VEGALIFE. Bảo lưu mọi quyền.",
+        "community": "Cộng đồng thuần thực vật 100%"
+    },
+    "editor": {
+        "wordCount": "{{count}} từ",
+        "bold": "Đậm",
+        "italic": "Nghiêng",
+        "h2": "Tiêu đề",
+        "h3": "Tiêu đề phụ",
+        "bulletList": "Danh sách chấm",
+        "orderedList": "Danh sách số",
+        "quote": "Trích dẫn",
+        "code": "Mã nội dòng",
+        "link": "Chèn liên kết",
+        "linkPrompt": "Nhập URL liên kết (http:// hoặc https://)",
+        "image": "Chèn ảnh",
+        "table": "Chèn bảng",
+        "divider": "Đường phân cách",
+        "undo": "Hoàn tác",
+        "redo": "Làm lại",
+        "placeholder": "Kể câu chuyện phía sau món ăn, kỹ thuật nấu và điều làm nên khác biệt..."
+    },
+    "postStatus": {
+        "created": "Mới tạo",
+        "processed": "Chờ duyệt",
+        "published": "Đã đăng",
+        "unpublished": "Ngừng đăng"
+    },
+    "postFlag": {
+        "PENDING": "Chờ kiểm duyệt",
+        "PASSED": "Đã qua kiểm duyệt",
+        "REJECTED": "Bị từ chối",
+        "NEEDS_REVIEW": "Cần xem lại"
+    },
+    "videoStatus": {
+        "uploading": "Đang tải lên",
+        "succeed": "Thành công",
+        "failed": "Thất bại"
+    },
+    "errorState": {
+        "title": "Đã có lỗi xảy ra",
+        "description": "Không thể tải nội dung. Vui lòng kiểm tra kết nối và thử lại.",
+        "retry": "Thử lại"
+    },
+    "notFound": {
+        "title": "Không tìm thấy trang",
+        "description": "Trang bạn tìm không tồn tại hoặc đã được di chuyển.",
+        "backHome": "Về trang chủ"
+    },
+    "pagination": {
+        "label": "Phân trang",
+        "previous": "Trang trước",
+        "next": "Trang sau",
+        "page": "Trang {{page}}"
+    }
 }

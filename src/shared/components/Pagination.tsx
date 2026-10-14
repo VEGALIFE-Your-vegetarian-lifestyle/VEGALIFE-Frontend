@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -8,6 +9,8 @@ interface PaginationProps {
 }
 
 export function Pagination({ page, totalPages, onChange }: PaginationProps) {
+    const { t } = useTranslation("common");
+
     if (totalPages <= 1) return null;
 
     // Hiện trang đầu, trang cuối và các trang quanh trang hiện tại
@@ -16,8 +19,14 @@ export function Pagination({ page, totalPages, onChange }: PaginationProps) {
     );
 
     return (
-        <nav aria-label="Phân trang" className="mt-4 flex items-center justify-end gap-1">
-            <Button variant="ghost" size="icon" aria-label="Trang trước" disabled={page === 1} onClick={() => onChange(page - 1)}>
+        <nav aria-label={t("pagination.label")} className="mt-4 flex items-center justify-end gap-1">
+            <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t("pagination.previous")}
+                disabled={page === 1}
+                onClick={() => onChange(page - 1)}
+            >
                 <ChevronLeft className="h-4 w-4" />
             </Button>
             {pages.map((item, index) => (
@@ -26,7 +35,7 @@ export function Pagination({ page, totalPages, onChange }: PaginationProps) {
                     <Button
                         variant={item === page ? "primary" : "ghost"}
                         size="icon"
-                        aria-label={`Trang ${item}`}
+                        aria-label={t("pagination.page", { page: item })}
                         aria-current={item === page ? "page" : undefined}
                         onClick={() => onChange(item)}
                     >
@@ -34,7 +43,13 @@ export function Pagination({ page, totalPages, onChange }: PaginationProps) {
                     </Button>
                 </span>
             ))}
-            <Button variant="ghost" size="icon" aria-label="Trang sau" disabled={page === totalPages} onClick={() => onChange(page + 1)}>
+            <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t("pagination.next")}
+                disabled={page === totalPages}
+                onClick={() => onChange(page + 1)}
+            >
                 <ChevronRight className="h-4 w-4" />
             </Button>
         </nav>

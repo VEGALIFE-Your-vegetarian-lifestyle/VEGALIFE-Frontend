@@ -26,10 +26,12 @@ export default defineConfig({
         chunkSizeWarningLimit: 500,
         rollupOptions: {
             output: {
-                manualChunks: {
-                    // Tách vendor lớn ra chunks riêng
-                    vendor: ["react", "react-dom", "react-router-dom"],
-                    ui: ["@tailwindcss/vite"],
+                // Tách vendor lớn ra chunk riêng. (@tailwindcss/vite là plugin build-time,
+                // không vào bundle nên không cần chunk.)
+                manualChunks(id) {
+                    if (/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler)\//.test(id)) {
+                        return "vendor";
+                    }
                 },
             },
         },

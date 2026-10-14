@@ -9,14 +9,19 @@ import PostsPage from "@/pages/Admin/PostsPage/PostsPage";
 import UsersPage from "@/pages/Admin/UsersPage/UsersPage";
 import VideosPage from "@/pages/Admin/VideosPage/VideosPage";
 import AdminDashboardPage from "@/pages/Admin/AdminDashboardPage/AdminDashboardPage";
+import AiNutritionPage from "@/pages/AiNutritionPage/AiNutritionPage";
 import CreatePostPage from "@/pages/CreatePostPage/CreatePostPage";
 import ExplorePage from "@/pages/ExplorePage/ExplorePage";
+import LocationDetailPage from "@/pages/LocationDetailPage/LocationDetailPage";
+import NearbyPage from "@/pages/NearbyPage/NearbyPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage/ForgotPasswordPage";
 import LoginPage from "@/pages/auth/LoginPage/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage/RegisterPage";
 import VerifyEmailPage from "@/pages/auth/VerifyEmailPage/VerifyEmailPage";
 import HomePage from "@/pages/HomePage/HomePage";
+import MyPostsPage from "@/pages/MyPostsPage/MyPostsPage";
 import NotFoundPage from "@/pages/NotFoundPage/NotFoundPage";
+import PostDetailPage from "@/pages/PostDetailPage/PostDetailPage";
 import ProfilePage from "@/pages/ProfilePage/ProfilePage";
 
 export default function AppRoutes() {
@@ -25,8 +30,20 @@ export default function AppRoutes() {
             <Route element={<Layout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/explore" element={<ExplorePage />} />
+                <Route path="/nearby" element={<NearbyPage />} />
+                <Route path="/nearby/:id" element={<LocationDetailPage />} />
+                <Route path="/ai-nutrition" element={<AiNutritionPage />} />
+                <Route path="/posts/:id" element={<PostDetailPage />} />
                 <Route
                     path="/posts/create"
+                    element={
+                        <ProtectedRoute>
+                            <CreatePostPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/posts/:id/edit"
                     element={
                         <ProtectedRoute>
                             <CreatePostPage />
@@ -38,6 +55,14 @@ export default function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <ProfilePage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/my-posts"
+                    element={
+                        <ProtectedRoute>
+                            <MyPostsPage />
                         </ProtectedRoute>
                     }
                 />
@@ -90,6 +115,7 @@ export default function AppRoutes() {
                 <Route path="videos" element={<VideosPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="users" element={<UsersPage />} />
+                <Route path="profile" element={<ProfilePage embedded />} />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />

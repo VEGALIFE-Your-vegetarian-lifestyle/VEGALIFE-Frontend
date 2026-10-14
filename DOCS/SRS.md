@@ -1,5 +1,57 @@
 # SRS — VEGALIFE
 
+## Mục lục
+
+> Tài liệu 2000+ dòng. Đọc mục lục trước rồi mở đúng khoảng dòng cần dùng.
+
+| Mục | Dòng | Nội dung |
+|---|---|---|
+| 0 | 55 | Thông tin tài liệu |
+| 1 | 80 | Giới thiệu, mục tiêu, tiêu chí thành công |
+| 2 | 123 | Phạm vi hệ thống (MVP / SHOULD / LATER) |
+| 3 | 164 | Actors và ma trận phân quyền |
+| 4 | 210 | Authentication & quản lý phiên (luồng login, token, logout) |
+| 5 | 272 | Domain model & **state machine** (5.1 model dòng 274, 5.2 transitions dòng 301) |
+| 6 | 404 | **Yêu cầu chức năng** — FR-01…FR-11, xem bảng dưới |
+| 7 | 896 | Business Rules & Policy |
+| 8 | 1029 | Main Flows & Use Cases |
+| 9 | 1166 | Màn hình và Route (có cột "Dựng" đối chiếu code thật) |
+| 10 | 1229 | Data Model |
+| 11 | 1321 | API Requirements |
+| 12 | 1537 | Error Codes |
+| 13 | 1578 | Transaction & Concurrency |
+| 14 | 1612 | Non-functional Requirements |
+| 15 | 1673 | UI States |
+| 16 | 1708 | Acceptance Criteria |
+| 17 | 1739 | Test Strategy (17.6 = suite Vitest đã có) |
+| 18 | 1822 | Kiến trúc đề xuất |
+| 19 | 1938 | Seed Data & Demo |
+| 20 | 2011 | Kế hoạch triển khai (có cột trạng thái FE) |
+| 21 | 2080 | Definition of Done |
+| 22 | 2110 | Quyết định mặc định / Câu hỏi mở |
+| 23 | 2133 | Thuật ngữ |
+| 24 | 2162 | Kết luận |
+
+### FR-01 … FR-11 (mục 6)
+
+Mỗi FR có một dòng `> **FE:**` ghi trạng thái frontend thật.
+
+| Mã | Dòng | Module | FE |
+|---|---|---|---|
+| FR-01 | 406 | Authentication | ✅ trừ Google OAuth |
+| FR-02 | 471 | User Profile | 🟡 thiếu BMI |
+| FR-03 | 507 | Blog Posts | 🟡 search client-side, thiếu vote |
+| FR-04 | 584 | Videos | 🟡 thiếu upload video |
+| FR-05 | 620 | Comments & Votes | 🟡 gửi OK, đọc còn mock |
+| FR-06 | 666 | Categories | ✅ thiếu restore/permanent delete |
+| FR-07 | 689 | Weekly Meal Plan | ⬜ chưa dựng |
+| FR-08 | 752 | Location Search | 🟡 UI xong, service mock |
+| FR-09 | 795 | Food/Recipe Search | ⬜ chưa dựng |
+| FR-10 | 817 | AI Nutrition Chatbot | 🟡 trả lời tĩnh |
+| FR-11 | 858 | Admin Content Moderation | 🟡 thiếu comments/payments |
+
+---
+
 ## 0. Thông tin tài liệu
 
 | Trường | Giá trị |
@@ -8,7 +60,7 @@
 | **Loại sản phẩm** | Web Application (Full-stack) |
 | **Đối tượng** | Người ăn chay, người quan tâm đến chế độ ăn chay |
 | **Phiên bản** | 1.0.0-MVP |
-| **Trạng thái** | Draft |
+| **Trạng thái** | Draft — tài liệu này là **spec gốc**. Trạng thái thực thi nằm ở dòng `> **FE:**` trong §6, cột "Dựng" ở §9, và cột "FE" ở §20 |
 | **Nguồn tham chiếu** | Backend: `VEGALIFE-backend`, Frontend: `VEGALIFE-Frontend` |
 | **Ký hiệu ưu tiên** | [MVP] = Must-have cho MVP · [SHOULD] = Nên có sau MVP · [LATER] = Backlog |
 
@@ -353,6 +405,9 @@ Xây dựng một web platform hoàn chỉnh cho phép:
 
 ### FR-01 - Authentication [MVP]
 
+> **FE:** ✅ đủ — register, login, refresh, logout, verify email, quên mật khẩu.
+> **Trừ Google OAuth**: nút "Continue with Google" chỉ báo `featureDeveloping`.
+
 #### FR-01-01: Register Account
 
 **Acceptance Criteria:**
@@ -415,6 +470,9 @@ Scenario: User logs out
 
 ### FR-02 - User Profile [MVP]
 
+> **FE:** 🟡 xem/sửa hồ sơ OK (`GET`/`PUT /api/profile`). **BMI chưa có** trên UI.
+> `GET /api/profile/{userId}` (hồ sơ công khai) backend chưa có.
+
 #### FR-02-01: View Own Profile
 
 **Acceptance Criteria:**
@@ -447,6 +505,10 @@ Scenario: Invalid height/weight values are rejected
 ```
 
 ### FR-03 - Blog Posts [MVP]
+
+> **FE:** 🟡 tạo/sửa/xoá/chi tiết/feed OK (`POST`/`PATCH`/`DELETE /api/posts`, `/api/posts/feed`).
+> **Tìm kiếm và lọc lọc ở client** trên tối đa 60 bài feed — backend chưa có tham số.
+> **Vote chưa có.**
 
 #### FR-03-01: Create Blog Post
 
@@ -521,6 +583,9 @@ Scenario: Admin deletes any post
 
 ### FR-04 - Videos [MVP]
 
+> **FE:** 🟡 admin xem danh sách + xoá OK (`GET /api/admin/videos`, `DELETE /api/media/{id}`).
+> **Upload video thật chưa có** — form tạo bài vẫn nhập tay `videoUrl` / `mediaId`.
+
 #### FR-04-01: Upload Video
 
 **Acceptance Criteria:**
@@ -553,6 +618,10 @@ Scenario: Guest views video feed
 ```
 
 ### FR-05 - Comments & Votes [MVP]
+
+> **FE:** 🟡 gửi bình luận OK (`POST /api/posts/{id}/comments`), form chỉ hiện khi đăng nhập.
+> **Đọc danh sách comment còn mock** (chờ issue #41); reply lồng (`parentId`) có ở service
+> nhưng UI chưa mở. **Vote chưa có** — backend chưa có API.
 
 #### FR-05-01: Comment on Post
 
@@ -596,6 +665,10 @@ Scenario: User cannot vote twice on same type
 
 ### FR-06 - Categories [MVP]
 
+> **FE:** ✅ admin CRUD + retire (soft delete) + export CSV + tìm kiếm/sort/phân trang.
+> **Không có restore hay permanent delete** — backend chưa có endpoint. Danh sách admin
+> dùng tạm `GET /api/categories` nên không thấy được category đã retire.
+
 #### FR-06-01: Manage Categories (Admin)
 
 **Acceptance Criteria:**
@@ -614,6 +687,8 @@ Scenario: Admin assigns category to post
 ```
 
 ### FR-07 - Weekly Meal Plan [MVP]
+
+> **FE:** ⬜ **chưa dựng** — không có route, service hay màn hình nào.
 
 #### FR-07-01: Create Meal Plan Based on BMI (Paid Feature)
 
@@ -676,6 +751,9 @@ Scenario: User views their weekly menu
 
 ### FR-08 - Location Search [MVP]
 
+> **FE:** 🟡 UI xong (`/nearby`, `/nearby/:id`) nhưng `nearbyService` vẫn **mock 5 địa điểm**.
+> Nối API chỉ cần thay thân service, UI không phải sửa. Bản đồ là placeholder.
+
 #### FR-08-01: Search Nearby Vegan Shops/Restaurants
 
 **Acceptance Criteria:**
@@ -716,6 +794,8 @@ Scenario: Get suggested shops related to searched food
 
 ### FR-09 - Food/Recipe Search [MVP]
 
+> **FE:** ⬜ **chưa dựng** — không có route, service hay màn hình nào.
+
 #### FR-09-01: Search Recipes, Videos, Blogs
 
 **Acceptance Criteria:**
@@ -735,6 +815,9 @@ Scenario: Get suggested videos/blogs for recipe
 ```
 
 ### FR-10 - AI Nutrition Chatbot [MVP]
+
+> **FE:** 🟡 UI xong tại `/ai-nutrition` nhưng **trả lời bằng chuỗi tĩnh**.
+> BMI & protein target tính client-side. Backend chưa có `/api/ai/*`.
 
 #### FR-10-01: Chat with AI Bot
 
@@ -773,6 +856,10 @@ Scenario: Ask ingredient substitution
 ```
 
 ### FR-11 - Admin Content Moderation [MVP]
+
+> **FE:** 🟡 posts (`/admin/posts`, moderate PUBLISH/UNPUBLISH), videos (`/admin/videos`),
+> users (`/admin/users`, suspend/restore), categories (`/admin/categories`) đã nối API thật.
+> **Comments, payments, recipes chưa làm** — backend cũng chưa có endpoint.
 
 #### FR-11-01: Moderate Comments
 
@@ -1078,50 +1165,64 @@ Scenario: Admin views member list
 
 ## 9. Màn hình và Route
 
+> **Cột "Dựng"** đối chiếu với code thật tại `src/routes/index.tsx`.
+> `✅` = đã có route và màn hình · `⬜` = mới là thiết kế, **chưa dựng**.
+> Route thật là nguồn duy nhất — bảng dưới giữ nguyên thiết kế ban đầu để đối chiếu.
+
 ### 9.1 Public Shell (Guest)
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/` | HomePage | Hero banner, featured posts, trending videos |
-| `/blog` | BlogPage | List of published blog posts |
-| `/blog/:id` | BlogDetailPage | Full blog post content + comments |
-| `/videos` | VideoPage | Grid of cooking tutorial videos |
-| `/video/:id` | VideoDetailPage | Video player + metadata |
-| `/restaurants` | RestaurantPage | Map/list of vegan shops |
-| `/search` | SearchPage | Global search interface |
-| `/chatbot` | ChatbotPage | AI Nutrition Chatbot (limited for guest) |
-| `/register` | Auth/Register | Registration form |
-| `/login` | Auth/Login | Login form |
-| `/*` | NotFoundPage | 404 page |
+| Route | Component | Description | Dựng |
+|-------|-----------|-------------|------|
+| `/` | HomePage | Hero banner, featured posts, trending videos | ✅ |
+| `/explore` | ExplorePage | Danh sách bài viết (thay cho `/blog`) | ✅ |
+| `/posts/:id` | PostDetailPage | Chi tiết bài + bình luận (thay cho `/blog/:id`) | ✅ |
+| `/nearby` | NearbyPage | Tìm quán chay theo vị trí (thay cho `/restaurants`) | ✅ |
+| `/nearby/:id` | LocationDetailPage | Chi tiết địa điểm | ✅ |
+| `/ai-nutrition` | AiNutritionPage | AI Nutrition Chatbot (thay cho `/chatbot`) | ✅ |
+| `/register` | Auth/Register | Registration form | ✅ |
+| `/login` | Auth/Login | Login form | ✅ |
+| `/verify-email` | VerifyEmailPage | Nhập OTP xác thực email | ✅ |
+| `/forgot-password` | ForgotPasswordPage | Quên mật khẩu | ✅ |
+| `/blog` | BlogPage | List of published blog posts | ⬜ |
+| `/blog/:id` | BlogDetailPage | Full blog post content + comments | ⬜ |
+| `/videos` | VideoPage | Grid of cooking tutorial videos | ⬜ |
+| `/video/:id` | VideoDetailPage | Video player + metadata | ⬜ |
+| `/restaurants` | RestaurantPage | Map/list of vegan shops | ⬜ |
+| `/search` | SearchPage | Global search interface | ⬜ |
+| `/chatbot` | ChatbotPage | AI Nutrition Chatbot (limited for guest) | ⬜ |
+| `/*` | NotFoundPage | 404 page | ✅ |
 
 ### 9.2 User Shell (Authorized User)
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/dashboard` | HomePage | Personalized feed |
-| `/profile` | ProfilePage | View/edit own profile + BMI metrics |
-| `/profile/edit` | Profile/Edit | Edit profile form |
-| `/blog/create` | CreatePostPage | Create new blog post |
-| `/blog/:id/edit` | EditPostPage | Edit existing post |
-| `/my-posts` | Profile/MyPosts | List of user's own posts |
-| `/videos/upload` | UploadVideoPage | Upload cooking video |
-| `/meal-plan` | MealPlanPage | View/create weekly meal plan |
-| `/meal-plan/create` | MealPlan/Create | Create new meal plan wizard |
-| `/restaurants` | RestaurantPage | Search vegan shops |
-| `/search` | SearchPage | Global search |
-| `/chatbot` | ChatbotPage | Full AI Chatbot access |
+| Route | Component | Description | Dựng |
+|-------|-----------|-------------|------|
+| `/posts/create` | CreatePostPage | Tạo bài mới (thay cho `/blog/create`) | ✅ |
+| `/posts/:id/edit` | CreatePostPage (edit) | Sửa bài có sẵn (thay cho `/blog/:id/edit`) | ✅ |
+| `/profile` | ProfilePage | Xem/sửa hồ sơ | ✅ |
+| `/my-posts` | MyPostsPage | Danh sách bài của mình | ✅ |
+| `/dashboard` | HomePage | Personalized feed | ⬜ |
+| `/profile/edit` | Profile/Edit | Edit profile form | ⬜ |
+| `/blog/create` | CreatePostPage | Create new blog post | ⬜ |
+| `/blog/:id/edit` | EditPostPage | Edit existing post | ⬜ |
+| `/videos/upload` | UploadVideoPage | Upload cooking video | ⬜ |
+| `/meal-plan` | MealPlanPage | View/create weekly meal plan | ⬜ |
+| `/meal-plan/create` | MealPlan/Create | Create new meal plan wizard | ⬜ |
+| `/restaurants` | RestaurantPage | Search vegan shops | ⬜ |
+| `/search` | SearchPage | Global search | ⬜ |
+| `/chatbot` | ChatbotPage | Full AI Chatbot access | ⬜ |
 
 ### 9.3 Admin Shell
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/admin/dashboard` | Admin/Dashboard | Stats overview |
-| `/admin/users` | Admin/Users | Manage registered members |
-| `/admin/posts` | Admin/Posts | Manage all blog posts |
-| `/admin/videos` | Admin/Videos | Manage all videos |
-| `/admin/comments` | Admin/Comments | Moderate comments |
-| `/admin/categories` | Admin/Categories | CRUD categories |
-| `/admin/locations` | Admin/Locations | Manage shop/restaurant entries |
+| Route | Component | Description | Dựng |
+|-------|-----------|-------------|------|
+| `/admin/dashboard` | Admin/Dashboard | Stats overview | ✅ |
+| `/admin/users` | Admin/Users | Manage registered members | ✅ |
+| `/admin/posts` | Admin/Posts | Manage all blog posts | ✅ |
+| `/admin/videos` | Admin/Videos | Manage all videos | ✅ |
+| `/admin/categories` | Admin/Categories | CRUD categories | ✅ |
+| `/admin/profile` | ProfilePage (embedded) | Hồ sơ admin | ✅ |
+| `/admin/comments` | Admin/Comments | Moderate comments | ⬜ |
+| `/admin/locations` | Admin/Locations | Manage shop/restaurant entries | ⬜ |
 
 ---
 
@@ -1705,6 +1806,17 @@ void toggleVote_upvoteThenDownvote_resultsInDownvote() {
 | k6 | API search | 500 req/s |
 | k6 | Video upload | 50 concurrent uploads |
 
+### 17.6 Frontend Tests (đã có)
+
+`DOCS/TEST-COVERAGE.md` — **Vitest 5 + Testing Library + jsdom**. Test gọi **backend thật**,
+không mock API, nên bắt được cả sai lệch shape response giữa FE và BE. Test cần tài khoản
+tự `skip` khi thiếu `E2E_USER_*` / `E2E_ADMIN_*`; test ghi dữ liệu thật nằm sau
+`E2E_ALLOW_WRITES=1`. Chạy: `npm test`.
+
+11 file: 4 test service (`auth`, `post`, `category`, `admin`+`video`+`dashboard`),
+7 test screen (`Login`, `Register`, `PostDetail`, `CreatePost` + `payload`,
+`Admin pages`, `AdminDashboard`).
+
 ---
 
 ## 18. Kiến trúc đề xuất
@@ -1898,56 +2010,59 @@ INSERT INTO location (id, name, address, latitude, longitude, place_type, rating
 
 ## 20. Kế hoạch triển khai
 
+> **Cột "FE"** chỉ đánh giá phần **frontend trong repo này**. Backend nằm ở repo
+> `VEGALIFE-backend`, không kiểm chứng được từ đây nên để `—`.
+
 ### Phase 1: Foundation (Weeks 1–3) [MVP]
 
-| Task | Duration | Deliverable |
-|------|----------|-------------|
-| Setup project scaffolding (backend + frontend) | 3 days | Repo structure, CI pipeline |
-| Database schema + Flyway migrations | 4 days | All SQL migration files |
-| Authentication module (register, login, JWT) | 5 days | Auth API + login/register UI |
-| User profile module (CRUD + BMI) | 4 days | Profile API + profile UI |
-| Basic layout shells (Public, User, Admin) | 3 days | Route structure, shell components |
+| Task | Duration | Deliverable | FE |
+|------|----------|-------------|-----|
+| Setup project scaffolding (backend + frontend) | 3 days | Repo structure, CI pipeline | ✅ |
+| Database schema + Flyway migrations | 4 days | All SQL migration files | — |
+| Authentication module (register, login, JWT) | 5 days | Auth API + login/register UI | ✅ |
+| User profile module (CRUD + BMI) | 4 days | Profile API + profile UI | 🟡 thiếu BMI |
+| Basic layout shells (Public, User, Admin) | 3 days | Route structure, shell components | ✅ |
 
 ### Phase 2: Core Content (Weeks 4–6) [MVP]
 
-| Task | Duration | Deliverable |
-|------|----------|-------------|
-| Blog Posts module (CRUD + publish flow) | 7 days | Post API + create/edit/view UI |
-| Comments module (nested + moderation) | 5 days | Comment API + UI |
-| Vote module (upvote/downvote) | 3 days | Vote API + UI |
-| Categories module (Admin CRUD) | 3 days | Category API + admin UI |
-| Media module (upload + processing) | 5 days | Media API + upload UI |
+| Task | Duration | Deliverable | FE |
+|------|----------|-------------|-----|
+| Blog Posts module (CRUD + publish flow) | 7 days | Post API + create/edit/view UI | ✅ |
+| Comments module (nested + moderation) | 5 days | Comment API + UI | 🟡 chỉ gửi được, đọc còn mock |
+| Vote module (upvote/downvote) | 3 days | Vote API + UI | ⬜ |
+| Categories module (Admin CRUD) | 3 days | Category API + admin UI | ✅ |
+| Media module (upload + processing) | 5 days | Media API + upload UI | 🟡 ảnh OK, video chưa |
 
 ### Phase 3: Features (Weeks 7–9) [MVP]
 
-| Task | Duration | Deliverable |
-|------|----------|-------------|
-| Video feed + detail page | 4 days | Video API + video UI |
-| Meal Plan module (create + generate) | 7 days | Meal plan API + wizard UI |
-| Location module (nearby search) | 5 days | Location API + map UI |
-| Global Search module | 4 days | Search API + search UI |
-| AI Chatbot integration | 5 days | Chatbot API + chat UI |
+| Task | Duration | Deliverable | FE |
+|------|----------|-------------|-----|
+| Video feed + detail page | 4 days | Video API + video UI | 🟡 chỉ admin list |
+| Meal Plan module (create + generate) | 7 days | Meal plan API + wizard UI | ⬜ |
+| Location module (nearby search) | 5 days | Location API + map UI | 🟡 UI xong, service mock |
+| Global Search module | 4 days | Search API + search UI | ⬜ |
+| AI Chatbot integration | 5 days | Chatbot API + chat UI | 🟡 UI xong, trả lời tĩnh |
 
 ### Phase 4: Admin & Polish (Weeks 10–11) [MVP]
 
-| Task | Duration | Deliverable |
-|------|----------|-------------|
-| Admin dashboard + user management | 4 days | Admin UI |
-| Admin content moderation | 3 days | Moderation UI |
-| Admin category/location management | 3 days | Admin management UI |
-| Responsive design polish | 3 days | Mobile-friendly UI |
-| Error states, loading states, empty states | 3 days | Complete UX coverage |
+| Task | Duration | Deliverable | FE |
+|------|----------|-------------|-----|
+| Admin dashboard + user management | 4 days | Admin UI | 🟡 dashboard còn mock |
+| Admin content moderation | 3 days | Moderation UI | 🟡 posts/videos OK |
+| Admin category/location management | 3 days | Admin management UI | 🟡 categories OK, locations ⬜ |
+| Responsive design polish | 3 days | Mobile-friendly UI | ✅ |
+| Error states, loading states, empty states | 3 days | Complete UX coverage | ✅ |
 
 ### Phase 5: Testing & Deployment (Weeks 12–13) [MVP]
 
-| Task | Duration | Deliverable |
-|------|----------|-------------|
-| Unit tests (backend) | 4 days | ≥ 80% coverage |
-| Integration tests (backend) | 4 days | All critical paths tested |
-| E2E tests (frontend) | 4 days | Critical user flows |
-| Performance tuning | 3 days | Meet p95 targets |
-| Docker setup + deployment scripts | 3 days | Deployable containers |
-| Documentation finalization | 2 days | README, API docs |
+| Task | Duration | Deliverable | FE |
+|------|----------|-------------|-----|
+| Unit tests (backend) | 4 days | ≥ 80% coverage | — |
+| Integration tests (backend) | 4 days | All critical paths tested | — |
+| E2E tests (frontend) | 4 days | Critical user flows | 🟡 Vitest, xem §17.6 |
+| Performance tuning | 3 days | Meet p95 targets | — |
+| Docker setup + deployment scripts | 3 days | Deployable containers | — |
+| Documentation finalization | 2 days | README, API docs | ✅ `DOCS/` |
 
 ### SHOULD Phase (Post-MVP)
 
@@ -1966,26 +2081,29 @@ INSERT INTO location (id, name, address, latitude, longitude, place_type, rating
 
 ### Checklist MVP
 
-- [ ] **Authentication**: Register, login, logout, token refresh working
-- [ ] **User Profile**: View/edit profile, BMI calculation accurate
-- [ ] **Blog Posts**: Create, edit, publish, view, search posts
-- [ ] **Comments**: Add, reply, delete comments (nested)
-- [ ] **Votes**: Upvote, downvote, toggle vote working
-- [ ] **Categories**: Admin CRUD, assign to posts
-- [ ] **Videos**: Upload, process, view video feed
-- [ ] **Meal Plan**: Create plan, auto-generate based on BMI + ingredients
-- [ ] **Locations**: Search nearby vegan shops/restaurants
-- [ ] **Search**: Global search across posts, videos, recipes, locations
-- [ ] **AI Chatbot**: Responds to nutrition questions, guest limit enforced
-- [ ] **Admin Panel**: Manage users, posts, videos, comments, categories
-- [ ] **Responsive Design**: Works on desktop, tablet, mobile
-- [ ] **Error Handling**: All error states covered (loading, empty, error)
-- [ ] **Soft Delete**: All entities support soft delete
-- [ ] **Tests**: Unit ≥ 80%, Integration critical paths, E2E core flows
-- [ ] **API Docs**: Swagger UI accessible and complete
-- [ ] **Docker**: docker-compose up works for dev environment
-- [ ] **Performance**: API p95 ≤ 500ms, page load ≤ 2s
-- [ ] **Security**: BCrypt passwords, JWT auth, input validation, CORS configured
+> Chỉ tick được những dòng **kiểm chứng bằng code trong repo frontend này**. Dòng thuộc
+> backend (Docker, Swagger, BCrypt, p95) để nguyên — không đánh giá được từ đây.
+
+- [x] **Authentication**: Register, login, logout, token refresh working
+- [x] **User Profile**: View/edit profile working — BMI **chưa có**
+- [x] **Blog Posts**: Create, edit, publish, view posts — search lọc client-side
+- [ ] **Comments**: Add comment OK; reply lồng và đọc danh sách còn mock
+- [ ] **Votes**: chưa làm — backend chưa có API
+- [x] **Categories**: Admin CRUD, assign to posts (thiếu restore/permanent delete)
+- [ ] **Videos**: admin list + xoá OK; upload video thật chưa có
+- [ ] **Meal Plan**: chưa dựng
+- [ ] **Locations**: UI xong, service còn mock
+- [ ] **Search**: chưa dựng
+- [ ] **AI Chatbot**: UI xong, trả lời tĩnh
+- [x] **Admin Panel**: users, posts, videos, categories OK — comments/locations chưa
+- [x] **Responsive Design**: Works on desktop, tablet, mobile
+- [x] **Error Handling**: All error states covered (loading, empty, error)
+- [x] **Soft Delete**: post + category + user đều soft delete
+- [ ] **Tests**: có suite Vitest (§17.6); backend coverage ngoài phạm vi
+- [ ] **API Docs**: Swagger UI — backend
+- [ ] **Docker**: backend/hạ tầng
+- [ ] **Performance**: p95 ≤ 500ms, page load ≤ 2s — backend/chưa đo
+- [ ] **Security**: BCrypt/JWT/CORS — backend; FE validate ở mọi form
 
 ---
 
