@@ -1,5 +1,5 @@
-// Media upload status machine — SRS 5.2
-export type VideoStatus = "pending" | "uploading" | "succeed" | "failed";
+// Media upload status machine — SRS 5.2. Backend chỉ có 3 state này (không có "pending").
+export type VideoStatus = "uploading" | "succeed" | "failed";
 
 export interface Video {
     id: string;

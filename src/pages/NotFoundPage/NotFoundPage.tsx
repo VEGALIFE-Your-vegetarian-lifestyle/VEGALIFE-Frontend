@@ -1,18 +1,21 @@
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { SearchX } from "lucide-react";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { Button } from "@/components/ui/button";
 
 export default function NotFoundPage() {
+    const { t } = useTranslation("common");
+
     return (
         <div className="mx-auto max-w-7xl px-4 py-16">
             <EmptyState
                 icon={SearchX}
-                title="Không tìm thấy trang"
-                description="Trang bạn tìm không tồn tại hoặc đã được di chuyển."
+                title={t("notFound.title")}
+                description={t("notFound.description")}
                 action={
-                    <Link to="/admin/posts">
-                        <Button>Về trang chủ</Button>
+                    <Link to="/">
+                        <Button>{t("notFound.backHome")}</Button>
                     </Link>
                 }
             />

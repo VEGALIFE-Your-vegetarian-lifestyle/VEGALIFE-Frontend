@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Leaf, MapPin, Utensils } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, Leaf, Lock, Sparkles, Utensils } from "lucide-react";
 
 interface AuthLayoutProps {
     children: ReactNode;
@@ -8,77 +9,84 @@ interface AuthLayoutProps {
     subtitle: string;
 }
 
-const AUTH_BG_IMAGE = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1600&auto=format&fit=crop";
+const SHOWCASE_IMAGE = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1200&auto=format&fit=crop";
 
+/**
+ * Layout xác thực 2 panel nền sáng theo mockup.
+ * ponytail: panel trái là gradient mint/tím nhạt dựng bằng CSS, không dùng ảnh nền tối.
+ */
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
+    const { t } = useTranslation("auth");
+
     return (
-        <div className="flex min-h-screen w-full bg-surface">
-            {/* Left side - featured content */}
-            <div className="relative hidden w-1/2 overflow-hidden lg:block">
-                <img
-                    src={AUTH_BG_IMAGE}
-                    alt="Vegan food background"
-                    className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-vegan-green/90 via-vegan-green/70 to-vegan-green/30" />
-
-                <div className="relative z-10 flex h-full flex-col justify-between p-12 text-white">
-                    <div>
-                        <Link to="/" className="flex items-center gap-2 text-white">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                                <Leaf className="h-5 w-5 text-white" />
-                            </div>
-                            <span className="text-xl font-bold tracking-tight">VEGALIFE</span>
-                        </Link>
-                    </div>
-
-                    <div className="max-w-md">
-                        <h2 className="mb-4 text-4xl font-bold leading-tight">
-                            Eat Well. <br /> Live Green.
-                        </h2>
-                        <p className="mb-8 text-lg text-white/90">
-                            Khám phá hàng nghìn công thức thực vật, địa điểm ăn chay và trợ lý dinh dưỡng AI cá nhân hoá.
-                        </p>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
-                                <Utensils className="mb-2 h-6 w-6 text-white/80" />
-                                <p className="text-2xl font-bold">10,000+</p>
-                                <p className="text-sm text-white/70">Plant Recipes</p>
-                            </div>
-                            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
-                                <MapPin className="mb-2 h-6 w-6 text-white/80" />
-                                <p className="text-2xl font-bold">450+</p>
-                                <p className="text-sm text-white/70">Green Spots</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="text-xs text-white/60">
-                        © 2025 VEGALIFE Inc.
-                    </div>
+        <div className="min-h-screen bg-background">
+            {/* Top bar */}
+            <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-8">
+                <Link to="/" className="flex items-center gap-2 text-dark">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-vegan-green-light">
+                        <Leaf className="h-4 w-4 text-vegan-green" aria-hidden="true" />
+                    </span>
+                    <span className="text-base font-bold tracking-tight">{t("common:appName")}</span>
+                </Link>
+                <div className="flex items-center gap-3">
+                    <span className="hidden items-center gap-1.5 text-xs font-semibold text-muted-foreground sm:flex">
+                        <Lock className="h-3.5 w-3.5 text-vegan-green" aria-hidden="true" />
+                        {t("topbar.secure")}
+                    </span>
+                    <Link
+                        to="/"
+                        className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-dark transition hover:border-vegan-green-muted hover:text-vegan-green"
+                    >
+                        <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                        {t("guest")}
+                    </Link>
                 </div>
             </div>
 
-            {/* Right side - form */}
-            <div className="flex w-full flex-col justify-center px-4 py-12 lg:w-1/2 lg:px-16">
-                <div className="mx-auto w-full max-w-md">
-                    <div className="mb-8 lg:hidden">
-                        <Link to="/" className="flex items-center justify-center gap-2 text-dark">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-vegan-green-light">
-                                <Leaf className="h-5 w-5 text-vegan-green" />
-                            </div>
-                            <span className="text-xl font-bold tracking-tight">VEGALIFE</span>
-                        </Link>
+            <div className="mx-auto grid max-w-7xl gap-8 px-4 pb-12 sm:px-8 lg:grid-cols-2 lg:gap-12">
+                {/* Panel trái — giới thiệu, nền gradient sáng */}
+                <section className="relative hidden overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-vegan-green-subtle via-lavender to-cream p-10 lg:flex lg:flex-col lg:justify-between">
+                    <div>
+                        <span className="inline-flex items-center gap-2 rounded-full bg-surface/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-vegan-green backdrop-blur-sm">
+                            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                            {t("split.badge")}
+                        </span>
+                        <h2 className="mt-6 text-4xl font-extrabold leading-tight text-dark">{t("split.headline")}</h2>
+                        <p className="mt-4 max-w-md text-base text-muted-foreground">{t("split.description")}</p>
                     </div>
 
-                    <div className="mb-8">
-                        <h1 className="text-2xl font-bold text-dark sm:text-3xl">{title}</h1>
-                        <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+                    <div className="relative my-8 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+                        <img src={SHOWCASE_IMAGE} alt="" className="h-52 w-full object-cover" />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-dark/80 to-transparent p-4">
+                            <p className="text-sm font-semibold text-white">{t("split.caption")}</p>
+                        </div>
                     </div>
 
-                    {children}
-                </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="rounded-2xl border border-border bg-surface/85 p-4 backdrop-blur-sm">
+                            <Utensils className="mb-2 h-5 w-5 text-vegan-green" aria-hidden="true" />
+                            <p className="text-xl font-bold text-dark">10,000+</p>
+                            <p className="text-xs text-muted-foreground">{t("split.recipes")}</p>
+                        </div>
+                        <div className="rounded-2xl border border-border bg-surface/85 p-4 backdrop-blur-sm">
+                            <Sparkles className="mb-2 h-5 w-5 text-lavender-strong" aria-hidden="true" />
+                            <p className="text-xl font-bold text-dark">4.2</p>
+                            <p className="text-xs text-muted-foreground">{t("split.nutritionModel")}</p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Panel phải — form */}
+                <section className="flex flex-col justify-center py-4 lg:py-10">
+                    <div className="mx-auto w-full max-w-md">
+                        <div className="mb-6">
+                            <h1 className="text-2xl font-bold text-dark sm:text-3xl">{title}</h1>
+                            <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+                        </div>
+
+                        {children}
+                    </div>
+                </section>
             </div>
         </div>
     );

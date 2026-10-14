@@ -13,14 +13,82 @@
     "submit": "Submit",
     "close": "Close",
     "logout": "Logout",
+    "logoutSuccess": "Logged out successfully",
     "home": "Home",
+    "explore": "Explore",
+    "nearby": "Nearby",
+    "aiNutrition": "AI Nutrition",
+    "newPost": "New Post",
+    "myPosts": "My Posts",
     "profile": "Profile",
     "admin": "Admin",
     "login": "Log in",
     "register": "Register",
+    "searchPlaceholder": "Search recipes, ingredients, or tags...",
+    "accountMenu": "Account menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
     "orContinueWith": "Or continue with",
     "featureDeveloping": "Feature under development",
     "loginWithGoogle": "Log in with Google",
     "emptySearch": "No results found.",
-    "clearFilter": "Clear filter"
+    "clearFilter": "Clear filter",
+    "error": "Something went wrong. Please try again.",
+    "footer": {
+        "tagline": "A mindful plant-first community for recipes, culinary masterclasses, and evidence-based nutrition guidance.",
+        "copyright": "© {{year}} VEGALIFE. All rights reserved.",
+        "community": "100% Plant-First Community"
+    },
+    "editor": {
+        "wordCount": "{{count}} words",
+        "bold": "Bold",
+        "italic": "Italic",
+        "h2": "Heading",
+        "h3": "Subheading",
+        "bulletList": "Bulleted list",
+        "orderedList": "Numbered list",
+        "quote": "Quote",
+        "code": "Inline code",
+        "link": "Insert link",
+        "linkPrompt": "Enter the link URL (http:// or https://)",
+        "image": "Insert image",
+        "table": "Insert table",
+        "divider": "Divider",
+        "undo": "Undo",
+        "redo": "Redo",
+        "placeholder": "Share the story behind this dish, the technique, and what makes it work..."
+    },
+    "postStatus": {
+        "created": "Draft",
+        "processed": "Pending review",
+        "published": "Published",
+        "unpublished": "Unpublished"
+    },
+    "postFlag": {
+        "PENDING": "Pending moderation",
+        "PASSED": "Moderation passed",
+        "REJECTED": "Rejected",
+        "NEEDS_REVIEW": "Needs review"
+    },
+    "videoStatus": {
+        "uploading": "Uploading",
+        "succeed": "Succeed",
+        "failed": "Failed"
+    },
+    "errorState": {
+        "title": "Something went wrong",
+        "description": "Could not load the content. Check your connection and try again.",
+        "retry": "Try again"
+    },
+    "notFound": {
+        "title": "Page not found",
+        "description": "The page you are looking for does not exist or has been moved.",
+        "backHome": "Back to home"
+    },
+    "pagination": {
+        "label": "Pagination",
+        "previous": "Previous page",
+        "next": "Next page",
+        "page": "Page {{page}}"
+    }
 }

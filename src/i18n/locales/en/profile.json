@@ -4,6 +4,7 @@
     "back": "Back",
     "logout": "Logout",
     "createPost": "Create Post",
+    "myPosts": "My Posts",
     "save": "Save Changes",
     "saving": "Saving...",
     "success": "Profile updated successfully",
@@ -32,5 +33,56 @@
         "normal": "Normal",
         "overweight": "Overweight",
         "obese": "Obese"
+    },
+    "verifiedAuthor": "Verified Plant-Based Author",
+    "contributorAccount": "Contributor Account",
+    "joined": "Joined {{date}}",
+    "editProfile": "Edit Profile",
+    "newContent": "New Content",
+    "stats": {
+        "published": "Published Posts",
+        "videos": "Cooking Videos",
+        "saved": "Saved Content",
+        "contributions": "Contributions (Votes & Comments)"
+    },
+    "tab": {
+        "posts": "My Posts",
+        "videos": "My Videos",
+        "saved": "Saved Recipes",
+        "activity": "My Activity"
+    },
+    "filterPosts": "Filter my posts...",
+    "statusLabel": "STATUS:",
+    "statusAll": "All",
+    "statusPublished": "Published",
+    "statusDraft": "Drafts",
+    "draftVisible": "Draft - Visible only to you",
+    "unpublishedDraft": "Unpublished draft",
+    "continueEditing": "Continue Editing",
+    "editPost": "Edit Post",
+    "deletePost": "Delete Post",
+    "unpublishAction": "Unpublish",
+    "savedYesterday": "Saved yesterday",
+    "activityTitle": "Recent Community Activity",
+    "activitySubtitle": "Real-time interactions",
+    "empty": {
+        "posts": "You have not written any posts yet.",
+        "postsHint": "Share your first plant-based recipe or story with the community.",
+        "videos": "You have not uploaded any videos yet.",
+        "saved": "You have not saved any recipes yet.",
+        "activity": "No community activity yet.",
+        "action": "Write a post"
+    },
+    "unsupported": {
+        "title": "Coming soon",
+        "description": "This section is waiting for its backend API."
+    },
+    "confirm": {
+        "unpublishTitle": "Unpublish this post?",
+        "unpublishBody": "\"{{title}}\" will go back to draft and disappear from the public feed.",
+        "unpublishConfirm": "Unpublish",
+        "deleteTitle": "Delete this post?",
+        "deleteBody": "\"{{title}}\" will be removed and no longer visible publicly.",
+        "deleteConfirm": "Delete post"
     }
 }

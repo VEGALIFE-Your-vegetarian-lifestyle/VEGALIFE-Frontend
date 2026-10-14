@@ -1,5 +1,6 @@
 import { api, refreshAccessToken } from "@/services/api";
 import { useAuthStore } from "@/stores/authStore";
+import type { ApiResponse } from "@/types/common";
 import type {
     ForgotPasswordRequest,
     LoginRequest,
@@ -12,12 +13,6 @@ import type {
     VerifyEmailResponse,
     VerifyPasswordResetRequest,
 } from "@/types/user";
-
-interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
-}
 
 export async function register(request: RegisterRequest): Promise<RegisterResponse> {
     const response = await api.post<ApiResponse<RegisterResponse>>("/api/auth/register", request);

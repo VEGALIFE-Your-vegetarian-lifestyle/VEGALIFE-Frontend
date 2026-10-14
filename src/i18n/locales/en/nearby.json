@@ -1,0 +1,99 @@
+{
+    "directoryLabel": "Local Plant Community Directory / Pacific Northwest Hub",
+    "title": "Nearby Vegan Places",
+    "subtitle": "Discover 100% plant-based restaurants, organic cafes, and vegan specialty shops near you.",
+    "locationNotice": "Location access enabled. Showing accurate distances from your current GPS location in Portland, OR.",
+    "changeLocation": "Change Permission / Enter Zip",
+    "areaPlaceholder": "Downtown Portland, OR (Within 5 miles)",
+    "gpsRefresh": "GPS Refresh",
+    "splitView": "Split View",
+    "listOnly": "List Only",
+    "verified": "Verified",
+    "sortBy": "Sort by",
+    "sort": {
+        "distance": "Closest first",
+        "rating": "Highest rated",
+        "reviews": "Most reviewed"
+    },
+    "sortStrict": "Sorted strictly: Closest to Farthest",
+    "view": {
+        "split": "Split",
+        "list": "List",
+        "map": "Map"
+    },
+    "recipeFinder": {
+        "title": "Recipe Finder Integration",
+        "subtitle": "Match a dish you already love to the nearest kitchen serving it today.",
+        "cta": "Find my match"
+    },
+    "recipeMatch": "Recipe Match: {{dish}}",
+    "viewDetails": "View Details",
+    "directions": "Directions",
+    "mapTitle": "VEGALIFE Map Canvas",
+    "mapPlaceholder": "Interactive map requires a maps provider key.",
+    "filter": {
+        "all": "All Places",
+        "restaurant": "100% Vegan Restaurant",
+        "cafe": "Vegetarian Cafe",
+        "bakery": "Plant-Based Bakery",
+        "market": "Organic Grocery & Market"
+    },
+    "empty": {
+        "title": "No places in this category",
+        "description": "Try another filter or widen your search radius.",
+        "action": "Show all places"
+    },
+    "error": "Unable to load nearby places. Please try again.",
+    "detail": {
+        "back": "Back to Nearby Vegan Places",
+        "farmDirect": "Farm Direct",
+        "getDirections": "Get Directions",
+        "saveToFavorites": "Save to Favorites",
+        "share": "Share",
+        "verifiedReviews": "{{count}} verified community reviews",
+        "distance": "Distance",
+        "status": "Status Today",
+        "openNow": "Open · {{hours}}",
+        "closed": "Closed",
+        "priceLevel": "Price Level",
+        "ethics": "Ethics",
+        "ethicsValue": "100% Plant + Organic",
+        "aboutTitle": "About {{name}}",
+        "sustainability": {
+            "solar": "100% Solar Powered",
+            "farmPartners": "35 Local Farm Partners",
+            "zeroWaste": "Zero-Waste Certified"
+        },
+        "photoCount": "{{count}} / 18 Photos",
+        "galleryLabels": {
+            "interior": "Dining Room",
+            "kitchen": "Open Kitchen",
+            "plating": "Seasonal Plating"
+        },
+        "insiderTip": "Insider Tip",
+        "openNowBadge": "Open Now",
+        "verifiedNote": "Every review and dietary claim on this page is verified by the VEGALIFE community team.",
+        "locationTitle": "Location & Map",
+        "openInMaps": "Open in Google Maps",
+        "parkingNote": "Street metered parking available on NW 12th & NW Kearney.",
+        "transitNote": "2 mins walk from NW 5th Streetcar station.",
+        "hoursTitle": "Opening Hours",
+        "today": "Today",
+        "contactTitle": "Contact & Links",
+        "dishesTitle": "Popular Plant-Based Foods",
+        "dishesSubtitle": "Signature community favorites curated by diners, with rice, prebiotics, and ingredients.",
+        "communityRecipeMatch": "Community Recipe Match",
+        "cookAtHome": "Cook this at home via the VEGALIFE recipe",
+        "dietaryTitle": "Dietary & Allergen Transparency",
+        "dietarySubtitle": "We provide verified transparency so every plant-based diner can order with absolute peace of mind.",
+        "reviewsTitle": "Community Reviews & Tips",
+        "totalReviews": "{{count}} Total Reviews",
+        "helpful": "Helpful",
+        "notFound": {
+            "title": "Location not found",
+            "description": "This place does not exist in our directory.",
+            "action": "Back to Nearby"
+        },
+        "error": "Unable to load this location. Please try again."
+    }
+}

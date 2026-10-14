@@ -9,7 +9,38 @@
         "quickManagement": "Quản lý nhanh",
         "guideTitle": "Hướng dẫn",
         "openCategoryManagement": "Mở quản lý danh mục",
-        "adminLabel": "Quản trị viên"
+        "adminLabel": "Quản trị viên",
+        "metricDescription": {
+            "totalCategories": "Tất cả danh mục trong hệ thống",
+            "activeCategories": "Danh mục đang được dùng",
+            "softDeletedCategories": "Danh mục đã ngừng sử dụng",
+            "associatedContent": "Bài viết, công thức và video liên kết"
+        },
+        "quickLink": {
+            "categories": "Danh mục",
+            "posts": "Bài viết",
+            "videos": "Video",
+            "users": "Người dùng"
+        },
+        "manageBadge": "Quản lý",
+        "nav": {
+            "label": "Điều hướng quản trị",
+            "comingSoon": "Sắp ra mắt",
+            "toggleSidebar": "Bật/tắt thanh bên",
+            "dashboard": "Tổng quan",
+            "users": "Người dùng",
+            "posts": "Bài viết",
+            "videos": "Video",
+            "comments": "Bình luận",
+            "categories": "Danh mục",
+            "locations": "Địa điểm",
+            "profile": "Hồ sơ"
+        },
+        "guide": {
+            "retire": "Danh mục đang dùng chỉ có thể ngừng sử dụng, không xóa hẳn.",
+            "restore": "Danh mục đã xóa mềm có thể khôi phục hoặc xóa vĩnh viễn.",
+            "access": "Quản trị viên truy cập được mọi mục quản trị."
+        }
     },
     "categories": {
         "title": "Quản lý danh mục",
@@ -50,6 +81,15 @@
             "title": "Chưa có danh mục nào",
             "description": "Tạo danh mục đầu tiên để phân loại bài viết và video."
         },
+        "form": {
+            "createTitle": "Tạo danh mục mới",
+            "editTitle": "Chỉnh sửa danh mục",
+            "nameLabel": "Tên danh mục",
+            "namePlaceholder": "Nhập tên danh mục",
+            "descriptionLabel": "Mô tả",
+            "descriptionPlaceholder": "Nhập mô tả ngắn cho danh mục",
+            "save": "Lưu thay đổi"
+        },
         "toast": {
             "created": "Đã tạo danh mục",
             "updated": "Đã cập nhật danh mục",
@@ -63,11 +103,14 @@
     },
     "posts": {
         "title": "Bài viết",
-        "description": "Duyệt, ẩn hoặc xóa bài viết của cộng đồng.",
+        "description": "Duyệt, ngừng đăng hoặc xóa bài viết của cộng đồng.",
         "create": {
             "title": "Tạo bài viết",
             "description": "Tạo bài viết blog hoặc video mới.",
             "button": "Tạo bài viết"
+        },
+        "edit": {
+            "title": "Sửa bài viết"
         },
         "form": {
             "contentFormat": "Định dạng nội dung",
@@ -80,10 +123,7 @@
             "contentPlaceholderVideo": "Nhập mô tả video (tùy chọn)...",
             "featuredImageUrlLabel": "URL ảnh bìa",
             "featuredImageUrlPlaceholder": "https://example.com/image.jpg",
-            "videoUrlLabel": "URL video",
-            "videoUrlPlaceholder": "https://example.com/video.mp4",
-            "mediaIdLabel": "Media ID",
-            "mediaIdPlaceholder": "Nhập media UUID",
+            "videoFileLabel": "File video",
             "categoryLabel": "Danh mục",
             "categoryPlaceholder": "Chọn danh mục",
             "categorySelected": "đã chọn",
@@ -98,11 +138,205 @@
             "invalidImageType": "Vui lòng chọn file ảnh",
             "imageTooLarge": "Ảnh không được vượt quá 5MB",
             "removeImage": "Xóa ảnh",
-            "videoSourceRequired": "Vui lòng nhập video URL hoặc Media ID"
+            "dropzoneTitle": "Kéo thả ảnh bìa vào đây",
+            "dropzoneHint": "PNG hoặc JPG, tối đa 5MB. Ảnh ngang tỉ lệ 16:9 là đẹp nhất.",
+            "videoUpload": "Tải video lên",
+            "videoFailed": "Tải video thất bại",
+            "videoInvalidType": "Vui lòng chọn file video",
+            "videoTooLarge": "Video không được vượt quá 100MB",
+            "videoRemove": "Xóa video",
+            "videoDropzoneTitle": "Kéo thả file video vào đây",
+            "videoDropzoneHint": "MP4 hoặc WebM, tối đa 100MB.",
+            "videoSourceRequired": "Vui lòng tải file video lên"
         },
         "toast": {
             "created": "Đã tạo bài viết",
-            "failed": "Tạo bài viết thất bại. Vui lòng thử lại."
+            "updated": "Đã cập nhật bài viết",
+            "failed": "Tạo bài viết thất bại. Vui lòng thử lại.",
+            "approved": "Đã duyệt bài viết",
+            "rejected": "Đã từ chối bài viết",
+            "unpublished": "Đã ngừng đăng bài viết",
+            "deleted": "Đã xóa bài viết",
+            "actionFailed": "Thao tác thất bại. Vui lòng thử lại."
+        },
+        "list": {
+            "searchPlaceholder": "Tìm theo tiêu đề hoặc tác giả",
+            "searchLabel": "Tìm bài viết",
+            "filterLabel": "Lọc theo trạng thái",
+            "allStatuses": "Tất cả trạng thái",
+            "column": {
+                "title": "Tiêu đề",
+                "author": "Tác giả",
+                "status": "Trạng thái",
+                "moderation": "Kiểm duyệt",
+                "views": "Lượt xem",
+                "createdAt": "Ngày tạo",
+                "actions": "Thao tác"
+            },
+            "empty": {
+                "title": "Không có bài viết nào",
+                "filtered": "Không có bài viết khớp với bộ lọc hiện tại.",
+                "all": "Chưa có bài viết nào trên hệ thống.",
+                "clearFilters": "Xóa bộ lọc",
+                "reload": "Tải lại"
+            },
+            "action": {
+                "approve": "Duyệt",
+                "reject": "Từ chối",
+                "unpublish": "Ngừng đăng",
+                "delete": "Xóa"
+            },
+            "confirm": {
+                "deleteTitle": "Xóa bài viết?",
+                "deleteDescription": "Bài viết \"{{title}}\" sẽ bị xóa và không còn hiển thị công khai.",
+                "deleteConfirm": "Xóa bài viết"
+            }
+        },
+        "reject": {
+            "title": "Từ chối bài viết",
+            "postLabel": "Bài viết: {{title}}",
+            "reasonLabel": "Lý do từ chối",
+            "reasonPlaceholder": "Nhập lý do từ chối bài viết",
+            "reasonHelper": "Lý do được lưu vào nhật ký kiểm duyệt.",
+            "reasonRequired": "Vui lòng nhập lý do từ chối",
+            "reasonMax": "Lý do tối đa 1000 ký tự",
+            "submit": "Từ chối bài viết",
+            "cancel": "Hủy"
+        },
+        "wizard": {
+            "subtitle": "Điền lần lượt từng bước — tiến độ hiển thị ở danh sách kiểm tra bên phải.",
+            "stepOf": "Bước {{step}}/{{total}}",
+            "step1": "Định dạng nội dung",
+            "step2": "Tiêu đề & thông tin",
+            "step3": "Phân loại",
+            "step4": "Ảnh bìa & hình ảnh",
+            "step5": "Nội dung bài viết",
+            "typeBlogHint": "Bài viết hoặc công thức dạng văn bản dài.",
+            "typeVideoHint": "Video nấu ăn kèm mô tả bằng văn bản.",
+            "back": "Quay lại",
+            "next": "Tiếp tục"
+        },
+        "composer": {
+            "subtitle": "Soạn trong một mạch cuộn — mọi phần lưu chung với danh sách kiểm tra xuất bản.",
+            "draftAutosaved": "Bản nháp đã tự lưu",
+            "section1": "Phần 1 · Định dạng nội dung",
+            "section2": "Phần 2 · Tiêu đề & thông tin",
+            "section3": "Phần 3 · Phân loại",
+            "section4": "Phần 4 · Ảnh bìa & hình ảnh",
+            "section5": "Phần 5 · Nội dung bài viết",
+            "titleSection": "Tiêu đề & thông tin",
+            "coverSection": "Ảnh bìa & hình ảnh",
+            "typeBlogHint": "Bài viết hoặc công thức dạng văn bản dài, có định dạng phong phú.",
+            "typeVideoHint": "Video nấu ăn kèm mô tả bằng văn bản bên dưới.",
+            "summaryLabel": "Tóm tắt ngắn",
+            "summaryHint": "Hiện trên thẻ feed và kết quả tìm kiếm. Nên dưới 180 ký tự.",
+            "summaryPlaceholder": "Một dòng mô tả ngắn gọn vì sao món này đáng nấu...",
+            "contentNote": "Nội dung lưu dưới dạng rich text có cấu trúc, nên hiển thị giống nhau ở mọi nơi và không thể chèn script."
+        },
+        "checklist": {
+            "heading": "Danh sách kiểm tra xuất bản",
+            "format": "Đã chọn định dạng nội dung",
+            "title": "Đã có tiêu đề",
+            "category": "Có ít nhất một danh mục",
+            "cover": "Đã tải ảnh bìa",
+            "content": "Đã viết nội dung bài",
+            "videoSource": "Đã có nguồn video"
+        },
+        "ai": {
+            "title": "Ảnh chụp dinh dưỡng AI",
+            "description": "Chỉ số dinh dưỡng ước tính sẽ hiện ở đây khi dịch vụ AI sẵn sàng.",
+            "protein": "Đạm",
+            "carbs": "Tinh bột",
+            "fat": "Béo",
+            "fiber": "Chất xơ"
+        }
+    },
+    "videos": {
+        "title": "Quản lý video",
+        "description": "Xem và xóa video hướng dẫn nấu ăn do người dùng tải lên.",
+        "searchPlaceholder": "Tìm theo tiêu đề hoặc người đăng",
+        "searchLabel": "Tìm video",
+        "filterLabel": "Lọc theo trạng thái tải lên",
+        "allStatuses": "Tất cả trạng thái",
+        "column": {
+            "video": "Video",
+            "uploader": "Người đăng",
+            "status": "Trạng thái tải lên",
+            "createdAt": "Ngày đăng",
+            "actions": "Thao tác"
+        },
+        "action": {
+            "view": "Xem"
+        },
+        "untitled": "Không có tiêu đề",
+        "empty": {
+            "title": "Không có video nào",
+            "filtered": "Không có video khớp với bộ lọc hiện tại.",
+            "all": "Chưa có video nào được tải lên.",
+            "reload": "Tải lại"
+        },
+        "preview": {
+            "uploadedBy": "Đăng bởi @{{username}}",
+            "sample": "Video mẫu (dữ liệu giả lập)"
+        },
+        "confirm": {
+            "deleteTitle": "Xóa video?",
+            "deleteDescription": "Video \"{{title}}\" sẽ bị xóa và không còn hiển thị công khai.",
+            "deleteConfirm": "Xóa video"
+        },
+        "toast": {
+            "deleted": "Đã xóa video",
+            "failed": "Thao tác thất bại. Vui lòng thử lại."
+        }
+    },
+    "users": {
+        "title": "Quản lý người dùng",
+        "description": "Xem, tìm kiếm và quản lý trạng thái tài khoản.",
+        "searchPlaceholder": "Tìm theo username hoặc email",
+        "searchLabel": "Tìm người dùng",
+        "filterLabel": "Lọc theo trạng thái",
+        "allStatuses": "Tất cả trạng thái",
+        "column": {
+            "username": "Username",
+            "email": "Email",
+            "role": "Vai trò",
+            "status": "Trạng thái",
+            "createdAt": "Ngày tạo",
+            "actions": "Thao tác"
+        },
+        "status": {
+            "created": "Mới tạo",
+            "activated": "Đã kích hoạt",
+            "deactivated": "Đã vô hiệu",
+            "suspended": "Đã khóa"
+        },
+        "role": {
+            "ADMIN": "Quản trị viên",
+            "USER": "Người dùng"
+        },
+        "action": {
+            "lock": "Khóa",
+            "unlock": "Mở khóa"
+        },
+        "empty": {
+            "title": "Không có người dùng nào",
+            "filtered": "Không có người dùng khớp với bộ lọc.",
+            "all": "Chưa có người dùng nào trên hệ thống.",
+            "reload": "Tải lại"
+        },
+        "confirm": {
+            "lockTitle": "Khóa tài khoản?",
+            "lockDescription": "Tài khoản \"{{username}}\" sẽ bị khóa và không thể đăng nhập.",
+            "lockConfirm": "Khóa tài khoản",
+            "unlockTitle": "Mở khóa tài khoản?",
+            "unlockDescription": "Tài khoản \"{{username}}\" sẽ được mở khóa trở lại.",
+            "unlockConfirm": "Mở khóa tài khoản"
+        },
+        "toast": {
+            "suspended": "Đã khóa tài khoản",
+            "suspendFailed": "Khóa tài khoản thất bại. Vui lòng thử lại.",
+            "restored": "Đã mở khóa tài khoản",
+            "restoreFailed": "Mở khóa tài khoản thất bại. Vui lòng thử lại."
         }
     }
 }

@@ -1,16 +1,11 @@
 import { api } from "@/services/api";
+import type { ApiResponse } from "@/types/common";
 import type {
     ConfirmUploadResponse,
     Media,
     UploadGrantRequest,
     UploadGrantResponse,
 } from "@/types/media";
-
-interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
-}
 
 export async function createUploadGrant(request: UploadGrantRequest): Promise<UploadGrantResponse> {
     const response = await api.post<ApiResponse<UploadGrantResponse>>("/api/media/upload", {

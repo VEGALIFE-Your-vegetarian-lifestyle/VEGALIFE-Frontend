@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Film, Play, Search, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -16,13 +17,15 @@ import { ErrorState } from "@/shared/components/ErrorState";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { Pagination } from "@/shared/components/Pagination";
 import { TableSkeleton } from "@/shared/components/TableSkeleton";
-import { VIDEO_STATUS_LABEL, VIDEO_STATUS_VARIANT } from "@/shared/constants/videoStatus";
+import { VIDEO_STATUS_VARIANT, VIDEO_STATUSES } from "@/shared/constants/videoStatus";
 import type { Video, VideoStatus } from "@/types/video";
-import { formatDate } from "@/utils/formatDate";
+import { formatDateLocale } from "@/utils/formatDate";
+import { getApiErrorMessage } from "@/utils/apiError";
 
 const PAGE_SIZE = 8;
 
 export default function VideosPage() {
+    const { t } = useTranslation("admin");
     const queryClient = useQueryClient();
     const { page, q, status, debouncedQ, setQ, setStatus, setPage, clearFilters } = useListParams();
     const [preview, setPreview] = useState<Video | null>(null);
@@ -38,11 +41,11 @@ export default function VideosPage() {
     const deleteMutation = useMutation({
         mutationFn: deleteVideo,
         onSuccess: () => {
-            toast.success("Đã xóa video");
+            toast.success(t("videos.toast.deleted"));
             setDeleting(null);
             queryClient.invalidateQueries({ queryKey: ["admin-videos"] });
         },
-        onError: () => toast.error("Thao tác thất bại. Vui lòng thử lại."),
+        onError: (error: unknown) => toast.error(getApiErrorMessage(error, t("videos.toast.failed"))),
     });
 
     const videos = data?.data ?? [];
@@ -51,9 +54,9 @@ export default function VideosPage() {
     return (
         <div>
             <PageHeader
-                breadcrumb={["Admin", "Video"]}
-                title="Quản lý video"
-                description="Xem và xóa video hướng dẫn nấu ăn do người dùng tải lên."
+                breadcrumb={[t("common:admin"), t("videos.title")]}
+                title={t("videos.title")}
+                description={t("videos.description")}
             />
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row">
@@ -61,17 +64,17 @@ export default function VideosPage() {
                     <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     <Input
                         className="pl-9"
-                        placeholder="Tìm theo tiêu đề hoặc người đăng"
-                        aria-label="Tìm video"
+                        placeholder={t("videos.searchPlaceholder")}
+                        aria-label={t("videos.searchLabel")}
                         value={q}
                         onChange={(event) => setQ(event.target.value)}
                     />
                 </div>
-                <Select className="sm:w-52" aria-label="Lọc theo trạng thái tải lên" value={status} onChange={(event) => setStatus(event.target.value)}>
-                    <option value="">Tất cả trạng thái</option>
-                    {Object.entries(VIDEO_STATUS_LABEL).map(([value, label]) => (
+                <Select className="sm:w-52" aria-label={t("videos.filterLabel")} value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <option value="">{t("videos.allStatuses")}</option>
+                    {VIDEO_STATUSES.map((value) => (
                         <option key={value} value={value}>
-                            {label}
+                            {t(`common:videoStatus.${value}`)}
                         </option>
                     ))}
                 </Select>
@@ -84,11 +87,11 @@ export default function VideosPage() {
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
-                                <TableHead>Video</TableHead>
-                                <TableHead>Người đăng</TableHead>
-                                <TableHead>Trạng thái tải lên</TableHead>
-                                <TableHead>Ngày đăng</TableHead>
-                                <TableHead className="text-right">Thao tác</TableHead>
+                                <TableHead>{t("videos.column.video")}</TableHead>
+                                <TableHead>{t("videos.column.uploader")}</TableHead>
+                                <TableHead>{t("videos.column.status")}</TableHead>
+                                <TableHead>{t("videos.column.createdAt")}</TableHead>
+                                <TableHead className="text-right">{t("videos.column.actions")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -101,28 +104,28 @@ export default function VideosPage() {
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-10 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-cream">
                                                     {video.thumbnailUrl ? (
-                                                        <img src={video.thumbnailUrl} alt={video.title} className="h-full w-full object-cover" />
+                                                        <img src={video.thumbnailUrl} alt={video.title || t("videos.untitled")} className="h-full w-full object-cover" />
                                                     ) : (
                                                         <Film className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                                                     )}
                                                 </div>
-                                                <span className="font-medium">{video.title}</span>
+                                                <span className="font-medium">{video.title || t("videos.untitled")}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>@{video.uploader.username}</TableCell>
                                         <TableCell>
-                                            <Badge variant={VIDEO_STATUS_VARIANT[video.status]}>{VIDEO_STATUS_LABEL[video.status]}</Badge>
+                                            <Badge variant={VIDEO_STATUS_VARIANT[video.status]}>{t(`common:videoStatus.${video.status}`)}</Badge>
                                         </TableCell>
-                                        <TableCell className="whitespace-nowrap">{formatDate(video.createdAt)}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{formatDateLocale(video.createdAt)}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button size="sm" variant="outline" disabled={video.status !== "succeed"} onClick={() => setPreview(video)}>
                                                     <Play className="h-4 w-4" />
-                                                    Xem
+                                                    {t("videos.action.view")}
                                                 </Button>
                                                 <Button size="sm" variant="destructive" className="ml-2" onClick={() => setDeleting(video)}>
                                                     <Trash2 className="h-4 w-4" />
-                                                    Xóa
+                                                    {t("common:delete")}
                                                 </Button>
                                             </div>
                                         </TableCell>
@@ -135,11 +138,11 @@ export default function VideosPage() {
                     {!isLoading && videos.length === 0 && (
                         <EmptyState
                             icon={Film}
-                            title="Không có video nào"
-                            description={hasFilter ? "Không có video khớp với bộ lọc hiện tại." : "Chưa có video nào được tải lên."}
+                            title={t("videos.empty.title")}
+                            description={t(hasFilter ? "videos.empty.filtered" : "videos.empty.all")}
                             action={
                                 <Button variant="outline" onClick={hasFilter ? clearFilters : () => refetch()}>
-                                    {hasFilter ? "Xóa bộ lọc" : "Tải lại"}
+                                    {t(hasFilter ? "common:clearFilter" : "videos.empty.reload")}
                                 </Button>
                             }
                         />
@@ -148,7 +151,7 @@ export default function VideosPage() {
                 </>
             )}
 
-            <Dialog open={preview !== null} onClose={() => setPreview(null)} title={preview?.title ?? ""} description={preview ? `Đăng bởi @${preview.uploader.username}` : undefined} className="max-w-2xl">
+            <Dialog open={preview !== null} onClose={() => setPreview(null)} title={preview?.title || t("videos.untitled")} description={preview ? t("videos.preview.uploadedBy", { username: preview.uploader.username }) : undefined} className="max-w-2xl">
                 {preview && (
                     <div className="space-y-4">
                         {preview.mediaUrl ? (
@@ -156,13 +159,13 @@ export default function VideosPage() {
                         ) : (
                             <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-lg bg-cream text-muted-foreground">
                                 <Film className="h-12 w-12" aria-hidden="true" />
-                                <span className="text-sm">Video mẫu (dữ liệu giả lập)</span>
+                                <span className="text-sm">{t("videos.preview.sample")}</span>
                             </div>
                         )}
                         {preview.description && <p className="text-sm text-dark">{preview.description}</p>}
                         <div className="flex justify-end">
                             <Button variant="outline" onClick={() => setPreview(null)}>
-                                Đóng
+                                {t("common:close")}
                             </Button>
                         </div>
                     </div>
@@ -171,9 +174,9 @@ export default function VideosPage() {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Xóa video?"
-                description={`Video "${deleting?.title}" sẽ bị xóa và không còn hiển thị công khai.`}
-                confirmLabel="Xóa video"
+                title={t("videos.confirm.deleteTitle")}
+                description={t("videos.confirm.deleteDescription", { title: deleting?.title || t("videos.untitled") })}
+                confirmLabel={t("videos.confirm.deleteConfirm")}
                 destructive
                 loading={deleteMutation.isPending}
                 onConfirm={() => deleting && deleteMutation.mutate(deleting.id)}

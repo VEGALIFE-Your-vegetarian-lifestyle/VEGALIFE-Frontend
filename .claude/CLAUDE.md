@@ -1,85 +1,117 @@
 # VEGALIFE Frontend — Context for Claude
 
-Project React SPA cho nền tảng VEGALIFE, tập trung vào lối sống thực vật.
+React SPA cho nền tảng VEGALIFE (lối sống thực vật). File này là **bản đồ tra cứu**: đọc xong biết sửa gì thì mở file nào, không cần khảo sát lại repo.
 
 ## Stack & Tooling
 
 - **Framework**: React 19 + Vite 8 + TypeScript 6
 - **Routing**: react-router-dom v7
-- **Styling**: TailwindCSS v4 qua `@tailwindcss/vite`
-- **State**: Zustand cho auth, React Query cho server state
+- **Styling**: TailwindCSS v4 qua `@tailwindcss/vite`; design token khai báo trong `src/index.css` (`@theme`)
+- **State**: Zustand (auth, ui) + TanStack React Query 5 (server state)
 - **Forms**: Formik + Yup
-- **HTTP**: Axios với interceptor xử lý token/refresh
-- **i18n**: i18next + react-i18next, ngôn ngữ `en` mặc định, `vi` là secondary
-- **Toast**: sonner
-- **Icons**: lucide-react
-- **Port dev**: 5173
-- **Proxy API**: `/api` → `https://vegalife-backend.onrender.com`
+- **HTTP**: Axios, interceptor 401/refresh trong `src/services/api.ts`
+- **i18n**: i18next + react-i18next — **10 namespace**: `common`, `auth`, `admin`, `validation`, `profile`, `home`, `explore`, `post`, `nearby`, `aiNutrition`
+- **Editor**: TipTap 3 (`src/components/editor/`)
+- **Toast**: sonner · **Icons**: lucide-react · **Port dev**: 5173
+- **Proxy**: `/api` → `https://vegalife-backend.onrender.com`
 
-## Cấu trúc thư mục quan trọng
+## Tra cứu nhanh
+
+| Cần gì | File |
+|---|---|
+| Axios instance, interceptor 401/refresh | `src/services/api.ts` |
+| Kiểu dùng chung: `ApiResponse`, `Paginated`, `PageResponse`, `ListParams` | `src/types/common.ts` |
+| Đọc lỗi API ra message hiển thị | `src/utils/apiError.ts` → `getApiErrorMessage` |
+| Format ngày theo ngôn ngữ | `src/utils/formatDate.ts` → `formatDateLocale`, `estimateReadMinutes` |
+| Đăng xuất (revoke token rồi mới xóa state) | `src/hooks/useAuth.ts` → `useLogout` |
+| Map id → tên category (cache dùng chung) | `src/hooks/usePublicCategories.ts` → `useCategoryNames` |
+| State page/filter/search trên URL | `src/hooks/useListParams.ts` |
+| Component dùng chung | `src/shared/components/` — `PageHeader`, `EmptyState`, `ErrorState`, `ConfirmDialog`, `Pagination`, `TableSkeleton`, `FormField`, `SectionCard`, `StatCard` |
+| UI primitive | `src/components/ui/` — Button, Input, Textarea, Select, Dialog, Table, Badge, Avatar, Progress, Skeleton, PillTabs |
+| Design token màu/spacing/typography | `src/index.css` (`@theme`) + `DOCS/DESIGN-MASTER.md` |
+| Route toàn app | `src/routes/index.tsx` |
+| Validate form soạn bài | `src/pages/CreatePostPage/schema.ts` |
+| Payload gửi API khi tạo/sửa bài | `src/pages/CreatePostPage/payload.ts` |
+| Service theo domain | `src/services/{auth,post,category,video,media,profile,adminUser,dashboard}Service.ts` |
+| Trạng thái từng endpoint backend | `DOCS/API-COVERAGE.md` |
+| Đặc tả chức năng | `DOCS/SRS.md` (có mục lục ở đầu) |
+
+## Cấu trúc thư mục
 
 ```text
 src/
   components/
+    admin-shell/    # AdminShell — layout admin + nested routes
     auth/           # ProtectedRoute, PublicRoute, AdminRoute, AuthLayout
-    admin-shell/    # Layout admin với nested routes
-    ui/             # Button, Input, Dialog, Table, Select, Badge, Skeleton, Textarea
-    layout/         # Layouts chính của app
+    blog/           # PostCard, PostCardCompact, PostStatusBadge
+    editor/         # RichTextEditor, EditorToolbar, PostContent, editorContent
+    layout/         # Layout, Navbar, Footer, LanguageSwitcher
+    media/          # ImageUploader
+    ui/             # primitive UI (xem bảng trên)
+  hooks/            # useAuth, useListParams, useDebounce, useFeedPosts,
+                    # usePublicCategories, useProfile
+  i18n/             # index.ts + locales/{en,vi}/<namespace>.json
+  lib/utils.ts      # cn()
   pages/
+    Admin/          # AdminDashboardPage, PostsPage, VideosPage, CategoriesPage, UsersPage
     auth/           # Login, Register, VerifyEmail, ForgotPassword
-    Admin/          # AdminDashboardPage, Posts, Videos, Categories, Users
-    HomePage/
-    ProfilePage/
-  services/
-    api.ts          # Axios instance + refresh token interceptor
-    authService.ts  # Các hàm auth API
-  stores/
-    authStore.ts    # Zustand store lưu user/token trong sessionStorage
-    uiStore.ts      # UI state + language preference
-  hooks/
-    useAuth.ts      # Tiện ích lấy trạng thái auth
-  types/
-    user.ts         # Các interface/auth types
+    AiNutritionPage, CreatePostPage, ExplorePage, HomePage, LocationDetailPage,
+    MyPostsPage, NearbyPage, NotFoundPage, PostDetailPage, ProfilePage
+  routes/index.tsx
+  services/         # api.ts + <domain>Service.ts
+  shared/
+    components/     # component dùng chung (xem bảng trên)
+    constants/      # postStatus, postFlag, videoStatus
+    mocks/          # dữ liệu giả làm đầy UI
+  stores/           # authStore, uiStore
+  types/            # common, user, post, category, video, media, nearby, dashboard
+  utils/            # apiError, formatDate, jwt, delay
 ```
+
+Page nhiều khối đã tách file con cùng thư mục: `CreatePostPage/` (`schema.ts`, `payload.ts`, `ContentFormatSelector.tsx`, `PostSidebar.tsx`), `PostDetailPage/` (`FactStrip`, `IngredientsCard`, `InstructionsCard`, `ChefSecretCard`, `CommentsSection`).
 
 ## Auth Flow
 
-1. `RegisterPage` gọi `register()` → redirect `/verify-email` với email.
-2. `LoginPage` gọi `login()` → decode JWT để lấy `role`, lưu `user`, `accessToken`, `refreshToken` vào `authStore` + `localStorage`.
-3. `api.ts` tự động gắn `Authorization: Bearer <accessToken>`.
-4. Khi 401, interceptor dùng `refreshToken` gọi `/auth/refresh` để lấy accessToken mới; nếu thất bại thì logout + redirect `/login`.
-5. `ProtectedRoute`: yêu cầu đăng nhập.
-6. `AdminRoute`: yêu cầu đăng nhập + `user.role === "ADMIN"`.
-7. `PublicRoute`: nếu đã đăng nhập, redirect admin đến `/admin/dashboard`, user đến `/`.
-8. Sau khi login: admin → `/admin/dashboard`, user → `/`.
+1. `RegisterPage` → `register()` → redirect `/verify-email` kèm email.
+2. `LoginPage` → `login()` → decode JWT lấy `role` (`src/utils/jwt.ts`), lưu `user`/`accessToken`/`refreshToken` vào `authStore`.
+3. `api.ts` tự gắn `Authorization: Bearer <accessToken>`.
+4. Gặp 401 → interceptor dùng `refreshToken` gọi `/auth/refresh`; thất bại thì logout + về `/login`.
+5. `ProtectedRoute` (cần đăng nhập) · `AdminRoute` (thêm `user.role === "ADMIN"`) · `PublicRoute` (đã đăng nhập thì admin → `/admin/dashboard`, user → `/`).
+
+**Persist**: `rememberMe` → `localStorage["vegalife_auth_persistent"]`; không nhớ → `sessionStorage["vegalife_auth"]`. Xem `src/stores/authStore.ts`.
+
+## Routes
+
+| Route | Ghi chú |
+|---|---|
+| `/` | Home |
+| `/explore` | Danh sách bài viết |
+| `/nearby`, `/nearby/:id` | Tìm theo vị trí (mock) |
+| `/ai-nutrition` | Chatbot dinh dưỡng (mock) |
+| `/posts/:id` | Chi tiết bài — public |
+| `/posts/create`, `/posts/:id/edit` | `CreatePostPage` — cần đăng nhập |
+| `/profile`, `/my-posts` | Cần đăng nhập |
+| `/login`, `/register`, `/verify-email`, `/forgot-password` | Public |
+| `/admin` → `/admin/dashboard` | Admin |
+| `/admin/posts\|videos\|categories\|users\|profile` | Admin |
+
+## Thật vs mock
+
+- **Gọi API thật**: auth, posts, categories, profile, media, videos, admin users, dashboard.
+- **Còn mock**: `src/services/nearbyService.ts` (NearbyPage, LocationDetailPage); `src/pages/AiNutritionPage` (trả lời tĩnh); `src/shared/mocks/{postEnrichment,authors,categories}.ts` (chỉ làm đầy UI).
+- Trạng thái chi tiết từng endpoint: `DOCS/API-COVERAGE.md`.
 
 ## Conventions
 
-- Alias `@/` trỏ đến `src/`.
-- Components auth sử dụng `useAuth()` từ `src/hooks/useAuth.ts`.
-- Form validation dùng Yup; message lỗi tiếng Việt.
-- API trả về wrapper: `{ success: boolean, message: string, data: T }`.
-- UI components nằm trong `src/components/ui/`; sử dụng `class-variance-authority` cho variants.
-
-## Các route chính
-
-- `/` — Home
-- `/login`, `/register`, `/verify-email`, `/forgot-password` — auth (public)
-- `/profile` — user đã đăng nhập
-- `/admin/dashboard` — admin dashboard
-- `/admin/posts|videos|categories|users` — admin
-
-## Admin Dashboard & Category Management
-
-- `AdminDashboardPage` hiển thị metric cards (tổng danh mục, active, soft-deleted, nội dung liên kết) và quick links.
-- `/admin` redirect đến `/admin/dashboard`.
-- `CategoriesPage` hỗ trợ: tabs All/Active/Deleted, tìm kiếm theo tên/UUID, sort (newest/name/content), phân trang, soft delete, restore, permanent delete, export CSV.
-- `categoryService` mock dữ liệu, có thể thay bằng API thật sau này.
+- Alias `@/` → `src/`.
+- **`ponytail:` comment** đánh dấu chỗ lược bớt **có chủ ý** kèm giới hạn và hướng nâng cấp (38 chỗ / 23 file). Đừng "sửa" chúng nếu không có yêu cầu.
+- i18n **en là mặc định**, `vi` là secondary; cả 2 locale đều có đủ 10 namespace. Message validation lấy từ namespace `validation`. Thêm key thì **thêm cho cả `en` và `vi`**.
+- API trả wrapper `{ success: boolean, message: string, data: T }`.
+- UI primitive ở `src/components/ui/` dùng `class-variance-authority` cho variants.
+- Form theo pattern Formik + Yup.
 
 ## Lưu ý khi làm việc
 
-- Đừng tự ý thêm dependencies nếu thư viện hiện có đã giải quyết được.
-- Giữ form theo pattern Formik + Yup đã có.
-- Auth store persist vào `sessionStorage` với key `vegalife_auth`.
-- i18n setup ở `src/i18n/index.ts`; namespaces: `common`, `auth`, `admin`, `validation`. Mặc định `en`, có thể chuyển `vi` qua `LanguageSwitcher`.
-- Role từ JWT được decode ở `LoginPage` qua `src/utils/jwt.ts`.
+- **Đừng thêm dependency mới** nếu thư viện hiện có giải quyết được.
+- Verify nhanh bằng `npm run typecheck` (`tsc -b --pretty false`) thay vì `npm run build`.
+- `CategoriesPage` hiện có: thẻ đếm All/Active, tìm kiếm theo tên/UUID, sort `newest`/`name`, phân trang, retire (soft delete), export CSV. **Không** có restore hay permanent delete.

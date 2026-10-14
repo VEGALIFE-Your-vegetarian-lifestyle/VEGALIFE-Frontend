@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
+import type { ApiResponse } from "@/types/common";
 import type { LoginResponse, RefreshTokenRequest } from "@/types/user";
 
 export const api = axios.create({
@@ -102,14 +103,8 @@ api.interceptors.response.use(
     },
 );
 
-interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
-}
-
 export async function refreshAccessToken(refreshToken: string): Promise<string> {
-    const response = await api.post<ApiResponse<LoginResponse>>("/auth/refresh", { refreshToken } satisfies RefreshTokenRequest);
+    const response = await api.post<ApiResponse<LoginResponse>>("/api/auth/refresh", { refreshToken } satisfies RefreshTokenRequest);
     const data = response.data.data;
     useAuthStore.getState().setAccessToken(data.accessToken, data.expiresIn);
     scheduleTokenRefresh(data.refreshToken ?? refreshToken);

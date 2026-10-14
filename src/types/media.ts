@@ -34,4 +34,4 @@ export interface Media {
     createdAt: string;
 }
 
-export interface ConfirmUploadResponse extends Media {}
+export type ConfirmUploadResponse = Media;

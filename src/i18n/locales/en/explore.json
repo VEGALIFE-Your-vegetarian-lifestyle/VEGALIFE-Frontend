@@ -1,0 +1,38 @@
+{
+    "title": "Explore",
+    "subtitle": "Discover recipes, blogs and cooking videos from the community.",
+    "searchPlaceholder": "Search recipes, ingredients, or tags...",
+    "searchButton": "Search",
+    "filters": "Filters",
+    "filtersActive": "Filters ({{count}})",
+    "clearSearch": "Clear search",
+    "masterclass": "Masterclass",
+    "verified": "100% Plant-Based Verified Database",
+    "resultsFor": "Showing {{count}} results for",
+    "sortBy": "Sort by",
+    "sort": {
+        "popular": "Most Viewed",
+        "recent": "Most Recent"
+    },
+    "tab": {
+        "all": "All",
+        "recipe": "Recipes",
+        "blog": "Blogs",
+        "video": "Videos"
+    },
+    "relatedTitle": "Related Searches",
+    "relatedSubtitle": "Continue exploring wholesome plant proteins and meal prep inspiration:",
+    "related": {
+        "tempeh": "Tempeh dishes",
+        "highProtein": "High protein lunch",
+        "crispyTofu": "Crispy baked tofu",
+        "nutritionalYeast": "Nutritional yeast recipes"
+    },
+    "empty": {
+        "title": "No matching vegetarian content found",
+        "description": "Try searching for broader terms like 'Spinach', 'Curry', or 'Pasta'.",
+        "action": "Clear Filters"
+    },
+    "error": "Unable to load posts. Please try again later.",
+    "votes": "{{count}} votes"
+}

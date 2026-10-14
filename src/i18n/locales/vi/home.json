@@ -1,0 +1,38 @@
+{
+    "badge": "Lối sống thuần thực vật tỉnh thức",
+    "title": "Phong cách Ăn chay của bạn",
+    "subtitle": "Khám phá blog ăn chay lành mạnh, video hướng dẫn nấu ăn từng bước và công thức thực vật bổ dưỡng cho bữa ăn tỉnh thức mỗi ngày.",
+    "ctaExplore": "Khám phá công thức",
+    "ctaAi": "Hỏi AI Dinh dưỡng",
+    "searchPlaceholder": "Tìm công thức, nguyên liệu (vd: đậu hũ, rau chân vịt) hoặc thẻ nấu ăn...",
+    "searchButton": "Tìm ý tưởng",
+    "metrics": {
+        "recipes": "1.420+ Công thức chọn lọc",
+        "masterclasses": "380+ Lớp học nấu ăn",
+        "nutritionists": "Chuyên gia dinh dưỡng chứng nhận"
+    },
+    "editorsPicks": "Biên tập chọn",
+    "featuredTitle": "Nội dung nổi bật",
+    "featuredSubtitle": "Những sáng tạo thực vật được tuyển chọn, mang chiều sâu nhà hàng và năng lượng cân bằng đến bàn ăn của bạn.",
+    "latestTitle": "Công thức & Câu chuyện mới nhất",
+    "latestSubtitle": "Món ăn, bí quyết làm bánh và hướng dẫn nấu ăn mới đăng từ các đầu bếp tại gia đã xác minh.",
+    "viewAllFeed": "Xem toàn bộ",
+    "aiBanner": {
+        "title": "Còn đồ trong tủ lạnh? Để AI lên thực đơn tối nay.",
+        "subtitle": "Nhập bất kỳ loại rau củ nào bạn có và nhận gợi ý bữa ăn chay cân bằng macro trong vài giây.",
+        "cta": "Thử AI Kitchen"
+    },
+    "card": {
+        "recipe": "Công thức",
+        "video": "Video",
+        "blog": "Blog",
+        "minRead": "{{count}} phút đọc",
+        "mins": "{{count}} phút",
+        "viewRecipe": "Xem công thức",
+        "viewVideo": "Xem video",
+        "viewBlog": "Xem blog"
+    },
+    "loading": "Đang tải nội dung...",
+    "error": "Không thể tải nội dung. Vui lòng thử lại.",
+    "empty": "Chưa có nội dung nào được đăng."
+}

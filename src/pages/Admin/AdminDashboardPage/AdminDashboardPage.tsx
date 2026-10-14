@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Archive, FileText, Tags, Users, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { getDashboardStats } from "@/services/dashboardService";
 import { cn } from "@/lib/utils";
@@ -67,7 +68,7 @@ export default function AdminDashboardPage() {
     return (
         <div>
             <PageHeader
-                breadcrumb={["Admin", t("dashboard.title")]}
+                breadcrumb={[t("common:admin"), t("dashboard.title")]}
                 title={t("dashboard.title")}
                 description={t("dashboard.subtitle")}
             />
@@ -75,7 +76,7 @@ export default function AdminDashboardPage() {
             {isLoading ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {Array.from({ length: 4 }).map((_, index) => (
-                        <div key={index} className="h-32 animate-pulse rounded-2xl bg-muted" />
+                        <Skeleton key={index} className="h-32 rounded-2xl" />
                     ))}
                 </div>
             ) : (
@@ -83,28 +84,28 @@ export default function AdminDashboardPage() {
                     <MetricCard
                         title={t("dashboard.totalCategories")}
                         value={metrics.totalCategories}
-                        description="All categories in the system"
+                        description={t("dashboard.metricDescription.totalCategories")}
                         icon={Tags}
                         colorClass="bg-vegan-green-light text-vegan-green"
                     />
                     <MetricCard
                         title={t("dashboard.activeCategories")}
                         value={metrics.activeCategories}
-                        description="Categories currently in use"
+                        description={t("dashboard.metricDescription.activeCategories")}
                         icon={Tags}
                         colorClass="bg-vegan-green-light text-vegan-green"
                     />
                     <MetricCard
                         title={t("dashboard.softDeletedCategories")}
                         value={metrics.softDeletedCategories}
-                        description="Categories retired from use"
+                        description={t("dashboard.metricDescription.softDeletedCategories")}
                         icon={Archive}
                         colorClass="bg-cream text-terracotta"
                     />
                     <MetricCard
                         title={t("dashboard.associatedContent")}
                         value={metrics.associatedContent}
-                        description="Posts, recipes and videos linked"
+                        description={t("dashboard.metricDescription.associatedContent")}
                         icon={FileText}
                         colorClass="bg-muted-bg text-dark"
                     />
@@ -115,19 +116,19 @@ export default function AdminDashboardPage() {
                 <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <h2 className="mb-4 text-lg font-bold text-dark">{t("dashboard.quickManagement")}</h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <QuickLink to="/admin/categories" label="Categories" icon={Tags} badge="Manage" />
-                        <QuickLink to="/admin/posts" label="Posts" icon={FileText} />
-                        <QuickLink to="/admin/videos" label="Videos" icon={Video} />
-                        <QuickLink to="/admin/users" label="Users" icon={Users} />
+                        <QuickLink to="/admin/categories" label={t("dashboard.quickLink.categories")} icon={Tags} badge={t("dashboard.manageBadge")} />
+                        <QuickLink to="/admin/posts" label={t("dashboard.quickLink.posts")} icon={FileText} />
+                        <QuickLink to="/admin/videos" label={t("dashboard.quickLink.videos")} icon={Video} />
+                        <QuickLink to="/admin/users" label={t("dashboard.quickLink.users")} icon={Users} />
                     </div>
                 </div>
 
                 <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <h2 className="mb-4 text-lg font-bold text-dark">{t("dashboard.guideTitle")}</h2>
                     <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
-                        <li>Active categories can only be retired, not permanently deleted.</li>
-                        <li>Soft-deleted categories can be restored or permanently removed.</li>
-                        <li>Admins have access to all management sections.</li>
+                        <li>{t("dashboard.guide.retire")}</li>
+                        <li>{t("dashboard.guide.restore")}</li>
+                        <li>{t("dashboard.guide.access")}</li>
                     </ul>
                     <div className="mt-4">
                         <Link to="/admin/categories">

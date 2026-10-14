@@ -4,6 +4,7 @@
     "back": "Quay lại",
     "logout": "Đăng xuất",
     "createPost": "Tạo bài viết",
+    "myPosts": "Bài viết của tôi",
     "save": "Lưu thay đổi",
     "saving": "Đang lưu...",
     "success": "Cập nhật hồ sơ thành công",
@@ -32,5 +33,56 @@
         "normal": "Bình thường",
         "overweight": "Thừa cân",
         "obese": "Béo phì"
+    },
+    "verifiedAuthor": "Tác giả thực vật đã xác minh",
+    "contributorAccount": "Tài khoản cộng tác viên",
+    "joined": "Tham gia {{date}}",
+    "editProfile": "Sửa hồ sơ",
+    "newContent": "Nội dung mới",
+    "stats": {
+        "published": "Bài đã đăng",
+        "videos": "Video nấu ăn",
+        "saved": "Nội dung đã lưu",
+        "contributions": "Đóng góp (Bình chọn & Bình luận)"
+    },
+    "tab": {
+        "posts": "Bài viết của tôi",
+        "videos": "Video của tôi",
+        "saved": "Công thức đã lưu",
+        "activity": "Hoạt động của tôi"
+    },
+    "filterPosts": "Lọc bài viết...",
+    "statusLabel": "TRẠNG THÁI:",
+    "statusAll": "Tất cả",
+    "statusPublished": "Đã đăng",
+    "statusDraft": "Bản nháp",
+    "draftVisible": "Bản nháp - Chỉ bạn thấy",
+    "unpublishedDraft": "Bản nháp chưa đăng",
+    "continueEditing": "Tiếp tục chỉnh sửa",
+    "editPost": "Sửa bài",
+    "deletePost": "Xóa bài",
+    "unpublishAction": "Ngừng đăng",
+    "savedYesterday": "Lưu hôm qua",
+    "activityTitle": "Hoạt động cộng đồng gần đây",
+    "activitySubtitle": "Tương tác thời gian thực",
+    "empty": {
+        "posts": "Bạn chưa viết bài nào.",
+        "postsHint": "Chia sẻ công thức hoặc câu chuyện ăn chay đầu tiên của bạn với cộng đồng.",
+        "videos": "Bạn chưa tải video nào lên.",
+        "saved": "Bạn chưa lưu công thức nào.",
+        "activity": "Chưa có hoạt động cộng đồng.",
+        "action": "Viết bài"
+    },
+    "unsupported": {
+        "title": "Sắp ra mắt",
+        "description": "Mục này đang chờ API từ backend."
+    },
+    "confirm": {
+        "unpublishTitle": "Ngừng đăng bài viết này?",
+        "unpublishBody": "\"{{title}}\" sẽ trở về bản nháp và không còn hiển thị công khai.",
+        "unpublishConfirm": "Ngừng đăng",
+        "deleteTitle": "Xóa bài viết này?",
+        "deleteBody": "\"{{title}}\" sẽ bị xóa và không còn hiển thị công khai.",
+        "deleteConfirm": "Xóa bài viết"
     }
 }

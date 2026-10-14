@@ -1,0 +1,82 @@
+{
+    "badgeIntelligence": "Trí tuệ dinh dưỡng thực vật",
+    "badgeScope": "Giới hạn phạm vi dinh dưỡng",
+    "badgeDisclaimer": "Không phải lời khuyên y khoa",
+    "title": "Trợ lý AI Dinh dưỡng",
+    "subtitle": "Tham khảo trợ lý dinh dưỡng thực vật đã xác minh về macro chay, thay thế nguyên liệu, calo thực vật và công thức lành mạnh.",
+    "proMember": "Thành viên Pro",
+    "unlimitedInquiries": "Không giới hạn câu hỏi dinh dưỡng đã xác minh",
+    "chat": {
+        "modelName": "VEGALIFE Core Botanical AI",
+        "modelDetail": "Model: GreenHealth 4.2 · Chuyên sâu 4 lĩnh vực thực vật",
+        "resetContext": "Đặt lại ngữ cảnh",
+        "exportLog": "Xuất lịch sử",
+        "assistantName": "Trợ lý VEGALIFE",
+        "greeting": "Chào mừng trở lại, {{name}}! Tôi là trợ lý cho lối sống thực vật đã xác minh. Để đảm bảo độ chính xác dinh dưỡng cao nhất, tôi chỉ tập trung vào 4 lĩnh vực cốt lõi:",
+        "greetingGuest": "Chào bạn! Tôi là trợ lý cho lối sống thực vật đã xác minh. Để đảm bảo độ chính xác dinh dưỡng cao nhất, tôi chỉ tập trung vào 4 lĩnh vực cốt lõi:",
+        "voiceInput": "Nhập bằng giọng nói",
+        "domainLabel": "Lĩnh vực {{index}}",
+        "domains": {
+            "macros": "Dinh dưỡng thực vật & Macro",
+            "macrosDetail": "Khả dụng sinh học, B12, Sắt, Kẽm, Omega-3",
+            "swaps": "Thay thế nguyên liệu",
+            "swapsDetail": "Chất thay trứng, kem hạt điều, chất kết dính thuần chay",
+            "bmi": "Theo dõi BMI & Calo",
+            "bmiDetail": "Cân đối calo, tối ưu mật độ năng lượng",
+            "recipes": "Công thức ăn chay",
+            "recipesDetail": "Kết hợp món & món cộng đồng VEGALIFE"
+        },
+        "quickStart": "Gợi ý nhanh để bắt đầu:",
+        "placeholder": "Hỏi về dinh dưỡng thực vật, thay thế nguyên liệu, calo hoặc công thức...",
+        "send": "Gửi",
+        "supported": "HỖ TRỢ:",
+        "supportedTags": ["Dinh dưỡng & Macro", "Thay thế nguyên liệu", "BMI & Calo", "Hướng dẫn công thức"],
+        "knowledgeBase": "Kho tri thức thực vật mã hoá",
+        "today": "Hôm nay",
+        "you": "Bạn",
+        "pendingReply": "Đang xử lý câu hỏi của bạn…",
+        "error": "Trợ lý hiện không khả dụng. Vui lòng thử lại."
+    },
+    "quickPrompts": [
+        "Làm sao tối ưu hấp thu sắt non-heme trong bát đậu lăng?",
+        "Chất thay trứng thuần chay tốt nhất theo tỉ lệ 1:1 để làm bánh?",
+        "Mục tiêu BMI & protein cho người chạy chay 65kg?",
+        "Bữa tối nhanh giàu protein dưới 500 kcal với đậu hũ và rau?"
+    ],
+    "bmi": {
+        "title": "BMI & Mục tiêu protein",
+        "tool": "Công cụ nhỏ",
+        "height": "Chiều cao (cm)",
+        "weight": "Cân nặng (kg)",
+        "activity": "Mức vận động",
+        "activityOptions": {
+            "sedentary": "Ít vận động (làm việc bàn giấy)",
+            "light": "Nhẹ (1-2 buổi/tuần)",
+            "moderate": "Trung bình (3-4 buổi/tuần)",
+            "active": "Năng động (5+ buổi/tuần)"
+        },
+        "estimated": "BMI ước tính",
+        "healthyRange": "Ngưỡng khoẻ mạnh",
+        "dailyTarget": "Mục tiêu protein thực vật mỗi ngày",
+        "perDay": "{{value}} g / ngày",
+        "chatPlan": "Hỏi kế hoạch",
+        "chatPlanPrompt": "Lập cho tôi kế hoạch protein thực vật hằng ngày theo BMI và mức vận động.",
+        "empty": "—"
+    },
+    "swaps": {
+        "title": "Bảng thay thế nhanh",
+        "verified": "Đã xác minh 1:1",
+        "from": "Thay cho",
+        "to": "Bằng"
+    },
+    "access": {
+        "title": "Chính sách truy cập & Hạn mức",
+        "guestInquiries": "Câu hỏi khách:",
+        "guestLimit": "3 câu hỏi / ngày",
+        "currentStatus": "Trạng thái hiện tại:",
+        "activeMember": "Thành viên đã đăng nhập (Hoạt động)",
+        "sessionModel": "Mô hình phiên:",
+        "guardrail": "Bật giới hạn nghiêm ngặt",
+        "notice": "Lưu ý y khoa bắt buộc: VEGALIFE AI cung cấp hướng dẫn ẩm thực mang tính tham khảo và số liệu macro. Đây không phải phương án thay thế cho chăm sóc y tế hoặc trị liệu có giấy phép."
+    }
+}

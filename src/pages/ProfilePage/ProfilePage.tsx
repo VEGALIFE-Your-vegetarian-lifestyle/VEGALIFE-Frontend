@@ -1,41 +1,81 @@
+import { useMemo } from "react";
 import { useFormik } from "formik";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as Yup from "yup";
-import { ArrowLeft, LogOut, PenLine, Save, User } from "lucide-react";
+import {
+    ArrowLeft,
+    BadgeCheck,
+    Calendar,
+    FileText,
+    Film,
+    LogOut,
+    MessageSquare,
+    PenLine,
+    Save,
+    ThumbsUp,
+    User,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUploader } from "@/components/media/ImageUploader";
 import { FormField } from "@/shared/components/FormField";
-import { useAuth } from "@/hooks/useAuth";
-import { logout } from "@/services/authService";
+import { StatCard } from "@/shared/components/StatCard";
+import { useAuth, useLogout } from "@/hooks/useAuth";
+import { getMyPosts } from "@/services/postService";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
+import { useUiStore } from "@/stores/uiStore";
+import { formatDateLocale } from "@/utils/formatDate";
+import { getApiErrorMessage } from "@/utils/apiError";
 import type { UpdateProfileRequest } from "@/types/user";
 
-export default function ProfilePage() {
-    const { t } = useTranslation("profile");
+export default function ProfilePage({ embedded = false }: { embedded?: boolean }) {
+    const { t } = useTranslation(["profile", "common"]);
     const navigate = useNavigate();
-    const { user, clearAuth } = useAuth();
+    const { user } = useAuth();
+    const handleLogout = useLogout();
+    const language = useUiStore((state) => state.language);
 
     const { data: profile, isLoading } = useProfile();
     const updateMutation = useUpdateProfile();
 
-    const profileSchema = Yup.object({
-        heightCm: Yup.number()
-            .min(0.01, t("validation:heightRange"))
-            .max(300, t("validation:heightRange"))
-            .nullable(),
-        weightKg: Yup.number()
-            .min(0.01, t("validation:weightRange"))
-            .max(500, t("validation:weightRange"))
-            .nullable(),
-        age: Yup.number().min(1, t("validation:ageRange")).max(150, t("validation:ageRange")).nullable(),
-        gender: Yup.string().oneOf(["male", "female", "other"]).nullable(),
-        description: Yup.string().max(2000, t("validation:descriptionMaxLength")).nullable(),
-        avatarUrl: Yup.string().url(t("validation:invalidUrl")).nullable(),
+    // ponytail: stats suy từ GET /api/posts (100 bài gần nhất) — backend chưa có endpoint thống kê.
+    const { data: myPosts } = useQuery({
+        queryKey: ["my-posts", "stats"],
+        queryFn: () => getMyPosts({ page: 1, size: 100 }),
     });
+
+    const posts = myPosts?.data ?? [];
+    const stats = [
+        { icon: FileText, labelKey: "stats.published", value: posts.filter((post) => post.status === "published").length },
+        { icon: Film, labelKey: "stats.videos", value: posts.filter((post) => post.type === "video").length },
+        { icon: ThumbsUp, labelKey: "stats.saved", value: 0 },
+        { icon: MessageSquare, labelKey: "stats.contributions", value: posts.reduce((sum, post) => sum + post.viewCount, 0) },
+    ];
+
+    const profileSchema = useMemo(
+        () =>
+            Yup.object({
+                heightCm: Yup.number()
+                    .min(0.01, t("validation:heightRange"))
+                    .max(300, t("validation:heightRange"))
+                    .nullable(),
+                weightKg: Yup.number()
+                    .min(0.01, t("validation:weightRange"))
+                    .max(500, t("validation:weightRange"))
+                    .nullable(),
+                age: Yup.number().min(1, t("validation:ageRange")).max(150, t("validation:ageRange")).nullable(),
+                gender: Yup.string().oneOf(["male", "female", "other"]).nullable(),
+                description: Yup.string().max(2000, t("validation:descriptionMaxLength")).nullable(),
+                avatarUrl: Yup.string().url(t("validation:invalidUrl")).nullable(),
+            }),
+        [t],
+    );
 
     const formik = useFormik<UpdateProfileRequest>({
         initialValues: {
@@ -50,28 +90,20 @@ export default function ProfilePage() {
         validationSchema: profileSchema,
         onSubmit: async (values, { setSubmitting }) => {
             try {
-                await updateMutation.mutateAsync(values);
+                const payload: UpdateProfileRequest = {
+                    ...values,
+                    description: values.description?.trim() || undefined,
+                    avatarUrl: values.avatarUrl ? values.avatarUrl.trim() || undefined : undefined,
+                };
+                await updateMutation.mutateAsync(payload);
                 toast.success(t("success"));
             } catch (error) {
-                const axiosError = error as { response?: { data?: { message?: string } } };
-                const message = axiosError.response?.data?.message || t("failed");
-                toast.error(message);
+                toast.error(getApiErrorMessage(error, t("failed")));
             } finally {
                 setSubmitting(false);
             }
         },
     });
-
-    const handleLogout = async () => {
-        clearAuth();
-        try {
-            await logout();
-            toast.success(t("common:logout"));
-        } catch {
-            // 401 means token already expired/revoked; logout still effective
-        }
-        navigate("/", { replace: true });
-    };
 
     const height = Number(formik.values.heightCm) || 0;
     const weight = Number(formik.values.weightKg) || 0;
@@ -86,40 +118,74 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto max-w-3xl">
-                <div className="mb-6 flex items-center justify-between">
-                    <Button variant="ghost" onClick={() => navigate(-1)}>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        {t("back")}
-                    </Button>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={() => navigate("/posts/create")}>
-                            <PenLine className="mr-2 h-4 w-4" />
-                            {t("createPost")}
+        <div className={embedded ? undefined : "min-h-screen bg-background p-4 sm:p-6 lg:p-8"}>
+            <div className="mx-auto max-w-4xl space-y-6">
+                {/* Trong AdminShell đã có header + logout riêng, nên bỏ thanh này. */}
+                {!embedded && (
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <Button variant="ghost" onClick={() => navigate(-1)}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            {t("back")}
                         </Button>
-                        <Button variant="outline" onClick={handleLogout}>
-                            <LogOut className="mr-2 h-4 w-4" />
-                            {t("logout")}
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button variant="outline" onClick={() => navigate("/my-posts")}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                {t("myPosts")}
+                            </Button>
+                            <Button variant="outline" onClick={() => navigate("/posts/create")}>
+                                <PenLine className="mr-2 h-4 w-4" />
+                                {t("createPost")}
+                            </Button>
+                            <Button variant="outline" onClick={() => void handleLogout(t("common:logoutSuccess"))}>
+                                <LogOut className="mr-2 h-4 w-4" />
+                                {t("logout")}
+                            </Button>
+                        </div>
                     </div>
-                </div>
+                )}
 
-                <div className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-vegan-green-light text-vegan-green">
+                <header className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                    <div className="flex items-start gap-4">
+                        <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-vegan-green-light text-vegan-green">
                             {profile?.avatarUrl ? (
-                                <img src={profile.avatarUrl} alt={user?.username} className="h-full w-full rounded-full object-cover" />
+                                <img
+                                    src={profile.avatarUrl}
+                                    alt={user?.username}
+                                    className="h-full w-full object-cover"
+                                />
                             ) : (
-                                <User className="h-8 w-8" />
+                                <User className="h-9 w-9" />
                             )}
                         </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold text-dark">{user?.username}</h1>
-                            <p className="text-muted-foreground">{user?.email}</p>
+                        <div className="min-w-0">
+                            <h1 className="flex flex-wrap items-center gap-2 text-2xl font-bold text-dark">
+                                {user?.username}
+                                <Badge variant="lightgreen" size="sm">
+                                    <BadgeCheck className="h-3 w-3" aria-hidden="true" />
+                                    {t("verifiedAuthor")}
+                                </Badge>
+                            </h1>
+                            <p className="mt-0.5 text-sm text-muted-foreground">
+                                {t("contributorAccount")} · {user?.email}
+                            </p>
+                            {profile?.description && (
+                                <p className="mt-2 max-w-xl text-sm text-muted-foreground">{profile.description}</p>
+                            )}
+                            <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+                                {t("joined", {
+                                    date: formatDateLocale(profile?.updatedAt ?? new Date().toISOString(), language),
+                                })}
+                            </p>
                         </div>
                     </div>
-                </div>
+
+                    <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                        {stats.map(({ icon, labelKey, value }) => (
+                            <StatCard key={labelKey} icon={icon} label={t(labelKey)} value={value} />
+                        ))}
+                    </div>
+                </header>
 
                 <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                     <h2 className="mb-4 text-xl font-semibold text-dark">{t("editTitle")}</h2>
@@ -199,14 +265,10 @@ export default function ProfilePage() {
                                 htmlFor="avatarUrl"
                                 error={formik.touched.avatarUrl ? formik.errors.avatarUrl : undefined}
                             >
-                                <Input
-                                    id="avatarUrl"
-                                    name="avatarUrl"
-                                    type="url"
-                                    placeholder={t("placeholders.avatarUrl")}
-                                    value={formik.values.avatarUrl ?? ""}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
+                                <ImageUploader
+                                    value={formik.values.avatarUrl || null}
+                                    onChange={(url) => formik.setFieldValue("avatarUrl", url)}
+                                    disabled={updateMutation.isPending || formik.isSubmitting}
                                 />
                             </FormField>
 

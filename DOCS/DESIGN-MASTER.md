@@ -9,6 +9,40 @@
 
 ---
 
+## Mục lục
+
+> Tài liệu 1400+ dòng. Đọc mục lục trước rồi mở đúng khoảng dòng cần dùng.
+
+| Mục | Dòng | Nội dung |
+|---|---|---|
+| 1 | 46 | Design Foundation |
+| 1.1 | 48 | Design Philosophy |
+| 1.2 | 91 | Application Shell |
+| 1.3 | 139 | Navigation |
+| 1.4 | 186 | Page Layout Standard |
+| 2 | 224 | Design System — token & component |
+| 2.1 | 226 | **Design Tokens** (màu, spacing — nguồn gốc của `src/index.css` `@theme`) |
+| 2.2 | 360 | Typography |
+| 2.3 | 392 | Components Library |
+| 2.4 | 675 | Forms |
+| 3 | 763 | Interaction Patterns |
+| 3.1 | 765 | CRUD Page Pattern |
+| 3.2 | 853 | Dashboard Pattern |
+| 3.3 | 883 | Profile / Detail Pattern |
+| 3.4 | 918 | Data States (loading / empty / error) |
+| 3.5 | 956 | Responsive UX |
+| 3.6 | 1001 | Motion |
+| 4 | 1039 | Quality Gates |
+| 4.1 | 1044 | Role-Based UI |
+| 4.2 | 1085 | Accessibility |
+| 4.3 | 1138 | Icons & Content |
+| 4.4 | 1188 | Component Reuse Rules |
+| 4.5 | 1259 | Checklist & Definition of Done |
+| A | 1317 | Quick Reference — Tailwind / Sonner / TanStack Query / Zustand patterns |
+| B | 1419 | File Structure Reference (cây thư mục thật) |
+
+---
+
 ## 1. Design Foundation — Nền tảng thiết kế
 
 ### 1.1 Design Philosophy
@@ -1004,6 +1038,9 @@ Always respect user's motion preferences. No exceptions.
 
 ## 4. Quality Gates — Quy tắc chất lượng
 
+> Gate nào đã có test tự động: xem `DOCS/TEST-COVERAGE.md` (Vitest + Testing Library,
+> test gọi backend thật). Mục 4.2 (Accessibility) phần lớn đã được test screen phủ.
+
 ### 4.1 Role-Based UI
 
 #### Permission Enforcement
@@ -1291,8 +1328,10 @@ A component or page is considered **DONE** when ALL criteria are met:
 // Grid
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-// Card
-<div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+// Card — dùng SectionCard/StatCard thay vì tự viết lại
+<section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+// radius: --radius-2xl (24px) cho card, --radius-xl (20px) cho input/button,
+// --radius-lg (16px) cho khối nhỏ. Focus ring dùng ring-vegan-green.
 
 // Button group
 <div className="flex gap-2">
@@ -1304,14 +1343,16 @@ A component or page is considered **DONE** when ALL criteria are met:
   <p className="text-xs text-muted-foreground">Helper text</p>
 </div>
 
-// Table wrapper
-<div className="rounded-md border overflow-x-auto">
+// Table — dùng primitive <Table>, không tự viết wrapper
+<div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
   <table className="w-full">
 
-// Badge
-<span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">
+// Badge — dùng primitive <Badge variant=…>, không tự viết
+<span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full font-semibold px-3 py-1 text-xs">
   Label
 </span>
+// variant: default | secondary | destructive | outline | lightgreen | cream
+//          | glass | amber | outlineGreen | info
 
 // Avatar group
 <div className="flex -space-x-2">
@@ -1377,60 +1418,61 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 ## Appendix B: File Structure Reference
 
+> Cây dưới đây là **cấu trúc thật** của repo. Nguồn đồng bộ: `.claude/CLAUDE.md`.
+
 ```
 VEGALIFE-Frontend/
 ├── public/                    ← Static assets
+├── DOCS/                      ← SRS, DESIGN-MASTER, API-COVERAGE, TEST-COVERAGE
 ├── src/
 │   ├── components/
-│   │   ├── ui/               ← Primitive components (shadcn-style)
-│   │   ├── topbar/           ← Topbar navigation
-│   │   ├── admin-shell/      ← Admin layout shell
-│   │   ├── user-shell/       ← User layout shell
-│   │   ├── public-shell/     ← Public layout shell
-│   │   ├── blog/             ← Blog components
-│   │   ├── chatbot/          ← Chatbot components
-│   │   ├── meal-plan/        ← Meal plan components
-│   │   ├── profile/          ← Profile components
-│   │   ├── restaurant/       ← Restaurant components
-│   │   ├── video/            ← Video components
-│   │   └── theme-provider/   ← Dark/light mode provider
-│   ├── hooks/                ← Custom hooks (useAuth, usePosts, etc.)
-│   ├── layouts/              ← Page layout wrappers
-│   ├── lib/                  ← Utilities, API client config
-│   ├── pages/                ← Route-level page components
-│   │   ├── Admin/            ← Admin pages
-│   │   ├── auth/             ← Login, Register
-│   │   ├── BlogPage/         ← Blog listing
-│   │   ├── BlogDetailPage/   ← Blog detail view
-│   │   ├── ChatbotPage/      ← AI Chatbot
-│   │   ├── CreatePostPage/   ← Create blog/video
-│   │   ├── EditPostPage/     ← Edit existing post
-│   │   ├── HomePage/         ← Landing page
-│   │   ├── MealPlanPage/     ← Weekly meal plan
-│   │   ├── NotFoundPage/     ← 404
-│   │   ├── ProfilePage/      ← User profile
-│   │   ├── RestaurantPage/   ← Vegan shops map/list
-│   │   ├── SearchPage/       ← Global search
-│   │   ├── UploadVideoPage/  ← Video upload
-│   │   ├── VideoPage/        ← Video listing
-│   │   └── VideoDetailPage/  ← Video detail view
-│   ├── providers/            ← Context providers
-│   ├── routes/               ← Route configuration
-│   ├── services/             ← API service layer
+│   │   ├── admin-shell/      ← AdminShell — layout admin + nested routes
+│   │   ├── auth/             ← ProtectedRoute, PublicRoute, AdminRoute, AuthLayout
+│   │   ├── blog/             ← PostCard, PostCardCompact, PostStatusBadge
+│   │   ├── editor/           ← RichTextEditor, EditorToolbar, PostContent (TipTap 3)
+│   │   ├── layout/           ← Layout, Navbar, Footer, LanguageSwitcher
+│   │   ├── media/            ← ImageUploader
+│   │   └── ui/               ← Primitive (Button, Input, Select, Dialog, Table, Badge, …)
+│   ├── hooks/                ← useAuth, useListParams, useDebounce, useFeedPosts,
+│   │                            usePublicCategories, useProfile
+│   ├── i18n/                 ← index.ts + locales/{en,vi}/<namespace>.json (10 namespace)
+│   ├── lib/                  ← utils.ts (cn)
+│   ├── pages/
+│   │   ├── Admin/            ← AdminDashboardPage, PostsPage, VideosPage,
+│   │   │                        CategoriesPage, UsersPage
+│   │   ├── auth/             ← Login, Register, VerifyEmail, ForgotPassword
+│   │   ├── AiNutritionPage/  ← /ai-nutrition (trả lời tĩnh)
+│   │   ├── CreatePostPage/   ← schema.ts, payload.ts, ContentFormatSelector, PostSidebar
+│   │   ├── ExplorePage/      ← /explore
+│   │   ├── HomePage/         ← /
+│   │   ├── LocationDetailPage/, NearbyPage/   ← mock
+│   │   ├── MyPostsPage/, PostDetailPage/, ProfilePage/, NotFoundPage/
+│   ├── routes/               ← index.tsx — route toàn app
+│   ├── services/             ← api.ts + <domain>Service.ts
 │   ├── shared/
-│   │   ├── components/       ← Cross-module shared components
-│   │   └── constants/        ← App-wide constants
-│   ├── stores/               ← Zustand stores
-│   ├── types/                ← TypeScript interfaces/types
-│   ├── utils/                ← Utility functions
+│   │   ├── components/       ← PageHeader, EmptyState, ErrorState, ConfirmDialog,
+│   │   │                        Pagination, TableSkeleton, FormField, SectionCard, StatCard
+│   │   ├── constants/        ← postStatus, postFlag, videoStatus
+│   │   └── mocks/            ← dữ liệu giả làm đầy UI (authors, categories, postEnrichment)
+│   ├── stores/               ← authStore, uiStore (Zustand)
+│   ├── test/                 ← setup.ts, e2eEnv.ts, renderWithProviders, storageShim,
+│   │                            domPolyfills, README.md
+│   ├── types/                ← common, user, post, category, video, media, nearby, dashboard
+│   ├── utils/                ← apiError, formatDate, jwt, delay
 │   ├── App.tsx               ← Root component
 │   ├── main.tsx              ← Entry point
-│   └── index.css             ← Global styles, design tokens
+│   └── index.css             ← Design token (@theme)
 ├── package.json
 ├── vite.config.ts
+├── vitest.config.ts          ← cấu hình test (KHÔNG merge vite.config.ts)
 ├── tsconfig.app.json
 └── eslint.config.js
 ```
+
+**Không có** trong repo này (đã từng bị ghi nhầm ở đây): `topbar/`, `user-shell/`,
+`public-shell/`, `layouts/`, `providers/`, `theme-provider/`, `BlogPage/`,
+`BlogDetailPage/`, `ChatbotPage/`, `EditPostPage/`, `MealPlanPage/`, `RestaurantPage/`,
+`SearchPage/`, `UploadVideoPage/`, `VideoPage/`, `VideoDetailPage/`.
 
 ---
 
