@@ -1,10 +1,8 @@
 {
-    "directoryLabel": "Danh bạ cộng đồng thực vật địa phương / Khu vực Tây Bắc Thái Bình Dương",
+    "directoryLabel": "Danh bạ cộng đồng thực vật / TP. Hồ Chí Minh",
     "title": "Địa điểm thuần chay gần đây",
     "subtitle": "Khám phá nhà hàng thuần thực vật 100%, quán cà phê hữu cơ và cửa hàng chay đặc sản gần bạn.",
-    "locationNotice": "Đã bật quyền truy cập vị trí. Đang hiển thị khoảng cách chính xác từ vị trí GPS hiện tại của bạn.",
-    "changeLocation": "Đổi quyền / Nhập mã bưu chính",
-    "areaPlaceholder": "Trung tâm thành phố (trong bán kính 8 km)",
+    "changeLocation": "Dùng vị trí của tôi",
     "gpsRefresh": "Làm mới GPS",
     "splitView": "Chế độ chia đôi",
     "listOnly": "Chỉ danh sách",
@@ -12,8 +10,7 @@
     "sortBy": "Sắp xếp theo",
     "sort": {
         "distance": "Gần nhất trước",
-        "rating": "Đánh giá cao nhất",
-        "reviews": "Nhiều đánh giá nhất"
+        "rating": "Đánh giá cao nhất"
     },
     "sortStrict": "Sắp xếp cố định: Gần nhất đến xa nhất",
     "view": {
@@ -29,14 +26,12 @@
     "recipeMatch": "Khớp công thức: {{dish}}",
     "viewDetails": "Xem chi tiết",
     "directions": "Chỉ đường",
-    "mapTitle": "Bản đồ VEGALIFE",
-    "mapPlaceholder": "Bản đồ tương tác cần API key của nhà cung cấp bản đồ.",
     "filter": {
         "all": "Tất cả địa điểm",
         "restaurant": "Nhà hàng thuần chay 100%",
         "cafe": "Quán cà phê chay",
-        "bakery": "Tiệm bánh thực vật",
-        "market": "Cửa hàng hữu cơ & chợ"
+        "market": "Chợ chay",
+        "grocery": "Cửa hàng hữu cơ"
     },
     "empty": {
         "title": "Không có địa điểm trong mục này",
@@ -95,5 +90,8 @@
             "action": "Về danh sách"
         },
         "error": "Không thể tải địa điểm này. Vui lòng thử lại."
-    }
+    },
+    "locationNoticeGps": "Đang hiển thị địa điểm trong bán kính {{radius}} km quanh vị trí GPS của bạn.",
+    "locationNoticeArea": "Đang hiển thị địa điểm trong bán kính {{radius}} km quanh {{area}}.",
+    "retry": "Thử lại"
 }

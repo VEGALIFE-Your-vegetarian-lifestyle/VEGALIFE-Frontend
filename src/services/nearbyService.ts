@@ -1,5 +1,6 @@
-import type { NearbyPlace, NearbyPlaceDetail } from "@/types/nearby";
-import { delay } from "@/utils/delay";
+import { getLocationById } from "@/services/locationService";
+import type { NearbyPlaceDetail } from "@/types/nearby";
+import { formatOpeningHours, isOpenNow } from "@/utils/openingHours";
 
 const IMG = {
     bistro: "https://images.unsplash.com/photo-1559339352-11d035aa65b6?w=800&auto=format&fit=crop",
@@ -9,94 +10,22 @@ const IMG = {
     wild: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format&fit=crop",
 };
 
-const PLACES: NearbyPlace[] = [
-    {
-        id: "loc-01",
-        name: "Green Sprout Bistro",
-        category: "restaurant",
-        address: "824 NW 12th Ave, Pearl District",
-        district: "Pearl District",
-        distanceKm: 0.4,
-        rating: 4.9,
-        reviewCount: 240,
-        priceLevel: "$$ - Moderate",
-        tags: ["Organic", "Gluten-Free Options", "Dine-in"],
-        imageUrl: IMG.bistro,
-        isVerified: true,
-        recipeMatch: "Tofu Bowl",
-    },
-    {
-        id: "loc-02",
-        name: "Pure Harmony Plant Cafe",
-        category: "cafe",
-        address: "1420 SE Belmont St",
-        district: "Belmont",
-        distanceKm: 0.8,
-        rating: 4.8,
-        reviewCount: 185,
-        priceLevel: "$ - Budget",
-        tags: ["Cold-Pressed Juices", "Sourdough", "Vegan Bakery"],
-        imageUrl: IMG.cafe,
-        isVerified: true,
-    },
-    {
-        id: "loc-03",
-        name: "Root & Bloom Kitchen",
-        category: "restaurant",
-        address: "608 SW Broadway",
-        district: "Downtown",
-        distanceKm: 1.2,
-        rating: 4.7,
-        reviewCount: 310,
-        priceLevel: "$$ - Moderate",
-        tags: ["Farm-to-Table", "Tempeh Specialties", "Zero Waste"],
-        imageUrl: IMG.kitchen,
-        isVerified: true,
-    },
-    {
-        id: "loc-04",
-        name: "Terra Madre Organics",
-        category: "market",
-        address: "2315 NE Alberta St",
-        district: "Alberta Arts",
-        distanceKm: 1.9,
-        rating: 4.9,
-        reviewCount: 95,
-        priceLevel: "$$ - Moderate",
-        tags: ["Bulk Grains", "House-Made Tofu", "Fresh Produce"],
-        imageUrl: IMG.market,
-        isVerified: true,
-    },
-    {
-        id: "loc-05",
-        name: "Wild Fern Plant Kitchen",
-        category: "restaurant",
-        address: "3108 SE Division St",
-        district: "Division",
-        distanceKm: 2.5,
-        rating: 4.6,
-        reviewCount: 142,
-        priceLevel: "$$ - Moderate",
-        tags: ["Comfort Food", "Vegan Brunch", "Casual"],
-        imageUrl: IMG.wild,
-        isVerified: false,
-    },
-];
-
-const DETAIL: NearbyPlaceDetail = {
-    ...PLACES[0],
+/**
+ * ponytail: các khối chưa có trong DB (mô tả, ảnh, món nổi bật, đánh giá, tiện ích) dùng chung mẫu này cho mọi địa điểm,
+ * chờ backend bổ sung. Thông tin thật (tên, địa chỉ, tọa độ, điện thoại, website, rating, mức giá) lấy từ `locationService`.
+ */
+const DETAIL_TEMPLATE: Omit<NearbyPlaceDetail, "id" | "name" | "address" | "category" | "coordinates"> = {
+    rating: 4.5,
+    reviewCount: 0,
+    priceLevel: "",
+    tags: [],
+    imageUrl: IMG.bistro,
+    isVerified: false,
     description:
         "Founded in 2021 in the heart of Portland's Pearl District, Green Sprout Bistro is dedicated to reimagining compassionate, mindful eating without sacrificing depth, texture, or indulgence. We believe that whole-food plant nutrition is the most vibrant way to fuel human health and heal our living biosphere.\n\nEvery single sauce, nut creamer, and grain flour is prepared from scratch in our open kitchen. We partner exclusively with Willamette Valley organic growers, harvesting seasonal greens and wild Pacific Northwest mushrooms at their nutritional peak. No hydrogenated oils, zero synthetic preservatives, and zero animal exploitation.",
-    openNow: true,
-    openingHours: [
-        { day: "Monday", hours: "11:00 AM - 9:00 PM" },
-        { day: "Tuesday", hours: "11:00 AM - 9:00 PM", today: true },
-        { day: "Wednesday", hours: "11:00 AM - 9:00 PM" },
-        { day: "Thursday", hours: "11:00 AM - 10:00 PM" },
-        { day: "Friday", hours: "11:00 AM - 10:00 PM" },
-        { day: "Saturday", hours: "10:00 AM - 10:00 PM" },
-        { day: "Sunday", hours: "10:00 AM - 9:00 PM" },
-    ],
+    // Giờ mở cửa thật lấy từ địa điểm; chưa có thì để trống.
+    openNow: false,
+    openingHours: [],
     phone: "(503) 555-0192",
     email: "greensproutbistro.com",
     website: "@greensproutbistro",
@@ -172,26 +101,27 @@ const DETAIL: NearbyPlaceDetail = {
                 "\"Finding authentic celiac-safe mushroom bourguignon felt like a dream. Rich, unctuous wine reduction without any wheat thickeners. Staff was knowledgeable about every single ingredient.\"",
         },
     ],
-    coordinates: { lat: 45.5265, lng: -122.6821 },
 };
 
-/** GET nearby places — MOCK, chờ backend. */
-export async function getNearbyPlaces(params: { category?: NearbyPlace["category"] | "all"; q?: string } = {}) {
-    await delay();
-    const keyword = params.q?.trim().toLowerCase() ?? "";
-    const items = PLACES.filter((place) => {
-        if (params.category && params.category !== "all" && place.category !== params.category) return false;
-        if (!keyword) return true;
-        return `${place.name} ${place.address} ${place.tags.join(" ")}`.toLowerCase().includes(keyword);
-    }).sort((a, b) => a.distanceKm - b.distanceKm);
-
-    return { data: items, total: items.length };
-}
-
-/** GET location detail — MOCK, chờ backend. */
+/** GET location detail — dữ liệu thật từ `locationService`, phần còn lại là mẫu mock. */
 export async function getNearbyPlaceDetail(id: string): Promise<NearbyPlaceDetail> {
-    await delay();
-    const base = PLACES.find((place) => place.id === id);
-    if (!base) throw new Error("Location not found");
-    return { ...DETAIL, ...base };
+    const location = await getLocationById(id);
+    return {
+        ...DETAIL_TEMPLATE,
+        id: location.id,
+        name: location.name,
+        address: location.address,
+        category: location.placeType,
+        coordinates: { lat: location.latitude, lng: location.longitude },
+        phone: location.phoneNumber ?? "—",
+        website: location.websiteUrl ?? "—",
+        rating: location.rating ?? DETAIL_TEMPLATE.rating,
+        priceLevel: location.priceLevel ? "$".repeat(location.priceLevel) : "—",
+        ...(location.openingHours
+            ? {
+                  openingHours: formatOpeningHours(location.openingHours),
+                  openNow: isOpenNow(location.openingHours),
+              }
+            : {}),
+    };
 }

@@ -1,0 +1,96 @@
+{
+    "directions": "Chỉ đường",
+    "type": {
+        "restaurant": "Nhà hàng",
+        "grocery": "Cửa hàng",
+        "cafe": "Quán cà phê",
+        "market": "Chợ"
+    },
+    "allTypes": "Tất cả loại",
+    "map": {
+        "you": "Vị trí của bạn",
+        "tilesFailed": "Không tải được nền bản đồ. Danh sách địa điểm vẫn hiển thị bên cạnh; hãy kiểm tra kết nối mạng hoặc tiện ích chặn quảng cáo."
+    },
+    "page": {
+        "title": "Tìm địa điểm thuần chay gần bạn",
+        "subtitle": "Chia sẻ vị trí hoặc chọn khu vực để xem nhà hàng, quán cà phê, cửa hàng và chợ chay từ gần đến xa.",
+        "useMyLocation": "Dùng vị trí của tôi",
+        "locating": "Đang lấy vị trí của bạn...",
+        "denied": "Bạn đã từ chối quyền vị trí. Hãy chọn một khu vực bên dưới.",
+        "unsupported": "Trình duyệt không hỗ trợ định vị. Hãy chọn một khu vực bên dưới.",
+        "areaLabel": "Chọn khu vực",
+        "areaSubmit": "Tìm quanh khu vực này",
+        "area": {
+            "district1": "Quận 1",
+            "district3": "Quận 3",
+            "binhThanh": "Bình Thạnh",
+            "thuDuc": "Thủ Đức",
+            "district7": "Quận 7"
+        },
+        "searchLabel": "Tìm theo món hoặc tên",
+        "searchPlaceholder": "Ví dụ: đậu hũ, nấm",
+        "radiusLabel": "Bán kính",
+        "typeLabel": "Lọc theo loại",
+        "resultCount": "Tìm thấy {{count}} địa điểm",
+        "distance": "Cách {{value}}",
+        "phone": "Điện thoại",
+        "hours": "Giờ mở cửa",
+        "empty": {
+            "title": "Không tìm thấy quán chay nào gần đây",
+            "description": "Hãy thử bán kính lớn hơn hoặc khu vực khác.",
+            "expand": "Mở rộng bán kính"
+        },
+        "changeLocation": "Đổi vị trí"
+    },
+    "admin": {
+        "title": "Quản lý địa điểm",
+        "description": "Thêm, sửa và xóa các địa điểm chay hiển thị trên bản đồ gần đây.",
+        "create": "Thêm địa điểm",
+        "columns": {
+            "name": "Tên",
+            "address": "Địa chỉ",
+            "type": "Loại",
+            "actions": "Thao tác",
+            "rating": "Đánh giá",
+            "price": "Mức giá"
+        },
+        "actions": {
+            "edit": "Sửa",
+            "delete": "Xóa"
+        },
+        "empty": {
+            "title": "Chưa có địa điểm nào",
+            "description": "Thêm địa điểm chay đầu tiên."
+        },
+        "form": {
+            "createTitle": "Thêm địa điểm",
+            "editTitle": "Chỉnh sửa địa điểm",
+            "name": "Tên",
+            "address": "Địa chỉ",
+            "latitude": "Vĩ độ",
+            "longitude": "Kinh độ",
+            "type": "Loại",
+            "phone": "Số điện thoại",
+            "save": "Lưu thay đổi",
+            "noType": "Chọn loại",
+            "rating": "Đánh giá (0-5)",
+            "price": "Mức giá (1-4)",
+            "website": "Website"
+        },
+        "validation": {
+            "number": "Nhập một số",
+            "latitude": "Vĩ độ phải từ -90 đến 90",
+            "longitude": "Kinh độ phải từ -180 đến 180",
+            "rating": "Đánh giá phải từ 0 đến 5",
+            "price": "Mức giá phải từ 1 đến 4",
+            "url": "Nhập địa chỉ website hợp lệ"
+        },
+        "confirmDelete": "Xóa \"{{name}}\"? Địa điểm sẽ biến mất khỏi bản đồ gần đây.",
+        "toast": {
+            "created": "Đã thêm địa điểm",
+            "updated": "Đã cập nhật địa điểm",
+            "deleted": "Đã xóa địa điểm",
+            "failed": "Thao tác thất bại. Vui lòng thử lại."
+        }
+    }
+}

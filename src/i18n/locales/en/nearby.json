@@ -1,10 +1,8 @@
 {
-    "directoryLabel": "Local Plant Community Directory / Pacific Northwest Hub",
+    "directoryLabel": "Local Plant Community Directory / Ho Chi Minh City",
     "title": "Nearby Vegan Places",
     "subtitle": "Discover 100% plant-based restaurants, organic cafes, and vegan specialty shops near you.",
-    "locationNotice": "Location access enabled. Showing accurate distances from your current GPS location in Portland, OR.",
-    "changeLocation": "Change Permission / Enter Zip",
-    "areaPlaceholder": "Downtown Portland, OR (Within 5 miles)",
+    "changeLocation": "Use my location",
     "gpsRefresh": "GPS Refresh",
     "splitView": "Split View",
     "listOnly": "List Only",
@@ -12,8 +10,7 @@
     "sortBy": "Sort by",
     "sort": {
         "distance": "Closest first",
-        "rating": "Highest rated",
-        "reviews": "Most reviewed"
+        "rating": "Highest rated"
     },
     "sortStrict": "Sorted strictly: Closest to Farthest",
     "view": {
@@ -29,14 +26,12 @@
     "recipeMatch": "Recipe Match: {{dish}}",
     "viewDetails": "View Details",
     "directions": "Directions",
-    "mapTitle": "VEGALIFE Map Canvas",
-    "mapPlaceholder": "Interactive map requires a maps provider key.",
     "filter": {
         "all": "All Places",
         "restaurant": "100% Vegan Restaurant",
         "cafe": "Vegetarian Cafe",
-        "bakery": "Plant-Based Bakery",
-        "market": "Organic Grocery & Market"
+        "market": "Vegan Market",
+        "grocery": "Organic Grocery"
     },
     "empty": {
         "title": "No places in this category",
@@ -95,5 +90,8 @@
             "action": "Back to Nearby"
         },
         "error": "Unable to load this location. Please try again."
-    }
+    },
+    "locationNoticeGps": "Showing places within {{radius}} km of your current GPS location.",
+    "locationNoticeArea": "Showing places within {{radius}} km of {{area}}.",
+    "retry": "Try again"
 }

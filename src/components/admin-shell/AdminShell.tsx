@@ -15,7 +15,7 @@ const navItems = [
     { to: "/admin/videos", labelKey: "videos", icon: Video, ready: true },
     { to: "/admin/comments", labelKey: "comments", icon: MessageSquare, ready: false },
     { to: "/admin/categories", labelKey: "categories", icon: Tags, ready: true },
-    { to: "/admin/locations", labelKey: "locations", icon: MapPin, ready: false },
+    { to: "/admin/locations", labelKey: "locations", icon: MapPin, ready: true },
     { to: "/admin/profile", labelKey: "profile", icon: UserCircle, ready: true },
 ];
 

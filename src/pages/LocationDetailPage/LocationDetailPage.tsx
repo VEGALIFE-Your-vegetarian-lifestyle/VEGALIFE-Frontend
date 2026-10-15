@@ -26,6 +26,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { getNearbyPlaceDetail } from "@/services/nearbyService";
+import { openDirections } from "@/utils/maps";
 import { cn } from "@/lib/utils";
 
 const GALLERY_LABELS = ["interior", "kitchen", "plating"] as const;
@@ -68,7 +69,6 @@ export default function LocationDetailPage() {
     const todayHours = place.openingHours.find((item) => item.today)?.hours ?? "";
 
     const facts = [
-        { icon: MapPin, label: t("detail.distance"), value: `${place.distanceKm} km (${place.district})` },
         {
             icon: Clock,
             label: t("detail.status"),
@@ -160,12 +160,20 @@ export default function LocationDetailPage() {
                         </span>
                         <span className="flex items-center gap-1.5">
                             <MapPin className="h-4 w-4" aria-hidden="true" />
-                            {place.address} · {place.district}
+                            {place.address}
                         </span>
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <Button onClick={developing}>
+                    <Button
+                        onClick={() =>
+                            openDirections({
+                                address: place.address,
+                                latitude: place.coordinates.lat,
+                                longitude: place.coordinates.lng,
+                            })
+                        }
+                    >
                         <Navigation className="h-4 w-4" aria-hidden="true" />
                         {t("detail.getDirections")}
                     </Button>

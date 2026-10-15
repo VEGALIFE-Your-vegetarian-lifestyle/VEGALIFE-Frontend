@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import {
     ChevronDown,
@@ -11,24 +10,33 @@ import {
     Map as MapIcon,
     MapPin,
     Navigation,
+    Phone,
     RefreshCw,
     Sparkles,
     Star,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PlaceMap } from "@/components/map/PlaceMap";
 import { PillTabs } from "@/components/ui/pill-tabs";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { getNearbyPlaces } from "@/services/nearbyService";
-import type { NearbyPlace } from "@/types/nearby";
+import { useGeolocation, type Coordinates } from "@/hooks/useGeolocation";
+import { MOCK_AREAS, type MockAreaKey } from "@/shared/mocks/locations";
+import { getNearbyLocations } from "@/services/locationService";
+import type { LocationItem, LocationType } from "@/types/location";
+import { formatDistance } from "@/utils/distance";
+import { openDirections } from "@/utils/maps";
 import { cn } from "@/lib/utils";
 
-type CategoryFilter = NearbyPlace["category"] | "all";
+type CategoryFilter = LocationType | "all";
 type ViewMode = "split" | "list" | "map";
 
-const FILTERS: CategoryFilter[] = ["all", "restaurant", "cafe", "bakery", "market"];
+const FILTERS: CategoryFilter[] = ["all", "restaurant", "cafe", "grocery", "market"];
+
+// Bán kính tìm kiếm cố định; backend nhận bán kính qua tham số khi có API.
+const RADIUS_KM = 10;
 
 const VIEW_MODES: { key: ViewMode; labelKey: string; icon: typeof List }[] = [
     { key: "split", labelKey: "view.split", icon: LayoutGrid },
@@ -36,63 +44,88 @@ const VIEW_MODES: { key: ViewMode; labelKey: string; icon: typeof List }[] = [
     { key: "map", labelKey: "view.map", icon: MapIcon },
 ];
 
-function PlaceCard({ place }: { place: NearbyPlace }) {
+function PlaceCard({
+    place,
+    origin,
+    selected,
+    onSelect,
+}: {
+    place: LocationItem;
+    origin?: Coordinates;
+    selected: boolean;
+    onSelect: () => void;
+}) {
     const { t } = useTranslation("nearby");
     const navigate = useNavigate();
 
     return (
-        <article className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-row">
-            <div className="relative h-40 w-full flex-shrink-0 overflow-hidden rounded-xl sm:h-32 sm:w-44">
-                <img src={place.imageUrl} alt={place.name} className="h-full w-full object-cover" loading="lazy" />
-                {place.recipeMatch && (
-                    <Badge variant="glass" size="sm" className="absolute left-2 top-2">
-                        <Sparkles className="h-3 w-3" aria-hidden="true" />
-                        {t("recipeMatch", { dish: place.recipeMatch })}
-                    </Badge>
+        <article
+            onClick={onSelect}
+            className={cn(
+                "flex cursor-pointer flex-col gap-4 rounded-2xl border bg-card p-4 shadow-sm sm:flex-row",
+                selected ? "border-vegan-green ring-2 ring-vegan-green/30" : "border-border",
+            )}
+        >
+            <div className="relative flex h-32 w-full flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-vegan-green-subtle sm:w-44">
+                <MapPin className="h-8 w-8 text-vegan-green" aria-hidden="true" />
+                {place.distance !== undefined && (
+                    <span className="absolute bottom-2 left-2 rounded-full bg-dark/80 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
+                        {formatDistance(place.distance / 1000)}
+                    </span>
                 )}
-                <span className="absolute bottom-2 left-2 rounded-full bg-dark/80 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
-                    {place.distanceKm} km
-                </span>
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col">
                 <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={place.category === "restaurant" ? "lightgreen" : "cream"} size="sm">
-                        {t(`filter.${place.category}`)}
+                    <Badge variant={place.placeType === "restaurant" ? "lightgreen" : "cream"} size="sm">
+                        {t(`filter.${place.placeType}`)}
                     </Badge>
-                    {place.isVerified && (
-                        <Badge variant="info" size="sm">
-                            {t("verified")}
-                        </Badge>
+                    {place.rating !== undefined && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Star className="h-3.5 w-3.5 fill-amber-soft text-amber-strong" aria-hidden="true" />
+                            <span className="font-bold text-dark">{place.rating.toFixed(1)}</span>
+                        </span>
                     )}
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Star className="h-3.5 w-3.5 fill-amber-soft text-amber-strong" aria-hidden="true" />
-                        <span className="font-bold text-dark">{place.rating}</span>({place.reviewCount})
-                    </span>
+                    {place.priceLevel !== undefined && (
+                        <span
+                            className="text-xs font-semibold text-muted-foreground"
+                            aria-label={`${place.priceLevel}/4`}
+                        >
+                            {"$".repeat(place.priceLevel)}
+                        </span>
+                    )}
                 </div>
 
                 <h3 className="mt-2 font-bold text-dark">{place.name}</h3>
                 <p className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                    <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
                     {place.address}
                 </p>
-
-                <div className="mt-2 flex flex-wrap gap-1">
-                    {place.tags.map((tag) => (
-                        <span
-                            key={tag}
-                            className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-muted-foreground"
-                        >
-                            {tag}
-                        </span>
-                    ))}
-                </div>
+                {place.phoneNumber && (
+                    <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+                        <Phone className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+                        {place.phoneNumber}
+                    </p>
+                )}
 
                 <div className="mt-auto flex flex-wrap gap-2 pt-3">
-                    <Button size="sm" variant="outline" onClick={() => navigate(`/nearby/${place.id}`)}>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            navigate(`/nearby/${place.id}`);
+                        }}
+                    >
                         {t("viewDetails")}
                     </Button>
-                    <Button size="sm" onClick={() => toast.info(t("common:featureDeveloping"))}>
+                    <Button
+                        size="sm"
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            openDirections(place, origin);
+                        }}
+                    >
                         <Navigation className="h-4 w-4" aria-hidden="true" />
                         {t("directions")}
                     </Button>
@@ -102,70 +135,34 @@ function PlaceCard({ place }: { place: NearbyPlace }) {
     );
 }
 
-/**
- * Bản đồ dựng bằng CSS theo mockup.
- * ponytail: chưa có API/key bản đồ — thay bằng Google Maps/Mapbox khi có key.
- */
-function MapCanvas({ places, onSelect }: { places: NearbyPlace[]; onSelect: (id: string) => void }) {
-    const { t } = useTranslation("nearby");
-
-    return (
-        <div className="relative h-[520px] overflow-hidden rounded-2xl border border-border bg-vegan-green-subtle">
-            {/* Lưới đường */}
-            <div
-                aria-hidden="true"
-                className="absolute inset-0 opacity-60"
-                style={{
-                    backgroundImage:
-                        "linear-gradient(to right, var(--color-border) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border) 1px, transparent 1px)",
-                    backgroundSize: "56px 56px",
-                }}
-            />
-            <div aria-hidden="true" className="absolute left-0 right-0 top-1/3 h-3 bg-lavender-hover/70" />
-            <div aria-hidden="true" className="absolute bottom-0 left-1/4 top-0 w-3 bg-lavender-hover/70" />
-
-            {/* Ghim giá */}
-            {places.slice(0, 5).map((place, index) => (
-                <button
-                    key={place.id}
-                    type="button"
-                    onClick={() => onSelect(place.id)}
-                    style={{
-                        left: `${14 + ((index * 17) % 70)}%`,
-                        top: `${18 + ((index * 23) % 60)}%`,
-                    }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-vegan-green-muted bg-surface px-3 py-1.5 text-xs font-bold text-dark shadow-md transition hover:bg-vegan-green hover:text-white"
-                >
-                    {place.name.split(" ")[0]}
-                </button>
-            ))}
-
-            <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-xl border border-border bg-surface/95 px-3 py-2 text-xs text-muted-foreground backdrop-blur-sm">
-                <MapIcon className="h-3.5 w-3.5 text-vegan-green" aria-hidden="true" />
-                {t("mapPlaceholder")}
-            </div>
-        </div>
-    );
-}
-
 export default function NearbyPage() {
     const { t } = useTranslation("nearby");
+    const { t: tl } = useTranslation("location");
     const navigate = useNavigate();
+    const geo = useGeolocation();
+    const [areaKey, setAreaKey] = useState<MockAreaKey>(MOCK_AREAS[0].key);
+    const [useGps, setUseGps] = useState(false);
     const [category, setCategory] = useState<CategoryFilter>("all");
     const [view, setView] = useState<ViewMode>("split");
     const [sort, setSort] = useState("distance");
+    const [selectedId, setSelectedId] = useState<string | null>(null);
 
-    // Một request lấy hết, lọc client-side — đủ để có count cho từng pill.
-    // ponytail: đổi sang query theo category khi danh bạ lớn hơn vài trăm mục.
+    // Điểm xuất phát: GPS nếu người dùng đã cho phép, ngược lại là khu vực đang chọn (BR-NEARBY-001).
+    const area = MOCK_AREAS.find((item) => item.key === areaKey) ?? MOCK_AREAS[0];
+    const origin: Coordinates = useGps && geo.coords ? geo.coords : { lat: area.lat, lng: area.lng };
+    // Chỉ chỉ đường từ GPS thật; khu vực mock chỉ để lọc, nên để Google Maps tự lấy vị trí hiện tại của người dùng.
+    const directionsOrigin = useGps && geo.coords ? geo.coords : undefined;
+
+    // Một request lấy hết trong bán kính, lọc client-side — đủ để có count cho từng pill.
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ["nearby-places"],
-        queryFn: () => getNearbyPlaces(),
+        queryKey: ["nearby-locations", origin.lat, origin.lng, RADIUS_KM],
+        queryFn: () => getNearbyLocations({ lat: origin.lat, lng: origin.lng, radius: RADIUS_KM * 1000 }),
     });
 
-    const allPlaces = data?.data ?? [];
+    const allPlaces = data ?? [];
 
     const countFor = (key: CategoryFilter) =>
-        key === "all" ? allPlaces.length : allPlaces.filter((place) => place.category === key).length;
+        key === "all" ? allPlaces.length : allPlaces.filter((place) => place.placeType === key).length;
 
     const tabs = FILTERS.map((key) => ({
         key,
@@ -174,12 +171,26 @@ export default function NearbyPage() {
     }));
 
     const sorted = allPlaces
-        .filter((place) => category === "all" || place.category === category)
-        .sort((a, b) => {
-            if (sort === "rating") return b.rating - a.rating;
-            if (sort === "reviews") return b.reviewCount - a.reviewCount;
-            return a.distanceKm - b.distanceKm;
-        });
+        .filter((place) => category === "all" || place.placeType === category)
+        .sort((a, b) =>
+            sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) : (a.distance ?? 0) - (b.distance ?? 0),
+        );
+
+    const requestGps = () => {
+        setUseGps(true);
+        geo.request();
+    };
+
+    const notice =
+        geo.status === "loading"
+            ? tl("page.locating")
+            : geo.status === "denied"
+              ? tl("page.denied")
+              : geo.status === "unsupported"
+                ? tl("page.unsupported")
+                : useGps && geo.coords
+                  ? t("locationNoticeGps", { radius: RADIUS_KM })
+                  : t("locationNoticeArea", { area: tl(`page.area.${area.key}`), radius: RADIUS_KM });
 
     const showList = view !== "map";
     const showMap = view !== "list";
@@ -195,14 +206,17 @@ export default function NearbyPage() {
                 <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
             </header>
 
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted-bg px-4 py-3 text-sm">
+            <div
+                role="status"
+                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted-bg px-4 py-3 text-sm"
+            >
                 <span className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="h-4 w-4 text-vegan-green" aria-hidden="true" />
-                    {t("locationNotice")}
+                    {notice}
                 </span>
                 <button
                     type="button"
-                    onClick={() => toast.info(t("common:featureDeveloping"))}
+                    onClick={requestGps}
                     className="whitespace-nowrap text-xs font-semibold text-vegan-green hover:underline"
                 >
                     {t("changeLocation")}
@@ -229,17 +243,27 @@ export default function NearbyPage() {
             <div className="flex flex-wrap items-center gap-2">
                 <div className="relative flex-1 sm:min-w-64">
                     <MapPin
-                        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                        className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                         aria-hidden="true"
                     />
-                    <input
-                        readOnly
-                        value={t("areaPlaceholder")}
-                        aria-label={t("areaPlaceholder")}
-                        className="h-11 w-full rounded-xl border border-border bg-surface pl-9 pr-3 text-sm text-dark"
-                    />
+                    <Select
+                        value={areaKey}
+                        onChange={(event) => {
+                            setAreaKey(event.target.value as MockAreaKey);
+                            setUseGps(false);
+                            setSelectedId(null);
+                        }}
+                        aria-label={tl("page.areaLabel")}
+                        className="h-11 pl-9"
+                    >
+                        {MOCK_AREAS.map((item) => (
+                            <option key={item.key} value={item.key}>
+                                {tl(`page.area.${item.key}`)}
+                            </option>
+                        ))}
+                    </Select>
                 </div>
-                <Button variant="outline" onClick={() => refetch()}>
+                <Button variant="outline" onClick={requestGps} disabled={geo.status === "loading"}>
                     <RefreshCw className="h-4 w-4" aria-hidden="true" />
                     {t("gpsRefresh")}
                 </Button>
@@ -254,7 +278,9 @@ export default function NearbyPage() {
                             aria-label={t(labelKey)}
                             className={cn(
                                 "flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition",
-                                view === key ? "bg-vegan-green text-white" : "text-muted-foreground hover:text-vegan-green",
+                                view === key
+                                    ? "bg-vegan-green text-white"
+                                    : "text-muted-foreground hover:text-vegan-green",
                             )}
                         >
                             <Icon className="h-4 w-4" aria-hidden="true" />
@@ -270,7 +296,6 @@ export default function NearbyPage() {
                 >
                     <option value="distance">{t("sort.distance")}</option>
                     <option value="rating">{t("sort.rating")}</option>
-                    <option value="reviews">{t("sort.reviews")}</option>
                 </Select>
             </div>
 
@@ -293,9 +318,14 @@ export default function NearbyPage() {
                 {showList && (
                     <div className="space-y-4">
                         {isError ? (
-                            <p className="text-sm text-danger" role="alert">
-                                {t("error")}
-                            </p>
+                            <div className="rounded-2xl border border-border bg-card p-4">
+                                <p className="text-sm text-danger" role="alert">
+                                    {t("error")}
+                                </p>
+                                <Button size="sm" variant="outline" className="mt-3" onClick={() => refetch()}>
+                                    {t("retry")}
+                                </Button>
+                            </div>
                         ) : isLoading ? (
                             Array.from({ length: 4 }).map((_, index) => (
                                 <Skeleton key={index} className="h-44 rounded-2xl" />
@@ -310,7 +340,15 @@ export default function NearbyPage() {
                                 />
                             </div>
                         ) : (
-                            sorted.map((place) => <PlaceCard key={place.id} place={place} />)
+                            sorted.map((place) => (
+                                <PlaceCard
+                                    key={place.id}
+                                    place={place}
+                                    origin={directionsOrigin}
+                                    selected={place.id === selectedId}
+                                    onSelect={() => setSelectedId(place.id)}
+                                />
+                            ))
                         )}
                     </div>
                 )}
@@ -318,7 +356,14 @@ export default function NearbyPage() {
                 {showMap && (
                     <aside className={cn(view === "split" && "hidden lg:block")}>
                         <div className={cn(view === "split" && "sticky top-24")}>
-                            <MapCanvas places={sorted} onSelect={(id) => navigate(`/nearby/${id}`)} />
+                            <PlaceMap
+                                places={sorted}
+                                center={origin}
+                                directionsOrigin={directionsOrigin}
+                                selectedId={selectedId}
+                                onSelect={setSelectedId}
+                                className="h-[520px] w-full rounded-2xl border border-border"
+                            />
                         </div>
                     </aside>
                 )}

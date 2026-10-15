@@ -12,6 +12,7 @@ import AdminDashboardPage from "@/pages/Admin/AdminDashboardPage/AdminDashboardP
 import AiNutritionPage from "@/pages/AiNutritionPage/AiNutritionPage";
 import CreatePostPage from "@/pages/CreatePostPage/CreatePostPage";
 import ExplorePage from "@/pages/ExplorePage/ExplorePage";
+import LocationsPage from "@/pages/Admin/LocationsPage/LocationsPage";
 import LocationDetailPage from "@/pages/LocationDetailPage/LocationDetailPage";
 import NearbyPage from "@/pages/NearbyPage/NearbyPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage/ForgotPasswordPage";
@@ -115,6 +116,7 @@ export default function AppRoutes() {
                 <Route path="videos" element={<VideosPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="users" element={<UsersPage />} />
+                <Route path="locations" element={<LocationsPage />} />
                 <Route path="profile" element={<ProfilePage embedded />} />
             </Route>
 
