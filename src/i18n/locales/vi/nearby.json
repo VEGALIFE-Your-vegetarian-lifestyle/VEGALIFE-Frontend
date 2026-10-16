@@ -89,7 +89,8 @@
             "description": "Địa điểm này không tồn tại trong danh bạ.",
             "action": "Về danh sách"
         },
-        "error": "Không thể tải địa điểm này. Vui lòng thử lại."
+        "error": "Không thể tải địa điểm này. Vui lòng thử lại.",
+        "daily": "Hằng ngày"
     },
     "locationNoticeGps": "Đang hiển thị địa điểm trong bán kính {{radius}} km quanh vị trí GPS của bạn.",
     "locationNoticeArea": "Đang hiển thị địa điểm trong bán kính {{radius}} km quanh {{area}}.",

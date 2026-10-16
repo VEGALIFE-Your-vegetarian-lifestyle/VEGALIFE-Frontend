@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import { formatOpeningHours, isOpenNow } from "@/utils/openingHours";
 
 const HOURS = {
-    monday: [{ open: "08:00", close: "12:00" }, { open: "14:00", close: "21:00" }],
+    monday: [
+        { open: "08:00", close: "12:00" },
+        { open: "14:00", close: "21:00" },
+    ],
     tuesday: [{ open: "08:00", close: "21:00" }],
     sunday: [],
 };
@@ -15,7 +18,12 @@ describe("formatOpeningHours", () => {
         const rows = formatOpeningHours(HOURS, monday("10:00"));
 
         expect(rows.map((row) => row.day)).toEqual(["Monday", "Tuesday", "Sunday"]);
-        expect(rows[0]).toEqual({ day: "Monday", hours: "08:00 - 12:00, 14:00 - 21:00", today: true });
+        expect(rows[0]).toEqual({
+            day: "Monday",
+            dayKey: "monday",
+            hours: "08:00 - 12:00, 14:00 - 21:00",
+            today: true,
+        });
         expect(rows[1].today).toBe(false);
         expect(rows[2].hours).toBe("—");
     });

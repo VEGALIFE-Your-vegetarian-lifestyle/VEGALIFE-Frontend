@@ -23,9 +23,26 @@
         "area": {
             "district1": "District 1",
             "district3": "District 3",
+            "district4": "District 4",
+            "district5": "District 5",
+            "district6": "District 6",
+            "district7": "District 7",
+            "district8": "District 8",
+            "district10": "District 10",
+            "district11": "District 11",
+            "district12": "District 12",
             "binhThanh": "Binh Thanh",
-            "thuDuc": "Thu Duc",
-            "district7": "District 7"
+            "goVap": "Go Vap",
+            "phuNhuan": "Phu Nhuan",
+            "tanBinh": "Tan Binh",
+            "tanPhu": "Tan Phu",
+            "binhTan": "Binh Tan",
+            "thuDuc": "Thu Duc City",
+            "binhChanh": "Binh Chanh",
+            "nhaBe": "Nha Be",
+            "hocMon": "Hoc Mon",
+            "cuChi": "Cu Chi",
+            "canGio": "Can Gio"
         },
         "searchLabel": "Search by dish or name",
         "searchPlaceholder": "e.g. tofu, mushroom",
@@ -75,7 +92,9 @@
             "noType": "Select a type",
             "rating": "Rating (0-5)",
             "price": "Price level (1-4)",
-            "website": "Website"
+            "website": "Website",
+            "openTime": "Opening time",
+            "closeTime": "Closing time"
         },
         "validation": {
             "number": "Enter a number",
@@ -83,7 +102,9 @@
             "longitude": "Longitude must be between -180 and 180",
             "rating": "Rating must be between 0 and 5",
             "price": "Price level must be between 1 and 4",
-            "url": "Enter a valid URL"
+            "url": "Enter a valid URL",
+            "hours": "Closing time must be after opening time",
+            "hoursPair": "Enter both opening and closing time"
         },
         "confirmDelete": "Delete \"{{name}}\"? It will disappear from the nearby map.",
         "toast": {
@@ -92,5 +113,14 @@
             "deleted": "Location deleted",
             "failed": "Action failed. Please try again."
         }
+    },
+    "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
     }
 }

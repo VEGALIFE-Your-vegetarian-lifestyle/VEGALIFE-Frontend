@@ -7,11 +7,25 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { FormField } from "@/shared/components/FormField";
-import { LOCATION_TYPES, type LocationItem, type LocationPayload, type LocationType } from "@/types/location";
+import {
+    LOCATION_TYPES,
+    type LocationItem,
+    type LocationPayload,
+    type LocationType,
+    type OpeningHours,
+} from "@/types/location";
 
 const MAX_NAME_LENGTH = 255;
 const MAX_PHONE_LENGTH = 20;
 const MAX_ADDRESS_LENGTH = 255;
+
+const WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+
+/** Form chỉ có một khung giờ dùng chung cho cả tuần; dữ liệu cũ khác nhau theo ngày thì lấy giờ của ngày đầu tiên. */
+const firstRange = (hours?: OpeningHours) => Object.values(hours ?? {}).find((ranges) => ranges.length > 0)?.[0];
+
+const toOpeningHours = (open: string, close: string): OpeningHours =>
+    Object.fromEntries(WEEKDAYS.map((day) => [day, [{ open, close }]]));
 
 // Ô số để trống thì coi là chưa nhập (undefined), không phải lỗi.
 const emptyToUndefined = (value: unknown, original: unknown) => (original === "" ? undefined : value);
@@ -61,6 +75,18 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
                     .integer(t("admin.validation.price"))
                     .min(1, t("admin.validation.price"))
                     .max(4, t("admin.validation.price")),
+                // Formik đổi chuỗi rỗng thành undefined trước khi kiểm tra, nên so bằng giá trị "falsy".
+                openTime: Yup.string().test("pair", t("admin.validation.hoursPair"), function (value) {
+                    return !value || Boolean(this.parent.closeTime);
+                }),
+                closeTime: Yup.string()
+                    .test("pair", t("admin.validation.hoursPair"), function (value) {
+                        return !value || Boolean(this.parent.openTime);
+                    })
+                    .test("order", t("admin.validation.hours"), function (value) {
+                        const open = this.parent.openTime as string;
+                        return !value || !open || open < value;
+                    }),
             }),
         [t],
     );
@@ -77,6 +103,8 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
             websiteUrl: location?.websiteUrl ?? "",
             rating: location?.rating !== undefined ? String(location.rating) : "",
             priceLevel: location?.priceLevel !== undefined ? String(location.priceLevel) : "",
+            openTime: firstRange(location?.openingHours)?.open ?? "",
+            closeTime: firstRange(location?.openingHours)?.close ?? "",
         },
         validationSchema: schema,
         onSubmit: (values) =>
@@ -91,13 +119,24 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
                 websiteUrl: values.websiteUrl.trim(),
                 rating: values.rating === "" ? undefined : Number(values.rating),
                 priceLevel: values.priceLevel === "" ? undefined : Number(values.priceLevel),
+                // Khi sửa mà xóa trống giờ thì gửi {} để xóa giờ cũ; khi tạo mà chưa nhập thì không gửi.
+                openingHours:
+                    values.openTime !== "" && values.closeTime !== ""
+                        ? toOpeningHours(values.openTime, values.closeTime)
+                        : location?.openingHours
+                          ? {}
+                          : undefined,
             }),
     });
 
     const fieldError = (name: keyof typeof formik.values) =>
         formik.touched[name] ? (formik.errors[name] as string | undefined) : undefined;
 
-    const textField = (name: "name" | "address" | "latitude" | "longitude" | "phoneNumber" | "websiteUrl" | "rating" | "priceLevel", label: string, required = false) => (
+    const textField = (
+        name: "name" | "address" | "latitude" | "longitude" | "phoneNumber" | "websiteUrl" | "rating" | "priceLevel",
+        label: string,
+        required = false,
+    ) => (
         <FormField label={label} htmlFor={name} required={required} error={fieldError(name)}>
             <Input
                 id={name}
@@ -140,6 +179,28 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
             </div>
             {textField("phoneNumber", t("admin.form.phone"))}
             {textField("websiteUrl", t("admin.form.website"))}
+            <div className="grid grid-cols-2 gap-4">
+                <FormField label={t("admin.form.openTime")} htmlFor="openTime" error={fieldError("openTime")}>
+                    <Input
+                        id="openTime"
+                        name="openTime"
+                        type="time"
+                        value={formik.values.openTime}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                    />
+                </FormField>
+                <FormField label={t("admin.form.closeTime")} htmlFor="closeTime" error={fieldError("closeTime")}>
+                    <Input
+                        id="closeTime"
+                        name="closeTime"
+                        type="time"
+                        value={formik.values.closeTime}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                    />
+                </FormField>
+            </div>
             <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={onClose}>
                     {t("common:cancel")}

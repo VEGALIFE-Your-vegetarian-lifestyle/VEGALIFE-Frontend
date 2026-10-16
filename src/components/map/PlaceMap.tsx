@@ -55,12 +55,22 @@ interface PlaceMapProps {
     places: LocationItem[];
     center: Coordinates;
     directionsOrigin?: Coordinates;
+    /** Hiện chấm "vị trí của bạn" tại `center`; tắt khi `center` chính là địa điểm đang xem. */
+    showOrigin?: boolean;
     selectedId?: string | null;
     onSelect?: (id: string) => void;
     className?: string;
 }
 
-export function PlaceMap({ places, center, directionsOrigin, selectedId, onSelect, className }: PlaceMapProps) {
+export function PlaceMap({
+    places,
+    center,
+    directionsOrigin,
+    showOrigin = true,
+    selectedId,
+    onSelect,
+    className,
+}: PlaceMapProps) {
     const { t } = useTranslation("location");
     const [sourceIndex, setSourceIndex] = useState(0);
     const errorCount = useRef(0);
@@ -98,7 +108,7 @@ export function PlaceMap({ places, center, directionsOrigin, selectedId, onSelec
                     }}
                 />
                 <Recenter center={center} />
-                <Marker position={[center.lat, center.lng]} icon={originIcon} title={t("map.you")} />
+                {showOrigin && <Marker position={[center.lat, center.lng]} icon={originIcon} title={t("map.you")} />}
                 {places.map((place) => (
                     <Marker
                         key={place.id}

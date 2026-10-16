@@ -3,7 +3,8 @@ import type { OpeningHours } from "@/types/location";
 const DAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
 
 /** Chấp nhận key tiếng Anh dạng đầy đủ hoặc 3 chữ cái, không phân biệt hoa thường: "Monday", "mon". */
-const dayIndex = (key: string) => DAYS.findIndex((day) => day === key.toLowerCase() || day.slice(0, 3) === key.toLowerCase());
+const dayIndex = (key: string) =>
+    DAYS.findIndex((day) => day === key.toLowerCase() || day.slice(0, 3) === key.toLowerCase());
 
 // Thứ Hai = 0 … Chủ nhật = 6; key không nhận ra xếp cuối.
 const order = (index: number) => (index < 0 ? 99 : (index + 6) % 7);
@@ -24,6 +25,8 @@ export function formatOpeningHours(openingHours: OpeningHours, now: Date = new D
         .sort((a, b) => order(a.index) - order(b.index))
         .map(({ key, index, ranges }) => ({
             day: key.charAt(0).toUpperCase() + key.slice(1),
+            /** Tên thứ chuẩn (monday…sunday) để dịch; key lạ thì không có. */
+            dayKey: index < 0 ? undefined : DAYS[index],
             hours: ranges.length > 0 ? formatRanges(ranges) : "—",
             today: index === today,
         }));

@@ -89,7 +89,8 @@
             "description": "This place does not exist in our directory.",
             "action": "Back to Nearby"
         },
-        "error": "Unable to load this location. Please try again."
+        "error": "Unable to load this location. Please try again.",
+        "daily": "Every day"
     },
     "locationNoticeGps": "Showing places within {{radius}} km of your current GPS location.",
     "locationNoticeArea": "Showing places within {{radius}} km of {{area}}.",

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
 import { renderWithProviders } from "@/test/renderWithProviders";
@@ -108,6 +108,38 @@ describe("LocationsPage (Admin)", () => {
 
         const row = (await screen.findByText("Quán Chỉ Có Tên")).closest("tr")!;
         expect(within(row).getAllByText("—")).toHaveLength(2);
+    });
+
+    it("nhập giờ mở cửa: báo lỗi khi thiếu một giờ hoặc giờ đóng trước giờ mở, lưu được và mở lại vẫn còn", async () => {
+        const user = userEvent.setup();
+        renderWithProviders(<LocationsPage />);
+        await screen.findByText(FIRST_ROW);
+
+        await user.click(screen.getByRole("button", { name: /Add location/ }));
+        let dialog = openDialog();
+        await user.type(dialog.getByLabelText(/^Name/), "Quán Có Giờ");
+        await user.type(dialog.getByLabelText(/^Address/), "3 Đường Test");
+        await user.type(dialog.getByLabelText(/Latitude/), "10.79");
+        await user.type(dialog.getByLabelText(/Longitude/), "106.69");
+        await user.selectOptions(dialog.getByLabelText(/Type/), "Cafe");
+
+        fireEvent.change(dialog.getByLabelText("Opening time"), { target: { value: "07:00" } });
+        await user.click(dialog.getByRole("button", { name: "Add location" }));
+        expect(await dialog.findByText("Enter both opening and closing time")).toBeInTheDocument();
+
+        fireEvent.change(dialog.getByLabelText("Closing time"), { target: { value: "06:00" } });
+        await user.click(dialog.getByRole("button", { name: "Add location" }));
+        expect(await dialog.findByText("Closing time must be after opening time")).toBeInTheDocument();
+
+        fireEvent.change(dialog.getByLabelText("Closing time"), { target: { value: "21:30" } });
+        await user.click(dialog.getByRole("button", { name: "Add location" }));
+        await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Location added"));
+
+        const row = (await screen.findByText("Quán Có Giờ")).closest("tr")!;
+        await user.click(within(row).getByRole("button", { name: "Edit" }));
+        dialog = openDialog();
+        expect(dialog.getByLabelText("Opening time")).toHaveValue("07:00");
+        expect(dialog.getByLabelText("Closing time")).toHaveValue("21:30");
     });
 
     it("xóa mềm có xác nhận, địa điểm biến khỏi bảng", async () => {

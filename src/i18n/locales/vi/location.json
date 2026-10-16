@@ -23,9 +23,26 @@
         "area": {
             "district1": "Quận 1",
             "district3": "Quận 3",
+            "district4": "Quận 4",
+            "district5": "Quận 5",
+            "district6": "Quận 6",
+            "district7": "Quận 7",
+            "district8": "Quận 8",
+            "district10": "Quận 10",
+            "district11": "Quận 11",
+            "district12": "Quận 12",
             "binhThanh": "Bình Thạnh",
-            "thuDuc": "Thủ Đức",
-            "district7": "Quận 7"
+            "goVap": "Gò Vấp",
+            "phuNhuan": "Phú Nhuận",
+            "tanBinh": "Tân Bình",
+            "tanPhu": "Tân Phú",
+            "binhTan": "Bình Tân",
+            "thuDuc": "TP. Thủ Đức",
+            "binhChanh": "Bình Chánh",
+            "nhaBe": "Nhà Bè",
+            "hocMon": "Hóc Môn",
+            "cuChi": "Củ Chi",
+            "canGio": "Cần Giờ"
         },
         "searchLabel": "Tìm theo món hoặc tên",
         "searchPlaceholder": "Ví dụ: đậu hũ, nấm",
@@ -75,7 +92,9 @@
             "noType": "Chọn loại",
             "rating": "Đánh giá (0-5)",
             "price": "Mức giá (1-4)",
-            "website": "Website"
+            "website": "Website",
+            "openTime": "Giờ mở cửa",
+            "closeTime": "Giờ đóng cửa"
         },
         "validation": {
             "number": "Nhập một số",
@@ -83,7 +102,9 @@
             "longitude": "Kinh độ phải từ -180 đến 180",
             "rating": "Đánh giá phải từ 0 đến 5",
             "price": "Mức giá phải từ 1 đến 4",
-            "url": "Nhập địa chỉ website hợp lệ"
+            "url": "Nhập địa chỉ website hợp lệ",
+            "hours": "Giờ đóng cửa phải sau giờ mở cửa",
+            "hoursPair": "Hãy nhập cả giờ mở cửa và giờ đóng cửa"
         },
         "confirmDelete": "Xóa \"{{name}}\"? Địa điểm sẽ biến mất khỏi bản đồ gần đây.",
         "toast": {
@@ -92,5 +113,14 @@
             "deleted": "Đã xóa địa điểm",
             "failed": "Thao tác thất bại. Vui lòng thử lại."
         }
+    },
+    "days": {
+        "monday": "Thứ Hai",
+        "tuesday": "Thứ Ba",
+        "wednesday": "Thứ Tư",
+        "thursday": "Thứ Năm",
+        "friday": "Thứ Sáu",
+        "saturday": "Thứ Bảy",
+        "sunday": "Chủ nhật"
     }
 }
