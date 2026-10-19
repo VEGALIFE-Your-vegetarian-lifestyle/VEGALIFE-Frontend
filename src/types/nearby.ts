@@ -1,37 +1,8 @@
-/**
- * Nearby / location — backend chưa có API (SRS nhóm 22–23).
- * Kiểu dữ liệu bám theo mockup UI để khi BE xong chỉ cần đổi ruột `nearbyService`.
- */
-export interface NearbyPlace {
-    id: string;
-    name: string;
-    category: "restaurant" | "cafe" | "bakery" | "market";
-    address: string;
-    district: string;
-    distanceKm: number;
-    rating: number;
-    reviewCount: number;
-    priceLevel: string;
-    /** Nhãn ngắn: "100% Vegan", "Organic", "Farm-to-Table"… */
-    tags: string[];
-    imageUrl: string;
-    isVerified: boolean;
-    /** Món khớp với công thức cộng đồng, hiện thành badge "Recipe Match". */
-    recipeMatch?: string;
-}
+/** Trang chi tiết địa điểm: toàn bộ dữ liệu lấy từ `LocationItem` (bảng DB), cộng giờ mở cửa đã định dạng. */
+import type { LocationItem } from "@/types/location";
 
-export interface NearbyPlaceDetail extends NearbyPlace {
-    description: string;
+export interface NearbyPlaceDetail extends LocationItem {
+    /** Đang mở cửa lúc này (theo giờ máy người dùng); chỉ có nghĩa khi `hours` không rỗng. */
     openNow: boolean;
-    openingHours: { day: string; hours: string; today?: boolean }[];
-    phone: string;
-    email: string;
-    website: string;
-    gallery: string[];
-    /** Món nổi bật kèm giá. */
-    popularDishes: { name: string; description: string; price: string; tags: string[]; imageUrl: string }[];
-    /** Tiện ích minh bạch dị ứng. */
-    dietary: { label: string; description: string }[];
-    reviews: { id: string; author: string; badge?: string; date: string; rating: number; content: string; tip?: string }[];
-    coordinates: { lat: number; lng: number };
+    hours: { day: string; dayKey?: string; hours: string; today?: boolean }[];
 }
