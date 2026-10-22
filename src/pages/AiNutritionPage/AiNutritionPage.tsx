@@ -1,46 +1,26 @@
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import {
     Activity,
     ArrowRight,
     Calculator,
-    ChefHat,
-    Download,
     Info,
     Leaf,
-    Mic,
-    RefreshCw,
-    RotateCcw,
-    Send,
+    MessageSquare,
+    Plus,
     ShieldCheck,
-    Sparkles,
-    Sprout,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useAiChat } from "@/hooks/useAiChat";
+import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
-
-interface Message {
-    id: string;
-    role: "user" | "assistant";
-    text: string;
-    time: string;
-}
-
-/** Icon + số thứ tự cho 4 lĩnh vực, khớp mockup. */
-const DOMAINS = [
-    { key: "macros", icon: Sprout },
-    { key: "swaps", icon: RefreshCw },
-    { key: "bmi", icon: Calculator },
-    { key: "recipes", icon: ChefHat },
-] as const;
-
-/** Icon gợi ý xoay vòng theo thứ tự câu hỏi. */
-const PROMPT_ICONS = [Sparkles, Leaf, Activity, ChefHat];
+import { formatDateLocale } from "@/utils/formatDate";
+import { ChatPanel } from "./ChatPanel";
 
 const SWAPS = [
     { from: "1 Whole Egg (Baking)", to: "Flaxseed / Chia Gel", detail: "Mix 1 tbsp ground flax with 2.5 tbsp warm water. Rest 5 mins until viscous." },
@@ -56,30 +36,30 @@ const ACTIVITY_FACTORS: Record<string, number> = {
     active: 1.4,
 };
 
-function nowLabel() {
-    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
 /**
- * AI Nutrition Assistant — UI theo mockup.
- * ponytail: backend chưa có /api/ai/* (SRS nhóm 24) — trả lời là chuỗi tĩnh,
- * thay bằng POST /api/ai/messages khi endpoint sẵn sàng.
+ * AI Nutrition Assistant — UI theo mockup, nối API thật:
+ * POST /api/ai/messages, GET /api/ai/conversations[/{id}], GET /api/subscriptions/me.
  */
 export default function AiNutritionPage() {
     const { t } = useTranslation("aiNutrition");
-    const { isAuthenticated, user } = useAuth();
-    const developing = () => toast.info(t("common:featureDeveloping"));
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [draft, setDraft] = useState("");
     const [height, setHeight] = useState("175");
     const [weight, setWeight] = useState("67");
     const [activity, setActivity] = useState("moderate");
-    const logRef = useRef<HTMLDivElement>(null);
-    // Bộ đếm thay `Date.now()` — react-hooks/purity chặn gọi hàm không thuần trong component.
-    const messageSeq = useRef(0);
 
-    const quickPrompts = t("quickPrompts", { returnObjects: true }) as unknown as string[];
+    // Mọi endpoint AI đều cần JWT → khách chưa đăng nhập thì đừng gọi.
+    const chat = useAiChat(isAuthenticated);
+    const subscription = useSubscription(isAuthenticated);
+    const quota = chat.usage ?? subscription.data?.usage;
+
+    const requireLogin = () => navigate("/login");
+
+    const ask = (text: string) => {
+        if (isAuthenticated) void chat.send(text);
+        else requireLogin();
+    };
 
     const bmi = useMemo(() => {
         const h = Number(height) / 100;
@@ -96,39 +76,8 @@ export default function AiNutritionPage() {
         return { min, max: min + 12 };
     }, [weight, activity]);
 
-    const send = (text: string) => {
-        const trimmed = text.trim();
-        if (!trimmed) return;
-
-        const userMessage: Message = { id: `u-${++messageSeq.current}`, role: "user", text: trimmed, time: nowLabel() };
-        setMessages((prev) => [...prev, userMessage]);
-        setDraft("");
-
-        // ponytail: phản hồi tĩnh — thay bằng POST /api/ai/messages khi backend xong.
-        window.setTimeout(() => {
-            setMessages((prev) => [
-                ...prev,
-                {
-                    id: `a-${++messageSeq.current}`,
-                    role: "assistant",
-                    text: t("chat.error"),
-                    time: nowLabel(),
-                },
-            ]);
-            logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
-        }, 600);
-
-        logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
-    };
-
-    const handleSubmit = (event: FormEvent) => {
-        event.preventDefault();
-        send(draft);
-    };
-
     return (
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            {/* Header */}
             <header className="rounded-2xl border border-border bg-card p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
@@ -143,175 +92,67 @@ export default function AiNutritionPage() {
                         <h1 className="mt-3 text-3xl font-extrabold text-dark">{t("title")}</h1>
                         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("subtitle")}</p>
                     </div>
-                    {isAuthenticated && (
+                    {isAuthenticated && subscription.data && (
                         <div className="rounded-xl bg-vegan-green-light px-4 py-3">
                             <p className="flex items-center gap-2 text-sm font-bold text-vegan-green">
                                 <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                                {t("proMember")}
+                                {subscription.data.currentPlan.name}
                             </p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">{t("unlimitedInquiries")}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                                {t("chat.quotaLeft", {
+                                    used: quota?.used ?? 0,
+                                    limit: quota?.limit ?? subscription.data.currentPlan.monthlyRequestLimit,
+                                })}
+                            </p>
                         </div>
                     )}
                 </div>
             </header>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
-                {/* Chat panel */}
-                <section className="flex flex-col rounded-2xl border border-border bg-card">
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
-                        <div className="flex items-center gap-3">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-vegan-green text-white">
-                                <Leaf className="h-5 w-5" aria-hidden="true" />
-                            </span>
-                            <div>
-                                <p className="font-bold text-dark">{t("chat.modelName")}</p>
-                                <p className="text-xs text-muted-foreground">{t("chat.modelDetail")}</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => setMessages([])}>
-                                <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                                {t("chat.resetContext")}
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={developing}>
-                                <Download className="h-4 w-4" aria-hidden="true" />
-                                {t("chat.exportLog")}
-                            </Button>
-                        </div>
-                    </div>
+                <ChatPanel chat={chat} onRequireLogin={requireLogin} />
 
-                    <div ref={logRef} className="max-h-[560px] min-h-[420px] flex-1 space-y-4 overflow-y-auto p-5">
-                        {/* Greeting */}
-                        <div className="flex gap-3">
-                            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-vegan-green-light text-vegan-green">
-                                <Leaf className="h-4 w-4" aria-hidden="true" />
-                            </span>
-                            <div className="max-w-2xl rounded-2xl rounded-tl-sm bg-muted-bg p-4">
-                                <p className="text-sm font-semibold text-dark">{t("chat.assistantName")}</p>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    {user?.username
-                                        ? t("chat.greeting", { name: user.username })
-                                        : t("chat.greetingGuest")}
-                                </p>
-                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                                    {DOMAINS.map(({ key, icon: Icon }, index) => (
-                                        <div
-                                            key={key}
-                                            className="flex items-start gap-3 rounded-xl border border-border bg-surface p-3"
-                                        >
-                                            <span className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-lavender text-lavender-strong">
-                                                <Icon className="h-4 w-4" aria-hidden="true" />
-                                                <span
-                                                    aria-hidden="true"
-                                                    className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-vegan-green text-[9px] font-bold text-white"
-                                                >
-                                                    {index + 1}
-                                                </span>
-                                            </span>
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold text-dark">
-                                                    <span className="sr-only">{t("chat.domainLabel", { index: index + 1 })}: </span>
-                                                    {t(`chat.domains.${key}`)}
-                                                </p>
-                                                <p className="text-[11px] text-muted-foreground">
-                                                    {t(`chat.domains.${key}Detail`)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                    {t("chat.quickStart")}
-                                </p>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                    {quickPrompts.map((prompt, index) => {
-                                        const Icon = PROMPT_ICONS[index % PROMPT_ICONS.length];
-                                        return (
-                                            <button
-                                                key={prompt}
-                                                type="button"
-                                                onClick={() => send(prompt)}
-                                                className="flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-left text-xs text-muted-foreground transition hover:border-vegan-green-muted hover:text-vegan-green"
-                                            >
-                                                <Icon className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
-                                                {prompt}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Conversation */}
-                        {messages.map((message) =>
-                            message.role === "user" ? (
-                                <div key={message.id} className="flex justify-end gap-3">
-                                    <div className="max-w-xl rounded-2xl rounded-tr-sm bg-vegan-green p-4 text-white">
-                                        <p className="text-xs font-semibold opacity-90">{t("chat.you")}</p>
-                                        <p className="mt-1 text-sm">{message.text}</p>
-                                        <p className="mt-1 text-right text-[10px] opacity-75">{message.time}</p>
-                                    </div>
-                                    <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-vegan-green-light text-xs font-bold text-vegan-green">
-                                        {(user?.username ?? "ME").slice(0, 2).toUpperCase()}
-                                    </span>
-                                </div>
-                            ) : (
-                                <div key={message.id} className="flex gap-3">
-                                    <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-vegan-green-light text-vegan-green">
-                                        <Leaf className="h-4 w-4" aria-hidden="true" />
-                                    </span>
-                                    <div className="max-w-2xl rounded-2xl rounded-tl-sm bg-muted-bg p-4">
-                                        <p className="text-sm font-semibold text-dark">{t("chat.assistantName")}</p>
-                                        <p className="mt-1 text-sm text-muted-foreground">{message.text}</p>
-                                        <p className="mt-1 text-[10px] text-muted-foreground">{message.time}</p>
-                                    </div>
-                                </div>
-                            ),
-                        )}
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="border-t border-border p-4">
-                        <div className="flex gap-2">
-                            <Input
-                                value={draft}
-                                onChange={(event) => setDraft(event.target.value)}
-                                placeholder={t("chat.placeholder")}
-                                aria-label={t("chat.placeholder")}
-                                className="rounded-full"
-                                trailing={
-                                    <button
-                                        type="button"
-                                        onClick={developing}
-                                        aria-label={t("chat.voiceInput")}
-                                        title={t("chat.voiceInput")}
-                                        className="rounded-full p-2 text-muted-foreground transition hover:text-vegan-green"
-                                    >
-                                        <Mic className="h-4 w-4" aria-hidden="true" />
-                                    </button>
-                                }
-                            />
-                            <Button type="submit" size="icon" className="rounded-full" aria-label={t("chat.send")}>
-                                <Send className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                            {t("chat.supported")}
-                            {(t("chat.supportedTags", { returnObjects: true }) as unknown as string[]).map((tag) => (
-                                <span key={tag} className="rounded-full bg-muted-bg px-2 py-0.5 normal-case tracking-normal">
-                                    {tag}
-                                </span>
-                            ))}
-                            <span className="ml-auto flex items-center gap-1 normal-case tracking-normal">
-                                <ShieldCheck className="h-3 w-3" aria-hidden="true" />
-                                {t("chat.knowledgeBase")}
-                            </span>
-                        </div>
-                    </form>
-                </section>
-
-                {/* Sidebar */}
                 <aside className="space-y-5">
+                    {/* Hội thoại đã lưu — GET /api/ai/conversations */}
+                    {isAuthenticated && (
+                        <section className="rounded-2xl border border-border bg-card p-5">
+                            <div className="flex items-center justify-between gap-3">
+                                <h2 className="flex items-center gap-2 font-bold text-dark">
+                                    <MessageSquare className="h-4 w-4 text-vegan-green" aria-hidden="true" />
+                                    {t("chat.historyTitle")}
+                                </h2>
+                                <Button variant="ghost" size="iconSm" onClick={chat.newConversation} aria-label={t("chat.newChat")}>
+                                    <Plus className="h-4 w-4" aria-hidden="true" />
+                                </Button>
+                            </div>
+                            {chat.conversations.length === 0 ? (
+                                <p className="mt-3 text-xs text-muted-foreground">
+                                    {chat.conversationsLoading ? t("chat.loadingHistory") : t("chat.emptyHistory")}
+                                </p>
+                            ) : (
+                                <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto">
+                                    {chat.conversations.map((conversation) => (
+                                        <li key={conversation.id}>
+                                            <button
+                                                type="button"
+                                                onClick={() => chat.selectConversation(conversation.id)}
+                                                disabled={chat.isSending}
+                                                className="w-full rounded-lg px-3 py-2 text-left transition hover:bg-muted-bg disabled:opacity-50"
+                                            >
+                                                <p className="truncate text-xs font-semibold text-dark">
+                                                    {conversation.title || t("chat.untitledConversation")}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    {formatDateLocale(conversation.updatedAt)}
+                                                </p>
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                    )}
+
                     <section className="rounded-2xl border border-border bg-card p-5">
                         <div className="flex items-center justify-between">
                             <h2 className="flex items-center gap-2 font-bold text-dark">
@@ -360,7 +201,11 @@ export default function AiNutritionPage() {
                                         ? t("bmi.perDay", { value: `${proteinTarget.min} – ${proteinTarget.max}` })
                                         : t("bmi.empty")}
                                 </span>
-                                <Button variant="outline" size="sm" onClick={() => send(t("bmi.chatPlanPrompt"))}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => ask(t("bmi.chatPlanPrompt"))}
+                                >
                                     <Activity className="h-3.5 w-3.5" aria-hidden="true" />
                                     {t("bmi.chatPlan")}
                                 </Button>
@@ -402,7 +247,9 @@ export default function AiNutritionPage() {
                         <dl className="mt-3 space-y-2 text-sm">
                             <div className="flex items-center justify-between gap-3">
                                 <dt className="text-muted-foreground">{t("access.guestInquiries")}</dt>
-                                <dd className="font-semibold text-dark">{t("access.guestLimit")}</dd>
+                                <dd className="font-semibold text-dark">
+                                    {quota ? t("chat.quotaLeft", { used: quota.used, limit: quota.limit }) : t("access.guestLimit")}
+                                </dd>
                             </div>
                             <div className="flex items-center justify-between gap-3">
                                 <dt className="text-muted-foreground">{t("access.currentStatus")}</dt>

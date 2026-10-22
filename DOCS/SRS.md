@@ -47,7 +47,7 @@ Mỗi FR có một dòng `> **FE:**` ghi trạng thái frontend thật.
 | FR-07 | 689 | Weekly Meal Plan | ⬜ chưa dựng |
 | FR-08 | 752 | Location Search | 🟡 UI xong, service mock |
 | FR-09 | 795 | Food/Recipe Search | ⬜ chưa dựng |
-| FR-10 | 817 | AI Nutrition Chatbot | 🟡 trả lời tĩnh |
+| FR-10 | 817 | AI Nutrition Chatbot | 🟢 xong (trừ SSE stream) |
 | FR-11 | 858 | Admin Content Moderation | 🟡 thiếu comments/payments |
 
 ---
@@ -816,8 +816,10 @@ Scenario: Get suggested videos/blogs for recipe
 
 ### FR-10 - AI Nutrition Chatbot [MVP]
 
-> **FE:** 🟡 UI xong tại `/ai-nutrition` nhưng **trả lời bằng chuỗi tĩnh**.
-> BMI & protein target tính client-side. Backend chưa có `/api/ai/*`.
+> **FE:** 🟢 Đã nối API tại `/ai-nutrition`: `POST /api/ai/messages`,
+> `GET /api/ai/conversations[/{id}]`, `GET /api/subscriptions/me`.
+> Khách chưa đăng nhập thấy UI nhưng ô nhập thay bằng CTA đăng nhập (mọi endpoint cần JWT).
+> Chưa làm: SSE stream (#48), mua/hủy gói, trang pricing.
 
 #### FR-10-01: Chat with AI Bot
 
