@@ -48,14 +48,14 @@ Không tự chế quota guest ở client (sửa `localStorage` là bypass đư�
 ### 4.1 File
 
 ```text
-src/types/ai.ts                  AiUsage, AiConversationSummary/Detail, AiMessage,
-                                 AiSendMessageRequest/Response, AiPlan, AiSubscription,
-                                 MAX_MESSAGE_LENGTH = 4000
-src/services/aiService.ts        #47 sendAiMessage, #49 getAiConversations, #50 getAiConversation
-src/services/subscriptionService.ts   #52 getMySubscription
-src/hooks/useAiChat.ts           state chat + query hội thoại + mutation gửi
-src/hooks/useSubscription.ts     useQuery gói hiện tại
-src/pages/AiNutritionPage/ChatPanel.tsx   khung chat + ô nhập + đếm ký tự + banner lỗi
+src/features/nutrition-ai/types.ts        AiUsage, AiConversationSummary/Detail, AiMessage,
+                                         AiSendMessageRequest/Response, AiPlan, AiSubscription,
+                                         MAX_MESSAGE_LENGTH = 4000
+src/features/nutrition-ai/api.ts         #47 sendAiMessage, #49 getAiConversations, #50 getAiConversation
+src/features/nutrition-ai/subscriptionApi.ts   #52 getMySubscription
+src/features/nutrition-ai/useAiChat.ts   state chat + query hội thoại + mutation gửi
+src/features/nutrition-ai/useSubscription.ts   useQuery gói hiện tại
+src/features/nutrition-ai/ChatPanel.tsx  khung chat + ô nhập + đếm ký tự + banner lỗi
 ```
 
 `AiNutritionPage.tsx` giữ: header, sidebar (lịch sử hội thoại, BMI tool, swaps, access policy).
@@ -133,8 +133,8 @@ Sửa `access.guestInquiries` → "Hạn mức tháng:", `access.guestLimit` →
 
 ## 6. Test
 
-- `src/services/__tests__/aiService.test.ts` — mock `api`, kiểm tra unwrap `data`, đúng path.
-- `src/hooks/__tests__/useAiChat.test.tsx` — gửi 2 lần liên tiếp trong một tick chỉ tạo
+- `src/features/nutrition-ai/__tests__/aiApi.test.ts` — mock `api`, kiểm tra unwrap `data`, đúng path.
+- `src/features/nutrition-ai/__tests__/useAiChat.test.tsx` — gửi 2 lần liên tiếp trong một tick chỉ tạo
   1 request; gửi xong không gọi lại `getAiConversation`; message > 4000 bị chặn.
 - Không test screen đầy đủ: page phụ thuộc auth + nhiều query, chi phí cao hơn giá trị.
 

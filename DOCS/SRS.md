@@ -1167,7 +1167,7 @@ Scenario: Admin views member list
 
 ## 9. Màn hình và Route
 
-> **Cột "Dựng"** đối chiếu với code thật tại `src/routes/index.tsx`.
+> **Cột "Dựng"** đối chiếu với code thật tại `src/app/routes.tsx`.
 > `✅` = đã có route và màn hình · `⬜` = mới là thiết kế, **chưa dựng**.
 > Route thật là nguồn duy nhất — bảng dưới giữ nguyên thiết kế ban đầu để đối chiếu.
 

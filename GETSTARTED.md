@@ -117,54 +117,57 @@ Không có lỗi → Dự án sẵn sàng phát triển!
 
 ```text
 src/
-├── components/       # UI components (reusable)
-│   ├── admin-shell/      # Layout admin (nested routes)
-│   ├── auth/             # ProtectedRoute, PublicRoute, AdminRoute, AuthLayout
-│   ├── blog/             # PostStatusBadge...
-│   ├── editor/           # TipTap editor
-│   ├── media/            # ImageUploader
-│   ├── layout/           # Navbar, Footer — layout chính của app
-│   └── ui/               # Button, Input, Dialog, Table, Select, Badge, Skeleton, Textarea
+├── app/              # Hạ tầng khởi động (không chứa nghiệp vụ)
+│   ├── main.tsx          # entry: StrictMode + QueryClientProvider + Router + Toaster
+│   ├── App.tsx           # render <AppRoutes />
+│   ├── routes.tsx        # toàn bộ route
+│   ├── NotFoundPage.tsx  # 404
+│   ├── guards/           # ProtectedRoute, PublicRoute, AdminRoute
+│   └── layout/           # Layout, Navbar, Footer, LanguageSwitcher
 │
-├── hooks/            # useAuth, useListParams, usePublicCategories, useFeedPosts, useProfile
-├── i18n/             # i18next setup + locales/{en,vi}
-├── lib/              # cn() và helper nhỏ
-├── pages/            # Page components (mỗi route 1 folder)
-│   ├── Admin/            # AdminDashboard, Posts, Videos, Categories, Users, Profile
-│   ├── auth/             # Login, Register, VerifyEmail, ForgotPassword
-│   ├── AiNutritionPage/  # Trợ lý dinh dưỡng (mock)
-│   ├── CreatePostPage/   # Tạo / sửa bài viết
-│   ├── ExplorePage/      # Khám phá
-│   ├── HomePage/         # Trang chủ
-│   ├── MyPostsPage/      # Bài viết của tôi
-│   ├── NearbyPage/       # Địa điểm vegan + chi tiết
-│   ├── NotFoundPage/     # 404
-│   ├── PostDetailPage/   # Chi tiết bài viết
-│   └── ProfilePage/      # Hồ sơ cá nhân
+├── components/       # Dùng chung, không biết domain
+│   ├── ui/               # 11 primitive: Button, Input, Dialog, Table, Select, Badge...
+│   └── common/           # PageHeader, EmptyState, ErrorState, ConfirmDialog, Pagination...
 │
-├── routes/           # Khai báo route toàn app
-├── services/         # Gọi API, mỗi domain 1 file (api.ts, authService, postService...)
-├── shared/           # Dùng chung
-│   ├── components/     # PageHeader, EmptyState, ErrorState, ConfirmDialog, Pagination...
-│   ├── constants/      # Hằng số dùng chung
-│   └── mocks/          # Dữ liệu giả làm đầy UI
-├── stores/           # Zustand stores (authStore, uiStore)
-├── types/            # TypeScript interfaces & types (common.ts chứa kiểu chung)
-└── utils/            # apiError, formatDate, jwt
+├── features/         # Nghiệp vụ theo domain
+│   ├── admin/            # AdminShell, users, dashboard
+│   ├── auth/             # login/register/verify/forgot + useAuth
+│   ├── categories/       # CategoriesPage + usePublicCategories
+│   ├── locations/        # Nearby, LocationDetail, AdminLocations + geo/openingHours
+│   ├── nutrition-ai/     # Chatbot dinh dưỡng
+│   ├── posts/            # Home, Explore, PostDetail, CreatePost, MyPosts + editor
+│   ├── profile/          # ProfilePage
+│   └── videos/           # VideosPage (admin)
+│
+├── i18n/             # i18next setup + locales/{en,vi} (11 namespace)
+├── shared/           # Hạ tầng dùng chung, KHÔNG import features/
+│   ├── api/              # client.ts (axios + interceptor), media.ts
+│   ├── auth/             # authStore.ts
+│   ├── hooks/            # useListParams, useDebounce
+│   ├── types/            # common, user, media
+│   ├── ui/               # uiStore.ts
+│   └── utils/            # apiError, formatDate, jwt, delay, cn
+└── test/             # Hạ tầng test (setup, e2eEnv, fixtures)
 ```
 
 ### Nguyên tắc tổ chức code
 
+```text
+app/         →  features/**, shared/**, components/**
+features/X/  →  shared/**, components/**, features/<X phụ thuộc>/**
+shared/      →  ✗ KHÔNG import features/**, components/**
+components/  →  ✗ KHÔNG import features/**
+```
+
 | Thư mục | Dùng cho | Ví dụ |
 |---------|----------|-------|
-| `components/` | UI components tái sử dụng | `<Button />`, `<Card />` |
-| `pages/` | Component đại diện cho 1 route | `HomePage.tsx` |
-| `hooks/` | Custom hooks | `useAuth.ts`, `useListParams.ts` |
-| `stores/` | Zustand stores | `authStore.ts`, `uiStore.ts` |
-| `services/` | API calls | `api.ts`, `postService.ts` |
-| `shared/` | Component / hằng số / mock dùng chung | `PageHeader.tsx` |
-| `types/` | TypeScript interfaces | `user.ts`, `common.ts` |
-| `utils/` | Helper functions | `formatDate.ts`, `apiError.ts` |
+| `app/` | Khởi động, route, guard, layout | `routes.tsx`, `guards/ProtectedRoute.tsx` |
+| `components/ui/` | Primitive UI, không biết domain | `<Button />`, `<Dialog />` |
+| `components/common/` | Component ghép sẵn theo pattern app | `PageHeader.tsx`, `Pagination.tsx` |
+| `features/<X>/` | Toàn bộ nghiệp vụ của một domain | `posts/api.ts`, `posts/pages/HomePage/` |
+| `shared/` | Hạ tầng thuần, dùng cho mọi feature | `shared/api/client.ts`, `shared/utils/formatDate.ts` |
+
+Bản đồ file chi tiết: `DOCS/CODE-STRUCTURE.md`.
 
 ---
 
@@ -194,7 +197,6 @@ src/
 | **shadcn/ui** | Component library (Radix UI based) |
 | **Radix UI** | Accessible primitives |
 | **Lucide React** | Icon library |
-| **next-themes** | Dark/Light mode |
 | **class-variance-authority** | Conditional variants |
 | **clsx** + **tailwind-merge** | Dynamic class merging |
 
@@ -210,7 +212,6 @@ src/
 | Technology | Mục đích |
 |-----------|-----|
 | **Axios** | HTTP client |
-| **JSZip** | File compression |
 | **Sonner** | Toast notifications |
 
 ---
@@ -228,7 +229,8 @@ src/
 7. **Dùng shadcn/ui** cho standard components — Không tự viết button/input cơ bản
 8. **Không hardcode API URLs** — Dùng `VITE_API_BASE_URL` từ `.env`
 9. **Không commit `.env.local`** — Chỉ commit `.env.example`
-10. **Reusable components** — Đặt trong `components/`, không copy-paste
+10. **Reusable components** — Đặt trong `components/common/`, không copy-paste
+11. **Tôn trọng quy tắc import một chiều** — `shared/` không import `features/`
 
 ### 📦 Naming conventions
 
@@ -245,13 +247,13 @@ useDebounce.ts
 authStore.ts
 uiStore.ts
 
-// Services: camelCase with 'Service' suffix
-blogService.ts
-api.ts
+// Services: camelCase, mỗi feature một file api.ts
+posts/api.ts
+locations/nearbyApi.ts
 
-// Types: PascalCase
-User.ts
-Blog.ts
+// Types: camelCase file, PascalCase type
+common.ts
+user.ts
 ApiResponse.ts
 
 // Utils: camelCase
@@ -263,7 +265,7 @@ validateEmail.ts
 
 ```tsx
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils/cn';
 
 interface Props {
   title: string;

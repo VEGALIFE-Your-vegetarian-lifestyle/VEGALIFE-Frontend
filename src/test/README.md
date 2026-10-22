@@ -30,11 +30,11 @@ Set trực tiếp trong shell thì dùng tên **không** tiền tố (`E2E_USER_
 
 | Nhóm | Cần gì | File |
 |---|---|---|
-| Public API (`/api/posts/feed`, `/api/categories`) | không | `src/services/__tests__/*` |
-| Cần JWT user | `E2E_USER_*` | `postService`, `authService` |
-| Cần JWT admin | `E2E_ADMIN_*` | `postService`, `categoryService`, `adminServices` |
+| Public API (`/api/posts/feed`, `/api/categories`) | không | `src/features/**/__tests__/*` |
+| Cần JWT user | `E2E_USER_*` | `features/posts/api`, `features/auth/api` |
+| Cần JWT admin | `E2E_ADMIN_*` | `features/posts/api`, `features/categories/api`, `features/admin/api` |
 | Ghi dữ liệu thật | thêm `E2E_ALLOW_WRITES=1` | các `describe` cuối mỗi file |
-| Screen | không (form/validate), hoặc tài khoản (luồng thật) | `src/pages/**/__tests__/*` |
+| Screen | không (form/validate), hoặc tài khoản (luồng thật) | `src/features/**/pages/**/__tests__/*` |
 
 ## Ghi chú
 

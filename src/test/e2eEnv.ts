@@ -1,5 +1,5 @@
-import { login } from "@/services/authService";
-import { useAuthStore } from "@/stores/authStore";
+import { login } from "@/features/auth/api";
+import { useAuthStore } from "@/shared/auth/authStore";
 
 /**
  * Credentials cho test chạm backend thật — đọc từ biến môi trường, KHÔNG hard-code.

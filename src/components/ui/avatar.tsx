@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 
 interface AvatarProps {
     /** Tên dùng để lấy chữ cái đầu. */

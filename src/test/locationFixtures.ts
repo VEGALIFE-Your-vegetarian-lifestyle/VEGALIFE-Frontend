@@ -1,4 +1,4 @@
-import type { LocationItem } from "@/types/location";
+import type { LocationItem } from "@/features/locations/types";
 
 /** Dòng dữ liệu giả cho test: có thêm mốc tạo và xóa mềm như bảng DB. */
 export type MockLocation = LocationItem & { createdAt: string; deletedAt: string | null };

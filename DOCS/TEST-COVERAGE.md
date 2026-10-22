@@ -4,7 +4,7 @@ Suite test frontend: **Vitest 5 + Testing Library + jsdom**. Test gọi **backen
 (`VITE_API_BASE_URL` trong `.env`), **không mock API** — nhờ vậy test bắt được cả
 sai lệch shape response giữa FE và BE.
 
-Cập nhật: 2026-10-14 · branch `feat/post-management-user`
+Cập nhật: 2026-10-22 · branch `refactor/source-structure`
 
 > Hướng dẫn cài đặt/biến môi trường chi tiết: `src/test/README.md`.
 
@@ -59,28 +59,42 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 | Cần JWT admin | `E2E_ADMIN_*` | `describe.skipIf(!HAS_ADMIN)` |
 | Ghi dữ liệu thật | thêm `E2E_ALLOW_WRITES=1` | `describe.skipIf(..., !E2E_ALLOW_WRITES)`, hiện là `it.todo` |
 
-## 11 file test
+## 20 file test
 
-### Service (`src/services/__tests__/`)
-
-| File | Phủ | Tầng |
-|---|---|---|
-| `authService.test.ts` | login/register/verifyEmail/forgotPassword/resendVerifyEmail/resetPassword/verifyPasswordReset | public + user |
-| `postService.test.ts` | `getFeedPosts`, `getPostDetail`, `getMyPosts`, `getPosts`, `moderatePost` | public + user + admin + writes |
-| `categoryService.test.ts` | `getPublicCategories`, `getCategories`, `createCategory`, `updateCategory`, `retireCategory`, `exportCategoriesCsv` | public + admin + writes |
-| `adminServices.test.ts` | `adminUserService` (getUsers/suspend/restore), `videoService` (getVideos/deleteVideo), `dashboardService` | admin + **mock** |
-
-### Screen (`src/pages/**/__tests__/`)
+### Service (`src/features/*/__tests__/`)
 
 | File | Phủ | Tầng |
 |---|---|---|
-| `auth/LoginPage/LoginPage.test.tsx` | validate identifier/email, sai thông tin thì không lưu token, điều hướng | public + user |
-| `auth/RegisterPage/RegisterPage.test.tsx` | validate 4 ô, từng nhóm ký tự mật khẩu, mismatch, hiện/ẩn mật khẩu | public |
-| `PostDetailPage/PostDetailPage.test.tsx` | bài không tồn tại → EmptyState, breadcrumb/fact strip khi có bài | public |
-| `CreatePostPage/CreatePostPage.test.tsx` | chế độ tạo mới + chế độ sửa, nạp category | public |
-| `CreatePostPage/payload.test.ts` | `buildValidationSchema`, `buildContentPayload`, `buildPatch` (thuần logic, không React) | public |
-| `Admin/adminPages.test.tsx` | PostsPage/CategoriesPage/UsersPage/VideosPage render + ErrorState | public + admin |
-| `Admin/AdminDashboardPage/AdminDashboardPage.test.tsx` | skeleton → 4 metric card, số liệu mock khớp | public |
+| `auth/authApi.test.ts` | login/register/verifyEmail/forgotPassword/resendVerifyEmail/resetPassword/verifyPasswordReset | public + user |
+| `posts/postApi.test.ts` | `getFeedPosts`, `getPostDetail`, `getMyPosts`, `getPosts`, `moderatePost` | public + user + admin + writes |
+| `categories/categoryApi.test.ts` | `getPublicCategories`, `getCategories`, `createCategory`, `updateCategory`, `retireCategory`, `exportCategoriesCsv` | public + admin + writes |
+| `locations/locationApi.test.ts` | `features/locations/api` — mock `@/shared/api/client` | public |
+| `admin/adminServices.test.ts` | `admin/api` (getUsers/suspend/restore), `videos/api` (getVideos/deleteVideo), `admin/dashboardApi` | admin + **mock** |
+| `nutrition-ai/aiApi.test.ts` | `nutrition-ai/api` + `subscriptionApi` — mock client | user |
+| `nutrition-ai/useAiChat.test.tsx` | `useAiChat` — gửi 2 lần liên tiếp trong một tick chỉ tạo 1 request | user |
+
+### Logic thuần (`src/features/locations/__tests__/`)
+
+| File | Phủ |
+|---|---|
+| `distance.test.ts` | `distanceKm`, `formatDistance` (Haversine) |
+| `maps.test.ts` | `buildDirectionsUrl`, `openDirections` |
+| `openingHours.test.ts` | `formatOpeningHours`, `isOpenNow` |
+
+### Screen (`src/features/**/pages/**/__tests__/`)
+
+| File | Phủ | Tầng |
+|---|---|---|
+| `auth/pages/LoginPage/` | validate identifier/email, sai thông tin thì không lưu token, điều hướng | public + user |
+| `auth/pages/RegisterPage/` | validate 4 ô, từng nhóm ký tự mật khẩu, mismatch, hiện/ẩn mật khẩu | public |
+| `posts/pages/PostDetailPage/` | bài không tồn tại → EmptyState, breadcrumb/fact strip khi có bài | public |
+| `posts/pages/CreatePostPage/CreatePostPage.test.tsx` | chế độ tạo mới + chế độ sửa, nạp category | public |
+| `posts/pages/CreatePostPage/payload.test.ts` | `buildValidationSchema`, `buildContentPayload`, `buildPatch` (thuần logic, không React) | public |
+| `locations/pages/NearbyPage/` | danh sách + bản đồ, đổi vùng, GPS bị từ chối | public |
+| `locations/pages/LocationDetailPage/` | chi tiết địa điểm, giờ mở cửa, chỉ đường | public |
+| `locations/pages/AdminLocationsPage/` | CRUD địa điểm với `fakeLocationService` | public |
+| `admin/pages/adminPages.test.tsx` | PostsPage/CategoriesPage/UsersPage/VideosPage render + ErrorState | public + admin |
+| `admin/pages/AdminDashboardPage/` | skeleton → 4 metric card, số liệu mock khớp | public |
 
 ## Điểm đáng lưu ý
 
@@ -102,10 +116,10 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 
 | Việc | Ghi chú |
 |---|---|
-| Test ghi dữ liệu thật | mới là `it.todo` ở `postService`, `categoryService`, `adminServices`; cần `E2E_ALLOW_WRITES=1` |
+| Test ghi dữ liệu thật | mới là `it.todo` ở `posts/api`, `categories/api`, `admin/api`; cần `E2E_ALLOW_WRITES=1` |
 | `dashboardService` | test đang khẳng định **dữ liệu mock** (`categoriesSeed` + `delay`). Phải viết lại khi backend có endpoint thật |
 | `ProfilePage`, `MyPostsPage`, `ExplorePage`, `HomePage` | chưa có test screen |
-| `mediaService` (upload grant → confirm) | chưa có test |
+| `mediaService` (upload grant → confirm) | chưa có test (`shared/api/media.ts`) |
 | `useAuth` / `useListParams` / `usePublicCategories` | chưa có test hook |
-| `nearbyService`, `AiNutritionPage` | mock — chờ API rồi mới test |
+| `nearbyService`, `AiNutritionPage` | đã nối API thật — cần bổ sung test |
 | Số liệu lần chạy gần nhất | **chưa ghi** — lệnh `npm test` bị môi trường chặn ở phiên viết tài liệu này. Chạy lại rồi bổ sung |
