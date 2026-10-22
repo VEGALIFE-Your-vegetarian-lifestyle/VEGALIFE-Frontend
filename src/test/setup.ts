@@ -4,7 +4,7 @@ import "./storageShim";
 import "./domPolyfills";
 
 import { afterEach, beforeEach } from "vitest";
-import { api } from "@/services/api";
+import { api } from "@/shared/api/client";
 
 // jsdom dùng XHR và ÁP CORS — backend thật không mở CORS cho origin của test.
 // `fetch` của Node (undici) không có ràng buộc đó. Adapter `fetch` tồn tại ở cả

@@ -1,6 +1,6 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     /** Icon hiện ở đầu ô (mockup: mail, lock, search). */

@@ -1,11 +1,11 @@
 import { LOCATION_FIXTURES as MOCK_LOCATIONS, type MockLocation } from "@/test/locationFixtures";
-import type { Paginated } from "@/types/common";
-import type { LocationItem, LocationListParams, LocationPayload, NearbyParams } from "@/types/location";
-import { delay } from "@/utils/delay";
-import { distanceKm } from "@/utils/distance";
+import type { Paginated } from "@/shared/types/common";
+import type { LocationItem, LocationListParams, LocationPayload, NearbyParams } from "@/features/locations/types";
+import { delay } from "@/shared/utils/delay";
+import { distanceKm } from "@/features/locations/geo";
 
 // Bản giả của locationService dùng cho test (không gọi backend): dữ liệu nằm trong bộ nhớ.
-// Chữ ký các hàm giống hệt `@/services/locationService`.
+// Chữ ký các hàm giống hệt `@/features/locations/api`.
 let locations: MockLocation[] = MOCK_LOCATIONS.map((item) => ({ ...item }));
 
 const active = () => locations.filter((item) => item.deletedAt === null);
