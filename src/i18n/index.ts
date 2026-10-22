@@ -11,6 +11,8 @@ import enExplore from "./locales/en/explore.json";
 import enPost from "./locales/en/post.json";
 import enNearby from "./locales/en/nearby.json";
 import enAiNutrition from "./locales/en/aiNutrition.json";
+import enMealPlan from "./locales/en/mealPlan.json";
+import enRecipe from "./locales/en/recipe.json";
 import viCommon from "./locales/vi/common.json";
 import viAuth from "./locales/vi/auth.json";
 import viAdmin from "./locales/vi/admin.json";
@@ -21,6 +23,8 @@ import viExplore from "./locales/vi/explore.json";
 import viPost from "./locales/vi/post.json";
 import viNearby from "./locales/vi/nearby.json";
 import viAiNutrition from "./locales/vi/aiNutrition.json";
+import viMealPlan from "./locales/vi/mealPlan.json";
+import viRecipe from "./locales/vi/recipe.json";
 
 export const SUPPORTED_LANGUAGES = ["en", "vi"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
@@ -42,6 +46,8 @@ i18n.use(LanguageDetector)
                 post: enPost,
                 nearby: enNearby,
                 aiNutrition: enAiNutrition,
+                mealPlan: enMealPlan,
+                recipe: enRecipe,
             },
             vi: {
                 common: viCommon,
@@ -54,6 +60,8 @@ i18n.use(LanguageDetector)
                 post: viPost,
                 nearby: viNearby,
                 aiNutrition: viAiNutrition,
+                mealPlan: viMealPlan,
+                recipe: viRecipe,
             },
         },
         lng: savedLanguage,

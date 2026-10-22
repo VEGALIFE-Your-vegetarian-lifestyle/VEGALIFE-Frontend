@@ -1,0 +1,69 @@
+{
+    "title": "Tạo công thức",
+    "description": "Công thức bổ sung vào thư viện món ăn dùng chung. Tên món chưa có sẽ được tạo tự động khi bạn lưu.",
+    "breadcrumb": "Công thức",
+    "section": {
+        "basicsEyebrow": "Công thức",
+        "basicsTitle": "Tên và món ăn",
+        "basicsHint": "Tên món được so khớp không phân biệt hoa thường với thư viện. Dùng lại tên đã có để tránh tạo món trùng.",
+        "ingredientsEyebrow": "Nguyên liệu",
+        "ingredientsTitle": "Thành phần",
+        "ingredientsHint": "1–50 nguyên liệu. Mỗi tên chỉ được xuất hiện một lần.",
+        "stepsEyebrow": "Cách làm",
+        "stepsTitle": "Hướng dẫn và thời gian",
+        "optional": "không bắt buộc"
+    },
+    "field": {
+        "name": "Tên công thức",
+        "namePlaceholder": "Mì Ý sốt hạt điều",
+        "dishName": "Tên món",
+        "dishNamePlaceholder": "Mì Ý hạt điều",
+        "description": "Mô tả",
+        "descriptionPlaceholder": "Mô tả ngắn hiển thị cùng món ăn",
+        "instructions": "Hướng dẫn",
+        "instructionsPlaceholder": "Mỗi bước một dòng",
+        "servings": "Khẩu phần",
+        "prepTime": "Thời gian sơ chế (phút)",
+        "cookTime": "Thời gian nấu (phút)",
+        "difficulty": "Độ khó",
+        "difficultyNone": "Không xác định",
+        "difficultyEASY": "Dễ",
+        "difficultyMEDIUM": "Trung bình",
+        "difficultyHARD": "Khó",
+        "ingredientName": "Nguyên liệu",
+        "ingredientNamePlaceholder": "Hạt điều",
+        "ingredientAmount": "Số lượng",
+        "ingredientUnit": "Đơn vị",
+        "ingredientUnitPlaceholder": "g",
+        "addIngredient": "Thêm nguyên liệu",
+        "removeIngredient": "Xoá nguyên liệu"
+    },
+    "action": {
+        "submit": "Lưu công thức",
+        "saving": "Đang lưu...",
+        "cancel": "Huỷ"
+    },
+    "toast": {
+        "created": "Đã lưu công thức",
+        "failed": "Không lưu được công thức"
+    },
+    "errors": {
+        "name": "Cần nhập tên công thức",
+        "dishName": "Cần nhập tên món",
+        "instructions": "Cần nhập hướng dẫn",
+        "servings": "Khẩu phần phải là số nguyên từ 1 trở lên",
+        "ingredients": "Cần ít nhất một nguyên liệu",
+        "ingredientName": "Cần nhập tên nguyên liệu",
+        "ingredientAmount": "Số lượng phải lớn hơn 0",
+        "ingredientUnit": "Cần nhập đơn vị",
+        "duplicateIngredient": "Nguyên liệu này bị lặp lại",
+        "time": "Số phút phải là số nguyên từ 0 trở lên"
+    },
+    "created": {
+        "title": "Đã lưu công thức",
+        "description": "Đã lưu \"{{name}}\" vào món \"{{dish}}\".",
+        "note": "Chưa có endpoint liệt kê công thức của bạn, nên đây là lần duy nhất bạn thấy lại nó. Món ăn thì đã có sẵn khi lập thực đơn.",
+        "another": "Tạo công thức khác",
+        "plan": "Mở lịch thực đơn"
+    }
+}

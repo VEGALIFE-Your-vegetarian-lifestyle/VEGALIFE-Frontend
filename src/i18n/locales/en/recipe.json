@@ -1,0 +1,69 @@
+{
+    "title": "Create recipe",
+    "description": "Recipes feed the shared dish library. A dish name that does not exist yet is created automatically when you save.",
+    "breadcrumb": "Recipe",
+    "section": {
+        "basicsEyebrow": "Recipe",
+        "basicsTitle": "Name and dish",
+        "basicsHint": "The dish name is matched case-insensitively against the library. Reuse an existing name so the dish is not duplicated.",
+        "ingredientsEyebrow": "Ingredients",
+        "ingredientsTitle": "What goes in",
+        "ingredientsHint": "1–50 ingredients. Each name may appear only once.",
+        "stepsEyebrow": "Method",
+        "stepsTitle": "Instructions and timing",
+        "optional": "optional"
+    },
+    "field": {
+        "name": "Recipe name",
+        "namePlaceholder": "Creamy cashew pasta",
+        "dishName": "Dish name",
+        "dishNamePlaceholder": "Cashew pasta",
+        "description": "Description",
+        "descriptionPlaceholder": "Short description shown with the dish",
+        "instructions": "Instructions",
+        "instructionsPlaceholder": "One step per line",
+        "servings": "Servings",
+        "prepTime": "Prep time (minutes)",
+        "cookTime": "Cook time (minutes)",
+        "difficulty": "Difficulty",
+        "difficultyNone": "Not specified",
+        "difficultyEASY": "Easy",
+        "difficultyMEDIUM": "Medium",
+        "difficultyHARD": "Hard",
+        "ingredientName": "Ingredient",
+        "ingredientNamePlaceholder": "Cashews",
+        "ingredientAmount": "Amount",
+        "ingredientUnit": "Unit",
+        "ingredientUnitPlaceholder": "g",
+        "addIngredient": "Add ingredient",
+        "removeIngredient": "Remove ingredient"
+    },
+    "action": {
+        "submit": "Save recipe",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+    },
+    "toast": {
+        "created": "Recipe saved",
+        "failed": "Could not save the recipe"
+    },
+    "errors": {
+        "name": "Recipe name is required",
+        "dishName": "Dish name is required",
+        "instructions": "Instructions are required",
+        "servings": "Servings must be a whole number of at least 1",
+        "ingredients": "Add at least one ingredient",
+        "ingredientName": "Ingredient name is required",
+        "ingredientAmount": "Amount must be greater than 0",
+        "ingredientUnit": "Unit is required",
+        "duplicateIngredient": "This ingredient is listed more than once",
+        "time": "Minutes must be a whole number of 0 or more"
+    },
+    "created": {
+        "title": "Recipe saved",
+        "description": "\"{{name}}\" was saved under the dish \"{{dish}}\".",
+        "note": "There is no endpoint to list your recipes yet, so this is the only copy you will see. The dish itself is already available when planning meals.",
+        "another": "Create another recipe",
+        "plan": "Open meal planner"
+    }
+}

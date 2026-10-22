@@ -1,0 +1,86 @@
+{
+    "title": "Weekly Meal Plan",
+    "description": "Build a 7-day vegetarian menu from real dishes in the VEGALIFE library, then schedule it when you are ready.",
+    "create": "New weekly menu",
+    "statusChanged": "Menu status updated",
+    "statusFailed": "Could not update the menu status",
+    "status": {
+        "drafted": "Draft",
+        "scheduled": "Scheduled",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+    },
+    "mealType": {
+        "BREAKFAST": "Breakfast",
+        "LUNCH": "Lunch",
+        "DINNER": "Dinner"
+    },
+    "action": {
+        "scheduled": "Schedule",
+        "completed": "Mark completed",
+        "cancelled": "Cancel menu"
+    },
+    "confirm": {
+        "scheduledTitle": "Schedule this week?",
+        "scheduledBody": "A scheduled week becomes your active plan. Only one scheduled week may cover a given date.",
+        "completedTitle": "Mark this week completed?",
+        "completedBody": "Completed is a final state — the menu can no longer be edited.",
+        "cancelledTitle": "Cancel this week?",
+        "cancelledBody": "Cancelled is a final state. The menu stays in your history but can no longer be used or edited."
+    },
+    "list": {
+        "eyebrow": "Your menus",
+        "title": "Saved weeks",
+        "emptyTitle": "No meal plans yet",
+        "emptyDescription": "Create your first weekly menu to start planning plant-based meals."
+    },
+    "detail": {
+        "eyebrow": "Week detail",
+        "selectTitle": "Select a week",
+        "selectDescription": "Pick a menu on the left to see its meals, or create a new one.",
+        "edit": "Edit meals",
+        "emptyDay": "No meals planned for this day.",
+        "emptyWeek": "This menu has no meals.",
+        "unknownDish": "Dish unavailable",
+        "servings": "{{n}} serving(s)"
+    },
+    "picker": {
+        "description": "Choose a dish from the VEGALIFE dish library.",
+        "searchPlaceholder": "Search dishes...",
+        "searchLabel": "Search dishes",
+        "loadError": "Could not load dishes.",
+        "empty": "No dishes match your search.",
+        "createRecipe": "Create a recipe to add a dish",
+        "noCuisine": "No cuisine type"
+    },
+    "form": {
+        "createTitle": "New weekly menu",
+        "editTitle": "Edit weekly menu",
+        "description": "A menu covers exactly 7 days starting on a Monday. You can save it as a draft first.",
+        "weekEyebrow": "Week",
+        "weekTitle": "Dates and notes",
+        "startDate": "Start date (Monday)",
+        "startDateHint": "The end date is calculated by the server as start date + 6 days.",
+        "notes": "Notes",
+        "notesPlaceholder": "Optional notes for this week...",
+        "mealsEyebrow": "Meals",
+        "mealsTitle": "Pick dishes for each day",
+        "distinctDishes": "{{n}} / {{min}} distinct dishes",
+        "rulesHint": "A valid week needs at least {{min}} different dishes, and no dish may appear more than {{max}} times. The server validates this when you save.",
+        "addMeal": "Add",
+        "removeMeal": "Remove meal",
+        "servingsLabel": "Servings",
+        "dishOverused": "Used {{n}} times — the limit is {{max}}.",
+        "save": "Save menu",
+        "saving": "Saving...",
+        "createSuccess": "Weekly menu created",
+        "updateSuccess": "Weekly menu updated",
+        "saveFailed": "Could not save the menu",
+        "errors": {
+            "startDate": "The start date must be a Monday.",
+            "emptyDay": "Add at least one meal.",
+            "servings": "Servings must be a whole number of at least 1.",
+            "days": "The menu must cover exactly 7 days."
+        }
+    }
+}

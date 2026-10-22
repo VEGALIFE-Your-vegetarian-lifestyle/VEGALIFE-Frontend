@@ -1,0 +1,86 @@
+{
+    "title": "Thực đơn tuần",
+    "description": "Dựng thực đơn chay 7 ngày từ các món có thật trong thư viện VEGALIFE, rồi lên lịch khi bạn sẵn sàng.",
+    "create": "Thực đơn tuần mới",
+    "statusChanged": "Đã cập nhật trạng thái thực đơn",
+    "statusFailed": "Không cập nhật được trạng thái thực đơn",
+    "status": {
+        "drafted": "Bản nháp",
+        "scheduled": "Đã lên lịch",
+        "cancelled": "Đã huỷ",
+        "completed": "Đã hoàn thành"
+    },
+    "mealType": {
+        "BREAKFAST": "Bữa sáng",
+        "LUNCH": "Bữa trưa",
+        "DINNER": "Bữa tối"
+    },
+    "action": {
+        "scheduled": "Lên lịch",
+        "completed": "Đánh dấu hoàn thành",
+        "cancelled": "Huỷ thực đơn"
+    },
+    "confirm": {
+        "scheduledTitle": "Lên lịch tuần này?",
+        "scheduledBody": "Tuần đã lên lịch trở thành kế hoạch đang dùng. Mỗi ngày chỉ được có một tuần đã lên lịch.",
+        "completedTitle": "Đánh dấu tuần này hoàn thành?",
+        "completedBody": "Hoàn thành là trạng thái cuối — không sửa được nữa.",
+        "cancelledTitle": "Huỷ tuần này?",
+        "cancelledBody": "Đã huỷ là trạng thái cuối. Thực đơn vẫn nằm trong lịch sử nhưng không dùng hay sửa được nữa."
+    },
+    "list": {
+        "eyebrow": "Thực đơn của bạn",
+        "title": "Các tuần đã lưu",
+        "emptyTitle": "Chưa có thực đơn nào",
+        "emptyDescription": "Tạo thực đơn tuần đầu tiên để bắt đầu lên kế hoạch bữa ăn thực vật."
+    },
+    "detail": {
+        "eyebrow": "Chi tiết tuần",
+        "selectTitle": "Chọn một tuần",
+        "selectDescription": "Chọn thực đơn ở bên trái để xem các bữa, hoặc tạo thực đơn mới.",
+        "edit": "Sửa các bữa",
+        "emptyDay": "Ngày này chưa có bữa nào.",
+        "emptyWeek": "Thực đơn này chưa có bữa nào.",
+        "unknownDish": "Không có thông tin món",
+        "servings": "{{n}} khẩu phần"
+    },
+    "picker": {
+        "description": "Chọn món từ thư viện món ăn VEGALIFE.",
+        "searchPlaceholder": "Tìm món...",
+        "searchLabel": "Tìm món ăn",
+        "loadError": "Không tải được danh sách món.",
+        "empty": "Không có món nào khớp tìm kiếm.",
+        "createRecipe": "Tạo công thức để thêm món mới",
+        "noCuisine": "Chưa phân loại ẩm thực"
+    },
+    "form": {
+        "createTitle": "Thực đơn tuần mới",
+        "editTitle": "Sửa thực đơn tuần",
+        "description": "Một thực đơn gồm đúng 7 ngày bắt đầu từ thứ Hai. Có thể lưu nháp trước.",
+        "weekEyebrow": "Tuần",
+        "weekTitle": "Ngày và ghi chú",
+        "startDate": "Ngày bắt đầu (thứ Hai)",
+        "startDateHint": "Ngày kết thúc do server tự tính = ngày bắt đầu + 6.",
+        "notes": "Ghi chú",
+        "notesPlaceholder": "Ghi chú tuỳ chọn cho tuần này...",
+        "mealsEyebrow": "Các bữa",
+        "mealsTitle": "Chọn món cho từng ngày",
+        "distinctDishes": "{{n}} / {{min}} món khác nhau",
+        "rulesHint": "Một tuần hợp lệ cần ít nhất {{min}} món khác nhau và không món nào xuất hiện quá {{max}} lần. Server kiểm tra khi bạn lưu.",
+        "addMeal": "Thêm",
+        "removeMeal": "Bỏ bữa này",
+        "servingsLabel": "Khẩu phần",
+        "dishOverused": "Đã dùng {{n}} lần — giới hạn là {{max}}.",
+        "save": "Lưu thực đơn",
+        "saving": "Đang lưu...",
+        "createSuccess": "Đã tạo thực đơn tuần",
+        "updateSuccess": "Đã cập nhật thực đơn tuần",
+        "saveFailed": "Không lưu được thực đơn",
+        "errors": {
+            "startDate": "Ngày bắt đầu phải là thứ Hai.",
+            "emptyDay": "Thêm ít nhất một bữa.",
+            "servings": "Khẩu phần phải là số nguyên từ 1 trở lên.",
+            "days": "Thực đơn phải gồm đúng 7 ngày."
+        }
+    }
+}
