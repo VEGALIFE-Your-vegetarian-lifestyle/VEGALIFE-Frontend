@@ -2,7 +2,7 @@
 
 Đối chiếu docs/apis (26 nhóm) với code trong `src/services/`, `src/pages/`, `src/routes/`.
 
-Cập nhật: 2026-10-14 · branch `feat/post-management-user`
+Cập nhật: 2026-10-22 · branch `feat/ai-chatbot`
 
 > Endpoint nào đã có test tự động: xem `DOCS/TEST-COVERAGE.md`.
 
@@ -10,9 +10,9 @@ Cập nhật: 2026-10-14 · branch `feat/post-management-user`
 
 | Trạng thái | Số endpoint |
 |---|---|
-| ✅ Đã gọi API thật | 35 |
+| ✅ Đã gọi API thật | 39 |
 | ⚠️ Có hàm nhưng chưa nối UI / còn mock | 3 |
-| ❌ Chưa làm | 23 |
+| ❌ Chưa làm | 19 |
 
 > Con số ✅ trước đây ghi 28, không khớp với chính các bảng trong tài liệu này
 > (cộng lại ra 35). Đã đếm lại theo bảng bên dưới.
@@ -31,7 +31,7 @@ Cập nhật: 2026-10-14 · branch `feat/post-management-user`
 | Login / Register | `/login`, `/register` | ✅ auth (Google OAuth ❌) |
 | Nearby | `/nearby` | 🟡 mock `nearbyService` |
 | Location Detail | `/nearby/:id` | 🟡 mock `nearbyService` |
-| AI Nutrition | `/ai-nutrition` | 🟡 trả lời tĩnh |
+| AI Nutrition | `/ai-nutrition` | ✅ `POST /api/ai/messages` + lịch sử hội thoại + `GET /api/subscriptions/me` |
 
 ---
 
@@ -215,26 +215,26 @@ Còn thiếu: **upload video thật** — form vẫn nhập tay `videoUrl` / `me
 `nearbyService.ts` mock 5 địa điểm + 1 chi tiết; đổi phần thân service là xong, UI không phải sửa.
 Bản đồ là placeholder (`ponytail:` trong `NearbyPage.tsx`).
 
-## 24. AI Chatbot — 🟡 UI xong, chờ API
+## 24. AI Chatbot — 🟡 UI + API xong, SSE chưa
 
 | Endpoint | Trạng thái |
 |---|---|
-| POST /api/ai/messages | ❌ |
-| POST /api/ai/messages/stream | ❌ |
-| GET /api/ai/conversations | ❌ |
-| GET /api/ai/conversations/{id} | ❌ |
+| POST /api/ai/messages | ✅ `aiService.sendAiMessage` |
+| POST /api/ai/messages/stream | ❌ chưa dùng — cần `fetch` + `getReader()`, xem `ponytail:` trong `aiService.ts` |
+| GET /api/ai/conversations | ✅ `aiService.getAiConversations` |
+| GET /api/ai/conversations/{id} | ✅ `aiService.getAiConversation` |
 
-`AiNutritionPage` trả lời bằng chuỗi tĩnh; BMI & protein target tính client-side.
+`useAiChat` giữ state chat; khách chưa đăng nhập bị chặn ở ô nhập (mọi endpoint cần JWT).
 
-## 25. AI Subscription — ❌ chưa làm
+## 25. AI Subscription — 🟡 chỉ đọc gói hiện tại
 
 | Endpoint | Trạng thái |
 |---|---|
-| GET /api/subscriptions | ❌ |
-| GET /api/subscriptions/me | ❌ |
-| GET /api/subscriptions/me/history | ❌ |
-| POST /api/subscriptions/me/cancel | ❌ |
-| POST /api/subscriptions/me/purchase/eligibility | ❌ |
+| GET /api/subscriptions | ❌ chưa dùng |
+| GET /api/subscriptions/me | ✅ `subscriptionService.getMySubscription` |
+| GET /api/subscriptions/me/history | ❌ chưa làm |
+| POST /api/subscriptions/me/cancel | ❌ chưa làm |
+| POST /api/subscriptions/me/purchase/eligibility | ❌ chưa làm |
 
 ## 26. Payment (VNPay) — ❌ chưa làm
 
@@ -254,7 +254,7 @@ Bản đồ là placeholder (`ponytail:` trong `NearbyPage.tsx`).
 3. **Backend thêm filter cho `GET /api/posts`** (`q`, `status`, `type`, sort) — bỏ lọc client-side ở ExplorePage / MyPostsPage.
 4. **GET /api/profile/{userId} + GET /api/users/{userId}/posts** — trang profile công khai.
 5. **Dashboard stats** — `dashboardService` còn mock `categoriesSeed`.
-6. Các nhóm 10–12, 19–20, 24–26: chưa có service, làm mới từ đầu.
+6. Các nhóm 10–12, 19–20, 26: chưa có service, làm mới từ đầu.
 
 ## Hàm có nhưng chưa nơi nào gọi
 
