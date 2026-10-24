@@ -1,0 +1,103 @@
+{
+    "title": "Create Recipe",
+    "breadcrumb": "Recipes",
+    "sectionLabel": "Section {{letter}}",
+    "section": {
+        "basic": "Basic Information",
+        "ingredients": "Ingredients",
+        "instructions": "Cooking Instructions",
+        "details": "Recipe Details"
+    },
+    "field": {
+        "name": "Recipe Name",
+        "dishName": "Dish Name",
+        "description": "Description",
+        "prepTime": "Prep Time (min)",
+        "cookTime": "Cook Time (min)",
+        "servings": "Servings",
+        "difficulty": "Difficulty",
+        "instructions": "Cooking Instructions",
+        "ingredientName": "Ingredient Name",
+        "amount": "Amount",
+        "unit": "Unit"
+    },
+    "placeholder": {
+        "name": "Crispy golden sesame crusted tofu",
+        "dishName": "Start typing a dish name",
+        "description": "What makes this recipe special?",
+        "ingredientName": "Start typing an ingredient",
+        "amount": "1",
+        "unit": "g, ml, tbsp…",
+        "instructions": "Write the steps, one per line."
+    },
+    "counter": {
+        "characters": "{{count}} / {{max}}",
+        "steps": "{{steps}} steps · {{characters}} characters"
+    },
+    "difficulty": {
+        "EASY": "Easy",
+        "MEDIUM": "Medium",
+        "HARD": "Hard"
+    },
+    "ingredient": {
+        "add": "Add Ingredient",
+        "remove": "Remove ingredient",
+        "hint": "Supports up to 3 decimal places (e.g. 0.125 tsp)."
+    },
+    "readiness": {
+        "title": "Recipe Readiness",
+        "percent": "{{percent}}% Ready",
+        "name": "Recipe Name",
+        "dish": "Dish Name",
+        "ingredients": "Ingredients",
+        "instructions": "Cooking Instructions",
+        "servings": "Servings Count",
+        "value": {
+            "valid": "Valid",
+            "assigned": "Assigned",
+            "items": "{{count}} items",
+            "provided": "Provided",
+            "servings": "{{count}} servings"
+        },
+        "footnote": "Prevents accidental duplicate submissions while the request is in progress. Form data is retained if a temporary network error occurs."
+    },
+    "standards": {
+        "title": "Form Standards",
+        "units": {
+            "title": "Standardized Units",
+            "description": "Use common kitchen measurements (grams, ml, cups, tbsp, tsp) for consistency across international users."
+        },
+        "precision": {
+            "title": "Numerical Precision",
+            "description": "Ingredient amounts accept decimal values up to 3 decimal places."
+        },
+        "unique": {
+            "title": "Uniqueness Rule",
+            "description": "Ingredient names must be distinct within this recipe formula."
+        },
+        "previewJson": "Preview JSON Payload"
+    },
+    "action": {
+        "cancel": "Cancel",
+        "submit": "Create Recipe",
+        "submitting": "Creating…"
+    },
+    "toast": {
+        "created": "Recipe created",
+        "failed": "Could not create the recipe. Please try again."
+    },
+    "hint": {
+        "name": "Provide a descriptive, appetizing title. Maximum 255 characters.",
+        "autocomplete": "Pick a suggestion or type a new name — it will be created.",
+        "noSuggestions": "No matches — keep typing to create a new one.",
+        "instructions": "Formatted as newline-separated instructions for cooking execution."
+    },
+    "errors": {
+        "servingsMin": "Servings must be a whole number of at least 1",
+        "ingredientsMin": "Add at least one ingredient",
+        "ingredientsMax": "A recipe can have at most 50 ingredients",
+        "ingredientDuplicate": "Each ingredient can only appear once",
+        "amountInvalid": "Amount must be greater than 0 with at most 3 decimals",
+        "minutesInvalid": "Enter a whole number of minutes (0 or more)"
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "title": "Thực đơn",
+    "subtitle": "Thực đơn tuần do trợ lý AI dinh dưỡng tạo cho bạn.",
+    "breadcrumb": "Thực đơn",
+    "week": {
+        "label": "{{from}} – {{to}}",
+        "prev": "Tuần trước",
+        "next": "Tuần sau",
+        "today": "Tuần này"
+    },
+    "weekdays": {
+        "short": {
+            "mon": "T2",
+            "tue": "T3",
+            "wed": "T4",
+            "thu": "T5",
+            "fri": "T6",
+            "sat": "T7",
+            "sun": "CN"
+        }
+    },
+    "status": {
+        "drafted": "Nháp",
+        "scheduled": "Đã lên lịch",
+        "cancelled": "Đã huỷ",
+        "completed": "Đã xong"
+    },
+    "mealType": {
+        "BREAKFAST": "Bữa sáng",
+        "LUNCH": "Bữa trưa",
+        "DINNER": "Bữa tối"
+    },
+    "servings_one": "{{count}} phần",
+    "servings_other": "{{count}} phần",
+    "noMeals": "Chưa có bữa",
+    "notes": "Ghi chú",
+    "empty": {
+        "title": "Tuần này chưa có thực đơn",
+        "description": "Hãy nhờ trợ lý AI dinh dưỡng lập thực đơn dựa trên hồ sơ ăn uống, dị ứng và BMI của bạn — thực đơn sẽ được lưu tại đây.",
+        "action": "Mở trợ lý AI"
+    }
+}

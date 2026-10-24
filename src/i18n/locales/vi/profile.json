@@ -34,6 +34,46 @@
         "overweight": "Thừa cân",
         "obese": "Béo phì"
     },
+    "dietary": {
+        "eyebrow": "Hồ sơ dinh dưỡng",
+        "title": "Khẩu vị & chế độ ăn",
+        "footnote": "Trợ lý dinh dưỡng AI dựa vào đây để cá nhân hoá mọi gợi ý. Dị ứng và hạn chế được coi là giới hạn cứng.",
+        "saved": "Đã lưu khẩu vị & chế độ ăn",
+        "saveFailed": "Không lưu được khẩu vị & chế độ ăn",
+        "cancel": "Bỏ thay đổi",
+        "counter": "{{used}} / {{max}}",
+        "customHint": "Đây chỉ là gợi ý nhanh — bạn gõ được bất kỳ giá trị nào phù hợp.",
+        "itemTooLong": "Mỗi mục tối đa {{max}} ký tự.",
+        "limitReached": "Chỉ thêm được tối đa {{max}} mục.",
+        "duplicate": "Mục này đã có trong danh sách.",
+        "removeTag": "Xoá {{tag}}",
+        "preferences": {
+            "label": "Sở thích",
+            "hint": "Món bạn thích ăn — trợ lý sẽ ưu tiên những món này.",
+            "placeholder": "vd: cay, giàu đạm"
+        },
+        "dislikes": {
+            "label": "Không thích",
+            "hint": "Món hoặc nguyên liệu bạn không muốn thấy.",
+            "placeholder": "vd: ngò rí, nấm"
+        },
+        "allergies": {
+            "label": "Dị ứng",
+            "hint": "Giới hạn cứng — không bao giờ được gợi ý.",
+            "placeholder": "vd: đậu phộng, đậu nành"
+        },
+        "restrictions": {
+            "label": "Hạn chế",
+            "hint": "Quy tắc ăn uống bạn đang theo, do y tế hoặc quan điểm cá nhân.",
+            "placeholder": "vd: không đường thêm"
+        },
+        "healthGoal": {
+            "label": "Mục tiêu sức khoẻ",
+            "hint": "Một dòng về điều bạn đang hướng tới.",
+            "placeholder": "vd: giảm 3 kg trong 3 tháng",
+            "tooLong": "Mục tiêu sức khoẻ tối đa {{max}} ký tự."
+        }
+    },
     "verifiedAuthor": "Tác giả thực vật đã xác minh",
     "contributorAccount": "Tài khoản cộng tác viên",
     "joined": "Tham gia {{date}}",

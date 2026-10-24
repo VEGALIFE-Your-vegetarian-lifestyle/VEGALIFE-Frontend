@@ -34,6 +34,7 @@
             "comments": "Comments",
             "categories": "Categories",
             "locations": "Locations",
+            "recipes": "Recipes",
             "profile": "Profile"
         },
         "guide": {
@@ -287,6 +288,54 @@
         "toast": {
             "deleted": "Video deleted",
             "failed": "Action failed. Please try again."
+        }
+    },
+    "recipes": {
+        "title": "Recipe Management",
+        "description": "All recipes created by members, including soft-deleted ones. {{count}} recipes in total.",
+        "searchPlaceholder": "Search by recipe or creator name",
+        "searchLabel": "Search recipes",
+        "minutes": "{{count}} min",
+        "sortLabel": "Sort recipes",
+        "sort": {
+            "newest": "Newest first",
+            "updated": "Recently updated",
+            "name": "Name A-Z"
+        },
+        "filters": {
+            "fromDate": "Created from",
+            "toDate": "Created to",
+            "clearDates": "Clear dates"
+        },
+        "column": {
+            "recipe": "Recipe",
+            "dish": "Dish",
+            "creator": "Creator",
+            "ingredients": "Ingredients",
+            "cookTime": "Cook time",
+            "servings": "Servings",
+            "difficulty": "Difficulty",
+            "status": "Status",
+            "createdAt": "Created"
+        },
+        "status": {
+            "ACTIVE": "Active",
+            "DELETED": "Deleted"
+        },
+        "detail": {
+            "by": "Created by @{{username}}",
+            "description": "Description",
+            "ingredients": "Ingredients ({{count}})",
+            "instructions": "Cooking instructions",
+            "prepTime": "Prep time",
+            "updatedAt": "Updated",
+            "email": "Email"
+        },
+        "empty": {
+            "title": "No recipes found",
+            "filtered": "No recipes match the current filters.",
+            "all": "No recipes have been created yet.",
+            "reload": "Reload"
         }
     },
     "users": {

@@ -44,9 +44,9 @@ Mỗi FR có một dòng `> **FE:**` ghi trạng thái frontend thật.
 | FR-04 | 584 | Videos | 🟡 thiếu upload video |
 | FR-05 | 620 | Comments & Votes | 🟡 gửi OK, đọc còn mock |
 | FR-06 | 666 | Categories | ✅ thiếu restore/permanent delete |
-| FR-07 | 689 | Weekly Meal Plan | ⬜ chưa dựng |
-| FR-08 | 752 | Location Search | 🟡 UI xong, service mock |
-| FR-09 | 795 | Food/Recipe Search | ⬜ chưa dựng |
+| FR-07 | 689 | Weekly Meal Plan | 🟡 xem được menu AI tạo, chưa tự tạo/sửa |
+| FR-08 | 752 | Location Search | 🟢 API thật, thiếu gợi ý theo món |
+| FR-09 | 795 | Food/Recipe Search | 🟡 tạo công thức xong, chưa có search |
 | FR-10 | 817 | AI Nutrition Chatbot | 🟢 xong (trừ SSE stream) |
 | FR-11 | 858 | Admin Content Moderation | 🟡 thiếu comments/payments |
 
@@ -472,6 +472,13 @@ Scenario: User logs out
 
 > **FE:** 🟡 xem/sửa hồ sơ OK (`GET`/`PUT /api/profile`). **BMI chưa có** trên UI.
 > `GET /api/profile/{userId}` (hồ sơ công khai) backend chưa có.
+>
+> **Dietary** (FR-02 bổ sung): 5 field `preferences`, `dislikes`, `allergies`,
+> `restrictions`, `healthGoal` đã **mount vào `ProfilePage`** qua
+> `DietaryPreferencesSection.tsx` (+ `TagInput.tsx`, helper `dietary.ts`).
+> Section có form + nút lưu **riêng**, đặt ngoài `<form>` hồ sơ; `buildDietaryPatch`
+> chỉ gửi field đã đổi nên lưu dietary không đụng height/weight/age.
+> Wire format `PUT /api/profile` là **camelCase**.
 
 #### FR-02-01: View Own Profile
 
@@ -688,7 +695,11 @@ Scenario: Admin assigns category to post
 
 ### FR-07 - Weekly Meal Plan [MVP]
 
-> **FE:** ⬜ **chưa dựng** — không có route, service hay màn hình nào.
+> **FE:** 🟡 **xem được menu AI đã tạo** — `/meal-plan` gọi `GET /api/menus/details`
+> với cửa sổ tuần, render 7 cột ngày × bữa (`features/menus/`). Việc tạo vẫn do chatbot
+> AI (`/ai-nutrition`) đảm nhận: backend có 5 tool menu và prompt đã nạp sẵn dietary +
+> BMI. Chưa có: form tự tạo/sửa menu, đổi status, trang lịch sử phân trang
+> (`GET /api/menus`), nút mua gói cho user chưa trả phí.
 
 #### FR-07-01: Create Meal Plan Based on BMI (Paid Feature)
 
@@ -749,10 +760,17 @@ Scenario: User views their weekly menu
   And each meal shows dish name, ingredients, calories
 ```
 
+> FE hiện hiển thị được: ngày × loại bữa, tên món, số phần, ảnh, cuisine, ghi chú menu,
+> badge trạng thái. **Chưa có** nguyên liệu và calories — `GET /api/menus/details` không
+> trả hai field này.
+
 ### FR-08 - Location Search [MVP]
 
-> **FE:** 🟡 UI xong (`/nearby`, `/nearby/:id`) nhưng `nearbyService` vẫn **mock 5 địa điểm**.
-> Nối API chỉ cần thay thân service, UI không phải sửa. Bản đồ là placeholder.
+> **FE:** 🟢 Đã nối API thật: `/nearby` → `GET /api/locations/nearby`,
+> `/nearby/:id` → `GET /api/locations` (lọc theo id ở client vì backend chưa có
+> `GET /api/admin/locations/{id}`). Bản đồ react-leaflet (`features/locations/components/PlaceMap.tsx`),
+> chọn vùng bằng `MOCK_AREAS` khi người dùng chưa cấp GPS.
+> Còn thiếu: FR-08-02 (gợi ý địa điểm theo món) — chưa có API, xem FR-09.
 
 #### FR-08-01: Search Nearby Vegan Shops/Restaurants
 
@@ -794,7 +812,11 @@ Scenario: Get suggested shops related to searched food
 
 ### FR-09 - Food/Recipe Search [MVP]
 
-> **FE:** ⬜ **chưa dựng** — không có route, service hay màn hình nào.
+> **FE:** 🟡 **tạo công thức xong**, **search chưa dựng**.
+> Đã có: `/recipes/create` (`ProtectedRoute`) → `POST /api/recipes`, gợi ý tên món/nguyên liệu
+> qua `GET /api/dishes`, `GET /api/ingredients`; `/admin/recipes` → `GET /api/admin/recipes` (chỉ đọc).
+> Chưa có: trang tìm kiếm công khai, danh sách/chi tiết recipe (`GET /api/recipes[/{id}]`
+> backend chưa mở), tìm xuyên bài viết + video.
 
 #### FR-09-01: Search Recipes, Videos, Blogs
 
@@ -1418,6 +1440,12 @@ Scenario: Admin views member list
 | POST | `/api/v1/recipes` | Auth | Create recipe |
 | PUT | `/api/v1/recipes/:id` | Auth (owner/Admin) | Update recipe |
 | DELETE | `/api/v1/recipes/:id` | Auth (owner/Admin) | Soft delete recipe |
+
+> **Đã triển khai (FE)**: `POST /api/recipes` → `/recipes/create` (`features/recipes/`).
+> Backend hiện chỉ mở `POST /api/recipes`, `GET /api/dishes`, `GET /api/ingredients`
+> (2 endpoint sau dùng cho gợi ý autocomplete trong form) và `GET /api/admin/recipes`
+> (admin, chỉ đọc, trả cả recipe `status: "DELETED"`).
+> List/detail/update/delete recipe chưa có trong tài liệu API nên chưa làm.
 
 #### Meal Plan Module
 

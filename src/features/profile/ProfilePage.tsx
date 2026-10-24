@@ -31,6 +31,7 @@ import { useAuth, useLogout } from "@/features/auth/useAuth";
 // Chỉ dùng cho thẻ thống kê; gỡ khi backend có endpoint thống kê hồ sơ.
 import { getMyPosts } from "@/features/posts/api";
 import { useProfile, useUpdateProfile } from "./useProfile";
+import { DietaryPreferencesSection } from "./DietaryPreferencesSection";
 import { useUiStore } from "@/shared/ui/uiStore";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
@@ -109,6 +110,8 @@ export default function ProfilePage({ embedded = false }: { embedded?: boolean }
 
     const height = Number(formik.values.heightCm) || 0;
     const weight = Number(formik.values.weightKg) || 0;
+    // ponytail: tính BMI ở client từ state Formik để số đổi ngay khi gõ. Backend cũng trả
+    // `bmi` nhưng chỉ đổi sau khi lưu — dùng nó sẽ tệ hơn. Gỡ khi cần BMI do server chốt.
     const bmi = height > 0 && weight > 0 ? weight / ((height / 100) * (height / 100)) : null;
 
     let bmiCategory = "";
@@ -307,6 +310,9 @@ export default function ProfilePage({ embedded = false }: { embedded?: boolean }
                         </form>
                     )}
                 </div>
+
+                {/* Ngoài <form> hồ sơ: section này có form + nút lưu riêng. */}
+                {!isLoading && <DietaryPreferencesSection profile={profile} />}
             </div>
         </div>
     );

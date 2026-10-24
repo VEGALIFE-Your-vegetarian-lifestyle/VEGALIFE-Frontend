@@ -1,8 +1,8 @@
 # API Coverage — VEGALIFE Frontend
 
-Đối chiếu docs/apis (26 nhóm) với code trong `src/features/`, `src/app/routes.tsx`.
+Đối chiếu docs/apis (27 nhóm) với code trong `src/features/`, `src/app/routes.tsx`.
 
-Cập nhật: 2026-10-22 · branch `refactor/source-structure`
+Cập nhật: 2026-10-24 · branch `feat/recipes`
 
 > Endpoint nào đã có test tự động: xem `DOCS/TEST-COVERAGE.md`.
 
@@ -10,12 +10,13 @@ Cập nhật: 2026-10-22 · branch `refactor/source-structure`
 
 | Trạng thái | Số endpoint |
 |---|---|
-| ✅ Đã gọi API thật | 39 |
-| ⚠️ Có hàm nhưng chưa nối UI / còn mock | 3 |
-| ❌ Chưa làm | 19 |
+| ✅ Đã gọi API thật | 47 |
+| ⚠️ Có hàm nhưng chỉ đọc / chưa nối hết UI | 1 |
+| ❌ Chưa làm | 23 |
 
-> Con số ✅ trước đây ghi 28, không khớp với chính các bảng trong tài liệu này
-> (cộng lại ra 35). Đã đếm lại theo bảng bên dưới.
+> Đếm lại 2026-10-24 theo đúng các bảng bên dưới (71 dòng endpoint). Mục ⚠️ là
+> `GET /api/admin/recipes` — UI đã gọi thật nhưng chỉ đọc. `getMedia` (✅, chưa nơi nào
+> gọi) nằm ở mục "Hàm có nhưng chưa nơi nào gọi" cuối file.
 
 ## Màn hình đã dựng lại theo UI mới
 
@@ -27,11 +28,14 @@ Cập nhật: 2026-10-22 · branch `refactor/source-structure`
 | Create Post | `/posts/create` | ✅ `POST /api/posts` → `PATCH /api/posts/{id}` |
 | Edit Post | `/posts/:id/edit` | ✅ `GET /api/posts/{id}` → `PATCH` |
 | My Posts | `/my-posts` | ✅ `GET /api/posts` + publish/unpublish/delete |
-| Profile | `/profile` | ✅ `GET/PUT /api/profile` + `GET /api/posts` (stats) |
+| Profile | `/profile` | ✅ `GET/PUT /api/profile` (gồm 5 field dietary) + `GET /api/posts` (stats) |
 | Login / Register | `/login`, `/register` | ✅ auth (Google OAuth ❌) |
 | Nearby | `/nearby` | ✅ `GET /api/locations/nearby` |
 | Location Detail | `/nearby/:id` | ✅ `GET /api/locations` (lọc theo id ở client) |
 | AI Nutrition | `/ai-nutrition` | ✅ `POST /api/ai/messages` + lịch sử hội thoại + `GET /api/subscriptions/me` |
+| Create Recipe | `/recipes/create` | ✅ `POST /api/recipes` + `GET /api/dishes`, `GET /api/ingredients` (gợi ý) |
+| Admin Recipes | `/admin/recipes` | ✅ `GET /api/admin/recipes` (chỉ đọc) |
+| Meal Plan | `/meal-plan` | ✅ `GET /api/menus/details` (chỉ đọc) |
 
 ---
 
@@ -68,7 +72,12 @@ LoginPage + RegisterPage dùng chung tab switcher; AuthLayout dùng namespace `a
 |---|---|---|
 | GET /api/profile | ✅ `features/profile/api` `getProfile` | ProfilePage, MyPostsPage (header) |
 | GET /api/profile/{userId} | ❌ | Chưa có — cần cho trang profile công khai của member khác |
-| PUT /api/profile | ✅ `updateProfile` | map snake_case ↔ camelCase |
+| PUT /api/profile | ✅ `updateProfile` | map camelCase; nhận cả 5 field dietary |
+
+`PUT /api/profile` merge từng field: vắng mặt = giữ nguyên, `[]` = xoá sạch. Nhờ vậy
+`DietaryPreferencesSection` (đã mount trong `ProfilePage`, có nút lưu riêng) chỉ gửi
+field đã đổi (`buildDietaryPatch`), không đụng height/weight/age của form hồ sơ.
+`healthGoal` xoá trắng thì gửi `""`.
 
 ProfilePage stats (`published`/`videos`/`saved`/`contributions`) suy từ `GET /api/posts` 100 bài gần nhất; `saved` luôn 0 vì chưa có API favorites.
 
@@ -124,14 +133,40 @@ backend chưa có endpoint (`ponytail:` ở `features/categories/api.ts`).
 | GET /api/admin/videos | `getVideos` | VideosPage |
 | DELETE /api/media/{mediaId} | `deleteVideo` | VideosPage |
 
-## 10. Recipe moderation (Admin) — ❌ chưa làm
+## 10. Recipe moderation (Admin) — ⚠️ chỉ đọc
 
-| Endpoint | Trạng thái |
-|---|---|
-| GET /api/admin/recipes | ❌ |
+| Endpoint | Hàm | UI |
+|---|---|---|
+| GET /api/admin/recipes | `getAdminRecipes` | AdminRecipesPage |
+
+Route `/admin/recipes`. Phân trang thật ở server (`page`/`size`/`sort` + lọc `userId`,
+`categoryId`, `createdFrom`, `createdTo`). Backend trả **cả** recipe đã xoá mềm với
+`status: "DELETED"` và **không** có tham số lọc theo status hay tìm theo tên — `q` lọc
+client-side trên trang hiện tại (xem `ponytail:` trong `features/recipes/adminApi.ts`).
+
+Chưa có (nên không làm UI): sửa / xoá / khôi phục / duyệt – từ chối recipe.
+Không có `GET /api/recipes/{id}` → chi tiết recipe render từ row đã tải, không gọi thêm API.
+
+## 10b. Weekly menu — 🟡 chỉ đọc
+
+| Endpoint | Trạng thái | Ghi chú |
+|---|---|---|
+| GET /api/menus/details | ✅ `getMealPlans` | MealPlanPage. Trả **mảng phẳng**, không phân trang |
+| GET /api/menus | ❌ | Dành cho trang lịch sử (chưa làm). `page` **0-based**, lọc được `status` |
+| POST /api/menus | ❌ | Form tự tạo menu (chưa làm) |
+| PATCH /api/menus/{menuId} | ❌ | Sửa menu `drafted`/`scheduled` (chưa làm) |
+| POST /api/menus/{menuId}/status | ❌ | schedule/cancel/complete (chưa làm) |
+
+Route `/meal-plan` (cần đăng nhập). Luôn gửi `from`/`to` tường minh — bỏ trống thì
+backend lấy tuần hiện tại theo **giờ UTC**, lệch ngày với người dùng múi giờ dương.
+`days` trong response **chỉ chứa ngày có bữa** nên UI dựng đủ 7 ô từ `startDate` thay vì
+lặp theo `days`. Endpoint không lọc được `status`; `menuId` của user khác trả **404**
+(không phải 403, cố ý giấu sự tồn tại — BR-MENU-001).
+
+Việc tạo menu do chatbot AI lo (`MenuTools`: `get_menu`, `get_meal_plan`, `create_menu`,
+`update_menu`, `schedule_menu`); prompt AI đã nạp sẵn dietary + BMI từ profile.
 
 ## 11. Comment moderation (Admin) — ❌ chưa làm
-
 | Endpoint | Trạng thái |
 |---|---|
 | GET /api/admin/comments | ❌ |
@@ -187,13 +222,17 @@ MyPostsPage tabs My Videos / Saved Recipes / My Activity → `unsupported` (ch�
 |---|---|
 | (chưa có trong docs) | ❌ |
 
-## 20. My favorite recipe — ❌ chưa làm
+## 20. My favorite recipe — ✅ tạo công thức
 
-| Endpoint | Trạng thái |
-|---|---|
-| POST /api/recipes | ❌ |
-| GET /api/dishes | ❌ |
-| GET /api/ingredients | ❌ |
+| Endpoint | Trạng thái | UI |
+|---|---|---|
+| POST /api/recipes | ✅ `createRecipe` | CreateRecipePage |
+| GET /api/dishes | ✅ `searchDishes` | gợi ý tên món trong form |
+| GET /api/ingredients | ✅ `searchIngredients` | gợi ý tên nguyên liệu trong form |
+
+Route `/recipes/create` (`ProtectedRoute`). Chưa có: sửa/xoá recipe, trang danh sách/chi tiết
+recipe công khai (thiếu `GET /api/recipes`), gán recipe vào bài viết (`POST /api/posts/{id}/recipes`).
+Admin xem danh sách recipe qua `GET /api/admin/recipes` — xem §10.
 
 ## 21. Create/edit post — ✅ đủ luồng chính
 
@@ -262,7 +301,9 @@ Bản đồ: react-leaflet (`features/locations/components/PlaceMap.tsx`).
 3. **Backend thêm filter cho `GET /api/posts`** (`q`, `status`, `type`, sort) — bỏ lọc client-side ở ExplorePage / MyPostsPage.
 4. **GET /api/profile/{userId} + GET /api/users/{userId}/posts** — trang profile công khai.
 5. **Dashboard stats** — `features/admin/dashboardApi.ts` còn mock `categoriesSeed`.
-6. Các nhóm 10–12, 19–20, 26: chưa có service, làm mới từ đầu.
+6. **Recipe còn thiếu** — `GET /api/recipes` (danh sách công khai), `GET /api/recipes/{id}`,
+   `PUT`/`DELETE` recipe, `POST /api/posts/{id}/recipes` (gán recipe vào bài).
+7. Các nhóm 11–12, 19, 26: chưa có service, làm mới từ đầu.
 
 ## Hàm có nhưng chưa nơi nào gọi
 

@@ -32,8 +32,8 @@ src/
   app/          # Khởi động: main, App, routes, guards, layout
   components/   # ui/ (primitive) + common/ (ghép sẵn)
   features/     # Nghiệp vụ theo domain: admin, auth, categories, locations,
-                # nutrition-ai, posts, profile, videos
-  i18n/         # i18next setup + locales/{en,vi} (11 namespace)
+                # nutrition-ai, posts, profile, recipes, videos
+  i18n/         # i18next setup + locales/{en,vi} (13 namespace)
   shared/       # api, auth, hooks, types, ui, utils — KHÔNG import features/
   test/         # Hạ tầng test (setup, e2eEnv, fixtures)
 ```
@@ -52,4 +52,4 @@ Alias `@/` trỏ đến `src/`. Quy tắc import một chiều và bản đồ f
 
 ## Ngôn ngữ
 
-i18n với 2 locale `en` (mặc định) và `vi`, 10 namespace. Đổi ngôn ngữ qua `LanguageSwitcher`; lưu ở `localStorage["vegalife-language"]`.
+i18n với 2 locale `en` (mặc định) và `vi`, 13 namespace. Đổi ngôn ngữ qua `LanguageSwitcher`; lưu ở `localStorage["vegalife-language"]`.
