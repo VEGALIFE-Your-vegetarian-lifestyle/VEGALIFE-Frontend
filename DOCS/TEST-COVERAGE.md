@@ -4,7 +4,7 @@ Suite test frontend: **Vitest 5 + Testing Library + jsdom**. Test gọi **backen
 (`VITE_API_BASE_URL` trong `.env`), **không mock API** — nhờ vậy test bắt được cả
 sai lệch shape response giữa FE và BE.
 
-Cập nhật: 2026-10-22 · branch `refactor/source-structure`
+Cập nhật: 2026-10-24 · branch `feat/recipes`
 
 > Hướng dẫn cài đặt/biến môi trường chi tiết: `src/test/README.md`.
 
@@ -59,7 +59,7 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 | Cần JWT admin | `E2E_ADMIN_*` | `describe.skipIf(!HAS_ADMIN)` |
 | Ghi dữ liệu thật | thêm `E2E_ALLOW_WRITES=1` | `describe.skipIf(..., !E2E_ALLOW_WRITES)`, hiện là `it.todo` |
 
-## 20 file test
+## 24 file test
 
 ### Service (`src/features/*/__tests__/`)
 
@@ -72,6 +72,7 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 | `admin/adminServices.test.ts` | `admin/api` (getUsers/suspend/restore), `videos/api` (getVideos/deleteVideo), `admin/dashboardApi` | admin + **mock** |
 | `nutrition-ai/aiApi.test.ts` | `nutrition-ai/api` + `subscriptionApi` — mock client | user |
 | `nutrition-ai/useAiChat.test.tsx` | `useAiChat` — gửi 2 lần liên tiếp trong một tick chỉ tạo 1 request | user |
+| `recipes/adminApi.test.ts` | `getAdminRecipes` — phân trang 1-based → wire 0-based, whitelist `sort` | admin |
 
 ### Logic thuần (`src/features/locations/__tests__/`)
 
@@ -90,6 +91,9 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 | `posts/pages/PostDetailPage/` | bài không tồn tại → EmptyState, breadcrumb/fact strip khi có bài | public |
 | `posts/pages/CreatePostPage/CreatePostPage.test.tsx` | chế độ tạo mới + chế độ sửa, nạp category | public |
 | `posts/pages/CreatePostPage/payload.test.ts` | `buildValidationSchema`, `buildContentPayload`, `buildPatch` (thuần logic, không React) | public |
+| `recipes/pages/CreateRecipePage/schema.test.ts` | `buildRecipeSchema` + `buildRecipePayload` (thuần logic): field bắt buộc, servings ≥1, ingredients 1..50, trùng tên nguyên liệu, amount >0 ≤3 chữ số lẻ, bỏ field rỗng khi build payload | public |
+| `profile/__tests__/dietary.test.ts` | `normalizeTags`, `toDietaryValues`, `buildDietaryPatch` (thuần logic): chuẩn hoá tag, copy mảng, chỉ gửi field đã đổi, xoá hết → `[]`, `healthGoal` trắng → `""` | public |
+| `menus/__tests__/week.test.ts` | `toISODate`, `parseISODate`, `startOfWeek`, `addDays`, `weekDays`, `shiftWeek` (thuần logic): parse ra ngày **local** không qua UTC, chuỗi rác/ngày không tồn tại → `Invalid Date`, ranh giới tháng/năm, không sửa Date gốc | public |
 | `locations/pages/NearbyPage/` | danh sách + bản đồ, đổi vùng, GPS bị từ chối | public |
 | `locations/pages/LocationDetailPage/` | chi tiết địa điểm, giờ mở cửa, chỉ đường | public |
 | `locations/pages/AdminLocationsPage/` | CRUD địa điểm với `fakeLocationService` | public |
@@ -118,7 +122,8 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 |---|---|
 | Test ghi dữ liệu thật | mới là `it.todo` ở `posts/api`, `categories/api`, `admin/api`; cần `E2E_ALLOW_WRITES=1` |
 | `dashboardService` | test đang khẳng định **dữ liệu mock** (`categoriesSeed` + `delay`). Phải viết lại khi backend có endpoint thật |
-| `ProfilePage`, `MyPostsPage`, `ExplorePage`, `HomePage` | chưa có test screen |
+| `ProfilePage`, `MyPostsPage`, `ExplorePage`, `HomePage` | chưa có test screen (dietary chỉ test logic, chưa test UI) |
+| `MealPlanPage` | chưa có test screen — `week.ts` có test logic, phần render 7 cột/badge/empty chưa phủ |
 | `mediaService` (upload grant → confirm) | chưa có test (`shared/api/media.ts`) |
 | `useAuth` / `useListParams` / `usePublicCategories` | chưa có test hook |
 | `nearbyService`, `AiNutritionPage` | đã nối API thật — cần bổ sung test |

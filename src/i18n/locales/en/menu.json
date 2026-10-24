@@ -1,0 +1,42 @@
+{
+    "title": "Meal plan",
+    "subtitle": "Weekly menus built for you by the AI nutrition assistant.",
+    "breadcrumb": "Meal plan",
+    "week": {
+        "label": "{{from}} – {{to}}",
+        "prev": "Previous week",
+        "next": "Next week",
+        "today": "This week"
+    },
+    "weekdays": {
+        "short": {
+            "mon": "Mon",
+            "tue": "Tue",
+            "wed": "Wed",
+            "thu": "Thu",
+            "fri": "Fri",
+            "sat": "Sat",
+            "sun": "Sun"
+        }
+    },
+    "status": {
+        "drafted": "Draft",
+        "scheduled": "Scheduled",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+    },
+    "mealType": {
+        "BREAKFAST": "Breakfast",
+        "LUNCH": "Lunch",
+        "DINNER": "Dinner"
+    },
+    "servings_one": "{{count}} serving",
+    "servings_other": "{{count}} servings",
+    "noMeals": "No meals yet",
+    "notes": "Note",
+    "empty": {
+        "title": "No meal plan for this week",
+        "description": "Ask the AI nutrition assistant to build one from your dietary profile, allergies and BMI — it saves the plan here.",
+        "action": "Open AI assistant"
+    }
+}

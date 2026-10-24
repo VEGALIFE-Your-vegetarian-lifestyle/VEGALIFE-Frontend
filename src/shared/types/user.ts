@@ -20,6 +20,15 @@ export interface UserProfile {
     description: string | null;
     avatarUrl: string | null;
     updatedAt: string;
+    /**
+     * 5 field dietary — backend lưu chung một cột JSONB, và **field chưa set thì
+     * vắng hẳn khỏi JSON** (không trả `null`/`[]`). Luôn đọc qua `?? []` / `?? ""`.
+     */
+    preferences?: string[];
+    dislikes?: string[];
+    allergies?: string[];
+    restrictions?: string[];
+    healthGoal?: string;
 }
 
 export interface LoginResponse {
@@ -92,6 +101,13 @@ export interface UpdateProfileRequest {
     gender?: Gender;
     description?: string;
     avatarUrl?: string;
+    /** Tối đa 50 phần tử, mỗi phần tử ≤100 ký tự. `[]` = xoá sạch, vắng mặt = giữ nguyên. */
+    preferences?: string[];
+    dislikes?: string[];
+    allergies?: string[];
+    restrictions?: string[];
+    /** Tối đa 200 ký tự. */
+    healthGoal?: string;
 }
 
 export interface AdminUser {

@@ -34,6 +34,46 @@
         "overweight": "Overweight",
         "obese": "Obese"
     },
+    "dietary": {
+        "eyebrow": "Nutrition profile",
+        "title": "Dietary preferences",
+        "footnote": "Your AI nutrition assistant uses these to tailor every suggestion. Allergies and restrictions are treated as hard limits.",
+        "saved": "Dietary preferences saved",
+        "saveFailed": "Could not save dietary preferences",
+        "cancel": "Discard changes",
+        "counter": "{{used}} / {{max}}",
+        "customHint": "These are shortcuts — type any value that fits you.",
+        "itemTooLong": "Each entry must be at most {{max}} characters.",
+        "limitReached": "You can add at most {{max}} entries.",
+        "duplicate": "That entry is already in the list.",
+        "removeTag": "Remove {{tag}}",
+        "preferences": {
+            "label": "Preferences",
+            "hint": "What you enjoy eating — the assistant leans towards these.",
+            "placeholder": "e.g. spicy, high-protein"
+        },
+        "dislikes": {
+            "label": "Dislikes",
+            "hint": "Dishes or ingredients you would rather not see.",
+            "placeholder": "e.g. cilantro, mushroom"
+        },
+        "allergies": {
+            "label": "Allergies",
+            "hint": "Hard limits — these are never suggested.",
+            "placeholder": "e.g. peanuts, soy"
+        },
+        "restrictions": {
+            "label": "Restrictions",
+            "hint": "Dietary rules you follow, such as medical or ethical ones.",
+            "placeholder": "e.g. no added sugar"
+        },
+        "healthGoal": {
+            "label": "Health goal",
+            "hint": "One line about what you are working towards.",
+            "placeholder": "e.g. lose 3 kg in 3 months",
+            "tooLong": "Health goal must be at most {{max}} characters."
+        }
+    },
     "verifiedAuthor": "Verified Plant-Based Author",
     "contributorAccount": "Contributor Account",
     "joined": "Joined {{date}}",

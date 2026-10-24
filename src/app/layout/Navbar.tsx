@@ -131,6 +131,22 @@ export function Navbar() {
                                         {t("myPosts")}
                                     </Link>
                                     <Link
+                                        to="/meal-plan"
+                                        role="menuitem"
+                                        onClick={() => setMenuOpen(false)}
+                                        className="block px-4 py-2 text-sm text-dark hover:bg-accent"
+                                    >
+                                        {t("mealPlan")}
+                                    </Link>
+                                    <Link
+                                        to="/recipes/create"
+                                        role="menuitem"
+                                        onClick={() => setMenuOpen(false)}
+                                        className="block px-4 py-2 text-sm text-dark hover:bg-accent"
+                                    >
+                                        {t("newRecipe")}
+                                    </Link>
+                                    <Link
                                         to="/profile"
                                         role="menuitem"
                                         onClick={() => setMenuOpen(false)}
@@ -234,6 +250,12 @@ export function Navbar() {
                                 </Link>
                                 <Link to="/profile" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
                                     {t("profile")}
+                                </Link>
+                                <Link to="/meal-plan" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
+                                    {t("mealPlan")}
+                                </Link>
+                                <Link to="/recipes/create" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
+                                    {t("newRecipe")}
                                 </Link>
                                 <button onClick={handleLogout} className="text-left text-sm font-semibold text-danger">
                                     {t("logout")}
