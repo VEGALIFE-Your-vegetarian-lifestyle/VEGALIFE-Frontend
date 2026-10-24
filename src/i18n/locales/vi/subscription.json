@@ -1,0 +1,91 @@
+{
+    "overline": "Gói AI Dinh dưỡng",
+    "title": "Gói dịch vụ AI",
+    "subtitle": "Chọn gói phù hợp để hỏi trợ lý dinh dưỡng thực vật nhiều hơn mỗi tháng.",
+    "pill": "Hạn mức tính theo tháng (UTC)",
+    "notice": "Thanh toán qua VNPay. Gói chỉ được kích hoạt sau khi VNPay xác nhận giao dịch thành công.",
+    "current": {
+        "eyebrow": "GÓI HIỆN TẠI",
+        "usage": "Đã dùng {{used}}/{{limit}} câu hỏi tháng này",
+        "renewal": "Gia hạn vào {{date}}",
+        "quota": "Hạn mức tháng",
+        "loginRequired": "Đăng nhập để xem gói hiện tại của bạn.",
+        "cancel": "Hủy gói"
+    },
+    "status": {
+        "active": "Đang hoạt động",
+        "cancelled": "Đã hủy",
+        "past_due": "Quá hạn"
+    },
+    "plans": {
+        "title": "Danh sách gói",
+        "current": "Gói hiện tại",
+        "free": "Miễn phí",
+        "perMonth": " / tháng",
+        "requests": "{{count}} câu hỏi AI mỗi tháng",
+        "buy": "Nâng cấp",
+        "renew": "Gia hạn"
+    },
+    "history": {
+        "title": "Lịch sử gói",
+        "emptyTitle": "Chưa có lịch sử gói",
+        "emptyDescription": "Các lần mua và gia hạn gói sẽ hiển thị ở đây.",
+        "plan": "Gói",
+        "status": "Trạng thái",
+        "startedAt": "Bắt đầu",
+        "renewalDate": "Gia hạn"
+    },
+    "rowStatus": {
+        "active": "Đang hoạt động",
+        "past_due": "Quá hạn",
+        "scheduled": "Đã lên lịch",
+        "cancelled": "Đã hủy",
+        "expired": "Hết hạn"
+    },
+    "payments": {
+        "title": "Lịch sử thanh toán",
+        "emptyTitle": "Chưa có thanh toán",
+        "emptyDescription": "Các giao dịch VNPay của bạn sẽ hiển thị ở đây.",
+        "plan": "Gói",
+        "amount": "Số tiền",
+        "status": "Trạng thái",
+        "date": "Ngày"
+    },
+    "paymentStatus": {
+        "pending": "Đang chờ",
+        "succeeded": "Thành công",
+        "failed": "Thất bại",
+        "refunded": "Đã hoàn tiền"
+    },
+    "cancelDialog": {
+        "title": "Hủy gói hiện tại?",
+        "description": "Gói sẽ bị hủy ngay lập tức và tài khoản quay về gói Miễn phí.",
+        "confirm": "Hủy gói"
+    },
+    "toast": {
+        "buyFailed": "Không thể bắt đầu thanh toán. Vui lòng thử lại.",
+        "cancelled": "Đã hủy gói",
+        "cancelFailed": "Không thể hủy gói. Vui lòng thử lại."
+    },
+    "result": {
+        "loading": "Đang tải kết quả thanh toán",
+        "backToPlans": "Về trang gói",
+        "toAi": "Dùng trợ lý AI",
+        "pending": {
+            "title": "Đang xác nhận thanh toán",
+            "description": "Vui lòng chờ trong giây lát, trang sẽ tự cập nhật."
+        },
+        "succeeded": {
+            "title": "Thanh toán thành công",
+            "description": "Gói của bạn đã được kích hoạt."
+        },
+        "failed": {
+            "title": "Thanh toán thất bại",
+            "description": "Giao dịch không thành công. Bạn có thể thử lại."
+        },
+        "refunded": {
+            "title": "Đã hoàn tiền",
+            "description": "Giao dịch này đã được hoàn tiền."
+        }
+    }
+}

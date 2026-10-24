@@ -12,6 +12,7 @@ import enPost from "./locales/en/post.json";
 import enNearby from "./locales/en/nearby.json";
 import enAiNutrition from "./locales/en/aiNutrition.json";
 import enLocation from "./locales/en/location.json";
+import enSubscription from "./locales/en/subscription.json";
 import viCommon from "./locales/vi/common.json";
 import viAuth from "./locales/vi/auth.json";
 import viAdmin from "./locales/vi/admin.json";
@@ -23,6 +24,7 @@ import viPost from "./locales/vi/post.json";
 import viNearby from "./locales/vi/nearby.json";
 import viAiNutrition from "./locales/vi/aiNutrition.json";
 import viLocation from "./locales/vi/location.json";
+import viSubscription from "./locales/vi/subscription.json";
 
 export const SUPPORTED_LANGUAGES = ["en", "vi"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
@@ -45,6 +47,7 @@ i18n.use(LanguageDetector)
                 nearby: enNearby,
                 aiNutrition: enAiNutrition,
                 location: enLocation,
+                subscription: enSubscription,
             },
             vi: {
                 common: viCommon,
@@ -58,6 +61,7 @@ i18n.use(LanguageDetector)
                 nearby: viNearby,
                 aiNutrition: viAiNutrition,
                 location: viLocation,
+                subscription: viSubscription,
             },
         },
         lng: savedLanguage,

@@ -12,6 +12,7 @@ const navLinks = [
     { labelKey: "explore", href: "/explore" },
     { labelKey: "nearby", href: "/nearby" },
     { labelKey: "aiNutrition", href: "/ai-nutrition" },
+    { labelKey: "subscription", href: "/subscription" },
 ];
 
 export function Navbar() {
