@@ -1,0 +1,103 @@
+{
+    "title": "Tạo công thức",
+    "breadcrumb": "Công thức",
+    "sectionLabel": "Phần {{letter}}",
+    "section": {
+        "basic": "Thông tin cơ bản",
+        "ingredients": "Nguyên liệu",
+        "instructions": "Các bước nấu",
+        "details": "Chi tiết công thức"
+    },
+    "field": {
+        "name": "Tên công thức",
+        "dishName": "Tên món",
+        "description": "Mô tả",
+        "prepTime": "Thời gian sơ chế (phút)",
+        "cookTime": "Thời gian nấu (phút)",
+        "servings": "Khẩu phần",
+        "difficulty": "Độ khó",
+        "instructions": "Các bước thực hiện",
+        "ingredientName": "Tên nguyên liệu",
+        "amount": "Số lượng",
+        "unit": "Đơn vị"
+    },
+    "placeholder": {
+        "name": "Đậu hũ chiên giòn vỏ mè",
+        "dishName": "Bắt đầu gõ tên món",
+        "description": "Điều gì làm công thức này đặc biệt?",
+        "ingredientName": "Bắt đầu gõ tên nguyên liệu",
+        "amount": "1",
+        "unit": "g, ml, thìa…",
+        "instructions": "Mỗi bước một dòng."
+    },
+    "counter": {
+        "characters": "{{count}} / {{max}}",
+        "steps": "{{steps}} bước · {{characters}} ký tự"
+    },
+    "difficulty": {
+        "EASY": "Dễ",
+        "MEDIUM": "Trung bình",
+        "HARD": "Khó"
+    },
+    "ingredient": {
+        "add": "Thêm nguyên liệu",
+        "remove": "Xoá nguyên liệu",
+        "hint": "Số lượng nhận tối đa 3 chữ số thập phân (ví dụ 0.125 thìa cà phê)."
+    },
+    "readiness": {
+        "title": "Mức sẵn sàng",
+        "percent": "Sẵn sàng {{percent}}%",
+        "name": "Tên công thức",
+        "dish": "Tên món",
+        "ingredients": "Nguyên liệu",
+        "instructions": "Các bước nấu",
+        "servings": "Khẩu phần",
+        "value": {
+            "valid": "Hợp lệ",
+            "assigned": "Đã gán",
+            "items": "{{count}} mục",
+            "provided": "Đã nhập",
+            "servings": "{{count}} khẩu phần"
+        },
+        "footnote": "Ngăn gửi trùng khi yêu cầu đang xử lý. Dữ liệu form được giữ lại nếu mạng lỗi tạm thời."
+    },
+    "standards": {
+        "title": "Tiêu chuẩn nhập liệu",
+        "units": {
+            "title": "Đơn vị chuẩn",
+            "description": "Dùng đơn vị nấu ăn phổ biến (gam, ml, cup, thìa canh, thìa cà phê) để thống nhất giữa các quốc gia."
+        },
+        "precision": {
+            "title": "Độ chính xác số",
+            "description": "Số lượng nguyên liệu nhận giá trị thập phân tối đa 3 chữ số."
+        },
+        "unique": {
+            "title": "Quy tắc duy nhất",
+            "description": "Tên nguyên liệu không được trùng nhau trong cùng công thức."
+        },
+        "previewJson": "Xem trước JSON gửi đi"
+    },
+    "action": {
+        "cancel": "Huỷ",
+        "submit": "Tạo công thức",
+        "submitting": "Đang tạo…"
+    },
+    "toast": {
+        "created": "Đã tạo công thức",
+        "failed": "Không tạo được công thức. Vui lòng thử lại."
+    },
+    "hint": {
+        "name": "Đặt tiêu đề mô tả rõ và hấp dẫn. Tối đa 255 ký tự.",
+        "autocomplete": "Chọn gợi ý hoặc gõ tên mới — tên mới sẽ được tạo.",
+        "noSuggestions": "Không có kết quả — cứ gõ tiếp để tạo mới.",
+        "instructions": "Mỗi dòng là một bước, dùng để hiển thị tuần tự khi nấu."
+    },
+    "errors": {
+        "servingsMin": "Khẩu phần phải là số nguyên từ 1 trở lên",
+        "ingredientsMin": "Cần ít nhất một nguyên liệu",
+        "ingredientsMax": "Một công thức tối đa 50 nguyên liệu",
+        "ingredientDuplicate": "Mỗi nguyên liệu chỉ được xuất hiện một lần",
+        "amountInvalid": "Số lượng phải lớn hơn 0 và tối đa 3 chữ số thập phân",
+        "minutesInvalid": "Nhập số phút nguyên (từ 0 trở lên)"
+    }
+}

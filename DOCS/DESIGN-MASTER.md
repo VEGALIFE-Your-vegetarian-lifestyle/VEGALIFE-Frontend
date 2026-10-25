@@ -112,9 +112,10 @@
 
 | Shell | Component | Sidebar | Topbar | Content Width |
 |-------|-----------|---------|--------|---------------|
-| **PublicShell** | `public-shell/PublicShell.tsx` | ❌ No | Logo + Nav + Login/Register | Max 1280px centered |
-| **UserShell** | `user-shell/UserShell.tsx` | ❌ No | Logo + Nav + User Menu | Max 1280px centered |
-| **AdminShell** | `admin-shell/AdminShell.tsx` | ✅ Yes (collapsible) | Logo + Admin Nav + User Menu | Fluid, sidebar-toggled |
+| **PublicShell** | `app/layout/Layout.tsx` | ❌ No | Logo + Nav + Login/Register | Max 1280px centered |
+| **UserShell** | `app/layout/Layout.tsx` (cùng shell, Navbar đổi theo auth) | ❌ No | Logo + Nav + User Menu | Max 1280px centered |
+| **AdminShell** | `features/admin/AdminShell.tsx` | ✅ Yes (collapsible) | Logo + Admin Nav + User Menu | Fluid, sidebar-toggled |
+| **AuthShell** | `features/auth/AuthLayout.tsx` | ❌ No | Không topbar | 2 cột (form + minh hoạ) |
 
 #### Responsive Breakpoints
 
@@ -1213,33 +1214,22 @@ import {
 
 ```
 src/
-├── components/
-│   ├── ui/              ← Shared primitive components (Button, Input, Card...)
-│   ├── topbar/          ← Topbar shell components
-│   ├── admin-shell/     ← Admin-specific layout
-│   ├── user-shell/      ← User-specific layout
-│   ├── public-shell/    ← Public layout
-│   ├── blog/            ← Blog-related shared components
-│   ├── chatbot/         ← Chatbot shared components
-│   ├── meal-plan/       ← Meal plan shared components
-│   ├── profile/         ← Profile shared components
-│   ├── restaurant/      ← Restaurant shared components
-│   ├── video/           ← Video shared components
-│   └── theme-provider/  ← Theme provider
-├── hooks/               ← Custom React hooks
-├── layouts/             ← Page layout wrappers
-├── lib/                 ← Utilities, helpers
-├── pages/               ← Page components (route-level)
-├── providers/           ← Context providers
-├── routes/              ← Route definitions
-├── services/            ← API service functions
-├── shared/
-│   ├── components/      ← Cross-module shared components
-│   └── constants/       ← App-wide constants
-├── stores/              ← Zustand stores
-├── types/               ← TypeScript type definitions
-└── utils/               ← Utility functions
+├── app/                 ← main.tsx, App.tsx, routes.tsx, NotFoundPage,
+│                          guards/ (Protected/Admin/Public), layout/ (Layout, Navbar, Footer)
+├── components/          ← Không biết domain
+│   ├── ui/              ← 11 primitive (CVA variants)
+│   └── common/          ← PageHeader, SectionCard, StatCard, EmptyState, ErrorState,
+│                          TableSkeleton, Pagination, ConfirmDialog, FormField, ImageUploader
+├── features/            ← Nghiệp vụ theo domain, mỗi feature tự chứa api/types/pages
+│   ├── admin/           ├── auth/        ├── categories/   ├── locations/
+│   ├── nutrition-ai/    ├── posts/       ├── profile/      ├── recipes/
+│   └── videos/
+├── i18n/                ← index.ts + locales/{en,vi}/ (12 namespace)
+├── shared/              ← api/, auth/, hooks/, types/, ui/, utils/ — KHÔNG import features/
+└── test/                ← Hạ tầng test
 ```
+
+Chi tiết đầy đủ từng file: [CODE-STRUCTURE.md](CODE-STRUCTURE.md).
 
 #### Anti-Patterns
 
@@ -1422,45 +1412,40 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 ```
 VEGALIFE-Frontend/
-├── public/                    ← Static assets
-├── DOCS/                      ← SRS, DESIGN-MASTER, API-COVERAGE, TEST-COVERAGE
+├── public/                    ← Static assets (favicon.svg, icons.svg)
+├── DOCS/                      ← SRS, DESIGN-MASTER, API-COVERAGE, TEST-COVERAGE, CODE-STRUCTURE
 ├── src/
-│   ├── components/
-│   │   ├── admin-shell/      ← AdminShell — layout admin + nested routes
-│   │   ├── auth/             ← ProtectedRoute, PublicRoute, AdminRoute, AuthLayout
-│   │   ├── blog/             ← PostCard, PostCardCompact, PostStatusBadge
-│   │   ├── editor/           ← RichTextEditor, EditorToolbar, PostContent (TipTap 3)
-│   │   ├── layout/           ← Layout, Navbar, Footer, LanguageSwitcher
-│   │   ├── media/            ← ImageUploader
-│   │   └── ui/               ← Primitive (Button, Input, Select, Dialog, Table, Badge, …)
-│   ├── hooks/                ← useAuth, useListParams, useDebounce, useFeedPosts,
-│   │                            usePublicCategories, useProfile
-│   ├── i18n/                 ← index.ts + locales/{en,vi}/<namespace>.json (10 namespace)
-│   ├── lib/                  ← utils.ts (cn)
-│   ├── pages/
-│   │   ├── Admin/            ← AdminDashboardPage, PostsPage, VideosPage,
-│   │   │                        CategoriesPage, UsersPage
-│   │   ├── auth/             ← Login, Register, VerifyEmail, ForgotPassword
-│   │   ├── AiNutritionPage/  ← /ai-nutrition (trả lời tĩnh)
-│   │   ├── CreatePostPage/   ← schema.ts, payload.ts, ContentFormatSelector, PostSidebar
-│   │   ├── ExplorePage/      ← /explore
-│   │   ├── HomePage/         ← /
-│   │   ├── LocationDetailPage/, NearbyPage/   ← mock
-│   │   ├── MyPostsPage/, PostDetailPage/, ProfilePage/, NotFoundPage/
-│   ├── routes/               ← index.tsx — route toàn app
-│   ├── services/             ← api.ts + <domain>Service.ts
-│   ├── shared/
-│   │   ├── components/       ← PageHeader, EmptyState, ErrorState, ConfirmDialog,
-│   │   │                        Pagination, TableSkeleton, FormField, SectionCard, StatCard
-│   │   ├── constants/        ← postStatus, postFlag, videoStatus
-│   │   └── mocks/            ← dữ liệu giả làm đầy UI (authors, categories, postEnrichment)
-│   ├── stores/               ← authStore, uiStore (Zustand)
+│   ├── app/                  ← Hạ tầng khởi động, KHÔNG chứa nghiệp vụ
+│   │   ├── main.tsx          ← Entry: StrictMode + QueryClientProvider + Router + Toaster
+│   │   ├── App.tsx           ← chỉ render <AppRoutes />
+│   │   ├── routes.tsx        ← toàn bộ route
+│   │   ├── NotFoundPage.tsx
+│   │   ├── guards/           ← ProtectedRoute, AdminRoute, PublicRoute
+│   │   └── layout/           ← Layout, Navbar, Footer, LanguageSwitcher
+│   ├── components/           ← Dùng chung, KHÔNG biết domain
+│   │   ├── ui/               ← 11 primitive (Button, Input, Select, Dialog, Table, Badge, …)
+│   │   └── common/           ← PageHeader, SectionCard, StatCard, EmptyState, ErrorState,
+│   │                            TableSkeleton, Pagination, ConfirmDialog, FormField, ImageUploader
+│   ├── features/             ← Nghiệp vụ theo domain
+│   │   ├── admin/            ← AdminShell, PostsPage, UsersPage, AdminDashboardPage
+│   │   ├── auth/             ← Login, Register, VerifyEmail, ForgotPassword, AuthLayout
+│   │   ├── categories/       ← CategoriesPage, usePublicCategories
+│   │   ├── locations/        ← NearbyPage, LocationDetailPage, AdminLocationsPage, PlaceMap
+│   │   ├── nutrition-ai/     ← AiNutritionPage, ChatPanel, useAiChat
+│   │   ├── posts/            ← Home, Explore, PostDetail, CreatePost, MyPosts, editor (TipTap 3)
+│   │   ├── profile/          ← ProfilePage, DietaryPreferencesSection, TagInput, dietary.ts
+│   │   ├── recipes/          ← CreateRecipePage, AdminRecipesPage
+│   │   └── videos/           ← VideosPage
+│   ├── i18n/                 ← index.ts + locales/{en,vi}/<namespace>.json (12 namespace)
+│   ├── shared/               ← Hạ tầng dùng chung, KHÔNG import features/ hay components/
+│   │   ├── api/              ← client.ts (axios + interceptor 401/refresh), media.ts
+│   │   ├── auth/             ← authStore.ts
+│   │   ├── hooks/            ← useListParams, useDebounce
+│   │   ├── types/            ← common, user, media
+│   │   ├── ui/               ← uiStore.ts
+│   │   └── utils/            ← apiError, formatDate, jwt, delay, cn
 │   ├── test/                 ← setup.ts, e2eEnv.ts, renderWithProviders, storageShim,
-│   │                            domPolyfills, README.md
-│   ├── types/                ← common, user, post, category, video, media, nearby, dashboard
-│   ├── utils/                ← apiError, formatDate, jwt, delay
-│   ├── App.tsx               ← Root component
-│   ├── main.tsx              ← Entry point
+│   │                            domPolyfills, fakeLocationService, locationFixtures
 │   └── index.css             ← Design token (@theme)
 ├── package.json
 ├── vite.config.ts

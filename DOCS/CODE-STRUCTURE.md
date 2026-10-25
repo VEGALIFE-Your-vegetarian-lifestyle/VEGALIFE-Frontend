@@ -1,7 +1,7 @@
 # Cấu trúc source code — VEGALIFE Frontend
 
-> Cập nhật: 2026-10-22 · Branch: `refactor/source-structure`
-> Kiến trúc **feature-based**. **148 file `.ts`/`.tsx`** trong **61 thư mục** dưới `src/`.
+> Cập nhật: 2026-10-24 · Branch: `feat/recipes`
+> Kiến trúc **feature-based**. **164 file `.ts`/`.tsx`** trong **68 thư mục** dưới `src/`.
 > Plan gốc: [PLAN-REFACTOR.md](PLAN-REFACTOR.md).
 
 ## 1. Cây thư mục
@@ -60,16 +60,18 @@ VEGALIFE-Frontend/
 │   │   ├── auth/                xem mục 3.2
 │   │   ├── categories/          xem mục 3.3
 │   │   ├── locations/           xem mục 3.4
+│   │   ├── menus/               xem mục 3.10
 │   │   ├── nutrition-ai/        xem mục 3.5
 │   │   ├── posts/               xem mục 3.6
 │   │   ├── profile/             xem mục 3.7
+│   │   ├── recipes/             xem mục 3.9
 │   │   └── videos/              xem mục 3.8
 │   │
 │   ├── i18n/
-│   │   ├── index.ts             khởi tạo i18next, đăng ký 11 namespace
-│   │   └── locales/{en,vi}/     11 namespace mỗi thứ tiếng, key phải khớp nhau
+│   │   ├── index.ts             khởi tạo i18next, đăng ký 13 namespace
+│   │   └── locales/{en,vi}/     13 namespace mỗi thứ tiếng, key phải khớp nhau
 │   │       admin · aiNutrition · auth · common · explore · home ·
-│   │       location · nearby · post · profile · validation
+│   │       location · menu · nearby · post · profile · recipe · validation
 │   │
 │   ├── shared/                  hạ tầng dùng chung, KHÔNG import features/ hay components/
 │   │   ├── api/
@@ -114,10 +116,11 @@ components/  →  ✗ KHÔNG import features/**
 Phụ thuộc giữa feature, một chiều:
 
 ```text
-admin          → posts, categories, videos, locations, profile
+admin          → posts, categories, videos, locations, profile, recipes
 posts          → categories, auth
 profile        → auth
-nutrition-ai, videos, categories, locations → auth
+recipes        → categories (chỉ useCategoryNames)
+nutrition-ai, videos, categories, locations, menus → auth
 ```
 
 **Ngoại lệ đã ghi nhận**: `features/profile/ProfilePage.tsx` import `getMyPosts`
@@ -224,8 +227,12 @@ Có `ponytail:` tại chỗ; gỡ khi backend bổ sung endpoint.
 | File | Vai trò |
 |---|---|
 | `ProfilePage.tsx` | hồ sơ (`embedded` để nhúng vào admin) |
-| `api.ts` | đọc/cập nhật profile (chuẩn hoá snake_case ↔ camelCase) |
+| `api.ts` | đọc/cập nhật profile (wire format **camelCase**; 5 field dietary) |
 | `useProfile.ts` | query + mutation cập nhật profile |
+| `DietaryPreferencesSection.tsx` | khối sửa 4 mảng dietary + `healthGoal`, lưu riêng từng field đổi; mount trong `ProfilePage` (ngoài form hồ sơ) |
+| `TagInput.tsx` | ô nhập tag dạng chip: Enter để thêm, giới hạn 50 tag × 100 ký tự |
+| `dietary.ts` | `toDietaryValues`, `normalizeTags`, `buildDietaryPatch` — chỉ gửi field đã đổi |
+| `__tests__/dietary.test.ts` | test logic thuần: chuẩn hoá tag, patch từng field |
 
 ### 3.8 `features/videos/`
 
@@ -235,6 +242,42 @@ Có `ponytail:` tại chỗ; gỡ khi backend bổ sung endpoint.
 | `api.ts` | video công khai + admin |
 | `constants.ts` | `VIDEO_STATUS_VARIANT`, `VIDEO_STATUSES` |
 | `types.ts` | `Video`, `VideoStatus` |
+
+### 3.9 `features/recipes/`
+
+| File | Vai trò |
+|---|---|
+| `api.ts` | `createRecipe`, `searchDishes`, `searchIngredients` (gợi ý autocomplete) |
+| `adminApi.ts` | `getAdminRecipes` — `GET /api/admin/recipes`, phân trang server |
+| `types.ts` | `Recipe`, `CreateRecipeRequest`, `AdminRecipe`, `Difficulty`, `RecipeSort`, `Dish`, `Ingredient` |
+| `pages/CreateRecipePage/CreateRecipePage.tsx` | form 4 khối, route `/recipes/create` |
+| `pages/CreateRecipePage/schema.ts` | `buildRecipeSchema(t)`, giới hạn, `duplicateIngredientIndexes` |
+| `pages/CreateRecipePage/payload.ts` | `buildRecipePayload` — bỏ field rỗng thay vì gửi `""` |
+| `pages/CreateRecipePage/IngredientEditor.tsx` | danh sách hàng nguyên liệu động (tên + số lượng + đơn vị) |
+| `pages/CreateRecipePage/AutocompleteField.tsx` | Input + dropdown gợi ý; dùng chung cho dish và ingredient |
+| `pages/CreateRecipePage/RecipeSidebar.tsx` | checklist mức độ hoàn thiện + nút lưu |
+| `pages/AdminRecipesPage/AdminRecipesPage.tsx` | danh sách recipe cho admin (chỉ đọc) |
+| `pages/AdminRecipesPage/RecipeDetailDialog.tsx` | chi tiết recipe render từ row đã tải (không có `GET /api/recipes/{id}`) |
+| `__tests__/adminApi.test.ts` | test `adminApi` |
+| `pages/CreateRecipePage/__tests__/schema.test.ts` | validate + payload |
+
+### 3.10 `features/menus/`
+
+| File | Vai trò |
+|---|---|
+| `types.ts` | `MenuStatus`, `MealType`, `Dish`, `Meal`, `MenuDay`, `MenuDetail`, `MealPlanParams`, `MENU_STATUS_VARIANT` |
+| `api.ts` | `getMealPlans({from,to})` — `GET /api/menus/details`, trả mảng phẳng |
+| `useMealPlans.ts` | `useQuery` theo cửa sổ ngày |
+| `week.ts` | `toISODate`, `parseISODate`, `startOfWeek`, `addDays`, `weekDays`, `shiftWeek` — thuần `Date` local |
+| `components/MenuCard.tsx` | tiêu đề tuần + badge trạng thái + notes + lưới 7 ngày |
+| `components/DayColumn.tsx` | một ngày: thứ, số ngày, danh sách bữa |
+| `components/MealRow.tsx` | một bữa: loại bữa, tên món, số phần, ảnh, cuisine |
+| `components/WeekNavigator.tsx` | ← tuần này → |
+| `pages/MealPlanPage.tsx` | route `/meal-plan` (cần đăng nhập) |
+| `__tests__/week.test.ts` | logic tuần: parse local, `startOfWeek`, `addDays`, `shiftWeek` |
+
+Chỉ **đọc**. Tạo/sửa menu do chatbot AI đảm nhận — backend có 5 tool menu và prompt đã
+nạp sẵn dietary + BMI. Tuần đang xem nằm trên URL (`?from=YYYY-MM-DD`, luôn là Thứ 2).
 
 ## 4. Hạ tầng test (`src/test/`)
 
@@ -266,7 +309,10 @@ Lỗi hiển thị: `getApiErrorMessage(error, t("..."))` — đọc `errors[]` 
 
 ## 6. Thật vs mock
 
-- **Gọi API thật**: auth, posts, categories, profile, media, videos, admin users, locations.
+- **Gọi API thật**: auth, posts, categories, profile (kể cả 5 field dietary), media,
+  videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`,
+  `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus
+  (`GET /api/menus/details`).
 - **Còn mock**: `features/admin/dashboardApi.ts` (backend chưa có endpoint dashboard);
   `features/posts/{mockEnrichment,mockAuthors}.ts` (field hiển thị BE chưa trả).
 - `features/locations/mocks.ts` **không phải** mock API — chỉ là toạ độ tâm các quận
@@ -283,4 +329,6 @@ Lỗi hiển thị: `getApiErrorMessage(error, t("..."))` — đọc `errors[]` 
 | [TEST-COVERAGE.md](TEST-COVERAGE.md) | đã test cái gì, còn thiếu gì |
 | [PLAN-REFACTOR.md](PLAN-REFACTOR.md) | plan refactor feature-based đã thực thi |
 | [PLAN-AI-CHATBOT.md](PLAN-AI-CHATBOT.md) | plan + quyết định của feature AI chatbot |
+| [PLAN-CREATE-RECIPE.md](PLAN-CREATE-RECIPE.md) | plan + quyết định của feature tạo công thức |
+| [PLAN-MEAL-PLAN-VIEW.md](PLAN-MEAL-PLAN-VIEW.md) | plan + quyết định của trang thực đơn tuần (giai đoạn C) |
 | [../GETSTARTED.md](../GETSTARTED.md) | cài đặt, chạy dev, quy ước commit |

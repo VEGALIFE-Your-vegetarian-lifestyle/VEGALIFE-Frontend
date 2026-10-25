@@ -136,10 +136,11 @@ src/
 │   ├── locations/        # Nearby, LocationDetail, AdminLocations + geo/openingHours
 │   ├── nutrition-ai/     # Chatbot dinh dưỡng
 │   ├── posts/            # Home, Explore, PostDetail, CreatePost, MyPosts + editor
-│   ├── profile/          # ProfilePage
+│   ├── profile/          # ProfilePage + DietaryPreferencesSection, TagInput
+│   ├── recipes/          # CreateRecipePage, AdminRecipesPage
 │   └── videos/           # VideosPage (admin)
 │
-├── i18n/             # i18next setup + locales/{en,vi} (11 namespace)
+├── i18n/             # i18next setup + locales/{en,vi} (13 namespace)
 ├── shared/           # Hạ tầng dùng chung, KHÔNG import features/
 │   ├── api/              # client.ts (axios + interceptor), media.ts
 │   ├── auth/             # authStore.ts

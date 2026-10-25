@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { FileText, LayoutDashboard, Leaf, LogOut, MapPin, Menu, MessageSquare, Tags, UserCircle, Users, Video } from "lucide-react";
+import { ChefHat, FileText, LayoutDashboard, Leaf, LogOut, MapPin, Menu, MessageSquare, Tags, UserCircle, Users, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/shared/utils/cn";
@@ -15,6 +15,7 @@ const navItems = [
     { to: "/admin/videos", labelKey: "videos", icon: Video, ready: true },
     { to: "/admin/comments", labelKey: "comments", icon: MessageSquare, ready: false },
     { to: "/admin/categories", labelKey: "categories", icon: Tags, ready: true },
+    { to: "/admin/recipes", labelKey: "recipes", icon: ChefHat, ready: true },
     { to: "/admin/locations", labelKey: "locations", icon: MapPin, ready: true },
     { to: "/admin/profile", labelKey: "profile", icon: UserCircle, ready: true },
 ];

@@ -34,6 +34,7 @@
             "comments": "Bình luận",
             "categories": "Danh mục",
             "locations": "Địa điểm",
+            "recipes": "Công thức",
             "profile": "Hồ sơ"
         },
         "guide": {
@@ -287,6 +288,54 @@
         "toast": {
             "deleted": "Đã xóa video",
             "failed": "Thao tác thất bại. Vui lòng thử lại."
+        }
+    },
+    "recipes": {
+        "title": "Quản lý công thức",
+        "description": "Toàn bộ công thức do thành viên tạo, kể cả công thức đã xóa mềm. Tổng cộng {{count}} công thức.",
+        "searchPlaceholder": "Tìm theo tên công thức hoặc người tạo",
+        "searchLabel": "Tìm công thức",
+        "minutes": "{{count}} phút",
+        "sortLabel": "Sắp xếp công thức",
+        "sort": {
+            "newest": "Mới nhất",
+            "updated": "Vừa cập nhật",
+            "name": "Tên A-Z"
+        },
+        "filters": {
+            "fromDate": "Tạo từ ngày",
+            "toDate": "Tạo đến ngày",
+            "clearDates": "Xóa ngày"
+        },
+        "column": {
+            "recipe": "Công thức",
+            "dish": "Món",
+            "creator": "Người tạo",
+            "ingredients": "Nguyên liệu",
+            "cookTime": "Thời gian nấu",
+            "servings": "Khẩu phần",
+            "difficulty": "Độ khó",
+            "status": "Trạng thái",
+            "createdAt": "Ngày tạo"
+        },
+        "status": {
+            "ACTIVE": "Đang dùng",
+            "DELETED": "Đã xóa"
+        },
+        "detail": {
+            "by": "Tạo bởi @{{username}}",
+            "description": "Mô tả",
+            "ingredients": "Nguyên liệu ({{count}})",
+            "instructions": "Các bước nấu",
+            "prepTime": "Thời gian sơ chế",
+            "updatedAt": "Cập nhật",
+            "email": "Email"
+        },
+        "empty": {
+            "title": "Không có công thức nào",
+            "filtered": "Không có công thức nào khớp bộ lọc hiện tại.",
+            "all": "Hệ thống chưa có công thức nào.",
+            "reload": "Tải lại"
         }
     },
     "users": {

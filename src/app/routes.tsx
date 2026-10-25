@@ -11,6 +11,8 @@ import VideosPage from "@/features/videos/VideosPage";
 import AdminDashboardPage from "@/features/admin/pages/AdminDashboardPage/AdminDashboardPage";
 import AiNutritionPage from "@/features/nutrition-ai/AiNutritionPage";
 import CreatePostPage from "@/features/posts/pages/CreatePostPage/CreatePostPage";
+import CreateRecipePage from "@/features/recipes/pages/CreateRecipePage/CreateRecipePage";
+import AdminRecipesPage from "@/features/recipes/pages/AdminRecipesPage/AdminRecipesPage";
 import ExplorePage from "@/features/posts/pages/ExplorePage/ExplorePage";
 import LocationsPage from "@/features/locations/pages/AdminLocationsPage/LocationsPage";
 import LocationDetailPage from "@/features/locations/pages/LocationDetailPage";
@@ -26,6 +28,7 @@ import PostDetailPage from "@/features/posts/pages/PostDetailPage/PostDetailPage
 import ProfilePage from "@/features/profile/ProfilePage";
 import PaymentResultPage from "@/features/subscription/pages/PaymentResultPage/PaymentResultPage";
 import SubscriptionPage from "@/features/subscription/pages/SubscriptionPage/SubscriptionPage";
+import MealPlanPage from "@/features/menus/pages/MealPlanPage";
 
 export default function AppRoutes() {
     return (
@@ -63,10 +66,26 @@ export default function AppRoutes() {
                     }
                 />
                 <Route
+                    path="/recipes/create"
+                    element={
+                        <ProtectedRoute>
+                            <CreateRecipePage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
                     path="/profile"
                     element={
                         <ProtectedRoute>
                             <ProfilePage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/meal-plan"
+                    element={
+                        <ProtectedRoute>
+                            <MealPlanPage />
                         </ProtectedRoute>
                     }
                 />
@@ -126,6 +145,7 @@ export default function AppRoutes() {
                 <Route path="posts" element={<PostsPage />} />
                 <Route path="videos" element={<VideosPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
+                <Route path="recipes" element={<AdminRecipesPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="locations" element={<LocationsPage />} />
                 <Route path="profile" element={<ProfilePage embedded />} />
