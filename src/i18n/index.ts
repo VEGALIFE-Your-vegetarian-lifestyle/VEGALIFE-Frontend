@@ -12,6 +12,7 @@ import enPost from "./locales/en/post.json";
 import enNearby from "./locales/en/nearby.json";
 import enAiNutrition from "./locales/en/aiNutrition.json";
 import enLocation from "./locales/en/location.json";
+import enSubscription from "./locales/en/subscription.json";
 import enRecipe from "./locales/en/recipe.json";
 import enMenu from "./locales/en/menu.json";
 import viCommon from "./locales/vi/common.json";
@@ -25,6 +26,7 @@ import viPost from "./locales/vi/post.json";
 import viNearby from "./locales/vi/nearby.json";
 import viAiNutrition from "./locales/vi/aiNutrition.json";
 import viLocation from "./locales/vi/location.json";
+import viSubscription from "./locales/vi/subscription.json";
 import viRecipe from "./locales/vi/recipe.json";
 import viMenu from "./locales/vi/menu.json";
 
@@ -49,6 +51,7 @@ i18n.use(LanguageDetector)
                 nearby: enNearby,
                 aiNutrition: enAiNutrition,
                 location: enLocation,
+                subscription: enSubscription,
                 recipe: enRecipe,
                 menu: enMenu,
             },
@@ -64,6 +67,7 @@ i18n.use(LanguageDetector)
                 nearby: viNearby,
                 aiNutrition: viAiNutrition,
                 location: viLocation,
+                subscription: viSubscription,
                 recipe: viRecipe,
                 menu: viMenu,
             },

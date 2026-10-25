@@ -26,6 +26,8 @@ import MyPostsPage from "@/features/posts/pages/MyPostsPage/MyPostsPage";
 import NotFoundPage from "@/app/NotFoundPage";
 import PostDetailPage from "@/features/posts/pages/PostDetailPage/PostDetailPage";
 import ProfilePage from "@/features/profile/ProfilePage";
+import PaymentResultPage from "@/features/subscription/pages/PaymentResultPage/PaymentResultPage";
+import SubscriptionPage from "@/features/subscription/pages/SubscriptionPage/SubscriptionPage";
 import MealPlanPage from "@/features/menus/pages/MealPlanPage";
 
 export default function AppRoutes() {
@@ -37,6 +39,15 @@ export default function AppRoutes() {
                 <Route path="/nearby" element={<NearbyPage />} />
                 <Route path="/nearby/:id" element={<LocationDetailPage />} />
                 <Route path="/ai-nutrition" element={<AiNutritionPage />} />
+                <Route path="/subscription" element={<SubscriptionPage />} />
+                <Route
+                    path="/payment/result/:paymentId"
+                    element={
+                        <ProtectedRoute>
+                            <PaymentResultPage />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route path="/posts/:id" element={<PostDetailPage />} />
                 <Route
                     path="/posts/create"
