@@ -44,7 +44,7 @@ Mỗi FR có một dòng `> **FE:**` ghi trạng thái frontend thật.
 | FR-04 | 584 | Videos | 🟡 thiếu upload video |
 | FR-05 | 620 | Comments & Votes | 🟡 gửi OK, đọc còn mock |
 | FR-06 | 666 | Categories | ✅ thiếu restore/permanent delete |
-| FR-07 | 689 | Weekly Meal Plan | 🟡 xem được menu AI tạo, chưa tự tạo/sửa |
+| FR-07 | 689 | Weekly Meal Plan | 🟡 xem + tự tạo + đổi trạng thái, chưa sửa nội dung |
 | FR-08 | 752 | Location Search | 🟢 API thật, thiếu gợi ý theo món |
 | FR-09 | 795 | Food/Recipe Search | 🟡 tạo công thức xong, chưa có search |
 | FR-10 | 817 | AI Nutrition Chatbot | 🟢 xong (trừ SSE stream) |
@@ -695,11 +695,13 @@ Scenario: Admin assigns category to post
 
 ### FR-07 - Weekly Meal Plan [MVP]
 
-> **FE:** 🟡 **xem được menu AI đã tạo** — `/meal-plan` gọi `GET /api/menus/details`
-> với cửa sổ tuần, render 7 cột ngày × bữa (`features/menus/`). Việc tạo vẫn do chatbot
-> AI (`/ai-nutrition`) đảm nhận: backend có 5 tool menu và prompt đã nạp sẵn dietary +
-> BMI. Chưa có: form tự tạo/sửa menu, đổi status, trang lịch sử phân trang
-> (`GET /api/menus`), nút mua gói cho user chưa trả phí.
+> **FE:** 🟡 **xem + tự tạo + đổi trạng thái** — `/meal-plan` gọi `GET /api/menus/details`
+> với cửa sổ tuần, render 7 cột ngày × bữa; `/meal-plan/create` tự lập menu
+> (`POST /api/menus`, luôn `drafted`, validate BR-MENU-005 ở client); `MenuActions` trên
+> card đổi trạng thái qua `POST /api/menus/{id}/status`. Chatbot AI (`/ai-nutrition`) vẫn
+> là đường còn lại (backend có 5 tool menu, prompt nạp sẵn dietary + BMI).
+> Chưa có: sửa nội dung menu (`PATCH`), trang lịch sử phân trang (`GET /api/menus`),
+> nút mua gói cho user chưa trả phí.
 
 #### FR-07-01: Create Meal Plan Based on BMI (Paid Feature)
 

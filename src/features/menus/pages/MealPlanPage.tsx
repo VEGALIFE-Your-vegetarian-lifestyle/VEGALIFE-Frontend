@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -36,13 +36,19 @@ export default function MealPlanPage() {
                 title={t("title")}
                 description={t("subtitle")}
                 action={
-                    <WeekNavigator
-                        from={from}
-                        to={to}
-                        onPrev={() => goToWeek(shiftWeek(monday, -1))}
-                        onNext={() => goToWeek(shiftWeek(monday, 1))}
-                        onToday={() => goToWeek(startOfWeek(new Date()))}
-                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                        <WeekNavigator
+                            from={from}
+                            to={to}
+                            onPrev={() => goToWeek(shiftWeek(monday, -1))}
+                            onNext={() => goToWeek(shiftWeek(monday, 1))}
+                            onToday={() => goToWeek(startOfWeek(new Date()))}
+                        />
+                        <Button onClick={() => navigate(`/meal-plan/create?from=${from}`)}>
+                            <Plus className="h-4 w-4" aria-hidden="true" />
+                            {t("create.action")}
+                        </Button>
+                    </div>
                 }
             />
 
@@ -61,7 +67,16 @@ export default function MealPlanPage() {
                     icon={CalendarDays}
                     title={t("empty.title")}
                     description={t("empty.description")}
-                    action={<Button onClick={() => navigate("/ai-nutrition")}>{t("empty.action")}</Button>}
+                    action={
+                        <div className="flex flex-wrap justify-center gap-2">
+                            <Button onClick={() => navigate(`/meal-plan/create?from=${from}`)}>
+                                {t("empty.create")}
+                            </Button>
+                            <Button variant="outline" onClick={() => navigate("/ai-nutrition")}>
+                                {t("empty.action")}
+                            </Button>
+                        </div>
+                    }
                 />
             )}
 

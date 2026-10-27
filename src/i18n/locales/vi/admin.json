@@ -315,12 +315,33 @@
             "cookTime": "Thời gian nấu",
             "servings": "Khẩu phần",
             "difficulty": "Độ khó",
+            "moderation": "Duyệt",
             "status": "Trạng thái",
             "createdAt": "Ngày tạo"
         },
         "status": {
             "ACTIVE": "Đang dùng",
             "DELETED": "Đã xóa"
+        },
+        "moderation": {
+            "status": {
+                "PENDING": "Chờ duyệt",
+                "APPROVED": "Đã duyệt",
+                "REJECTED": "Đã từ chối"
+            },
+            "filterLabel": "Lọc theo trạng thái duyệt",
+            "filterAll": "Mọi trạng thái",
+            "approve": "Duyệt",
+            "reject": "Từ chối",
+            "approveTitle": "Duyệt recipe này?",
+            "approveBody": "\"{{name}}\" sẽ hiện trong tìm kiếm và gợi ý món.",
+            "rejectTitle": "Từ chối recipe này?",
+            "rejectBody": "\"{{name}}\" sẽ tiếp tục bị ẩn. Tên này không thể dùng lại sau đó.",
+            "approved": "Đã duyệt recipe",
+            "rejected": "Đã từ chối recipe",
+            "approveDish": "Duyệt tên món",
+            "dishApproved": "Đã duyệt tên món",
+            "actionFailed": "Thao tác thất bại. Vui lòng thử lại."
         },
         "detail": {
             "by": "Tạo bởi @{{username}}",

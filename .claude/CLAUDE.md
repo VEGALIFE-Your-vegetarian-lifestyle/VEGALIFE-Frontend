@@ -35,7 +35,9 @@ React SPA cho nền tảng VEGALIFE (lối sống thực vật). File này là *
 | Route toàn app | `src/app/routes.tsx` |
 | Validate + payload form soạn bài | `src/features/posts/pages/CreatePostPage/{schema,payload}.ts` |
 | Validate + payload form soạn recipe | `src/features/recipes/pages/CreateRecipePage/{schema,payload}.ts` |
-| Service theo domain | `src/features/<feature>/api.ts` — `auth`, `posts`, `categories`, `videos`, `locations` (+`nearbyApi`), `profile`, `admin` (+`dashboardApi`), `nutrition-ai` (+`subscriptionApi`), `recipes` (+`adminApi`) |
+| Validate + payload form tạo thực đơn tuần | `src/features/menus/pages/CreateMealPlanPage/{schema,validate,payload}.ts` |
+| Service theo domain | `src/features/<feature>/api.ts` — `auth`, `posts`, `categories`, `videos`, `locations` (+`nearbyApi`), `profile`, `admin` (+`dashboardApi`), `nutrition-ai` (+`subscriptionApi`), `recipes` (+`adminApi`), `menus` |
+| Tìm món (`GET /api/dishes`) — dùng chung 3 feature | `src/shared/api/dishes.ts` → `searchDishes` |
 | Trạng thái từng endpoint backend | `DOCS/API-COVERAGE.md` |
 | Đặc tả chức năng | `DOCS/SRS.md` (có mục lục ở đầu) |
 | Bản đồ file chi tiết | `DOCS/CODE-STRUCTURE.md` |
@@ -61,8 +63,10 @@ src/
     locations/      # api, nearbyApi, geo, openingHours, types, mocks,
                     # components/PlaceMap, pages/{NearbyPage,LocationDetailPage,AdminLocationsPage}
     menus/          # api, useMealPlans, week.ts (tính tuần local), types,
-                    # components/{MenuCard,DayColumn,MealRow,WeekNavigator},
-                    # pages/MealPlanPage (chỉ đọc — tạo menu do chatbot AI)
+                    # components/{MenuCard,DayColumn,MealRow,WeekNavigator,MenuActions},
+                    # pages/MealPlanPage (xem + đổi trạng thái),
+                    # pages/CreateMealPlanPage/ (schema, validate, payload,
+                    #   DayEditor, DishSlotPicker)
     nutrition-ai/   # AiNutritionPage, ChatPanel, api, subscriptionApi, useAiChat, useSubscription
     posts/          # api, useFeedPosts, types, constants, mockEnrichment, mockAuthors,
                     # components/{PostCard,PostStatusBadge,editor/*},
@@ -76,10 +80,10 @@ src/
     videos/         # VideosPage, api, constants, types
   i18n/             # index.ts + locales/{en,vi}/<namespace>.json
   shared/
-    api/            # client.ts (axios + interceptor), media.ts
+    api/            # client.ts (axios + interceptor), media.ts, dishes.ts (GET /api/dishes)
     auth/           # authStore.ts
     hooks/          # useListParams, useDebounce
-    types/          # common, user, media
+    types/          # common, user, media, dish
     ui/             # uiStore.ts
     utils/          # apiError, formatDate, jwt, delay, cn
   test/             # hạ tầng test (setup, e2eEnv, fakeLocationService, fixtures)
@@ -102,7 +106,7 @@ Ngoại lệ đã ghi nhận: `features/profile/ProfilePage.tsx` import `getMyPo
 `features/posts/api` cho thẻ thống kê (có `ponytail:` tại chỗ).
 
 Page nhiều khối đã tách file con cùng thư mục: `CreatePostPage/`, `PostDetailPage/`,
-`CreateRecipePage/`, `AdminLocationsPage/`, `AdminRecipesPage/`.
+`CreateRecipePage/`, `CreateMealPlanPage/`, `AdminLocationsPage/`, `AdminRecipesPage/`.
 
 ## Auth Flow
 
@@ -125,7 +129,8 @@ Page nhiều khối đã tách file con cùng thư mục: `CreatePostPage/`, `Po
 | `/posts/:id` | Chi tiết bài — public |
 | `/posts/create`, `/posts/:id/edit` | `CreatePostPage` — cần đăng nhập |
 | `/recipes/create` | `CreateRecipePage` — cần đăng nhập |
-| `/meal-plan` | `MealPlanPage` — thực đơn tuần, chỉ đọc — cần đăng nhập |
+| `/meal-plan` | `MealPlanPage` — thực đơn tuần + nút đổi trạng thái — cần đăng nhập |
+| `/meal-plan/create` | `CreateMealPlanPage` — tự lập thực đơn — cần đăng nhập |
 | `/profile`, `/my-posts` | Cần đăng nhập |
 | `/login`, `/register`, `/verify-email`, `/forgot-password` | Public |
 | `/admin` → `/admin/dashboard` | Admin |
@@ -135,7 +140,7 @@ Sidebar admin khai báo ở `src/features/admin/AdminShell.tsx` (`navItems`, c�
 
 ## Thật vs mock
 
-- **Gọi API thật**: auth, posts, categories, profile (kể cả 5 field dietary), media, videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`, `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus (`GET /api/menus/details`).
+- **Gọi API thật**: auth, posts, categories, profile (kể cả 5 field dietary), media, videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`, `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus (`GET /api/menus/details`, `POST /api/menus`, `POST /api/menus/{id}/status`).
 - **Còn mock**: `src/features/admin/dashboardApi.ts` (backend chưa có endpoint dashboard); `src/features/posts/{mockEnrichment,mockAuthors}.ts` (field hiển thị BE chưa trả).
 - `src/features/locations/mocks.ts` **không phải** mock API — chỉ là toạ độ tâm các quận TP.HCM.
 - Trạng thái chi tiết từng endpoint: `DOCS/API-COVERAGE.md`.
@@ -155,5 +160,7 @@ Sidebar admin khai báo ở `src/features/admin/AdminShell.tsx` (`navItems`, c�
 - **Đừng thêm dependency mới** nếu thư viện hiện có giải quyết được.
 - Verify nhanh bằng `npm run typecheck` (`tsc -b --pretty false`) thay vì `npm run build`; test bằng `npm test` (gọi backend thật, tự skip khi thiếu env).
 - `CategoriesPage` hiện có: thẻ đếm All/Active, tìm kiếm theo tên/UUID, sort `newest`/`name`, phân trang, retire (soft delete), export CSV. **Không** có restore hay permanent delete.
-- `AdminRecipesPage` chỉ **đọc** (`GET /api/admin/recipes`): lọc `userId`/`categoryId`/khoảng ngày, sort whitelist `createdAt,desc` · `updatedAt,desc` · `name,asc`. Không có sửa/xoá/duyệt recipe. Không có `GET /api/recipes/{id}` → chi tiết render từ row đã tải.
+- `AdminRecipesPage`: đọc (`GET /api/admin/recipes`) + duyệt/từ chối (`POST .../approve|reject`). Lọc `moderationStatus` (mặc định `PENDING` qua `?status=`), `userId`/`categoryId`/khoảng ngày, sort whitelist `createdAt,desc` · `updatedAt,desc` · `name,asc`. Nút duyệt nằm trong dialog chi tiết, xác nhận qua `ConfirmDialog`. Không có sửa/xoá recipe. Duyệt recipe **không** duyệt dish/ingredient của nó. Không có `GET /api/recipes/{id}` → chi tiết render từ row đã tải.
 - `CreateRecipePage`: `instructions` là `TEXT` thuần → dùng `Textarea`, **không** dùng `RichTextEditor`. Không có field ảnh bìa (endpoint không nhận). Chưa có trang danh sách/chi tiết recipe công khai (thiếu `GET /api/recipes`).
+- `CreateMealPlanPage`: 7 ngày × 3 ô bữa cố định (`BREAKFAST`/`LUNCH`/`DINNER`), ô trống không gửi. `validate.ts` thuần (không Yup) vì luật BR-MENU-005 là quan hệ giữa các ô: **≥5 món khác nhau**, **≤3 lần/món**. Nút Lưu khoá tới khi hết lỗi. Chỉ tạo `drafted`; đổi trạng thái bằng nút trên `MenuCard` (`MenuActions`) qua `POST /api/menus/{id}/status`. Không có endpoint xoá menu — `cancelled` là đường bỏ duy nhất. Không có ai/cron nào khác đổi status hộ user.
+- `POST`/`PATCH`/`status` của menu trả shape khác `GET /api/menus/details` (thiếu `dish` đầy đủ) → sau khi ghi luôn `invalidateQueries(["meal-plans"])`, đừng render từ response.

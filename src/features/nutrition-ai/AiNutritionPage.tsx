@@ -21,6 +21,8 @@ import { useSubscription } from "./useSubscription";
 import { cn } from "@/shared/utils/cn";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { ChatPanel } from "./ChatPanel";
+import { DishPicker } from "./DishPicker";
+import type { Dish } from "@/features/recipes/types";
 
 const SWAPS = [
     { from: "1 Whole Egg (Baking)", to: "Flaxseed / Chia Gel", detail: "Mix 1 tbsp ground flax with 2.5 tbsp warm water. Rest 5 mins until viscous." },
@@ -59,6 +61,15 @@ export default function AiNutritionPage() {
     const ask = (text: string) => {
         if (isAuthenticated) void chat.send(text);
         else requireLogin();
+    };
+
+    /**
+     * Gửi kèm danh sách món đã chọn — AI cần tên món để lập plan, và user cần id
+     * để đối chiếu lại với menu đã lưu ở `/meal-plan`.
+     */
+    const askWithDishes = (dishes: Dish[]) => {
+        const lines = dishes.map((dish) => `- ${dish.name} (dishId: ${dish.id})`).join("\n");
+        ask(t("dishPicker.prompt", { dishes: lines }));
     };
 
     const bmi = useMemo(() => {
@@ -113,6 +124,9 @@ export default function AiNutritionPage() {
                 <ChatPanel chat={chat} onRequireLogin={requireLogin} />
 
                 <aside className="space-y-5">
+                    {/* GET /api/dishes cần JWT — chỉ hiện khi đã đăng nhập. */}
+                    {isAuthenticated && <DishPicker onAsk={askWithDishes} disabled={chat.isSending} />}
+
                     {/* Hội thoại đã lưu — GET /api/ai/conversations */}
                     {isAuthenticated && (
                         <section className="rounded-2xl border border-border bg-card p-5">

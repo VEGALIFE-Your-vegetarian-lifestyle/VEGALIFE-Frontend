@@ -73,6 +73,19 @@
         "from": "Thay cho",
         "to": "Bằng"
     },
+    "dishPicker": {
+        "title": "Chọn món",
+        "subtitle": "Chọn những món bạn muốn đưa vào thực đơn — trợ lý nhận tên món kèm dish id của từng món.",
+        "placeholder": "Tìm món theo tên",
+        "selected": "Đã chọn {{n}}",
+        "loading": "Đang tải danh sách món…",
+        "empty": "Không có món nào khớp tên đó.",
+        "loadFailed": "Không tải được danh sách món.",
+        "retry": "Thử lại",
+        "remove": "Bỏ chọn {{name}}",
+        "action": "Lập thực đơn với các món này",
+        "prompt": "Lập thực đơn tuần với các món sau:\n{{dishes}}"
+    },
     "access": {
         "title": "Chính sách truy cập & Hạn mức",
         "guestInquiries": "Hạn mức tháng:",

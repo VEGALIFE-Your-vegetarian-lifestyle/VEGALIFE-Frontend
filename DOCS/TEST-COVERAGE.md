@@ -94,6 +94,7 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 | `recipes/pages/CreateRecipePage/schema.test.ts` | `buildRecipeSchema` + `buildRecipePayload` (thuần logic): field bắt buộc, servings ≥1, ingredients 1..50, trùng tên nguyên liệu, amount >0 ≤3 chữ số lẻ, bỏ field rỗng khi build payload | public |
 | `profile/__tests__/dietary.test.ts` | `normalizeTags`, `toDietaryValues`, `buildDietaryPatch` (thuần logic): chuẩn hoá tag, copy mảng, chỉ gửi field đã đổi, xoá hết → `[]`, `healthGoal` trắng → `""` | public |
 | `menus/__tests__/week.test.ts` | `toISODate`, `parseISODate`, `startOfWeek`, `addDays`, `weekDays`, `shiftWeek` (thuần logic): parse ra ngày **local** không qua UTC, chuỗi rác/ngày không tồn tại → `Invalid Date`, ranh giới tháng/năm, không sửa Date gốc | public |
+| `menus/pages/CreateMealPlanPage/__tests__/schema.test.ts` | `emptyWeek`, `moveWeek`, `dishUsage`, `daysWithMeals`, `mostRepeatedDish`, `validate`, `buildCreateMenuPayload` (thuần logic, 21 case): 7 ngày liên tiếp, giữ món theo vị trí khi đổi tuần, ngày trống, servings 0/1.5/abc, <5 món, >3 lần/món (ưu tiên hơn thiếu món), notes quá dài, bỏ ô trống khỏi payload | public |
 | `locations/pages/NearbyPage/` | danh sách + bản đồ, đổi vùng, GPS bị từ chối | public |
 | `locations/pages/LocationDetailPage/` | chi tiết địa điểm, giờ mở cửa, chỉ đường | public |
 | `locations/pages/AdminLocationsPage/` | CRUD địa điểm với `fakeLocationService` | public |

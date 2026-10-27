@@ -14,6 +14,8 @@ export interface RecipeIngredient {
     name: string;
     amount: number;
     unit: string;
+    /** Chỉ `GET /api/admin/recipes` trả — response member-facing không có. */
+    moderationStatus?: ModerationStatus;
 }
 
 /**
@@ -59,6 +61,12 @@ export interface AdminRecipe extends Omit<Recipe, "dishName"> {
     /** Admin list trả `null` được, khác response của `POST /api/recipes`. */
     dishName: string | null;
     status: RecipeStatus;
+    /** Trạng thái duyệt của recipe — khác `status` (xoá mềm). */
+    moderationStatus: ModerationStatus;
+    /** Điểm liên quan lúc nộp; `null` = chưa từng chấm. */
+    score: number | null;
+    /** Trạng thái duyệt của tên món dùng chung; duyệt recipe KHÔNG đổi nó. */
+    dishModerationStatus: ModerationStatus;
     username: string;
     email: string;
     categoryIds: string[];
@@ -68,20 +76,20 @@ export interface AdminRecipe extends Omit<Recipe, "dishName"> {
 export type RecipeStatus = "ACTIVE" | "DELETED";
 
 /**
+ * Trạng thái kiểm duyệt của một tên dùng chung (dish / ingredient / recipe) — ADR-016.
+ * `REJECTED` là chặn vĩnh viễn: member không tạo lại được tên đó.
+ */
+export type ModerationStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+/**
  * `sort` hợp lệ của `GET /api/admin/recipes` (whitelist backend) — kèm hướng.
  * Sai giá trị → 400.
  */
 export type RecipeSort = "createdAt,desc" | "updatedAt,desc" | "name,asc";
 
-/** `GET /api/dishes` — gợi ý tên món, chỉ đọc. */
-export interface Dish {
-    id: string;
-    name: string;
-    description: string | null;
-    imageUrl: string | null;
-    cuisineType: string | null;
-    createdAt: string;
-}
+/** `GET /api/dishes` — gợi ý tên món, chỉ đọc. Định nghĩa nằm ở `shared/types/dish.ts`
+ * vì `menus` cũng dùng. */
+export type { Dish } from "@/shared/types/dish";
 
 /** `GET /api/ingredients` — gợi ý tên nguyên liệu, không có cột nutrition. */
 export interface Ingredient {

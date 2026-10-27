@@ -29,6 +29,7 @@ import ProfilePage from "@/features/profile/ProfilePage";
 import PaymentResultPage from "@/features/subscription/pages/PaymentResultPage/PaymentResultPage";
 import SubscriptionPage from "@/features/subscription/pages/SubscriptionPage/SubscriptionPage";
 import MealPlanPage from "@/features/menus/pages/MealPlanPage";
+import CreateMealPlanPage from "@/features/menus/pages/CreateMealPlanPage/CreateMealPlanPage";
 
 export default function AppRoutes() {
     return (
@@ -86,6 +87,14 @@ export default function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <MealPlanPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/meal-plan/create"
+                    element={
+                        <ProtectedRoute>
+                            <CreateMealPlanPage />
                         </ProtectedRoute>
                     }
                 />

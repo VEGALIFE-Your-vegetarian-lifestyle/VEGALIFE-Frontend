@@ -48,6 +48,27 @@ export interface MealPlanParams {
     to: string;
 }
 
+/** POST /api/menus — owner lấy từ JWT, `endDate` server suy ra từ `startDate`. */
+export interface CreateMenuRequest {
+    /** Thứ 2 của tuần, YYYY-MM-DD. */
+    startDate: string;
+    notes?: string;
+    /** Đúng 7 phần tử: `startDate` .. `startDate + 6`, mỗi ngày 1–3 bữa. */
+    days: { date: string; meals: { mealType: MealType; dishId: string; servings: number }[] }[];
+}
+
+/**
+ * `POST /api/menus`, `PATCH`, `POST /{id}/status` trả shape này — khác `MenuDetail`:
+ * meals chỉ có `dishId`/`dishName`, **không** nhúng `dish`. Muốn có dish đầy đủ thì đọc
+ * lại qua `GET /api/menus/details`.
+ */
+export interface MenuWriteResult extends Omit<MenuDetail, "days"> {
+    days: {
+        date: string;
+        meals: { mealType: MealType; dishId: string; dishName: string; servings: number }[];
+    }[];
+}
+
 /** Nhãn + màu cho badge trạng thái — dùng chung mọi nơi hiển thị menu. */
 export const MENU_STATUS_VARIANT: Record<MenuStatus, "amber" | "default" | "outline" | "lightgreen"> = {
     drafted: "amber",

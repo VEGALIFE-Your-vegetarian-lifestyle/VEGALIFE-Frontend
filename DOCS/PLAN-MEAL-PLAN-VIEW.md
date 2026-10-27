@@ -31,7 +31,7 @@ Ba giai đoạn đã chốt:
 |---|---|---|
 | **C** (plan này) | Trang `/meal-plan` đọc menu AI đã tạo | ✅ xong |
 | A | Trang danh sách/lịch sử + lọc theo status, phân trang | ⬜ chưa lên plan |
-| B | Form tự tạo menu (chọn món từ `GET /api/dishes`) | ⬜ chưa lên plan |
+| B | Form tự tạo menu (chọn món từ `GET /api/dishes`) + đổi status | ✅ xong — xem `PLAN-MEAL-PLAN-CREATE.md` |
 
 **Ngoài phạm vi giai đoạn C**: tạo/sửa/xoá menu, đổi status (schedule/cancel/complete),
 render kết quả tool trong `ChatPanel`, lịch sử phân trang, thông báo khi AI tạo menu xong.

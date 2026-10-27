@@ -26,6 +26,10 @@ export function MealRow({ meal }: { meal: Meal }) {
                     {t("servings", { count: meal.servings })}
                     {dish.cuisineType && ` · ${dish.cuisineType}`}
                 </p>
+                {/* dish id để đối chiếu với món đã chọn ở DishPicker khi lập plan. */}
+                <p className="mt-0.5 truncate font-mono text-[10px] text-muted-foreground" title={dish.id}>
+                    {dish.id}
+                </p>
             </div>
         </li>
     );

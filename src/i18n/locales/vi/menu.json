@@ -1,6 +1,6 @@
 {
     "title": "Thực đơn",
-    "subtitle": "Thực đơn tuần do trợ lý AI dinh dưỡng tạo cho bạn.",
+    "subtitle": "Thực đơn tuần do bạn tự lập hoặc nhờ trợ lý AI.",
     "breadcrumb": "Thực đơn",
     "week": {
         "label": "{{from}} – {{to}}",
@@ -36,7 +36,62 @@
     "notes": "Ghi chú",
     "empty": {
         "title": "Tuần này chưa có thực đơn",
-        "description": "Hãy nhờ trợ lý AI dinh dưỡng lập thực đơn dựa trên hồ sơ ăn uống, dị ứng và BMI của bạn — thực đơn sẽ được lưu tại đây.",
-        "action": "Mở trợ lý AI"
+        "description": "Bạn có thể tự lập thực đơn, hoặc nhờ trợ lý AI dinh dưỡng lập dựa trên hồ sơ ăn uống, dị ứng và BMI của bạn.",
+        "action": "Mở trợ lý AI",
+        "create": "Tự lập thực đơn"
+    },
+    "actions": {
+        "schedule": "Lên lịch",
+        "complete": "Đánh dấu hoàn thành",
+        "cancelMenu": "Huỷ thực đơn",
+        "updated": "Đã cập nhật trạng thái thực đơn",
+        "failed": "Không cập nhật được trạng thái thực đơn.",
+        "confirmTitle": "Đổi trạng thái thực đơn",
+        "confirmSchedule": "Lên lịch cho tuần này? Mỗi tuần chỉ có một thực đơn đã lên lịch.",
+        "confirmComplete": "Đánh dấu tuần này đã xong? Không thể hoàn tác.",
+        "confirmCancel": "Huỷ thực đơn này? Không thể hoàn tác."
+    },
+    "create": {
+        "action": "Tạo thực đơn",
+        "title": "Tạo thực đơn tuần",
+        "subtitle": "Chọn tối đa ba món mỗi ngày. Lưu thành bản nháp rồi lên lịch sau.",
+        "breadcrumb": "Tạo mới",
+        "weekLabel": "Tuần bắt đầu",
+        "weekHelper": "Luôn là Thứ 2 của tuần — chọn ngày khác sẽ tự về Thứ 2.",
+        "notesLabel": "Ghi chú",
+        "notesPlaceholder": "Chủ đề của tuần, điều bạn đang kiêng…",
+        "notesCounter": "{{count}} / {{max}}",
+        "mealsTitle": "Các bữa trong tuần",
+        "mealTypeColumn": "Bữa",
+        "dishColumn": "Món",
+        "servingsColumn": "Số phần",
+        "pickDish": "Chọn món",
+        "searchDish": "Tìm món",
+        "noDishFound": "Không có món nào khớp.",
+        "clearDish": "Bỏ chọn {{name}}",
+        "requirements": {
+            "title": "Yêu cầu của tuần",
+            "distinct": "Món khác nhau",
+            "distinctValue": "{{count}} / {{min}}",
+            "repeats": "Món lặp nhiều nhất",
+            "repeatsValue": "{{count}} × {{name}}",
+            "repeatsNone": "Chưa chọn món nào",
+            "days": "Ngày có bữa",
+            "daysValue": "{{count}} / 7",
+            "ok": "Sẵn sàng lưu"
+        },
+        "errors": {
+            "dayEmpty": "Thêm ít nhất một bữa cho ngày này.",
+            "servings": "Số phần phải là số nguyên từ 1 trở lên.",
+            "tooFewDishes": "Thực đơn cần ít nhất {{min}} món khác nhau (hiện có {{count}}).",
+            "tooManyRepeats": "{{name}} xuất hiện quá {{max}} lần trong tuần này.",
+            "notesTooLong": "Ghi chú dài quá {{max}} ký tự."
+        },
+        "toast": {
+            "created": "Đã tạo thực đơn",
+            "failed": "Không tạo được thực đơn."
+        },
+        "cancel": "Huỷ",
+        "save": "Lưu thực đơn"
     }
 }

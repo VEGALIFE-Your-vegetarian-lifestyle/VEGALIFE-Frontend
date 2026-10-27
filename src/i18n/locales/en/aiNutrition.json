@@ -73,6 +73,19 @@
         "from": "From",
         "to": "To"
     },
+    "dishPicker": {
+        "title": "Pick dishes",
+        "subtitle": "Choose the dishes you want in the plan — the assistant receives each name and its dish id.",
+        "placeholder": "Search dishes by name",
+        "selected": "{{n}} selected",
+        "loading": "Loading dishes…",
+        "empty": "No dishes match that name.",
+        "loadFailed": "Could not load dishes.",
+        "retry": "Retry",
+        "remove": "Remove {{name}}",
+        "action": "Build a plan with these dishes",
+        "prompt": "Build a weekly meal plan using these dishes:\n{{dishes}}"
+    },
     "access": {
         "title": "Access Policy & Quotas",
         "guestInquiries": "Monthly quota:",
