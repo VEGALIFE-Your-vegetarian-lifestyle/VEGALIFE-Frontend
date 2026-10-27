@@ -27,6 +27,7 @@ import NotFoundPage from "@/app/NotFoundPage";
 import PostDetailPage from "@/features/posts/pages/PostDetailPage/PostDetailPage";
 import ProfilePage from "@/features/profile/ProfilePage";
 import MealPlanPage from "@/features/menus/pages/MealPlanPage";
+import CreateMealPlanPage from "@/features/menus/pages/CreateMealPlanPage/CreateMealPlanPage";
 
 export default function AppRoutes() {
     return (
@@ -75,6 +76,14 @@ export default function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <MealPlanPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/meal-plan/create"
+                    element={
+                        <ProtectedRoute>
+                            <CreateMealPlanPage />
                         </ProtectedRoute>
                     }
                 />

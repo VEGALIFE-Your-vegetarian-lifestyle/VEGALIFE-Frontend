@@ -1,6 +1,6 @@
 {
     "title": "Meal plan",
-    "subtitle": "Weekly menus built for you by the AI nutrition assistant.",
+    "subtitle": "Weekly menus you build yourself or ask the AI assistant for.",
     "breadcrumb": "Meal plan",
     "week": {
         "label": "{{from}} – {{to}}",
@@ -36,7 +36,62 @@
     "notes": "Note",
     "empty": {
         "title": "No meal plan for this week",
-        "description": "Ask the AI nutrition assistant to build one from your dietary profile, allergies and BMI — it saves the plan here.",
-        "action": "Open AI assistant"
+        "description": "Build one yourself or ask the AI nutrition assistant to plan it from your dietary profile, allergies and BMI.",
+        "action": "Open AI assistant",
+        "create": "Build one yourself"
+    },
+    "actions": {
+        "schedule": "Schedule",
+        "complete": "Mark completed",
+        "cancelMenu": "Cancel menu",
+        "updated": "Menu status updated",
+        "failed": "Could not update the menu status.",
+        "confirmTitle": "Change menu status",
+        "confirmSchedule": "Schedule this week? A week can only have one scheduled menu.",
+        "confirmComplete": "Mark this week as completed? This cannot be undone.",
+        "confirmCancel": "Cancel this menu? This cannot be undone."
+    },
+    "create": {
+        "action": "Create meal plan",
+        "title": "Create a weekly meal plan",
+        "subtitle": "Pick up to three dishes per day. You can save it as a draft and schedule it later.",
+        "breadcrumb": "Create",
+        "weekLabel": "Week starting",
+        "weekHelper": "Always the Monday of the week — moving the date snaps to it.",
+        "notesLabel": "Note",
+        "notesPlaceholder": "Theme of the week, restrictions you kept to…",
+        "notesCounter": "{{count}} / {{max}}",
+        "mealsTitle": "Meals this week",
+        "mealTypeColumn": "Meal",
+        "dishColumn": "Dish",
+        "servingsColumn": "Servings",
+        "pickDish": "Pick a dish",
+        "searchDish": "Search dishes",
+        "noDishFound": "No dish matches that name.",
+        "clearDish": "Remove {{name}}",
+        "requirements": {
+            "title": "Week requirements",
+            "distinct": "Distinct dishes",
+            "distinctValue": "{{count}} / {{min}}",
+            "repeats": "Most repeated dish",
+            "repeatsValue": "{{count}} × {{name}}",
+            "repeatsNone": "No dish picked yet",
+            "days": "Days with meals",
+            "daysValue": "{{count}} / 7",
+            "ok": "Ready to save"
+        },
+        "errors": {
+            "dayEmpty": "Add at least one meal to this day.",
+            "servings": "Servings must be a whole number of at least 1.",
+            "tooFewDishes": "A menu needs at least {{min}} different dishes (currently {{count}}).",
+            "tooManyRepeats": "{{name}} appears more than {{max}} times in this week.",
+            "notesTooLong": "The note is longer than {{max}} characters."
+        },
+        "toast": {
+            "created": "Meal plan created",
+            "failed": "Could not create the meal plan."
+        },
+        "cancel": "Cancel",
+        "save": "Save meal plan"
     }
 }

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { DayColumn } from "./DayColumn";
+import { MenuActions } from "./MenuActions";
 import { MENU_STATUS_VARIANT, type MenuDetail } from "../types";
 import { parseISODate, toISODate, weekDays } from "../week";
 
@@ -31,6 +32,9 @@ export function MenuCard({ menu }: { menu: MenuDetail }) {
                 <Badge variant={MENU_STATUS_VARIANT[menu.status]} size="sm">
                     {t(`status.${menu.status}`)}
                 </Badge>
+                <div className="ml-auto">
+                    <MenuActions menu={menu} />
+                </div>
                 {menu.notes && (
                     <p className="w-full text-sm text-muted-foreground">
                         <span className="font-semibold">{t("notes")}: </span>

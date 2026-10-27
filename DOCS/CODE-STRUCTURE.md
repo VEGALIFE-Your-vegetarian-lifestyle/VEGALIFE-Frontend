@@ -76,7 +76,8 @@ VEGALIFE-Frontend/
 │   ├── shared/                  hạ tầng dùng chung, KHÔNG import features/ hay components/
 │   │   ├── api/
 │   │   │   ├── client.ts            axios instance + interceptor 401/refresh + refresh chủ động
-│   │   │   └── media.ts             xin thông tin upload + upload file
+│   │   │   ├── media.ts             xin thông tin upload + upload file
+│   │   │   └── dishes.ts            searchDishes — GET /api/dishes (recipes + nutrition-ai + menus)
 │   │   ├── auth/authStore.ts        user/accessToken/refreshToken, persist theo rememberMe
 │   │   ├── hooks/
 │   │   │   ├── useListParams.ts     page/filter/search ↔ URL query
@@ -84,6 +85,7 @@ VEGALIFE-Frontend/
 │   │   ├── types/
 │   │   │   ├── common.ts            ApiResponse, Paginated, PageResponse, ListParams
 │   │   │   ├── user.ts              User, UserProfile, role, status, gender
+│   │   │   ├── dish.ts              Dish đầy đủ (có createdAt)
 │   │   │   └── media.ts
 │   │   ├── ui/uiStore.ts            ngôn ngữ, state UI toàn cục
 │   │   └── utils/
@@ -126,6 +128,9 @@ nutrition-ai, videos, categories, locations, menus → auth
 **Ngoại lệ đã ghi nhận**: `features/profile/ProfilePage.tsx` import `getMyPosts`
 từ `features/posts/api` cho thẻ thống kê (backend chưa có endpoint thống kê hồ sơ).
 Có `ponytail:` tại chỗ; gỡ khi backend bổ sung endpoint.
+
+`GET /api/dishes` được 3 feature dùng (`recipes` autocomplete, `nutrition-ai` DishPicker,
+`menus` DishSlotPicker) nên nằm ở `shared/api/dishes.ts` thay vì feature nào.
 
 ## 3. Features
 
@@ -265,19 +270,29 @@ Có `ponytail:` tại chỗ; gỡ khi backend bổ sung endpoint.
 
 | File | Vai trò |
 |---|---|
-| `types.ts` | `MenuStatus`, `MealType`, `Dish`, `Meal`, `MenuDay`, `MenuDetail`, `MealPlanParams`, `MENU_STATUS_VARIANT` |
-| `api.ts` | `getMealPlans({from,to})` — `GET /api/menus/details`, trả mảng phẳng |
+| `types.ts` | `MenuStatus`, `MealType`, `Dish`, `Meal`, `MenuDay`, `MenuDetail`, `MealPlanParams`, `CreateMenuRequest`, `MenuWriteResult`, `MENU_STATUS_VARIANT` |
+| `api.ts` | `getMealPlans({from,to})` — `GET /api/menus/details`; `createMenu` — `POST /api/menus`; `changeMenuStatus` — `POST /api/menus/{id}/status` |
 | `useMealPlans.ts` | `useQuery` theo cửa sổ ngày |
 | `week.ts` | `toISODate`, `parseISODate`, `startOfWeek`, `addDays`, `weekDays`, `shiftWeek` — thuần `Date` local |
-| `components/MenuCard.tsx` | tiêu đề tuần + badge trạng thái + notes + lưới 7 ngày |
+| `components/MenuCard.tsx` | tiêu đề tuần + badge trạng thái + notes + lưới 7 ngày + `MenuActions` |
+| `components/MenuActions.tsx` | nút đổi trạng thái theo bảng chuyển BR-MENU-007; không render nút khi đã kết thúc |
 | `components/DayColumn.tsx` | một ngày: thứ, số ngày, danh sách bữa |
 | `components/MealRow.tsx` | một bữa: loại bữa, tên món, số phần, ảnh, cuisine |
 | `components/WeekNavigator.tsx` | ← tuần này → |
 | `pages/MealPlanPage.tsx` | route `/meal-plan` (cần đăng nhập) |
+| `pages/CreateMealPlanPage/CreateMealPlanPage.tsx` | route `/meal-plan/create` — form + mutation |
+| `pages/CreateMealPlanPage/schema.ts` | `MenuFormValues`, `emptyWeek`, `moveWeek`, `dishUsage`, `daysWithMeals`, `mostRepeatedDish` |
+| `pages/CreateMealPlanPage/validate.ts` | BR-MENU-005 → `Record<fieldPath, message>`; **không** Yup (luật là quan hệ giữa các ô) |
+| `pages/CreateMealPlanPage/payload.ts` | form → body `POST /api/menus` |
+| `pages/CreateMealPlanPage/DayEditor.tsx` | một ngày: 3 ô bữa cố định |
+| `pages/CreateMealPlanPage/DishSlotPicker.tsx` | một ô: tìm + chọn đúng một món từ `GET /api/dishes` |
+| `pages/CreateMealPlanPage/__tests__/schema.test.ts` | schema + validate + payload (21 case) |
 | `__tests__/week.test.ts` | logic tuần: parse local, `startOfWeek`, `addDays`, `shiftWeek` |
 
-Chỉ **đọc**. Tạo/sửa menu do chatbot AI đảm nhận — backend có 5 tool menu và prompt đã
-nạp sẵn dietary + BMI. Tuần đang xem nằm trên URL (`?from=YYYY-MM-DD`, luôn là Thứ 2).
+Tự lập được menu (`POST /api/menus`, luôn `drafted`) và đổi trạng thái qua `MenuActions`.
+Sửa nội dung menu (`PATCH`) chưa làm. Tuần đang xem nằm trên URL (`?from=YYYY-MM-DD`, luôn là
+Thứ 2). `POST`/`PATCH`/`status` trả shape **khác** `GET /api/menus/details` (thiếu `dish` đầy
+đủ) → sau khi ghi luôn invalidate `["meal-plans"]`.
 
 ## 4. Hạ tầng test (`src/test/`)
 
@@ -312,7 +327,7 @@ Lỗi hiển thị: `getApiErrorMessage(error, t("..."))` — đọc `errors[]` 
 - **Gọi API thật**: auth, posts, categories, profile (kể cả 5 field dietary), media,
   videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`,
   `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus
-  (`GET /api/menus/details`).
+  (`GET /api/menus/details`, `POST /api/menus`, `POST /api/menus/{id}/status`).
 - **Còn mock**: `features/admin/dashboardApi.ts` (backend chưa có endpoint dashboard);
   `features/posts/{mockEnrichment,mockAuthors}.ts` (field hiển thị BE chưa trả).
 - `features/locations/mocks.ts` **không phải** mock API — chỉ là toạ độ tâm các quận

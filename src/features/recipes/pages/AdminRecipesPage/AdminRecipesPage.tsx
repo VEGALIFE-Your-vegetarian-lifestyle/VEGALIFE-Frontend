@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Salad, Search } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -15,8 +17,10 @@ import { TableSkeleton } from "@/components/common/TableSkeleton";
 import { useListParams } from "@/shared/hooks/useListParams";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
 import { formatDateLocale } from "@/shared/utils/formatDate";
-import { getAdminRecipes } from "../../adminApi";
-import type { AdminRecipe, Difficulty, RecipeSort, RecipeStatus } from "../../types";
+import { getApiErrorMessage } from "@/shared/utils/apiError";
+import { approveDish, approveRecipe, getAdminRecipes, rejectRecipe } from "../../adminApi";
+import { MODERATION_VARIANT } from "../../constants";
+import type { AdminRecipe, Difficulty, ModerationStatus, RecipeSort, RecipeStatus } from "../../types";
 import { RecipeDetailDialog } from "./RecipeDetailDialog";
 
 const PAGE_SIZE = 10;
@@ -27,6 +31,14 @@ const SORT_OPTIONS: { value: RecipeSort; labelKey: "newest" | "updated" | "name"
     { value: "updatedAt,desc", labelKey: "updated" },
     { value: "name,asc", labelKey: "name" },
 ];
+
+/** Hàng đợi duyệt là màn hình mặc định — bỏ trống param thì backend trả cả 3 trạng thái. */
+const DEFAULT_MODERATION: ModerationStatus = "PENDING";
+
+const MODERATION_STATES: ModerationStatus[] = ["PENDING", "APPROVED", "REJECTED"];
+
+const isModerationState = (value: string): value is ModerationStatus =>
+    MODERATION_STATES.includes(value as ModerationStatus);
 
 const STATUS_VARIANT: Record<RecipeStatus, "default" | "destructive"> = {
     ACTIVE: "default",
@@ -45,24 +57,85 @@ const endOfDay = (date: string) => new Date(`${date}T23:59:59.999`).toISOString(
 
 export default function AdminRecipesPage() {
     const { t } = useTranslation(["admin", "common", "recipe"]);
-    const { page, q, debouncedQ, setQ, setPage, clearFilters } = useListParams();
+    const queryClient = useQueryClient();
+    const { page, q, status, debouncedQ, setQ, setStatus, setPage } = useListParams();
     const [sort, setSort] = useState<RecipeSort>("createdAt,desc");
     const [from, setFrom] = useState("");
     const [to, setTo] = useState("");
     const [detail, setDetail] = useState<AdminRecipe | null>(null);
+    /** Đang mở hộp thoại xác nhận cho recipe này — `null` = đóng. */
+    const [confirm, setConfirm] = useState<{ recipe: AdminRecipe; action: "approve" | "reject" } | null>(null);
 
     // Recipe chỉ trả `categoryIds` — tra tên qua danh mục public, thiếu thì hiện UUID.
     const categoryNames = useCategoryNames();
 
     const createdFrom = from ? startOfDay(from) : undefined;
     const createdTo = to ? endOfDay(to) : undefined;
+    // URL `?status=` dùng chung key với các trang admin khác; `""` = mọi trạng thái.
+    // Giá trị lạ (link cũ, gõ tay) rơi về hàng đợi thay vì làm backend trả 400.
+    const moderationStatus = isModerationState(status) ? status : DEFAULT_MODERATION;
+    const allStates = status === "ALL";
+
+    // `moderationStatus` rơi về PENDING khi chọn "mọi trạng thái" → queryKey phải tách riêng,
+    // không thì PENDING và ALL dùng chung cache.
+    const moderationFilter = allStates ? "ALL" : moderationStatus;
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ["admin-recipes", page, sort, createdFrom, createdTo],
+        queryKey: ["admin-recipes", page, sort, createdFrom, createdTo, moderationFilter],
         queryFn: () =>
-            getAdminRecipes({ page, size: PAGE_SIZE, sort, createdFrom, createdTo }),
+            getAdminRecipes({
+                page,
+                size: PAGE_SIZE,
+                sort,
+                createdFrom,
+                createdTo,
+                moderationStatus: allStates ? undefined : moderationStatus,
+            }),
         placeholderData: keepPreviousData,
     });
+
+    const invalidate = () => queryClient.invalidateQueries({ queryKey: ["admin-recipes"] });
+
+    // BE trả 400/404 kèm lý do cụ thể — hiện nguyên văn thay vì câu chung.
+    const onError = (error: unknown) => {
+        toast.error(getApiErrorMessage(error, t("recipes.moderation.actionFailed")));
+    };
+
+    const approveMutation = useMutation({
+        mutationFn: (recipe: AdminRecipe) => approveRecipe(recipe.id),
+        onSuccess: () => {
+            toast.success(t("recipes.moderation.approved"));
+            setConfirm(null);
+            setDetail(null);
+            invalidate();
+        },
+        onError,
+    });
+
+    const rejectMutation = useMutation({
+        mutationFn: (recipe: AdminRecipe) => rejectRecipe(recipe.id),
+        onSuccess: () => {
+            toast.success(t("recipes.moderation.rejected"));
+            setConfirm(null);
+            setDetail(null);
+            invalidate();
+        },
+        onError,
+    });
+
+    // Duyệt tên món: đổi state của `dish`, không phải của recipe — nên chỉ invalidate danh
+    // sách recipe để badge cập nhật, và danh sách món để ô chọn món thấy món mới.
+    const approveDishMutation = useMutation({
+        mutationFn: (recipe: AdminRecipe) => approveDish(recipe.dishId),
+        onSuccess: () => {
+            toast.success(t("recipes.moderation.dishApproved"));
+            void queryClient.invalidateQueries({ queryKey: ["admin-recipes"] });
+            void queryClient.invalidateQueries({ queryKey: ["dishes"] });
+        },
+        onError,
+    });
+
+    const mutating = approveMutation.isPending || rejectMutation.isPending || approveDishMutation.isPending;
 
     // Không gọi lại API khi gõ tìm kiếm — backend chưa có tham số tên (xem `adminApi.ts`).
     const recipes = useMemo(() => {
@@ -79,14 +152,18 @@ export default function AdminRecipesPage() {
     }, [data, debouncedQ]);
 
     const total = data?.total ?? 0;
-    const hasFilter = q !== "" || from !== "" || to !== "";
+    // Hàng đợi PENDING mặc định cũng là bộ lọc — rỗng nghĩa là "không có gì chờ duyệt",
+    // không phải "chưa ai tạo recipe".
+    const hasFilter = q !== "" || from !== "" || to !== "" || !allStates;
 
     const resetPage = () => setPage(1);
 
     const clearAll = () => {
-        clearFilters();
+        setQ("");
         setFrom("");
         setTo("");
+        // `clearFilters` xoá `?status=` → rơi về PENDING và vẫn rỗng; mở rộng ra mọi trạng thái.
+        setStatus("ALL");
     };
 
     return (
@@ -108,6 +185,18 @@ export default function AdminRecipesPage() {
                         onChange={(event) => setQ(event.target.value)}
                     />
                 </div>
+
+                <Select
+                    className="xl:w-52"
+                    aria-label={t("recipes.moderation.filterLabel")}
+                    value={allStates ? "ALL" : moderationStatus}
+                    onChange={(event) => setStatus(event.target.value)}
+                >
+                    <option value="PENDING">{t("recipes.moderation.status.PENDING")}</option>
+                    <option value="APPROVED">{t("recipes.moderation.status.APPROVED")}</option>
+                    <option value="REJECTED">{t("recipes.moderation.status.REJECTED")}</option>
+                    <option value="ALL">{t("recipes.moderation.filterAll")}</option>
+                </Select>
 
                 <Select
                     className="xl:w-52"
@@ -180,13 +269,14 @@ export default function AdminRecipesPage() {
                                 <TableHead className="text-right">{t("recipes.column.cookTime")}</TableHead>
                                 <TableHead className="text-right">{t("recipes.column.servings")}</TableHead>
                                 <TableHead>{t("recipes.column.difficulty")}</TableHead>
+                                <TableHead>{t("recipes.column.moderation")}</TableHead>
                                 <TableHead>{t("recipes.column.status")}</TableHead>
                                 <TableHead>{t("recipes.column.createdAt")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableSkeleton columns={8} />
+                                <TableSkeleton columns={9} />
                             ) : (
                                 recipes.map((recipe) => (
                                     <TableRow key={recipe.id}>
@@ -221,6 +311,11 @@ export default function AdminRecipesPage() {
                                             )}
                                         </TableCell>
                                         <TableCell>
+                                            <Badge variant={MODERATION_VARIANT[recipe.moderationStatus]}>
+                                                {t(`recipes.moderation.status.${recipe.moderationStatus}`)}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
                                             <Badge variant={STATUS_VARIANT[recipe.status]}>
                                                 {t(`recipes.status.${recipe.status}`)}
                                             </Badge>
@@ -252,7 +347,32 @@ export default function AdminRecipesPage() {
             <RecipeDetailDialog
                 recipe={detail}
                 categoryNames={categoryNames}
+                loading={mutating}
+                onApprove={(recipe) => setConfirm({ recipe, action: "approve" })}
+                onReject={(recipe) => setConfirm({ recipe, action: "reject" })}
+                onApproveDish={(recipe) => approveDishMutation.mutate(recipe)}
                 onClose={() => setDetail(null)}
+            />
+
+            <ConfirmDialog
+                open={confirm?.action === "approve"}
+                title={t("recipes.moderation.approveTitle")}
+                description={t("recipes.moderation.approveBody", { name: confirm?.recipe.name ?? "" })}
+                confirmLabel={t("recipes.moderation.approve")}
+                loading={mutating}
+                onConfirm={() => confirm && approveMutation.mutate(confirm.recipe)}
+                onClose={() => setConfirm(null)}
+            />
+
+            <ConfirmDialog
+                open={confirm?.action === "reject"}
+                title={t("recipes.moderation.rejectTitle")}
+                description={t("recipes.moderation.rejectBody", { name: confirm?.recipe.name ?? "" })}
+                confirmLabel={t("recipes.moderation.reject")}
+                destructive
+                loading={mutating}
+                onConfirm={() => confirm && rejectMutation.mutate(confirm.recipe)}
+                onClose={() => setConfirm(null)}
             />
         </div>
     );

@@ -315,12 +315,33 @@
             "cookTime": "Cook time",
             "servings": "Servings",
             "difficulty": "Difficulty",
+            "moderation": "Review",
             "status": "Status",
             "createdAt": "Created"
         },
         "status": {
             "ACTIVE": "Active",
             "DELETED": "Deleted"
+        },
+        "moderation": {
+            "status": {
+                "PENDING": "Pending review",
+                "APPROVED": "Approved",
+                "REJECTED": "Rejected"
+            },
+            "filterLabel": "Filter by review state",
+            "filterAll": "All states",
+            "approve": "Approve",
+            "reject": "Reject",
+            "approveTitle": "Approve this recipe?",
+            "approveBody": "\"{{name}}\" will become visible in search and dish suggestions.",
+            "rejectTitle": "Reject this recipe?",
+            "rejectBody": "\"{{name}}\" will stay hidden. The name cannot be reused later.",
+            "approved": "Recipe approved",
+            "rejected": "Recipe rejected",
+            "approveDish": "Approve dish",
+            "dishApproved": "Dish name approved",
+            "actionFailed": "Action failed. Please try again."
         },
         "detail": {
             "by": "Created by @{{username}}",

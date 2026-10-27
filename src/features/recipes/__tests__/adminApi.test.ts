@@ -1,7 +1,8 @@
 // @vitest-environment node
-/** Test `getAdminRecipes` — gọi BACKEND THẬT, admin-gated qua `E2E_ADMIN_*`. */
+/** Test `getAdminRecipes` / `approveRecipe` — gọi BACKEND THẬT, admin-gated qua `E2E_ADMIN_*`. */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { getAdminRecipes } from "../adminApi";
+import { approveRecipe, getAdminRecipes } from "../adminApi";
+import type { ModerationStatus } from "../types";
 import { E2E_ADMIN, HAS_ADMIN, REMOTE_TIMEOUT_MS, httpStatus, signInAs, signOut } from "@/test/e2eEnv";
 
 describe("adminRecipeService — chặn khi chưa đăng nhập", () => {
@@ -9,6 +10,16 @@ describe("adminRecipeService — chặn khi chưa đăng nhập", () => {
         "getAdminRecipes không có token bị từ chối 401/403",
         async () => {
             const error = await getAdminRecipes({ page: 1, size: 10 }).catch((e) => e);
+
+            expect([401, 403]).toContain(httpStatus(error));
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
+    it(
+        "approveRecipe không có token bị từ chối 401/403",
+        async () => {
+            const error = await approveRecipe(crypto.randomUUID()).catch((e) => e);
 
             expect([401, 403]).toContain(httpStatus(error));
         },
@@ -47,6 +58,8 @@ describe.skipIf(!HAS_ADMIN)("adminRecipeService — cần JWT admin (E2E_ADMIN_*
                 expect(typeof recipe.instructions).toBe("string");
                 expect(recipe.servings).toBeGreaterThanOrEqual(1);
                 expect(["ACTIVE", "DELETED"]).toContain(recipe.status);
+                expect(["PENDING", "APPROVED", "REJECTED"]).toContain(recipe.moderationStatus);
+                expect(["PENDING", "APPROVED", "REJECTED"]).toContain(recipe.dishModerationStatus);
                 expect(Array.isArray(recipe.ingredients)).toBe(true);
                 expect(typeof recipe.username).toBe("string");
                 expect(Array.isArray(recipe.categoryIds)).toBe(true);
@@ -82,6 +95,42 @@ describe.skipIf(!HAS_ADMIN)("adminRecipeService — cần JWT admin (E2E_ADMIN_*
             for (const recipe of filtered.data) {
                 expect(recipe.categoryIds).toContain(categoryId);
             }
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
+    it(
+        "lọc moderationStatus ở server — row trả về đều đúng trạng thái",
+        async () => {
+            const filtered = await getAdminRecipes({ page: 1, size: 20, moderationStatus: "PENDING" });
+
+            for (const recipe of filtered.data) {
+                expect(recipe.moderationStatus).toBe("PENDING");
+            }
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
+    it(
+        "moderationStatus lạ bị backend từ chối 400",
+        async () => {
+            const error = await getAdminRecipes({
+                page: 1,
+                size: 10,
+                moderationStatus: "BOGUS" as ModerationStatus,
+            }).catch((e) => e);
+
+            expect(httpStatus(error)).toBe(400);
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
+    it(
+        "approveRecipe trên UUID không tồn tại trả 404, không phải 5xx",
+        async () => {
+            const error = await approveRecipe(crypto.randomUUID()).catch((e) => e);
+
+            expect(httpStatus(error)).toBe(404);
         },
         REMOTE_TIMEOUT_MS,
     );
