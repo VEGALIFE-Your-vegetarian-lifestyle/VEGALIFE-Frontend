@@ -5,14 +5,18 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as Yup from "yup";
-import { Eye, EyeOff, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Loader2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/common/FormField";
 import { AuthLayout } from "../../AuthLayout";
-import { register } from "../../api";
+import { loginWithGoogle, register } from "../../api";
+import { useAuth } from "../../useAuth";
+import { useGoogleLogin } from "../../useGoogleLogin";
+import { GoogleMark } from "../LoginPage/LoginPage";
+import { decodeJwt } from "@/shared/utils/jwt";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
-import type { RegisterRequest } from "@/shared/types/user";
+import type { RegisterRequest, UserRole } from "@/shared/types/user";
 
 const MIN_USERNAME = 3;
 const MAX_USERNAME = 50;
@@ -22,6 +26,7 @@ const MIN_PASSWORD = 8;
 export default function RegisterPage() {
     const { t } = useTranslation("auth");
     const navigate = useNavigate();
+    const { setAuth } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -61,6 +66,44 @@ export default function RegisterPage() {
         },
         onError: (error: unknown) => {
             toast.error(getApiErrorMessage(error, t("register.failed")));
+        },
+    });
+
+    const googleLoginMutation = useMutation({
+        mutationFn: (code: string) => loginWithGoogle({ code }),
+        onSuccess: (data) => {
+            const payload = decodeJwt(data.accessToken);
+            const role: UserRole = payload?.role === "ADMIN" ? "ADMIN" : "USER";
+
+            setAuth(
+                {
+                    user: {
+                        id: data.userId,
+                        username: data.username,
+                        email: data.email,
+                        role,
+                        status: "activated",
+                    },
+                    accessToken: data.accessToken,
+                    refreshToken: data.refreshToken,
+                    expiresIn: data.expiresIn,
+                },
+                true,
+            );
+            toast.success(t("login.success"));
+            navigate(role === "ADMIN" ? "/admin/dashboard" : "/", { replace: true });
+        },
+        onError: (error: unknown) => {
+            toast.error(getApiErrorMessage(error, t("errors.loginFailed")));
+        },
+    });
+
+    const { login: handleGoogleLogin } = useGoogleLogin({
+        onSuccess: (code) => {
+            googleLoginMutation.mutate(code);
+        },
+        onError: () => {
+            toast.error(t("googleFailed"));
         },
     });
 
@@ -194,6 +237,32 @@ export default function RegisterPage() {
                     {t(registerMutation.isPending ? "register.submitting" : "register.submit")}
                 </Button>
             </form>
+
+            <div className="my-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-xs uppercase text-muted-foreground">{t("divider")}</span>
+                <span className="h-px flex-1 bg-border" />
+            </div>
+
+            <Button
+                type="button"
+                variant="white"
+                className="w-full"
+                disabled={googleLoginMutation.isPending || registerMutation.isPending}
+                onClick={handleGoogleLogin}
+            >
+                {googleLoginMutation.isPending ? (
+                    <>
+                        <Loader2 className="h-4 w-4 animate-spin text-vegan-green" />
+                        {t("googleLoggingIn")}
+                    </>
+                ) : (
+                    <>
+                        <GoogleMark />
+                        {t("google")}
+                    </>
+                )}
+            </Button>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
                 {t("haveAccount")}{" "}

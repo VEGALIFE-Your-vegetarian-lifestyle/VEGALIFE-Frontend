@@ -92,14 +92,17 @@ describe("LoginPage", () => {
         expect(password).toHaveAttribute("type", "password");
     });
 
-    it("nút Google báo tính năng đang phát triển, không gọi API", async () => {
+    it("nút Google báo lỗi cấu hình khi chưa set VITE_GOOGLE_CLIENT_ID", async () => {
+        vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "");
         const user = userEvent.setup();
         renderLogin();
 
         await user.click(screen.getByRole("button", { name: /Continue with Google/ }));
 
-        expect(toast.info).toHaveBeenCalledWith("Feature under development");
+        expect(toast.error).toHaveBeenCalledWith("Google Client ID is not configured (VITE_GOOGLE_CLIENT_ID).");
+        vi.unstubAllEnvs();
     });
+
 
     it("điều hướng sang trang đăng ký qua tab", async () => {
         const user = userEvent.setup();

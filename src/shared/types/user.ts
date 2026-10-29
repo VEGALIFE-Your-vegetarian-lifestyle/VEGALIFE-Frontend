@@ -118,3 +118,8 @@ export interface AdminUser {
     status: UserStatus;
     createdAt: string;
 }
+
+export interface GoogleLoginRequest {
+    code: string;
+}
+

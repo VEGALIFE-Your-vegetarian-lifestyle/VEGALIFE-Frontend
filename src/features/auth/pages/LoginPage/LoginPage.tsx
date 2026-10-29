@@ -1,17 +1,19 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+
 import { toast } from "sonner";
 import * as Yup from "yup";
-import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, LogIn, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/common/FormField";
 import { AuthLayout } from "../../AuthLayout";
 import { useAuth } from "../../useAuth";
-import { login } from "../../api";
+import { login, loginWithGoogle } from "../../api";
+import { useGoogleLogin } from "../../useGoogleLogin";
 import { decodeJwt } from "@/shared/utils/jwt";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { getRememberedIdentifier, setRememberedIdentifier } from "@/shared/auth/authStore";
@@ -67,6 +69,69 @@ export default function LoginPage() {
             toast.error(getApiErrorMessage(error, t("errors.loginFailed")));
         },
     });
+
+    const googleLoginMutation = useMutation({
+        mutationFn: (code: string) => loginWithGoogle({ code }),
+        onSuccess: (data) => {
+            const payload = decodeJwt(data.accessToken);
+            const role: UserRole = payload?.role === "ADMIN" ? "ADMIN" : "USER";
+
+            setAuth(
+                {
+                    user: {
+                        id: data.userId,
+                        username: data.username,
+                        email: data.email,
+                        role,
+                        status: "activated",
+                    },
+                    accessToken: data.accessToken,
+                    refreshToken: data.refreshToken,
+                    expiresIn: data.expiresIn,
+                },
+                true,
+            );
+            toast.success(t("login.success"));
+            navigate(role === "ADMIN" ? "/admin/dashboard" : "/", { replace: true });
+        },
+        onError: (error: unknown) => {
+            toast.error(getApiErrorMessage(error, t("errors.loginFailed")));
+        },
+    });
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    const handledCodeRef = useRef(false);
+
+    useEffect(() => {
+        const error = searchParams.get("error");
+        if (error && !handledCodeRef.current) {
+            handledCodeRef.current = true;
+            toast.error(t("googleFailed"));
+            setSearchParams({}, { replace: true });
+            return;
+        }
+
+        const code = searchParams.get("code");
+        if (code && !handledCodeRef.current) {
+            handledCodeRef.current = true;
+            googleLoginMutation.mutate(code, {
+                onSettled: () => {
+                    setSearchParams({}, { replace: true });
+                },
+            });
+        }
+    }, [searchParams, setSearchParams, googleLoginMutation, t]);
+
+    const { login: handleGoogleLogin } = useGoogleLogin({
+        onSuccess: (code) => {
+            googleLoginMutation.mutate(code);
+        },
+        onError: () => {
+            toast.error(t("googleFailed"));
+        },
+    });
+
+
 
     const formik = useFormik<LoginFormValues>({
         initialValues: { identifier: getRememberedIdentifier() ?? "", password: "", rememberMe: false },
@@ -188,15 +253,24 @@ export default function LoginPage() {
                 <span className="h-px flex-1 bg-border" />
             </div>
 
-            {/* ponytail: backend chưa có OAuth Google — nút báo "đang phát triển", nối khi có endpoint. */}
             <Button
                 type="button"
                 variant="white"
                 className="w-full"
-                onClick={() => toast.info(t("common:featureDeveloping"))}
+                disabled={googleLoginMutation.isPending || loginMutation.isPending}
+                onClick={handleGoogleLogin}
             >
-                <GoogleMark />
-                {t("google")}
+                {googleLoginMutation.isPending ? (
+                    <>
+                        <Loader2 className="h-4 w-4 animate-spin text-vegan-green" />
+                        {t("googleLoggingIn")}
+                    </>
+                ) : (
+                    <>
+                        <GoogleMark />
+                        {t("google")}
+                    </>
+                )}
             </Button>
 
             <p className="mt-5 text-center text-sm">
@@ -216,7 +290,7 @@ export default function LoginPage() {
 }
 
 /** Logo Google vẽ bằng SVG — lucide không có icon thương hiệu. */
-function GoogleMark() {
+export function GoogleMark() {
     return (
         <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true" focusable="false">
             <path

@@ -3,6 +3,7 @@ import { useAuthStore } from "@/shared/auth/authStore";
 import type { ApiResponse } from "@/shared/types/common";
 import type {
     ForgotPasswordRequest,
+    GoogleLoginRequest,
     LoginRequest,
     LoginResponse,
     RegisterRequest,
@@ -30,6 +31,16 @@ export async function login(request: LoginRequest): Promise<LoginResponse> {
     );
     return response.data.data;
 }
+
+export async function loginWithGoogle(request: GoogleLoginRequest): Promise<LoginResponse> {
+    const response = await api.post<ApiResponse<LoginResponse>>(
+        "/api/auth/google",
+        { code: request.code.trim() },
+        { headers: { Authorization: undefined } },
+    );
+    return response.data.data;
+}
+
 
 export async function verifyEmail(request: VerifyEmailRequest): Promise<VerifyEmailResponse> {
     const response = await api.post<ApiResponse<VerifyEmailResponse>>("/api/auth/verify-email", request);

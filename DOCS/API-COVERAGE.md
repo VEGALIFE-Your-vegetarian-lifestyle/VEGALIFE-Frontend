@@ -54,7 +54,7 @@ Doc cũ ghi "đã bỏ" là sai — FE bỏ UI, backend chưa bỏ.
 | Edit Post | `/posts/:id/edit` | ✅ `GET /api/posts/{id}` → `PATCH` |
 | My Posts | `/my-posts` | ✅ `GET /api/posts` + unpublish/delete |
 | Profile | `/profile` | ✅ `GET/PUT /api/profile` (gồm 5 field dietary) + `GET /api/posts` (stats) |
-| Login / Register | `/login`, `/register` | ✅ auth (Google OAuth ❌) |
+| Login / Register | `/login`, `/register` | ✅ auth (kể cả Google OAuth) |
 | Nearby | `/nearby` | ✅ `GET /api/locations/nearby` |
 | Location Detail | `/nearby/:id` | ✅ `GET /api/locations` (lọc theo id ở client) |
 | AI Nutrition | `/ai-nutrition` | ✅ `POST /api/ai/messages` + lịch sử hội thoại + `GET /api/subscriptions/me` |
@@ -73,14 +73,15 @@ Doc cũ ghi "đã bỏ" là sai — FE bỏ UI, backend chưa bỏ.
 | POST /api/auth/verify-email | `verifyEmail` | VerifyEmailPage |
 | POST /api/auth/resend-email | `resendVerifyEmail` | VerifyEmailPage |
 
-## 2. Login — ⚠️ thiếu Google OAuth (backend đã có)
+## 2. Login — ✅ đủ
 
 | Endpoint | Hàm | Ghi chú |
 |---|---|---|
 | POST /api/auth/login | `login` | decode role từ JWT ở LoginPage |
 | POST /api/auth/refresh | `refreshAccessToken` | interceptor + timer 14 phút |
 | POST /api/auth/logout | `logout` | retry sau refresh khi 401 |
-| POST /api/auth/google | ❌ | **Mới có ở backend**: `{code}` → cùng shape `LoginResponse`. Nút "Continue with Google" vẫn chỉ báo `featureDeveloping` |
+| POST /api/auth/google | ✅ `loginWithGoogle` | GIS code client (`useGoogleLogin`) trên LoginPage + RegisterPage |
+
 
 LoginPage + RegisterPage dùng chung tab switcher; AuthLayout dùng namespace `auth` (`split.*`, `tabs.*`, `google`, `guest`).
 

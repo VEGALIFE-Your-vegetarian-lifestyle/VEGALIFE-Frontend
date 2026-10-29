@@ -10,6 +10,7 @@ import { describe, expect, it } from "vitest";
 import {
     forgotPassword,
     login,
+    loginWithGoogle,
     register,
     resendVerifyEmail,
     resetPassword,
@@ -21,6 +22,17 @@ import { E2E_USER, HAS_USER, REMOTE_TIMEOUT_MS, httpStatus } from "@/test/e2eEnv
 const FAKE_UUID_EMAIL = "vitest-no-such-account@example.invalid";
 
 describe("authService — endpoint public (không cần tài khoản)", () => {
+    it(
+        "loginWithGoogle với code không hợp lệ trả 4xx",
+        async () => {
+            const error = await loginWithGoogle({ code: "invalid-auth-code" }).catch((e) => e);
+
+            expect(httpStatus(error)).toBeGreaterThanOrEqual(400);
+            expect(httpStatus(error)).toBeLessThan(500);
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
     it(
         "login với mật khẩu sai trả 4xx, không trả token",
         async () => {
