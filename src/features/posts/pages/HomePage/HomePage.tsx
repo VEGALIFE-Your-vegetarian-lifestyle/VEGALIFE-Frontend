@@ -78,20 +78,25 @@ export default function HomePage() {
     const latest = together.slice(5, 9);
 
     return (
-        <div className="relative">
-            {/* Vệt sáng xanh mờ sau hero — mockup `screen01_home` có lớp glow này để trang không phẳng. */}
-            <span
-                aria-hidden="true"
-                className="pointer-events-none absolute -top-32 left-1/2 h-[480px] w-[1000px] max-w-full -translate-x-1/2 rounded-full bg-gradient-to-b from-vegan-green-muted/30 via-vegan-green-light/40 to-transparent blur-3xl"
-            />
+        <div>
+            {/* Nền động 4 lớp CHỈ phủ hero — xem `.hero-canvas` trong `index.css`. Thuần CSS, không JS. */}
+            <div className="hero-canvas">
+                <span className="hero-aurora" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                </span>
 
-            <div className="relative mx-auto flex w-full max-w-app flex-col gap-8 px-4 py-8 sm:px-6 lg:gap-10 lg:px-8">
-                <HomeHero
-                    highlight={highlight}
-                    stories={feed?.totalElements ?? 0}
-                    categories={categoriesData?.totalElements ?? 0}
-                />
+                <div className="relative z-[1] mx-auto w-full max-w-app px-4 pt-8 pb-10 sm:px-6 lg:px-8">
+                    <HomeHero
+                        highlight={highlight}
+                        stories={feed?.totalElements ?? 0}
+                        categories={categoriesData?.totalElements ?? 0}
+                    />
+                </div>
+            </div>
 
+            <div className="mx-auto flex w-full max-w-app flex-col gap-8 px-4 py-8 sm:px-6 lg:gap-10 lg:px-8">
                 {/* Pill category — mockup: pill "All" đang chọn (nền xanh sáng) + các pill còn lại nền trắng. */}
                 <section className="flex items-center gap-2 overflow-x-auto pb-2">
                     <Link

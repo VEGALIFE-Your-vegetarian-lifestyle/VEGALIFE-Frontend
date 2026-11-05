@@ -36,7 +36,7 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
     const buyPlan = useBuyPlan();
     const cancel = useCancelSubscription();
 
-    const currentCode = subscription.data?.currentPlan.code;
+    const currentCode = subscription.data?.currentPlan?.code;
     const money = (amount: number, currency: string) =>
         new Intl.NumberFormat(i18n.language === "vi" ? "vi-VN" : "en-US", {
             style: "currency",
@@ -91,17 +91,19 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                         <div className="rounded-xl bg-vegan-green-light px-4 py-3">
                             <p className="flex items-center gap-2 text-sm font-bold text-vegan-green">
                                 <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                                {subscription.data.currentPlan.name}
+                                {subscription.data.currentPlan?.name ?? subscription.data.tier}
                                 <Badge variant={subscription.data.status === "active" ? "default" : "amber"} size="sm">
                                     {t(`status.${subscription.data.status}`)}
                                 </Badge>
                             </p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                                {t("current.usage", {
-                                    used: subscription.data.usage.used,
-                                    limit: subscription.data.usage.limit,
-                                })}
-                            </p>
+                            {subscription.data.usage && (
+                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                    {t("current.usage", {
+                                        used: subscription.data.usage.used,
+                                        limit: subscription.data.usage.limit,
+                                    })}
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>
@@ -298,7 +300,7 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                                 <div className="flex items-center justify-between gap-3">
                                     <dt className="text-muted-foreground">{t("history.plan")}</dt>
                                     <dd className="font-semibold text-vegan-green">
-                                        {subscription.data.currentPlan.name}
+                                        {subscription.data.currentPlan?.name ?? subscription.data.tier}
                                     </dd>
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
@@ -310,7 +312,9 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                                 <div className="flex items-center justify-between gap-3">
                                     <dt className="text-muted-foreground">{t("current.quota")}</dt>
                                     <dd className="font-semibold text-dark">
-                                        {subscription.data.usage.used}/{subscription.data.usage.limit}
+                                        {subscription.data.usage
+                                            ? `${subscription.data.usage.used}/${subscription.data.usage.limit}`
+                                            : "—"}
                                     </dd>
                                 </div>
                                 {subscription.data.renewalDate && (

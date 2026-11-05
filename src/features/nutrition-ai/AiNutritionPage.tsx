@@ -81,10 +81,10 @@ export default function AiNutritionPage() {
                 {isAuthenticated && subscription.data ? (
                     <span className="flex items-center gap-2 rounded-full bg-vegan-green-light px-3.5 py-1.5 text-xs font-semibold text-vegan-green">
                         <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                        {subscription.data.currentPlan.name} ·{" "}
+                        {subscription.data.currentPlan?.name ?? subscription.data.tier} ·{" "}
                         {t("chat.quotaLeft", {
                             used: quota?.used ?? 0,
-                            limit: quota?.limit ?? subscription.data.currentPlan.monthlyRequestLimit,
+                            limit: quota?.limit ?? subscription.data.currentPlan?.monthlyRequestLimit ?? 0,
                         })}
                     </span>
                 ) : (

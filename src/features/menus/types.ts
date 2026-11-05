@@ -2,6 +2,15 @@ export type MenuStatus = "drafted" | "scheduled" | "cancelled" | "completed";
 
 export type MealType = "BREAKFAST" | "LUNCH" | "DINNER";
 
+/** Thứ tự cố định của 3 ô bữa — bảng tuần luôn vẽ đủ 3, kể cả khi ngày đó trống. */
+export const MEAL_TYPES: MealType[] = ["BREAKFAST", "LUNCH", "DINNER"];
+
+/** Khớp `MenuValidator` backend — sai là 400 cả tuần, không lưu gì. */
+export const MIN_DISTINCT_DISHES = 5;
+export const MAX_DISH_REPEATS = 3;
+export const MIN_SERVINGS = 1;
+export const MAX_NOTES_LENGTH = 500;
+
 /**
  * Món trong menu — `GET /api/menus/details` trả subset của dish.
  * ponytail: trùng tên `Dish` ở `features/recipes/types.ts` nhưng khác shape (bên đó có

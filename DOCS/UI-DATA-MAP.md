@@ -28,7 +28,7 @@ Ký hiệu: **[R]** field thật từ API · **[M]** mock/hardcode · **[D]** su
 | CreateRecipe | `UNIT_SUGGESTIONS`, servings mặc định `"2"` | `CreateRecipePage/IngredientEditor.tsx`, `schema.ts` |
 | Admin dashboard | **toàn bộ** số liệu — không HTTP, tính từ seed categories | `admin/dashboardApi.ts` |
 | Categories | `contentCount` fake | `categories/mocks.ts` |
-| MealRow | render `dish.id` raw (font mono — trông như debug) | `menus/components/MealRow.tsx` |
+| MealRow | ~~render `dish.id` raw~~ — đã bỏ | `menus/components/MealRow.tsx` |
 | Videos | badge "Sample video (mock data)" | `admin:preview.sample` |
 
 ---
@@ -85,8 +85,18 @@ Card dùng lại: `PostCard` (`posts/components/PostCard.tsx`) ở Home / Explor
 
 | Page | Endpoint | Field render |
 |---|---|---|
-| MealPlan `/meal-plan` | `GET /api/menus/details?from&to` | id, startDate, endDate, status, notes, createdAt, updatedAt, days[].date, meals[]{mealType, servings, dish{id, name, imageUrl, cuisineType}} |
+| MealPlan `/meal-plan` | `GET /api/menus/details?from&to` | id, startDate, endDate, status, notes, createdAt, updatedAt, days[].date, meals[]{mealType, servings, dish{id, name, description, imageUrl, cuisineType}} |
 | CreateMealPlan `/meal-plan/create` | `GET /api/dishes` (size 100, không phân trang) + `POST /api/menus` | Dish: id, name, description, imageUrl, cuisineType, createdAt |
+
+`MenuCard` dựng đủ 21 ô (7 ngày × 3 bữa) và tính 4 thống kê tuần client-side (số bữa/21,
+món khác nhau, ngày có bữa, tổng khẩu phần) — không thêm request. Không có field bịa.
+Trang lọc theo `?status=` (mặc định `scheduled`; draft/cancelled phải chọn tay). `GET
+/api/menus/details` không nhận `status` nên lọc client-side trên response của tuần.
+
+Ô bữa chỉ hiện **tên món**; bấm tên mở `DishDetailDialog`, dựng **hoàn toàn** từ response
+của tuần (`dish.name`, `dish.description`, `dish.imageUrl`, `dish.cuisineType` + `mealType`,
+`servings`) — không gọi thêm API. Backend không có endpoint dish → recipe, nên dialog này
+hiện thông tin món chứ không hiện công thức; món nào cũng bấm được.
 
 Lưới 7 ngày do client dựng từ `startDate` (`week.ts`); BE chỉ trả `days` có bữa. Nút đổi
 trạng thái: `POST /api/menus/{id}/status` (transition table ở `MenuActions.tsx`). Sau khi
@@ -101,6 +111,9 @@ ghi luôn `invalidateQueries(["meal-plans"])` — response POST/status **thiếu
 
 `POST /api/subscriptions/me/purchase/eligibility` → `POST /api/payments/checkout` →
 `window.location.assign(paymentUrl)`. IPN là nguồn sự thật; trang result chỉ hiển thị.
+
+`GET /api/subscriptions/me` **bỏ hẳn** `currentPlan` và `usage` (không phải `null`) khi user
+chưa từng mua gói — cả hai đọc qua optional chaining; thiếu `usage` thì hàng "hạn mức" hiện `—`.
 
 ### 3.5 AI Nutrition
 

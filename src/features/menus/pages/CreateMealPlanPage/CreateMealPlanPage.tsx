@@ -51,7 +51,9 @@ export default function CreateMealPlanPage() {
             toast.success(t("menu:create.toast.created"));
             // Response chỉ có `dishId`/`dishName` — đọc lại để có `dish` đầy đủ.
             void queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
-            navigate(`/meal-plan?from=${menu.startDate}`);
+            // Trang chủ chỉ hiện menu `scheduled` mặc định — menu vừa tạo là `drafted`,
+            // không kèm `status` thì user lưu xong lại thấy trống.
+            navigate(`/meal-plan?from=${menu.startDate}&status=drafted`);
         },
         onError: (error: unknown) => {
             toast.error(getApiErrorMessage(error, t("menu:create.toast.failed")));
