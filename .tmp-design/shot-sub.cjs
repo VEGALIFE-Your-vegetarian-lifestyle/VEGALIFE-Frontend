@@ -30,7 +30,7 @@ const PLANS = [
   });
 
   for (const route of ["/account/subscription", "/subscription"]) {
-    await page.goto("http://localhost:5173" + route, { waitUntil: "domcontentloaded" });
+    await page.goto("http://localhost:5174" + route, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1200);
     const hasRail = await page.locator('aside a[href="/account"]').count();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
@@ -40,7 +40,7 @@ const PLANS = [
 
   const phone = await ctx.newPage();
   await phone.setViewportSize({ width: 390, height: 900 });
-  await phone.goto("http://localhost:5173/account/subscription", { waitUntil: "domcontentloaded" });
+  await phone.goto("http://localhost:5174/account/subscription", { waitUntil: "domcontentloaded" });
   await phone.waitForTimeout(1200);
   console.log("phone scrollW:", await phone.evaluate(() => document.documentElement.scrollWidth));
   await phone.screenshot({ path: path.join(__dirname, "sub-phone.png"), fullPage: true });

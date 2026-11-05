@@ -70,6 +70,14 @@ export interface CreateCommentRequest {
     parentId?: string | null;
 }
 
+export interface UpdateCommentRequest {
+    content: string;
+}
+
+export interface ReportCommentRequest {
+    reason?: string;
+}
+
 /**
  * `GET /api/posts/{postId}/comments` — một mục trong cây bình luận.
  * Chỉ comment gốc bị phân trang; `replies[]` là cả cây con, không phân trang.
@@ -78,7 +86,13 @@ export interface PostCommentThread {
     id: string;
     /** null khi đã xoá mềm. */
     userId: string | null;
+    /** ID của comment cha nếu là câu trả lời (reply). */
+    parentId?: string | null;
+    /** Tên người dùng đang được trả lời. */
+    replyToUsername?: string | null;
     username: string | null;
+    /** Tên hiển thị người bình luận — BE trả `displayName`. */
+    displayName?: string | null;
     avatarUrl: string | null;
     /** Đã xoá mềm thì BE trả đúng chuỗi `"[deleted]"`, các field tác giả null. */
     content: string;

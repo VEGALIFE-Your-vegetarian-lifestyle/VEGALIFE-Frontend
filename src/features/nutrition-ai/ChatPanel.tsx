@@ -47,10 +47,12 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
     const [draft, setDraft] = useState("");
     const logRef = useRef<HTMLDivElement>(null);
 
-    const quickPrompts = t("quickPrompts", { returnObjects: true }) as unknown as string[];
+        const quickPrompts = Array.isArray(t("quickPrompts", { returnObjects: true })) ? (t("quickPrompts", { returnObjects: true }) as unknown as string[]) : [];
 
     useEffect(() => {
-        logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+        if (typeof logRef.current?.scrollTo === "function") {
+            logRef.current.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+        }
     }, [chat.messages.length, chat.pendingText, chat.error]);
 
     const ask = (text: string) => void chat.send(text);

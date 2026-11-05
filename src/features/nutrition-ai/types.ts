@@ -63,18 +63,21 @@ export interface AiPlan {
  * Backend chỉ trả về `{ remainingUsage: number }`.
  */
 export interface AiSubscription {
-    remainingUsage: number;
-    /** @deprecated V48 removed */
     tier?: "FREE" | "PRO";
-    /** @deprecated V48 removed */
     status?: "active" | "cancelled" | "past_due";
-    /** @deprecated V48 removed */
     renewalDate?: string | null;
-    /** @deprecated V48 removed */
+    /**
+     * Backend cũng bỏ hẳn `usage` khi user chưa từng mua gói (giống `currentPlan`).
+     * Đọc qua optional chaining, đừng giả định có.
+     */
     usage?: AiUsage;
-    /** @deprecated V48 removed */
+    remainingUsage?: number;
+    /**
+     * Backend BỎ HẲN field này (không phải `null`) khi user chưa từng mua gói —
+     * đã gặp crash `Cannot read properties of undefined (reading 'name')` ở
+     * `AiNutritionPage` và `SubscriptionPage`. Luôn đọc qua optional chaining.
+     */
     currentPlan?: AiPlan;
-    /** @deprecated V48 removed */
     latestPayment?: {
         planCode: string;
         amount: number;

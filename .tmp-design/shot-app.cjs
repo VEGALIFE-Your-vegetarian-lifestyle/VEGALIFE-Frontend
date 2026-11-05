@@ -54,16 +54,16 @@ const PROFILE = { id: "pf1", userId: "u1", username: "minh.hong", email: "minh.h
 
   const shots = [["/account", "overview"], ["/my-posts", "posts"], ["/recipes", "recipes"], ["/meal-plan", "plan"], ["/profile", "profile"]];
   for (const [route_, name] of shots) {
-    await page.goto("http://localhost:5173" + route_, { waitUntil: "domcontentloaded" });
+    await page.goto("http://localhost:5174" + route_, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1200);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
-    console.log(name, "url:", page.url().replace("http://localhost:5173", ""), "overflow:", overflow);
+    console.log(name, "url:", page.url().replace("http://localhost:5174", ""), "overflow:", overflow);
     await page.screenshot({ path: path.join(__dirname, `app-${name}.png`), fullPage: true });
   }
 
   const phone = await ctx.newPage();
   await phone.setViewportSize({ width: 390, height: 900 });
-  await phone.goto("http://localhost:5173/account", { waitUntil: "domcontentloaded" });
+  await phone.goto("http://localhost:5174/account", { waitUntil: "domcontentloaded" });
   await phone.waitForTimeout(1200);
   console.log("phone overflow:", await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), await phone.evaluate(() => document.documentElement.scrollWidth));
   await phone.screenshot({ path: path.join(__dirname, "app-phone.png"), fullPage: true });

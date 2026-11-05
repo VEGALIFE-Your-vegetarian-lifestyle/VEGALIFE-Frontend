@@ -334,37 +334,28 @@ owner qua endpoint trên (hoặc chatbot AI gọi cùng endpoint đó).
 `GET /api/dishes` (dùng cho picker) chỉ trả món `moderation_status = APPROVED`; món member tạo
 chưa duyệt không chọn được.
 
-## 11. Comment — ✅ đọc + tạo
+## 11. Comment — ✅ đọc + tạo + trả lời + sửa + xoá + báo cáo
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
 | GET /api/posts/{postId}/comments | ✅ `getPostComments` | **public**, `page` (0-based, default 0) / `size` (default 20, 1–100). Spring page của comment **gốc**, mỗi phần tử mang sẵn cả cây `replies[]` (không phân trang riêng). Item: `id, userId, username, avatarUrl, content, edited, deleted, createdAt, updatedAt, replies[]`; xoá mềm → `content: "[deleted]"` + author null, reply vẫn nằm trong cây. Sort `createdAt ASC` |
-| POST /api/posts/{postId}/comments | ✅ `createComment` | PostDetailPage — form chỉ hiện khi đăng nhập, `parentId` luôn `null` (UI chưa mở reply) |
-| PATCH /api/posts/{postId}/comments/{commentId} | ❌ | `{content}` — chủ comment |
-| DELETE /api/posts/{postId}/comments/{commentId} | ❌ | chủ comment hoặc admin |
-| POST /api/posts/{postId}/comments/{commentId}/report | ❌ | |
+| POST /api/posts/{postId}/comments | ✅ `createComment` | Gửi comment gốc (`parentId: null`) hoặc reply lồng (`parentId: UUID`) — form chỉ hiện khi đăng nhập |
+| PATCH /api/posts/{postId}/comments/{commentId} | ✅ `updateComment` | `{content}` — sửa nội dung trực tiếp, chỉ chủ comment |
+| DELETE /api/posts/{postId}/comments/{commentId} | ✅ `deleteComment` | Xoá comment (chủ comment hoặc admin) kèm xác nhận |
+| POST /api/posts/{postId}/comments/{commentId}/report | ✅ `reportComment` | `{reason}` — báo cáo vi phạm bình luận |
 
 `CommentsSection` phân trang 20 root/trang; `POST` trả `CommentResponse` (thiếu `username`/`replies`)
 nên sau khi gửi phải `invalidateQueries(["post-comments", postId])` để đọc lại từ GET —
 đừng render thẳng từ response.
 
-## 12. Comment moderation (Admin) — ❌ chưa làm
+## 12. Comment moderation (Admin) — ✅ hoàn thành
 
-| Endpoint | Ghi chú |
-|---|---|
-| GET /api/admin/comments | Nhận `page`/`size` **+ `status`** (`active`\|`removed`) **+ `userId` + `postId` + `sort`**. Row có `status` + `reportCount` |
-| POST /api/admin/comments/{commentId}/moderate | `{reason}` bắt buộc, ≤1000 ký tự. Soft-delete, reply giữ `parentId` |
+| Endpoint | Trạng thái | Ghi chú |
+|---|---|---|
+| GET /api/admin/comments | ✅ `getAdminComments` | Nhận `page`/`size` **+ `status`** (`active`\|`removed`) **+ `userId` + `postId` + `sort`** (`createdAt`\|`updatedAt`). Row có `status` + `reportCount` |
+| POST /api/admin/comments/{commentId}/moderate | ✅ `moderateComment` | `{reason}` bắt buộc, ≤1000 ký tự. Soft-delete, reply giữ `parentId` |
 
-Spec 2026-11-02 xác nhận lại: `sort` whitelist chỉ `createdAt|updatedAt`; có thêm
-`createdFrom`/`createdTo`; **không có value `all`** — bỏ trống param để lấy cả hai trạng thái;
-`parentId` trả thô, BE không resolve thread. Moderated comment là soft-delete: `deletedAt` set,
-reply giữ `parentId` (khớp `DELETE /api/posts/{postId}/comments/{commentId}`).
-404 khi comment không tồn tại **hoặc đã soft-delete**. Mỗi lần moderate ghi `moderation_log`
-(actor, `MODERATE_COMMENT`, `COMMENT`, targetId, reason).
-
-Route `/admin/comments` chưa dựng — mục sidebar còn `ready: false`
-([AdminShell.tsx:16](src/features/admin/AdminShell.tsx#L16)). Backend đã đủ để dựng ngay:
-lọc theo `status`/`userId`/`postId` chạy ở server, không cần lọc client.
+Route `/admin/comments` đã hoàn thành và bật trên sidebar (`ready: true`). Có bộ lọc trạng thái, sắp xếp, tìm kiếm client-side theo từ khoá, và dialog kiểm duyệt nhập lý do ghi vào audit log.
 
 ## 13. Vote — ✅ đọc + bấm trên card Explore
 
@@ -374,7 +365,8 @@ lọc theo `status`/`userId`/`postId` chạy ở server, không cần lọc clie
 | PUT /api/posts/{postId}/votes | ✅ | `setPostVote` — `{voteType: "UPVOTE"\|"DOWNVOTE"}`, **cần JWT**. Gửi lại cùng `voteType` để bỏ vote (BE toggle) |
 
 UI vote **chỉ có trên card Explore** (2026-11-02); Post Detail cố ý không có — mockup chốt
-không vẽ thanh vote ở trang chi tiết.
+không vẽ thanh vote ở trang chi tiết. Đã tích hợp **Optimistic Update** (cập nhật giao diện 0ms
+khi bấm vote/toggle và rollback tự động nếu lỗi mạng) cùng bộ unit test đầy đủ ở PostVoteButtons.test.tsx.
 
 ## 14. Home feeds — ✅ đủ
 
