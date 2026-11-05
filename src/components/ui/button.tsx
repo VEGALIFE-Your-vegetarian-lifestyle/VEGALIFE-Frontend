@@ -12,6 +12,8 @@ const buttonVariants = cva(
                 outline: "border border-border bg-transparent text-dark hover:bg-accent hover:border-vegan-green-muted",
                 ghost: "text-dark hover:bg-accent",
                 destructive: "bg-danger text-white hover:bg-danger/90",
+                /** Hành động cần cân nhắc nhưng không phá huỷ — vd từ chối bài viết. */
+                warning: "bg-amber-soft text-amber-strong hover:bg-amber-soft/70",
                 /** Nút "View Recipe / View Video / View Blog" trong card feed. */
                 soft: "bg-lavender text-lavender-strong hover:bg-lavender-hover",
                 /** Nút trắng có viền — "Continue with Google", tab chưa chọn. */

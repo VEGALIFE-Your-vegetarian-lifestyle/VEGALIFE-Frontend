@@ -6,6 +6,7 @@ import {
     ChefHat,
     Clock,
     CookingPot,
+    Flame,
     ListChecks,
     Leaf,
     PenLine,
@@ -30,6 +31,7 @@ import { useUiStore } from "@/shared/ui/uiStore";
 import { getMyRecipes } from "../../api";
 import { RecipeDetailDialog } from "../../components/RecipeDetailDialog";
 import { MODERATION_VARIANT } from "../../constants";
+import { nutritionTotals } from "../../nutrition";
 import type { Difficulty, Recipe } from "../../types";
 import { PAGE_SIZE, matchesRecipe, recipeStats, sortRecipes } from "./filter";
 import type { SortKey, TabKey } from "./filter";
@@ -282,6 +284,22 @@ function RecipeManageCard({ recipe, onOpen }: { recipe: Recipe; onOpen: () => vo
                     {t("myRecipes.meta.ingredients", { count: recipe.ingredients.length })}
                 </span>
             </div>
+
+            {/* Tổng **cả công thức** — nhãn nằm trong key i18n để không ai tưởng là /phần. */}
+            {(() => {
+                const totals = nutritionTotals(recipe);
+                return totals ? (
+                    <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Flame className="h-4 w-4" aria-hidden="true" />
+                        {t("myRecipes.meta.nutrition", {
+                            kcal: Math.round(totals.kcal),
+                            protein: Math.round(totals.proteinG),
+                        })}
+                    </p>
+                ) : (
+                    <p className="mt-2 text-sm text-muted-foreground">{t("myRecipes.meta.nutritionMissing")}</p>
+                );
+            })()}
 
             {/* ponytail: BE chưa có PATCH/DELETE recipe cho member → chỉ mở chi tiết,
                 không có nút sửa/xoá. Thêm khi backend mở endpoint. */}

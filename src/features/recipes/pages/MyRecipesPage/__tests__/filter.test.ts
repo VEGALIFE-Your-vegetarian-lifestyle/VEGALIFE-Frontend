@@ -18,6 +18,7 @@ function makeRecipe(overrides: Partial<Recipe> = {}): Recipe {
         ingredients: [{ ingredientId: "i1", name: "cà chua", amount: 2, unit: "quả" }],
         moderationStatus: "PENDING" as ModerationStatus,
         dishModerationStatus: "PENDING",
+        nutritionResolved: false,
         calories: null,
         proteinG: null,
         carbohydrateG: null,

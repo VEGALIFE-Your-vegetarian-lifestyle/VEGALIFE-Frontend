@@ -18,16 +18,21 @@ interface RecipeDetailDialogProps {
     onReject: (recipe: AdminRecipe) => void;
     /** Duyệt tên món dùng chung — tách khỏi duyệt recipe (backend cũng tách). */
     onApproveDish: (recipe: AdminRecipe) => void;
+    /** Mở form sửa 7 field văn bản/số (ingredients + dish không sửa được). */
+    onEdit: (recipe: AdminRecipe) => void;
+    /** Mở ConfirmDialog xoá mềm — không có endpoint khôi phục. */
+    onDelete: (recipe: AdminRecipe) => void;
     onClose: () => void;
 }
 
-/** Nhãn + giá trị một dòng meta. */
+/** Nhãn + giá trị một dòng meta. `min-w-0`: giá trị co lại thay vì đẩy `extra` tràn khỏi card. */
 function Meta({ label, value, extra }: { label: string; value: string; extra?: ReactNode }) {
     return (
-        <div className="rounded-xl bg-muted/40 px-3 py-2">
+        <div className="min-w-0 rounded-xl bg-muted/40 px-3 py-2">
             <dt className="text-xs text-muted-foreground">{label}</dt>
-            <dd className="flex items-center gap-2 text-sm font-medium text-dark">
-                <span className="truncate">{value}</span>
+            {/* Có `extra` thì badge/nút xuống dòng riêng — cùng dòng thì tên món bị bóp còn "C…". */}
+            <dd className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-dark">
+                <span className={extra ? "w-full truncate" : "truncate"}>{value}</span>
                 {extra}
             </dd>
         </div>
@@ -51,6 +56,8 @@ export function RecipeDetailDialog({
     onApprove,
     onReject,
     onApproveDish,
+    onEdit,
+    onDelete,
     onClose,
 }: RecipeDetailDialogProps) {
     const { t } = useTranslation(["admin", "common", "recipe"]);
@@ -133,6 +140,17 @@ export function RecipeDetailDialog({
                         </section>
                     )}
 
+                    {/* Tên nguyên liệu chưa có unit/dinh dưỡng → vì sao recipe chưa có tổng
+                        dinh dưỡng. Admin sửa ở màn quản lý ingredient, không sửa được ở đây. */}
+                    {recipe.missingRequiredIngredients.length > 0 && (
+                        <p className="rounded-xl border border-amber-strong/20 bg-amber-soft px-3 py-2 text-sm text-amber-strong">
+                            {t("recipes.detail.missingIngredients", {
+                                count: recipe.missingRequiredIngredients.length,
+                                names: recipe.missingRequiredIngredients.join(", "),
+                            })}
+                        </p>
+                    )}
+
                     <section>
                         <h3 className="mb-2 text-sm font-semibold text-dark">
                             {t("recipes.detail.ingredients", { count: recipe.ingredients.length })}
@@ -150,7 +168,9 @@ export function RecipeDetailDialog({
                                         )}
                                     </span>
                                     <span className="whitespace-nowrap tabular-nums text-muted-foreground">
-                                        {ingredient.amount} {ingredient.unit}
+                                        {ingredient.unit
+                                            ? `${ingredient.amount} ${ingredient.unit}`
+                                            : ingredient.amount}
                                     </span>
                                 </li>
                             ))}
@@ -169,6 +189,22 @@ export function RecipeDetailDialog({
                         <Button variant="outline" onClick={onClose}>
                             {t("common:close")}
                         </Button>
+                        {/* Xoá mềm, không khôi phục được → tách khỏi cụm duyệt/từ chối. */}
+                        {recipe.status === "ACTIVE" && (
+                            <Button
+                                variant="outline"
+                                className="text-destructive"
+                                disabled={loading}
+                                onClick={() => onDelete(recipe)}
+                            >
+                                {t("recipes.delete.action")}
+                            </Button>
+                        )}
+                        {recipe.status === "ACTIVE" && (
+                            <Button variant="outline" disabled={loading} onClick={() => onEdit(recipe)}>
+                                {t("recipes.edit.action")}
+                            </Button>
+                        )}
                         {recipe.moderationStatus !== "REJECTED" && (
                             <Button
                                 variant="outline"

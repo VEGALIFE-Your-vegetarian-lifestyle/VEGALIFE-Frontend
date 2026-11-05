@@ -45,8 +45,7 @@ export function sortRecipes(
     });
 }
 
-export interface RecipeStats {
-    total: number;
+export interface RecipeStats {    total: number;
     approved: number;
     pending: number;
     quick: number;

@@ -96,7 +96,9 @@
             "prep": "Prep: {{count}}m",
             "cook": "Cook: {{count}}m",
             "ingredients_one": "{{count}} ingredient",
-            "ingredients_other": "{{count}} ingredients"
+            "ingredients_other": "{{count}} ingredients",
+            "nutrition": "{{kcal}} kcal · {{protein}} g protein (whole recipe)",
+            "nutritionMissing": "No nutrition data yet"
         },
         "action": {
             "view": "View Recipe"
@@ -140,7 +142,10 @@
         "remove": "Remove ingredient",
         "action": "Action",
         "hint": "Up to 3 decimal places (e.g. 0.125 tsp).",
-        "itemCount": "{{count}} of {{max}} items · decimal precision active"
+        "itemCount": "{{count}} of {{max}} items · decimal precision active",
+        "existingUnit": "No unit yet",
+        "existingUnitHint": "Existing ingredient — the amount is read in the unit shown here.",
+        "pendingWarning": "Recipes can't be edited after creation — double-check the amounts before submitting."
     },
     "readiness": {
         "title": "Recipe Checklist",
@@ -154,8 +159,7 @@
             "items": "{{count}} verified",
             "phases": "{{count}} steps",
             "configured": "Configured",
-            "missing": "Missing",
-            "perServing": "{{calories}} kcal / serving"
+            "missing": "Missing"
         },
         "rank": {
             "outline": "Outline",
@@ -203,7 +207,16 @@
         "ingredientDuplicate": "Each ingredient can only appear once",
         "amountInvalid": "Amount must be greater than 0 with at most 3 decimals",
         "minutesInvalid": "Enter a whole number of minutes (0 or more)",
-        "numberInvalid": "Enter a number of 0 or more",
-        "stepBodyRequired": "Add instructions for this step, or clear its title"
+        "stepBodyRequired": "Add instructions for this step, or clear its title",
+        "unitInvalid": "Unit must be g, ml or piece"
+    },
+    "nutrition": {
+        "title": "Nutrition",
+        "kcal": "Calories",
+        "protein": "Protein",
+        "carbohydrate": "Carbs",
+        "fat": "Fat",
+        "fiber": "Fibre",
+        "wholeRecipe": "Whole recipe — not per serving."
     }
 }

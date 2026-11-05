@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatRelativeTime } from "@/shared/utils/formatDate";
 import { DayColumn } from "./DayColumn";
 import { DishDetailDialog } from "./DishDetailDialog";
+import { MealRecipeDialog } from "./MealRecipeDialog";
 import { MenuActions } from "./MenuActions";
 import {
     MAX_DISH_REPEATS,
@@ -137,7 +138,13 @@ export function MenuCard({ menu }: { menu: MenuDetail }) {
                 })}
             </div>
 
-            <DishDetailDialog meal={openMeal} onClose={() => setOpenMeal(null)} />
+            {/* Có recipe gợi ý → card công thức đầy đủ; không có → card món dựng từ response.
+                Chỉ mount một dialog để dialog kia không mở theo cùng `openMeal`. */}
+            {openMeal?.recommendedRecipes?.length ? (
+                <MealRecipeDialog meal={openMeal} onClose={() => setOpenMeal(null)} />
+            ) : (
+                <DishDetailDialog meal={openMeal} onClose={() => setOpenMeal(null)} />
+            )}
         </section>
     );
 }

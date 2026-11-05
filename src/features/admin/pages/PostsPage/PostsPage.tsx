@@ -145,7 +145,7 @@ export default function PostsPage() {
                                 <TableHead>{t("posts.list.column.moderation")}</TableHead>
                                 <TableHead>{t("posts.list.column.views")}</TableHead>
                                 <TableHead>{t("posts.list.column.createdAt")}</TableHead>
-                                <TableHead className="text-right">{t("posts.list.column.actions")}</TableHead>
+                                <TableHead className="text-center">{t("posts.list.column.actions")}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -185,7 +185,7 @@ export default function PostsPage() {
                                         <TableCell>{post.viewCount.toLocaleString("vi-VN")}</TableCell>
                                         <TableCell className="whitespace-nowrap">{formatDateLocale(post.createdAt)}</TableCell>
                                         <TableCell>
-                                            <div className="flex items-center justify-end gap-2">
+                                            <div className="flex items-center justify-center gap-2">
                                                 {canPublish(post.status) && (
                                                     <Button
                                                         size="sm"
@@ -205,7 +205,7 @@ export default function PostsPage() {
                                                 {canReject(post.status) && (
                                                     <Button
                                                         size="sm"
-                                                        variant="outline"
+                                                        variant="warning"
                                                         disabled={moderateMutation.isPending}
                                                         onClick={() => setReject(post)}
                                                     >
@@ -213,9 +213,14 @@ export default function PostsPage() {
                                                         {t("posts.list.action.reject")}
                                                     </Button>
                                                 )}
-                                                <Button size="sm" variant="destructive" className="ml-2" onClick={() => setConfirm(post)}>
+                                                <Button
+                                                    size="iconSm"
+                                                    variant="destructive"
+                                                    aria-label={t("posts.list.action.delete")}
+                                                    title={t("posts.list.action.delete")}
+                                                    onClick={() => setConfirm(post)}
+                                                >
                                                     <Trash2 className="h-4 w-4" />
-                                                    {t("posts.list.action.delete")}
                                                 </Button>
                                             </div>
                                         </TableCell>

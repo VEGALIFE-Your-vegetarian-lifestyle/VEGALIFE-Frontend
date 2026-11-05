@@ -1,9 +1,12 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { ChefHat, FileText, LayoutDashboard, Leaf, LogOut, MapPin, Menu, MessageSquare, Tags, UserCircle, Users, Video } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Apple, ChefHat, FileText, LayoutDashboard, Leaf, LogOut, MapPin, Menu, MessageSquare, Tags, UserCircle, Users, Video } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/shared/utils/cn";
 import { useAuth, useLogout } from "@/features/auth/useAuth";
+import { countAdminIngredients } from "@/features/recipes/adminApi";
 import { useUiStore } from "@/shared/ui/uiStore";
 import { LanguageSwitcher } from "@/app/layout/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
@@ -16,6 +19,7 @@ const navItems = [
     { to: "/admin/comments", labelKey: "comments", icon: MessageSquare, ready: false },
     { to: "/admin/categories", labelKey: "categories", icon: Tags, ready: true },
     { to: "/admin/recipes", labelKey: "recipes", icon: ChefHat, ready: true },
+    { to: "/admin/ingredients", labelKey: "ingredients", icon: Apple, ready: true },
     { to: "/admin/locations", labelKey: "locations", icon: MapPin, ready: true },
     { to: "/admin/profile", labelKey: "profile", icon: UserCircle, ready: true },
 ];
@@ -25,6 +29,14 @@ export function AdminShell() {
     const { sidebarCollapsed, toggleSidebar } = useUiStore();
     const { user, profile } = useAuth();
     const handleLogout = useLogout();
+
+    // Nguyên liệu member gõ lúc tạo recipe vào hàng đợi PENDING — badge là cách duy nhất
+    // admin biết mà không phải mở từng recipe. Lấy 1 row chỉ để đọc `totalElements`.
+    const { data: pendingIngredients } = useQuery({
+        queryKey: ["admin-ingredients-pending-count"],
+        queryFn: () => countAdminIngredients("PENDING"),
+        staleTime: 60_000,
+    });
 
     return (
         <div className="min-h-screen bg-background">
@@ -93,7 +105,12 @@ export function AdminShell() {
                                             }
                                         >
                                             <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                                            <span className={cn(sidebarCollapsed && "lg:hidden")}>{label}</span>
+                                            <span className={cn("flex-1", sidebarCollapsed && "lg:hidden")}>{label}</span>
+                                            {to === "/admin/ingredients" && !!pendingIngredients && pendingIngredients > 0 && (
+                                                <Badge variant="amber" size="sm" className={cn(sidebarCollapsed && "lg:hidden")}>
+                                                    {pendingIngredients}
+                                                </Badge>
+                                            )}
                                         </NavLink>
                                     ) : (
                                         <span

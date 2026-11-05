@@ -14,12 +14,13 @@ export function canPublish(status: PostStatus): boolean {
 }
 
 /**
- * `rejectPost` chỉ nhận bài đang chờ duyệt (`processed`).
- * Bài đã `published` không có endpoint admin để bỏ xuống nữa — ADR-016 xoá `/moderate`,
- * và `PATCH /api/posts/{id}/visibility` (ẩn hẳn) là việc khác, chủ bài mới đăng lại được.
+ * `rejectPost` chạy được trên bài chờ duyệt (`processed`) và cả bài đã bị từ chối
+ * (`unpublished`) — admin từ chối lại để ghi lý do mới. Bài `published` không có
+ * endpoint admin nào bỏ xuống: ADR-016 xoá `/moderate`, `PATCH /api/posts/{id}/visibility`
+ * (ẩn hẳn) là việc khác, chủ bài mới đăng lại được.
  */
 export function canReject(status: PostStatus): boolean {
-    return status === "processed";
+    return status === "processed" || status === "unpublished";
 }
 
 /**
