@@ -34,6 +34,27 @@
     "servings_other": "{{count}} servings",
     "noMeals": "No meals yet",
     "notes": "Note",
+    "dish": {
+        "open": "Open details for {{name}}",
+        "eyebrow": "Dish"
+    },
+    "mealTypeLabel": "Meal",
+    "servingsLabel": "Servings",
+    "cuisineLabel": "Cuisine",
+    "filter": {
+        "empty": "No menu with status “{{status}}” this week."
+    },
+    "updatedAt": "Updated {{time}}",
+    "stats": {
+        "meals": "Meals planned",
+        "ofSlots": "of {{total}} slots",
+        "distinct": "Distinct dishes",
+        "distinctOk": "min {{min}} · reached",
+        "distinctShort": "min {{min}} · not reached",
+        "days": "Days covered",
+        "servings": "Total servings",
+        "maxRepeat": "max {{max}}× each"
+    },
     "empty": {
         "title": "No meal plan for this week",
         "description": "Build one yourself or ask the AI nutrition assistant to plan it from your dietary profile, allergies and BMI.",
