@@ -1,7 +1,7 @@
 # VEGALIFE — Frontend Design Master
 
-> **Version:** 1.1.0  
-> **Last Updated:** 2026-10-01  
+> **Version:** 1.2.0  
+> **Last Updated:** 2026-11-02  
 > **Tech Stack:** React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · Zustand · TanStack Query  
 > **Icon Library:** Lucide React  
 > **Notifications:** Sonner (toasts)  
@@ -112,8 +112,8 @@
 
 | Shell | Component | Sidebar | Topbar | Content Width |
 |-------|-----------|---------|--------|---------------|
-| **PublicShell** | `app/layout/Layout.tsx` | ❌ No | Logo + Nav + Login/Register | Max 1280px centered |
-| **UserShell** | `app/layout/Layout.tsx` (cùng shell, Navbar đổi theo auth) | ❌ No | Logo + Nav + User Menu | Max 1280px centered |
+| **PublicShell** | `app/layout/Layout.tsx` | ❌ No | Logo + Nav + Login/Register | `max-w-app` (1536px) centered |
+| **UserShell** | `app/layout/Layout.tsx` (cùng shell, Navbar đổi theo auth) | ❌ No | Logo + Nav + User Menu | `max-w-app` (1536px) centered |
 | **AdminShell** | `features/admin/AdminShell.tsx` | ✅ Yes (collapsible) | Logo + Admin Nav + User Menu | Fluid, sidebar-toggled |
 | **AuthShell** | `features/auth/AuthLayout.tsx` | ❌ No | Không topbar | 2 cột (form + minh hoạ) |
 
@@ -124,14 +124,14 @@
 | **Mobile** | `< 640px` | Phones | Single column, full-width cards, bottom nav optional |
 | **Tablet** | `≥ 640px` | Tablets | Two-column grids, side-by-side panels |
 | **Desktop** | `≥ 1024px` | Laptops | Full layout with max-width containers |
-| **Large** | `≥ 1280px` | Desktops | Maximum content width, comfortable reading |
+| **Large** | `≥ 1280px` | Desktops | Nội dung rộng dần tới `max-w-app` (1536px); từ 1536px mới hết dải trống 2 bên |
 
 ```css
 /* Tailwind breakpoints mapping */
 sm: 640px   /* Mobile → Tablet */
 md: 768px   /* Small tablet */
 lg: 1024px  /* Tablet → Desktop */
-xl: 1280px  /* Desktop max content width */
+xl: 1280px  /* Desktop rộng */
 2xl: 1536px /* Large desktop */
 ```
 
@@ -215,7 +215,8 @@ Rule: Always show current page as last item, non-clickable. Minimum 2 levels dee
 |----------|----------|------------|
 | **List Page** | BlogPage, VideoPage, Admin/Users | Header + Toolbar + Grid/List + Pagination |
 | **Detail Page** | BlogDetailPage, VideoDetailPage | Breadcrumb + Media + Content + Actions + Related |
-| **Form Page** | CreatePostPage, Profile/Edit | Header + Sectioned Form + Action Bar (Save/Cancel) |
+| **Form Page** | Profile/Edit, CreateRecipePage | Header + Sectioned Form + Action Bar (Save/Cancel) |
+| **Composer Dialog** | PostComposerDialog | Dialog gần full-screen: tiêu đề trần + meta row + editor cuộn trong + rail phải + footer cố định |
 | **Dashboard** | Admin/Dashboard | Stats Row + Charts + Recent Activity + Quick Links |
 | **Empty State** | No posts, no plans | Illustration + Message + CTA |
 | **Error State** | Network failure | Icon + Message + Retry Button |
@@ -231,75 +232,81 @@ Rule: Always show current page as last item, non-clickable. Minimum 2 levels dee
 > **Design Philosophy:** Natural + Healthy + Warm + Modern + Vegetarian Lifestyle  
 > The interface should feel like a real consumer product called **VEGALIFE**, not a generic green healthcare dashboard.
 
+**Hướng đang dùng: A — "Chính xác"** (chốt 2026-11-02). Ba thay đổi so với bản 1.1.0:
+
+1. **Bề mặt phân cấp bằng viền, không bằng bóng.** `--shadow-sm` định nghĩa lại thành
+   `0 0 0 1px var(--color-border)` ngay tại token, nên mọi `shadow-sm` có sẵn trong mã nguồn tự
+   thành hairline mà không phải sửa từng file. `shadow-md` trở lên vẫn là bóng thật nhưng rất nhẹ,
+   chỉ dùng cho trạng thái hover của thẻ.
+2. **Ba bậc bo góc có nghĩa** thay vì năm: `sm` 6px (ô nhỏ) · `md` 10px (input, badge) ·
+   `2xl` 16px (card) · `full` (pill, avatar). Đừng thêm bậc thứ tư.
+3. **Hai mặt chữ.** `Fraunces` (token `--font-display`, class `font-display`) cho `h1` và tiêu đề
+   khối lớn; `Inter` cho mọi thứ còn lại. Không áp serif cho `h2` trong card/dialog/panel — đó là
+   nhãn UI, serif ở đó sai giọng.
+
 | Color | Hex | Role | Usage |
 |-------|-----|------|-------|
-| **Primary Green** | `#2A7D3F` | Main brand color | Primary buttons, active navigation, links, important actions |
-| **Light Green** | `#E8F5EC` | Subtle state color | Soft backgrounds, selected states, badges, tags, vegetarian highlights |
-| **Cream** | `#FEF9E7` | Warm accent | Food-related sections, recipe cards, secondary highlights, subtle visual accents |
-| **Terracotta** | `#D9795B` | Secondary accent (sparingly) | Food categories, small visual details, highlights |
-| **Dark** | `#1F2937` | Text color | Headings, primary text, navigation text, important content |
-| **Background** | `#F7F9FB` | Surface color | Main application background — dominates the interface |
+| **Primary Green** | `#12724A` | Main brand color | Primary buttons, active navigation, links, important actions |
+| **Light Green** | `#E6F2EC` | Subtle state color | Soft backgrounds, selected states, badges, vegetarian highlights |
+| **Cream** | `#EEF1F4` | Neutral warm | Ô chờ ảnh video, badge Video — đã quy về xám lạnh |
+| **Terracotta** | `#C2653F` | Destructive accent | Chỉ dùng cho lỗi/xoá, không dùng trang trí |
+| **Dark** | `#0D1117` | Text color | Headings, primary text, navigation text, important content |
+| **Background** | `#F4F5F7` | Page color | Main application background — dominates the interface |
 | **Surface** | `#FFFFFF` | Elevated surface | Cards, modals, topbar, sidebar |
-| **Muted Background** | `#F0F2F5` | Secondary background | Alternate sections, skeletons |
+| **Muted Background** | `#EAEEF2` | Secondary background | Alternate sections, chips, skeleton |
+| **Info Blue** | `#EAF1FB` / `#2A5F9E` | Info accent | Banner gợi ý AI, nút "soft", icon chat |
 
 **Color Usage Rules:**
-- ✅ Primary Green is the dominant brand color
-- ✅ Dark is the main text color
-- ✅ Background (#F7F9FB) should dominate the overall interface
-- ✅ Light Green for subtle vegetarian/nutrition states
-- ✅ Cream adds warmth and natural food feeling
-- ✅ Terracotta used SPARINGLY as an accent
-- ❌ Do NOT use all colors equally
-- ❌ Keep interface mostly neutral with green as dominant brand color
-- ❌ Avoid gradients
-- ❌ Avoid neon colors
-- ❌ Avoid excessive shadows
-- ✅ Maintain strong accessibility and readable contrast
+- ✅ Primary Green chỉ dùng cho **hành động** và **trạng thái**, không dùng làm nền trang trí
+- ✅ Dark (`#0D1117`) là màu chữ chính; `muted-foreground` (`#5C6675`) cho chú thích
+- ✅ Background (`#F4F5F7`) chiếm phần lớn giao diện
+- ✅ Mỗi sắc phụ phải trả lời được "nó nghĩa là gì" — không trả lời được thì bỏ
+- ❌ KHÔNG dùng bóng đổ để phân cấp bề mặt — dùng viền + khoảng trắng
+- ❌ KHÔNG rải gradient; chỉ Home hero, CTA band, AuthLayout và banner AI được phép
+- ❌ KHÔNG thêm bảng màu phụ mới khi bảng hiện có đã đủ vai trò
 
 **Visual Identity Keywords:**
-```
-natural · healthy · warm · modern · vegetarian lifestyle
-```
-
 #### Semantic Color Mapping
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--background` | `#F7F9FB` | Page/app background |
-| `--foreground` | `#1F2937` | Primary text |
+| `--background` | `#F4F5F7` | Page/app background |
+| `--foreground` | `#0D1117` | Primary text |
 | `--surface` | `#FFFFFF` | Cards, modals, elevated surfaces |
-| `--muted-bg` | `#F0F2F5` | Secondary/alternate backgrounds |
-| `--primary` | `#2A7D3F` | Primary actions, links, active states |
+| `--muted-bg` | `#EAEEF2` | Secondary/alternate backgrounds, skeleton |
+| `--primary` | `#12724A` | Primary actions, links, active states |
 | `--primary-foreground` | `#FFFFFF` | Text on primary bg |
-| `--secondary` | `#F0F2F5` | Secondary backgrounds |
-| `--secondary-foreground` | `#1F2937` | Text on secondary bg |
-| `--muted` | `#F0F2F5` | Muted backgrounds |
-| `--muted-foreground` | `#6B7280` | Placeholder, disabled text |
-| `--accent` | `#E8F5EC` | Hover/focus highlights |
+| `--secondary` | `#EAEEF2` | Secondary backgrounds |
+| `--secondary-foreground` | `#0D1117` | Text on secondary bg |
+| `--muted` | `#EAEEF2` | Muted backgrounds |
+| `--muted-foreground` | `#5C6675` | Placeholder, disabled text |
+| `--accent` | `#E6F2EC` | Hover/focus highlights |
 | `--destructive` | `#D9795B` | Delete, error actions |
 | `--destructive-foreground` | `#FFFFFF` | Text on destructive bg |
-| `--border` | `#E6E8EC` | Borders, dividers |
-| `--input` | `#E6E8EC` | Input backgrounds |
-| `--ring` | `#2A7D3F` | Focus ring |
+| `--border` | `#E3E6EA` | Borders, dividers — **và bóng hairline** |
+| `--input` | `#E3E6EA` | Input backgrounds |
+| `--ring` | `#12724A` | Focus ring |
 
 **Brand Variants (Tailwind):**
 
 | Class | Value | Usage |
 |-------|-------|-------|
-| `bg-vegan-green` | `#2A7D3F` | Primary buttons, CTA |
-| `hover:bg-vegan-green-hover` | `#236B35` | Button hover state |
-| `active:bg-vegan-green-active` | `#1E5A2D` | Button active/pressed |
-| `bg-vegan-green-light` | `#E8F5EC` | Selected items, badges |
-| `text-vegan-green-muted` | `#A8D4B5` | Subtle green text/icons |
-| `bg-lightgreen` | `#E8F5EC` | Nutrition states, soft highlights |
-| `bg-cream` | `#FEF9E7` | Recipe cards, warm sections |
-| `bg-terracotta` | `#D9795B` | Food category tags (sparse) |
-| `hover:bg-terracotta-hover` | `#C46A4E` | Terracotta hover |
-| `text-dark` | `#1F2937` | Headings, body text |
-| `hover:text-dark-hover` | `#18232F` | Text hover |
-| `bg-background` | `#F7F9FB` | Page background |
+| `bg-vegan-green` | `#12724A` | Primary buttons, CTA |
+| `hover:bg-vegan-green-hover` | `#0F6140` | Button hover state |
+| `active:bg-vegan-green-active` | `#0C5236` | Button active/pressed |
+| `bg-vegan-green-light` | `#E6F2EC` | Selected items, badges |
+| `text-vegan-green-muted` | `#B0D3BD` | Subtle green text/icons |
+| `bg-lightgreen` | `#E6F2EC` | Nutrition states, soft highlights |
+| `bg-cream` | `#EEF1F4` | Ô chờ ảnh, badge Video (xám lạnh) |
+| `bg-lavender` | `#EAF1FB` | Banner AI, nút `soft` |
+| `text-lavender-strong` | `#2A5F9E` | Chữ trên nền `lavender` |
+| `bg-terracotta` | `#C2653F` | Chỉ lỗi/xoá |
+| `hover:bg-terracotta-hover` | `#A8532F` | Terracotta hover |
+| `text-dark` | `#0D1117` | Headings, body text |
+| `hover:text-dark-hover` | `#1A2029` | Text hover |
+| `bg-background` | `#F4F5F7` | Page background |
 | `bg-surface` | `#FFFFFF` | Card/modal/topbar background |
-| `bg-muted-bg` | `#F0F2F5` | Alternate/section backgrounds |
+| `bg-muted-bg` | `#EAEEF2` | Alternate/section backgrounds |
 
 #### Spacing (4px Grid)
 
@@ -324,24 +331,25 @@ natural · healthy · warm · modern · vegetarian lifestyle
 
 #### Border Radius
 
-| Size | Value | Usage |
-|------|-------|-------|
-| `none` | `0` | Tables, code blocks |
-| `sm` | `8px` | Inputs, small badges |
-| `md` | `12px` | — |
-| `default` | `16px` | Cards, buttons, modals |
-| `lg` | `24px` | Large cards, image containers |
-| `xl` | `32px` | Hero images, feature cards |
-| `full` | `9999px` | Avatars, pills, tags |
+Ba bậc có nghĩa — đừng thêm bậc thứ tư.
+
+| Token | Value | Tailwind | Usage |
+|-------|-------|----------|-------|
+| `--radius-sm` | `6px` | `rounded-sm` | Ô nhỏ, chip, badge hẹp |
+| `--radius-md` | `10px` | `rounded-md` | Input, button, badge |
+| `--radius-2xl` | `16px` | `rounded-2xl` | Card, khung lớn |
+| `--radius-full` | `9999px` | `rounded-full` | Avatar, pill, tab |
 
 #### Shadows
 
-| Level | Usage |
-|-------|-------|
-| `shadow-sm` | Subtle elevation (dropdowns, tooltips) |
-| `shadow-md` | Standard elevation (cards, modals) |
-| `shadow-lg` | High elevation (drawers, overlays) |
-| `shadow-xl` | Floating elements ( FAB, floating action bar) |
+Thẻ **không đổ bóng** — phân cấp bằng viền 1px (`--color-border`) và khoảng trắng.
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `shadow-sm` | `0 0 0 1px var(--color-border)` | Card — chính là viền hairline |
+| `shadow-md` | `0 2px 8px -4px rgba(13,17,23,.14)` | Card hover |
+| `shadow-lg` | hairline + `0 8px 24px -12px` | Dialog, dropdown, popover |
+| `shadow-xl` | giữ mặc định Tailwind | Chỉ overlay nổi |
 
 #### Z-Index Layers
 
@@ -375,11 +383,19 @@ natural · healthy · warm · modern · vegetarian lifestyle
 
 #### Font Family
 
+Hai mặt chữ. `Fraunces` nạp từ Google Fonts trong `index.html`; `Inter` là thân.
+
 ```css
-font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+--font-sans:    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+--font-display: "Fraunces", Georgia, "Times New Roman", serif;
 ```
 
-Rationale: Native rendering on each OS, zero load time, excellent readability.
+Quy tắc dùng:
+- `h1` (tiêu đề trang) tự động nhận `Fraunces` qua `@layer base` trong `src/index.css`.
+- Tiêu đề khối lớn (label section ở Home, tiêu đề card feed, tiêu đề bài trên Post Detail):
+  thêm class `font-display` + `font-semibold`.
+- **Không** dùng `font-display` cho `h2` trong card / dialog / panel — đó là nhãn UI.
+- Trọng lượng: heading dùng `font-semibold` (600), không `font-extrabold`. Fraunces ở 600 đã đủ dày.
 
 #### Heading Rules
 
@@ -1309,8 +1325,8 @@ A component or page is considered **DONE** when ALL criteria are met:
 ### Common Tailwind Patterns
 
 ```tsx
-// Container
-<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+// Container (dùng chung mọi trang public: Navbar, Footer, Home, Explore, ...)
+<div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
 
 // Flex row with gap
 <div className="flex items-center gap-4">
@@ -1433,7 +1449,7 @@ VEGALIFE-Frontend/
 │   │   ├── locations/        ← NearbyPage, LocationDetailPage, AdminLocationsPage, PlaceMap
 │   │   ├── nutrition-ai/     ← AiNutritionPage, ChatPanel, useAiChat
 │   │   ├── posts/            ← Home, Explore, PostDetail, CreatePost, MyPosts, editor (TipTap 3)
-│   │   ├── profile/          ← ProfilePage, DietaryPreferencesSection, TagInput, dietary.ts
+│   │   ├── profile/          ← ProfilePage (rail danh tính + form gộp), TagInput, dietary.ts
 │   │   ├── recipes/          ← CreateRecipePage, AdminRecipesPage
 │   │   └── videos/           ← VideosPage
 │   ├── i18n/                 ← index.ts + locales/{en,vi}/<namespace>.json (12 namespace)

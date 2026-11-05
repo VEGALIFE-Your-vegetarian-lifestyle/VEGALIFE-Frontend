@@ -15,7 +15,7 @@ export function Footer() {
 
     return (
         <footer className="border-t border-border bg-card">
-            <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-app px-4 py-10 sm:px-6 lg:px-8">
                 <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
                     <div className="text-center md:text-left">
                         <Link to="/" className="flex items-center justify-center gap-2 text-dark md:justify-start">

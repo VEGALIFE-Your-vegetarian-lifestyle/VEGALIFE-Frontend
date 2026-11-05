@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "@/app/layout/Layout";
 import { AdminShell } from "@/features/admin/AdminShell";
+import { AccountLayout } from "@/features/account/AccountLayout";
+import AccountOverviewPage from "@/features/account/AccountOverviewPage";
 import { AdminRoute } from "@/app/guards/AdminRoute";
 import { ProtectedRoute } from "@/app/guards/ProtectedRoute";
 import { PublicRoute } from "@/app/guards/PublicRoute";
@@ -10,8 +12,8 @@ import UsersPage from "@/features/admin/pages/UsersPage/UsersPage";
 import VideosPage from "@/features/videos/VideosPage";
 import AdminDashboardPage from "@/features/admin/pages/AdminDashboardPage/AdminDashboardPage";
 import AiNutritionPage from "@/features/nutrition-ai/AiNutritionPage";
-import CreatePostPage from "@/features/posts/pages/CreatePostPage/CreatePostPage";
 import CreateRecipePage from "@/features/recipes/pages/CreateRecipePage/CreateRecipePage";
+import MyRecipesPage from "@/features/recipes/pages/MyRecipesPage/MyRecipesPage";
 import AdminRecipesPage from "@/features/recipes/pages/AdminRecipesPage/AdminRecipesPage";
 import ExplorePage from "@/features/posts/pages/ExplorePage/ExplorePage";
 import LocationsPage from "@/features/locations/pages/AdminLocationsPage/LocationsPage";
@@ -38,7 +40,14 @@ export default function AppRoutes() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/explore" element={<ExplorePage />} />
                 <Route path="/nearby" element={<NearbyPage />} />
-                <Route path="/nearby/:id" element={<LocationDetailPage />} />
+                <Route
+                    path="/nearby/:id"
+                    element={
+                        <ProtectedRoute>
+                            <LocationDetailPage />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route path="/ai-nutrition" element={<AiNutritionPage />} />
                 <Route path="/subscription" element={<SubscriptionPage />} />
                 <Route
@@ -51,42 +60,10 @@ export default function AppRoutes() {
                 />
                 <Route path="/posts/:id" element={<PostDetailPage />} />
                 <Route
-                    path="/posts/create"
-                    element={
-                        <ProtectedRoute>
-                            <CreatePostPage />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/posts/:id/edit"
-                    element={
-                        <ProtectedRoute>
-                            <CreatePostPage />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
                     path="/recipes/create"
                     element={
                         <ProtectedRoute>
                             <CreateRecipePage />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/profile"
-                    element={
-                        <ProtectedRoute>
-                            <ProfilePage />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/meal-plan"
-                    element={
-                        <ProtectedRoute>
-                            <MealPlanPage />
                         </ProtectedRoute>
                     }
                 />
@@ -98,14 +75,23 @@ export default function AppRoutes() {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Khung tài khoản — rail dùng chung, nội dung đổi theo route con. */}
                 <Route
-                    path="/my-posts"
                     element={
                         <ProtectedRoute>
-                            <MyPostsPage />
+                            <AccountLayout />
                         </ProtectedRoute>
                     }
-                />
+                >
+                    <Route path="/account" element={<AccountOverviewPage />} />
+                    <Route path="/my-posts" element={<MyPostsPage />} />
+                    <Route path="/recipes" element={<MyRecipesPage />} />
+                    <Route path="/meal-plan" element={<MealPlanPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    {/* Khách chưa đăng nhập vẫn dùng `/subscription` (ngoài shell); đã đăng nhập thì ở lại trong rail. */}
+                    <Route path="/account/subscription" element={<SubscriptionPage embedded />} />
+                </Route>
             </Route>
 
             <Route
@@ -157,7 +143,7 @@ export default function AppRoutes() {
                 <Route path="recipes" element={<AdminRecipesPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="locations" element={<LocationsPage />} />
-                <Route path="profile" element={<ProfilePage embedded />} />
+                <Route path="profile" element={<ProfilePage />} />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />

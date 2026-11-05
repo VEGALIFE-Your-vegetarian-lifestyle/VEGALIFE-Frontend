@@ -21,9 +21,10 @@
     "subscription": "AI Plans",
     "newPost": "New Post",
     "myPosts": "My Posts",
-    "newRecipe": "Create Recipe",
+    "myRecipes": "My Recipes",
     "mealPlan": "Meal plan",
     "profile": "Profile",
+    "myAccount": "My Account",
     "admin": "Admin",
     "login": "Log in",
     "register": "Register",
@@ -43,7 +44,6 @@
         "community": "100% Plant-First Community"
     },
     "editor": {
-        "wordCount": "{{count}} words",
         "bold": "Bold",
         "italic": "Italic",
         "h2": "Heading",
@@ -59,7 +59,8 @@
         "divider": "Divider",
         "undo": "Undo",
         "redo": "Redo",
-        "placeholder": "Share the story behind this dish, the technique, and what makes it work..."
+        "placeholder": "Share the story behind this dish, the technique, and what makes it work...",
+        "minRead": "~{{count}} min read"
     },
     "postStatus": {
         "created": "Draft",
@@ -93,5 +94,6 @@
         "previous": "Previous page",
         "next": "Next page",
         "page": "Page {{page}}"
-    }
+    },
+    "optional": "optional"
 }

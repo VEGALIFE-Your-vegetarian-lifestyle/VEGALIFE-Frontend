@@ -474,10 +474,10 @@ Scenario: User logs out
 > `GET /api/profile/{userId}` (hồ sơ công khai) backend chưa có.
 >
 > **Dietary** (FR-02 bổ sung): 5 field `preferences`, `dislikes`, `allergies`,
-> `restrictions`, `healthGoal` đã **mount vào `ProfilePage`** qua
-> `DietaryPreferencesSection.tsx` (+ `TagInput.tsx`, helper `dietary.ts`).
-> Section có form + nút lưu **riêng**, đặt ngoài `<form>` hồ sơ; `buildDietaryPatch`
-> chỉ gửi field đã đổi nên lưu dietary không đụng height/weight/age.
+> `restrictions`, `healthGoal` **gộp chung vào form hồ sơ** trong `ProfilePage.tsx`
+> (+ `TagInput.tsx`, hằng số gợi ý ở `dietary.ts`).
+> Một form, một nút Save cho cả 11 field; `PUT /api/profile` merge từng field nên
+> gửi đủ 11 field mỗi lần vẫn an toàn.
 > Wire format `PUT /api/profile` là **camelCase**.
 
 #### FR-02-01: View Own Profile
@@ -1222,13 +1222,13 @@ Scenario: Admin views member list
 
 | Route | Component | Description | Dựng |
 |-------|-----------|-------------|------|
-| `/posts/create` | CreatePostPage | Tạo bài mới (thay cho `/blog/create`) | ✅ |
-| `/posts/:id/edit` | CreatePostPage (edit) | Sửa bài có sẵn (thay cho `/blog/:id/edit`) | ✅ |
+| ~~`/posts/create`~~ | — | **Đã bỏ route** — tạo bài là dialog `PostComposerDialog` (`useUiStore().openComposer()`) | ✅ |
+| ~~`/posts/:id/edit`~~ | — | **Đã bỏ route** — sửa bài dùng chung dialog trên (`openComposer(postId)`) | ✅ |
 | `/profile` | ProfilePage | Xem/sửa hồ sơ | ✅ |
 | `/my-posts` | MyPostsPage | Danh sách bài của mình | ✅ |
 | `/dashboard` | HomePage | Personalized feed | ⬜ |
 | `/profile/edit` | Profile/Edit | Edit profile form | ⬜ |
-| `/blog/create` | CreatePostPage | Create new blog post | ⬜ |
+| `/blog/create` | — | Create new blog post (thay bằng dialog soạn bài — không dựng route) | ⬜ |
 | `/blog/:id/edit` | EditPostPage | Edit existing post | ⬜ |
 | `/videos/upload` | UploadVideoPage | Upload cooking video | ⬜ |
 | `/meal-plan` | MealPlanPage | View/create weekly meal plan | ⬜ |

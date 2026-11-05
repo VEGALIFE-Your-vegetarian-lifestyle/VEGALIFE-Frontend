@@ -1,6 +1,16 @@
 {
     "title": "Hồ sơ",
     "editTitle": "Chỉnh sửa hồ sơ",
+    "basics": {
+        "eyebrow": "Hồ sơ",
+        "title": "Về bạn & cơ thể",
+        "subtitle": "Dùng để tính BMI và cá nhân hoá gợi ý dinh dưỡng."
+    },
+    "changeAvatar": "Đổi ảnh đại diện",
+    "avatarDialogTitle": "Ảnh đại diện",
+    "lastUpdated": "Cập nhật lần cuối {{date}}",
+    "unsavedChanges_one": "{{count}} thay đổi chưa lưu",
+    "unsavedChanges_other": "{{count}} thay đổi chưa lưu",
     "back": "Quay lại",
     "logout": "Đăng xuất",
     "createPost": "Tạo bài viết",
@@ -28,6 +38,13 @@
         "other": "Khác"
     },
     "bmi": "Chỉ số BMI",
+    "bmiHint": "Nhập chiều cao và cân nặng để xem BMI",
+    "metrics": {
+        "height": "Chiều cao",
+        "weight": "Cân nặng",
+        "age": "Tuổi",
+        "gender": "Giới tính"
+    },
     "bmiCategories": {
         "underweight": "Thiếu cân",
         "normal": "Bình thường",
@@ -37,6 +54,7 @@
     "dietary": {
         "eyebrow": "Hồ sơ dinh dưỡng",
         "title": "Khẩu vị & chế độ ăn",
+        "subtitle": "Trợ lý AI dựa vào đây để điều chỉnh mọi gợi ý.",
         "footnote": "Trợ lý dinh dưỡng AI dựa vào đây để cá nhân hoá mọi gợi ý. Dị ứng và hạn chế được coi là giới hạn cứng.",
         "saved": "Đã lưu khẩu vị & chế độ ăn",
         "saveFailed": "Không lưu được khẩu vị & chế độ ăn",
@@ -76,53 +94,92 @@
     },
     "verifiedAuthor": "Tác giả thực vật đã xác minh",
     "contributorAccount": "Tài khoản cộng tác viên",
-    "joined": "Tham gia {{date}}",
     "editProfile": "Sửa hồ sơ",
     "newContent": "Nội dung mới",
-    "stats": {
-        "published": "Bài đã đăng",
-        "videos": "Video nấu ăn",
-        "saved": "Nội dung đã lưu",
-        "contributions": "Đóng góp (Bình chọn & Bình luận)"
-    },
+    "numPosts": "Đã đăng",
+    "numDrafts": "Bản nháp",
+    "numVideos": "Video",
+    "numViews": "Lượt xem",
     "tab": {
         "posts": "Bài viết của tôi",
-        "videos": "Video của tôi",
-        "saved": "Công thức đã lưu",
         "activity": "Hoạt động của tôi"
     },
     "filterPosts": "Lọc bài viết...",
-    "statusLabel": "TRẠNG THÁI:",
     "statusAll": "Tất cả",
     "statusPublished": "Đã đăng",
     "statusDraft": "Bản nháp",
+    "statusUnpublished": "Ngừng đăng",
     "draftVisible": "Bản nháp - Chỉ bạn thấy",
-    "unpublishedDraft": "Bản nháp chưa đăng",
-    "continueEditing": "Tiếp tục chỉnh sửa",
+    "underReview": "Đang chờ admin duyệt",
     "editPost": "Sửa bài",
     "deletePost": "Xóa bài",
-    "unpublishAction": "Ngừng đăng",
-    "savedYesterday": "Lưu hôm qua",
     "activityTitle": "Hoạt động cộng đồng gần đây",
     "activitySubtitle": "Tương tác thời gian thực",
     "empty": {
         "posts": "Bạn chưa viết bài nào.",
         "postsHint": "Chia sẻ công thức hoặc câu chuyện ăn chay đầu tiên của bạn với cộng đồng.",
-        "videos": "Bạn chưa tải video nào lên.",
-        "saved": "Bạn chưa lưu công thức nào.",
         "activity": "Chưa có hoạt động cộng đồng.",
         "action": "Viết bài"
     },
-    "unsupported": {
-        "title": "Sắp ra mắt",
-        "description": "Mục này đang chờ API từ backend."
-    },
     "confirm": {
-        "unpublishTitle": "Ngừng đăng bài viết này?",
-        "unpublishBody": "\"{{title}}\" sẽ trở về bản nháp và không còn hiển thị công khai.",
-        "unpublishConfirm": "Ngừng đăng",
         "deleteTitle": "Xóa bài viết này?",
         "deleteBody": "\"{{title}}\" sẽ bị xóa và không còn hiển thị công khai.",
         "deleteConfirm": "Xóa bài viết"
+    },
+    "account": {
+        "caption": "Tài khoản",
+        "nav": {
+            "overview": "Tổng quan",
+            "posts": "Bài viết",
+            "recipes": "Công thức",
+            "plan": "Thực đơn",
+            "profile": "Hồ sơ"
+        },
+        "counts": {
+            "published": "Đã đăng",
+            "draft": "Nháp",
+            "recipes": "Công thức"
+        },
+        "greeting": "Chào {{name}}",
+        "week": "Tuần {{from}} – {{to}}",
+        "createPlan": "Tạo thực đơn",
+        "writePost": "Viết bài",
+        "viewAll": "Tất cả ›",
+        "stats": {
+            "published": "Bài đã đăng",
+            "views": "Lượt xem",
+            "pendingRecipes": "Công thức chờ duyệt",
+            "meals": "Bữa tuần này"
+        },
+        "tasks": {
+            "eyebrow": "Cần bạn",
+            "title_one": "{{count}} việc đang chờ",
+            "title_other": "{{count}} việc đang chờ"
+        },
+        "task": {
+            "recipe": "Công thức chờ duyệt",
+            "menu": "Thực đơn đang ở trạng thái nháp",
+            "week": "Tuần {{from}} – {{to}}",
+            "draft": "Bản nháp tạo {{date}} — chưa đăng"
+        },
+        "posts": {
+            "eyebrow": "Nội dung",
+            "title": "Bài viết của tôi",
+            "summary": "{{total}} bài · {{published}} đã đăng · {{draft}} bản nháp"
+        },
+        "recipes": {
+            "eyebrow": "Bếp của bạn",
+            "title": "Công thức của tôi"
+        },
+        "plan": {
+            "eyebrow": "Tuần này",
+            "title": "Thực đơn",
+            "slots": "ô",
+            "open": "Mở tuần ›"
+        },
+        "health": {
+            "eyebrow": "Hồ sơ",
+            "title": "Sức khoẻ"
+        }
     }
 }

@@ -43,8 +43,9 @@ Backend đã sẵn sàng đầy đủ — **không cần chờ gì**.
 Cả 2 endpoint trả `AdminRecipeListResponse` (đúng shape row đang có) → dùng lại được để
 cập nhật cache, không cần gọi lại list.
 
-**Không cần** `GET /api/admin/recipes/{recipeId}`: row trong list đã có đủ field dialog
-đang render (instructions, ingredients, dishName, …). Gọi thêm = 1 request thừa.
+**Không gọi** `GET /api/admin/recipes/{recipeId}`: backend **có** endpoint đó, nhưng row trong
+list đã có đủ field dialog đang render (instructions, ingredients, dishName, …). Gọi thêm =
+1 request thừa.
 
 ### Điều backend làm / không làm
 

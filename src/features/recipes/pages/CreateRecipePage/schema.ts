@@ -9,6 +9,22 @@ export const MAX_INGREDIENTS = 50;
 
 export const DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
 
+/** Nhãn mức độ công sức theo độ khó — phản hồi tĩnh dưới segmented control. */
+export function difficultyRankKey(difficulty: string): "outline" | "balanced" | "challenging" {
+    if (difficulty === "EASY") return "balanced";
+    if (difficulty === "HARD") return "challenging";
+    return "outline";
+}
+
+/**
+ * Một bước nấu trong form — mỗi bước là **một ô riêng** (mockup: tiêu đề đậm + thân bài).
+ * Backend chỉ nhận `instructions` là một chuỗi TEXT nên `payload.ts` gộp lại khi gửi.
+ */
+export interface RecipeStep {
+    title: string;
+    body: string;
+}
+
 /** Toàn bộ field của form. Số nhập dạng chuỗi (input HTML) — `payload.ts` đổi sang number. */
 export interface RecipeFormValues {
     name: string;
@@ -18,12 +34,27 @@ export interface RecipeFormValues {
     cookTimeMinutes: string;
     servings: string;
     difficulty: Difficulty | "";
-    instructions: string;
+    steps: RecipeStep[];
     ingredients: RecipeIngredientInput[];
+    /** 5 field dinh dưỡng optional — chỉ gửi khi có giá trị. */
+    calories: string;
+    proteinG: string;
+    carbohydrateG: string;
+    fatG: string;
+    fiberG: string;
 }
 
 export function emptyIngredient(): RecipeIngredientInput {
     return { name: "", amount: "", unit: "" };
+}
+
+export function emptyStep(): RecipeStep {
+    return { title: "", body: "" };
+}
+
+/** Bỏ các ô bước còn trống hoàn toàn (người dùng bấm "Thêm bước" rồi thôi). */
+export function visibleSteps(steps: RecipeStep[]): RecipeStep[] {
+    return steps.filter((step) => step.title.trim() !== "" || step.body.trim() !== "");
 }
 
 export function initialRecipeValues(): RecipeFormValues {
@@ -33,12 +64,26 @@ export function initialRecipeValues(): RecipeFormValues {
         description: "",
         prepTimeMinutes: "",
         cookTimeMinutes: "",
+        // ponytail: BE không có servings mặc định — chỉ là số hay dùng nhất, sửa được.
         servings: "2",
         difficulty: "",
-        instructions: "",
+        steps: [emptyStep()],
         ingredients: [emptyIngredient()],
+        calories: "",
+        proteinG: "",
+        carbohydrateG: "",
+        fatG: "",
+        fiberG: "",
     };
 }
+
+/** Số thực ≥ 0 hoặc rỗng. Khớp 5 field dinh dưỡng + số phần, khác `optionalMinutes` (số nguyên). */
+const optionalDecimal = (t: TFunction) =>
+    Yup.string().test("decimal", t("recipe:errors.numberInvalid"), (value) => {
+        if (!value || value.trim() === "") return true;
+        const trimmed = value.trim();
+        return /^\d+(\.\d+)?$/.test(trimmed) && Number(trimmed) >= 0;
+    });
 
 /** Chuẩn hoá để so trùng — khớp cách backend trim+lowercase tên nguyên liệu. */
 function normalizeName(name: string): string {
@@ -89,6 +134,19 @@ const ingredientSchema = (t: TFunction) =>
             .max(MAX_UNIT_LENGTH, t("validation:maxLength", { count: MAX_UNIT_LENGTH })),
     });
 
+/**
+ * Một bước nấu: ô bấm "Thêm bước" rồi bỏ trống thì không tính là lỗi, nhưng đã gõ
+ * tiêu đề hoặc thân thì thân **phải** có chữ (BE chỉ nhận `instructions` là 1 chuỗi,
+ * bước rỗng sẽ thành dòng trống vô nghĩa).
+ */
+const stepSchema = (t: TFunction) =>
+    Yup.object().test("stepBody", t("recipe:errors.stepBodyRequired"), (step) => {
+        const row = step as RecipeStep | undefined;
+        if (!row) return true;
+        if (row.title.trim() === "" && row.body.trim() === "") return true;
+        return row.body.trim() !== "";
+    });
+
 export function buildRecipeSchema(t: TFunction) {
     return Yup.object({
         name: Yup.string()
@@ -110,10 +168,20 @@ export function buildRecipeSchema(t: TFunction) {
                 return /^\d+$/.test(trimmed) && Number(trimmed) >= 1;
             }),
         difficulty: Yup.string().oneOf([...DIFFICULTIES, ""]),
-        instructions: Yup.string().trim().required(t("validation:required")),
+        steps: Yup.array()
+            .of(stepSchema(t))
+            // Bỏ hết ô trống thì chuỗi gộp ra `""` — BE chặn `minLength: 1`, chặn luôn ở đây.
+            .test("steps", t("validation:required"), (steps) =>
+                Array.isArray(steps) && visibleSteps(steps as RecipeStep[]).length > 0,
+            ),
         ingredients: Yup.array()
             .of(ingredientSchema(t))
             .min(1, t("recipe:errors.ingredientsMin"))
             .max(MAX_INGREDIENTS, t("recipe:errors.ingredientsMax")),
+        calories: optionalDecimal(t),
+        proteinG: optionalDecimal(t),
+        carbohydrateG: optionalDecimal(t),
+        fatG: optionalDecimal(t),
+        fiberG: optionalDecimal(t),
     });
 }

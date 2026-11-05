@@ -3,6 +3,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { useAuthStore } from "@/shared/auth/authStore";
+import { decodeJwt } from "@/shared/utils/jwt";
 import { E2E_ADMIN, HAS_ADMIN, REMOTE_TIMEOUT_MS } from "@/test/e2eEnv";
 import PostsPage from "../PostsPage/PostsPage";
 import CategoriesPage from "@/features/categories/CategoriesPage";
@@ -108,13 +109,14 @@ describe.skipIf(!HAS_ADMIN)("Trang admin — đã đăng nhập admin (E2E_ADMIN
     beforeAll(async () => {
         const { login } = await import("@/features/auth/api");
         const data = await login({ identifier: E2E_ADMIN.identifier!, password: E2E_ADMIN.password! });
+        const role = decodeJwt(data.accessToken)?.role === "ADMIN" ? "ADMIN" : "USER";
         useAuthStore.getState().setAuth({
             user: {
                 id: data.userId,
-                username: data.username,
+                username: data.displayName,
                 email: data.email,
-                role: data.role,
-                status: data.status,
+                role,
+                status: "activated",
             },
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,

@@ -1,15 +1,11 @@
 {
     "breadcrumbHome": "Home",
     "backToExplore": "Back to Explore",
-    "backToSearch": "Back to Search Results",
-    "backToMyPosts": "Back to My Posts",
-    "authorBadge": "Verified Plant-Based Author",
     "publishedOn": "Published {{date}}",
     "views": "{{count}} views",
     "readTime": "{{count}} min read",
     "editPost": "Edit Post",
     "share": "Share",
-    "savePost": "Save Recipe",
     "shareCopied": "Link copied to clipboard",
     "notFound": {
         "title": "Post not found",
@@ -17,51 +13,41 @@
         "action": "Back to Explore"
     },
     "error": "Unable to load this post. Please try again.",
-    "fact": {
-        "prep": "Prep & Cook",
-        "servings": "Servings",
-        "difficulty": "Difficulty",
-        "calories": "Energy"
-    },
-    "nutrition": {
-        "eyebrow": "Nutrition",
-        "title": "Macro Breakdown"
-    },
-    "macro": {
-        "protein": "Protein",
-        "carbs": "Carbohydrates",
-        "fat": "Fats",
-        "fiber": "Fiber"
-    },
-    "ingredients": {
-        "eyebrow": "Ingredients",
-        "title": "What You'll Need",
-        "scaleNote": "Quantities shown at {{count}}x. Scale the batch without touching the method."
-    },
-    "steps": {
-        "eyebrow": "Cooking Instructions",
-        "title": "Step by Step"
-    },
-    "chefSecret": {
-        "title": "Chef's Kitchen Secret"
-    },
     "comments": {
-        "eyebrow": "Community Notes · {{count}}",
-        "title": "What Cooks Are Saying",
-        "tip": "Insider Tip",
+        "eyebrow": "Comments · {{count}}",
+        "title": "What Readers Are Saying",
+        "empty": "No comments yet. Be the first to share your thoughts.",
+        "edited": "(edited)",
+        "deletedAuthor": "[deleted]",
         "placeholder": "Share your own variation or tip...",
-        "submit": "Post Reply",
+        "submit": "Post Comment",
         "loginToComment": "Sign in to join the conversation",
-        "loadMore": "Load more comments",
-        "you": "You",
         "posted": "Comment posted"
     },
-    "author": {
-        "followers": "followers",
-        "posts": "posts",
-        "follow": "Follow Chef",
-        "portfolio": "Portfolio"
-    },
+    "relatedEyebrow": "Keep Exploring",
     "relatedTitle": "Related Plant-Based Inspirations",
-    "relatedSubtitle": "More community recipes and stories you might enjoy"
+    "relatedSubtitle": "More community recipes and stories you might enjoy",
+    "relatedViewAll": "View all articles",
+    "votes": {
+        "like": "Helpful",
+        "dislike": "Not helpful",
+        "loginRequired": "Sign in to vote on this post"
+    },
+    "sidebar": {
+        "aboutTitle": "About this post",
+        "published": "Published",
+        "readTime": "Read time",
+        "views": "Views",
+        "categories": "Categories"
+    },
+    "recipes": {
+        "eyebrow": "Cook along",
+        "title": "Attached recipes",
+        "loading": "Recipes could not be loaded.",
+        "prep": "{{count}} min prep",
+        "servings": "{{count}} servings",
+        "ingredients": "{{list}}{{count}} ingredients",
+        "browseMine": "See all my recipes",
+        "viewRecipe": "View Recipe"
+    }
 }

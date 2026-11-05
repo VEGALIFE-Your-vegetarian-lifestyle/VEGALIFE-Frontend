@@ -43,7 +43,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
                 </div>
             </div>
 
-            <div className="mx-auto grid max-w-7xl gap-8 px-4 pb-12 sm:px-8 lg:grid-cols-2 lg:gap-12">
+            <div className="mx-auto grid max-w-app gap-8 px-4 pb-12 sm:px-8 lg:grid-cols-2 lg:gap-12">
                 {/* Panel trái — giới thiệu, nền gradient sáng */}
                 <section className="relative hidden overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-vegan-green-subtle via-lavender to-cream p-10 lg:flex lg:flex-col lg:justify-between">
                     <div>
@@ -51,7 +51,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
                             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                             {t("split.badge")}
                         </span>
-                        <h2 className="mt-6 text-4xl font-extrabold leading-tight text-dark">{t("split.headline")}</h2>
+                        <h2 className="font-display mt-6 text-4xl font-semibold leading-tight text-dark">{t("split.headline")}</h2>
                         <p className="mt-4 max-w-md text-base text-muted-foreground">{t("split.description")}</p>
                     </div>
 
@@ -80,7 +80,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
                 <section className="flex flex-col justify-center py-4 lg:py-10">
                     <div className="mx-auto w-full max-w-md">
                         <div className="mb-6">
-                            <h1 className="text-2xl font-bold text-dark sm:text-3xl">{title}</h1>
+                            <h1 className="text-2xl font-semibold text-dark sm:text-3xl">{title}</h1>
                             <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
                         </div>
 

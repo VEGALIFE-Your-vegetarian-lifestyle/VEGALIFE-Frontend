@@ -20,7 +20,8 @@ export interface RecipeIngredient {
 
 /**
  * POST /api/recipes — owner lấy từ JWT, `dishName` find-or-create phía server.
- * `description` / `prepTimeMinutes` / `cookTimeMinutes` / `difficulty` bỏ trống được.
+ * Optional (bỏ trống thì **vắng mặt**, đừng gửi `null`/`""`): `description`,
+ * `prepTimeMinutes`, `cookTimeMinutes`, `difficulty` và 5 field dinh dưỡng.
  */
 export interface CreateRecipeRequest {
     name: string;
@@ -33,6 +34,11 @@ export interface CreateRecipeRequest {
     prepTimeMinutes?: number | null;
     cookTimeMinutes?: number | null;
     difficulty?: Difficulty | null;
+    calories?: number | null;
+    proteinG?: number | null;
+    carbohydrateG?: number | null;
+    fatG?: number | null;
+    fiberG?: number | null;
 }
 
 export interface Recipe {
@@ -48,6 +54,15 @@ export interface Recipe {
     servings: number;
     difficulty: Difficulty | null;
     ingredients: RecipeIngredient[];
+    /** Recipe mới tạo luôn `PENDING` (ADR-016); duyệt recipe không đổi dish. */
+    moderationStatus: ModerationStatus;
+    dishModerationStatus: ModerationStatus;
+    /** 5 field dinh dưỡng — optional, chưa nhập thì `null`. */
+    calories: number | null;
+    proteinG: number | null;
+    carbohydrateG: number | null;
+    fatG: number | null;
+    fiberG: number | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -67,7 +82,8 @@ export interface AdminRecipe extends Omit<Recipe, "dishName"> {
     score: number | null;
     /** Trạng thái duyệt của tên món dùng chung; duyệt recipe KHÔNG đổi nó. */
     dishModerationStatus: ModerationStatus;
-    username: string;
+    /** BE trả `displayName` — không còn `username`. */
+    displayName: string;
     email: string;
     categoryIds: string[];
 }

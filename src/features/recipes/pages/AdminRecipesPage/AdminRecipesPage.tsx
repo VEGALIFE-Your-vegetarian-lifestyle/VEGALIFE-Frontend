@@ -146,7 +146,7 @@ export default function AdminRecipesPage() {
             (recipe) =>
                 recipe.name.toLowerCase().includes(keyword) ||
                 (recipe.dishName ?? "").toLowerCase().includes(keyword) ||
-                recipe.username.toLowerCase().includes(keyword) ||
+                (recipe.displayName ?? "").toLowerCase().includes(keyword) ||
                 recipe.email.toLowerCase().includes(keyword),
         );
     }, [data, debouncedQ]);
@@ -293,7 +293,7 @@ export default function AdminRecipesPage() {
                                                 </div>
                                             )}
                                         </TableCell>
-                                        <TableCell className="whitespace-nowrap">@{recipe.username}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{recipe.displayName}</TableCell>
                                         <TableCell className="text-right tabular-nums">{recipe.ingredients.length}</TableCell>
                                         <TableCell className="whitespace-nowrap text-right tabular-nums">
                                             {recipe.cookTimeMinutes === null

@@ -1,25 +1,31 @@
 @import "tailwindcss";
 
-/* VEGALIFE design tokens — modern green, light background, rounded, clean */
+/* VEGALIFE design tokens — hướng A "Chính xác": nền lạnh, viền hairline thay bóng đổ,
+   xanh chỉ dành cho hành động & trạng thái. Xem `DOCS/DESIGN-MASTER.md`. */
 @theme {
     /* Primary green scale */
-    --color-vegan-green: #2a7d3f;
-    --color-vegan-green-hover: #236b35;
-    --color-vegan-green-active: #1e5a2d;
-    --color-vegan-green-light: #e8f5ec;
-    --color-vegan-green-muted: #a8d4b5;
-    --color-vegan-green-subtle: #f0f9f3;
+    --color-vegan-green: #12724a;
+    --color-vegan-green-hover: #0f6140;
+    --color-vegan-green-active: #0c5236;
+    --color-vegan-green-light: #e6f2ec;
+    --color-vegan-green-muted: #b0d3bd;
+    --color-vegan-green-subtle: #f2f9f5;
+    /* Xanh lá sáng (mockup Stitch `primary-container` #4caf50) — nút/pill đang chọn ở Home. */
+    --color-vegan-green-bright: #4caf50;
 
-    /* Secondary palette */
-    --color-lightgreen: #e8f5ec;
-    --color-cream: #fef9e7;
-    --color-terracotta: #d9795b;
-    --color-terracotta-hover: #c46a4e;
+    /* Phụ trợ — giữ tên token để 7 file đang dùng không phải sửa, nhưng đã quy về bảng màu
+       chính. `lavender*` thành sắc xanh nhạt (banner AI, nút "soft"); `cream` thành nền xám ấm
+       (ô chờ ảnh video, badge Video). Thêm sắc mới thì phải có nghĩa cố định, xem đầu file. */
+    --color-lightgreen: #e6f2ec;
+    --color-cream: #eef1f4;
+    --color-terracotta: #c2653f;
+    --color-terracotta-hover: #a8532f;
 
-    /* Accent: lavender/indigo — nút "View Recipe", banner AI (mockup mới) */
-    --color-lavender: #eef2ff;
-    --color-lavender-hover: #e0e7ff;
-    --color-lavender-strong: #4f46e5;
+    /* Accent: xanh dương — banner gợi ý AI, nút "soft", icon chat. Giữ vai trò phụ, không
+       cạnh tranh với xanh chính. */
+    --color-lavender: #eaf1fb;
+    --color-lavender-hover: #dbe7f8;
+    --color-lavender-strong: #2a5f9e;
 
     /* Accent: amber — badge Draft, cảnh báo nhẹ */
     --color-amber-soft: #fef3c7;
@@ -33,43 +39,57 @@
     --color-danger: #dc2626;
     --color-danger-soft: #fef2f2;
 
-    /* Neutrals */
-    --color-dark: #1f2937;
-    --color-dark-hover: #18232f;
-    --color-background: #f7f9fb;
+    /* Neutral: nền lạnh hơi ngả xanh để không lẫn với xám mặc định của trình duyệt */
+    --color-dark: #0d1117;
+    --color-dark-hover: #1a2029;
+    --color-background: #f4f5f7;
     --color-surface: #ffffff;
-    --color-muted-bg: #f0f2f5;
+    --color-muted-bg: #eaeef2;
 
     /* Semantic */
-    --color-foreground: #1f2937;
-    --color-border: #e6e8ec;
-    --color-input: #e6e8ec;
-    --color-ring: #2a7d3f;
-    --color-primary: #2a7d3f;
+    --color-foreground: #0d1117;
+    --color-border: #e3e6ea;
+    --color-input: #e3e6ea;
+    --color-ring: #12724a;
+    --color-primary: #12724a;
     --color-primary-foreground: #ffffff;
-    --color-secondary: #f0f2f5;
-    --color-secondary-foreground: #1f2937;
-    --color-muted: #f0f2f5;
-    --color-muted-foreground: #6b7280;
-    --color-accent: #e8f5ec;
-    --color-accent-foreground: #1f2937;
+    --color-secondary: #eef1f4;
+    --color-secondary-foreground: #0d1117;
+    --color-muted: #eef1f4;
+    --color-muted-foreground: #5c6675;
+    --color-accent: #e6f2ec;
+    --color-accent-foreground: #0d1117;
     --color-destructive: #d9795b;
     --color-destructive-foreground: #ffffff;
     --color-popover: #ffffff;
-    --color-popover-foreground: #1f2937;
+    --color-popover-foreground: #0d1117;
     --color-card: #ffffff;
-    --color-card-foreground: #1f2937;
+    --color-card-foreground: #0d1117;
 
-    /* Radii */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
-    --radius-2xl: 24px;
+    /* Bề ngang khối nội dung toàn app (`max-w-app`). Mockup Stitch ghi 1280px, nhưng ở màn 1440px
+       trở lên 1280 để lại 2 dải trống lớn hai bên → nâng lên 1536px, Navbar/Footer/Home dùng chung
+       token này nên vẫn thẳng hàng. */
+    --container-app: 96rem;
+
+    /* Radii — ba bậc có nghĩa: ô nhỏ / card / pill. Đừng thêm bậc thứ tư. */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+    --radius-xl: 14px;
+    --radius-2xl: 16px;
     --radius-full: 9999px;
 
-    /* Typography */
-    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Typography — Fraunces chỉ cho h1/h2 (class `font-display`); Inter cho mọi thứ còn lại. */
+    --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+
+    /* Bóng đổ → hairline. Định nghĩa lại ngay ở token nên các file đang viết `shadow-sm` tự
+       biến thành card có viền 1px, không phải sửa từng file.
+       Bậc trên (`shadow-md` trở lên) giữ bóng thật nhưng rất nhẹ — chỉ dùng cho trạng thái
+       hover của thẻ, nên "nổi lên" vẫn đọc được mà không quay lại kiểu mọi thứ đều đổ bóng. */
+    --shadow-sm: 0 0 0 1px var(--color-border);
+    --shadow-md: 0 2px 8px -4px rgba(13, 17, 23, 0.14);
+    --shadow-lg: 0 0 0 1px var(--color-border), 0 8px 24px -12px rgba(13, 17, 23, 0.18);
 }
 
 @layer base {
@@ -86,6 +106,19 @@
         background-color: var(--color-background);
         color: var(--color-foreground);
         font-family: var(--font-sans);
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* `h1` (tiêu đề trang) dùng mặt chữ hiển thị — đây là thứ tạo cá tính cho hệ thống, màu
+       không làm được. Tiêu đề khối dùng class `font-display` (token `--font-display`).
+       Không áp đại trà cho mọi h2: h2 trong card/dialog/panel là nhãn UI, serif ở đó sai giọng. */
+    h1 {
+        font-family: var(--font-display);
+        font-weight: 600;
+        letter-spacing: -0.018em;
+        text-wrap: balance;
     }
 }
 

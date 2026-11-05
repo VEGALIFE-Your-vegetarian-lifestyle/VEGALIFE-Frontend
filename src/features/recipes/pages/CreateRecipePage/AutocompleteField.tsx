@@ -104,7 +104,15 @@ export function AutocompleteField<T>({
                     onBlur?.();
                 }}
                 onKeyDown={handleKeyDown}
-                trailing={isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-muted-foreground" /> : undefined}
+                // Luôn truyền `trailing`, chỉ ẩn khi không fetch. Nếu trả `undefined`,
+                // `Input` bỏ lớp bọc và **remount** <input> mỗi lần trạng thái fetch đổi →
+                // mất focus thật nhưng `isFocused` vẫn `true`, dropdown "No matches" kẹt mở.
+                trailing={
+                    <Loader2
+                        className={cn("mr-2 h-4 w-4 text-muted-foreground", isFetching ? "animate-spin" : "invisible")}
+                        aria-hidden="true"
+                    />
+                }
             />
 
             {showList && (
