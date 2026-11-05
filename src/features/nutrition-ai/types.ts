@@ -54,12 +54,13 @@ export interface AiPlan {
 }
 
 export interface AiSubscription {
-    tier: "FREE" | "PRO";
-    status: "active" | "cancelled" | "past_due";
-    renewalDate: string | null;
-    usage: AiUsage;
-    currentPlan: AiPlan;
-    latestPayment: {
+    tier?: "FREE" | "PRO";
+    status?: "active" | "cancelled" | "past_due";
+    renewalDate?: string | null;
+    usage?: AiUsage;
+    remainingUsage?: number;
+    currentPlan?: AiPlan;
+    latestPayment?: {
         planCode: string;
         amount: number;
         currency: string;

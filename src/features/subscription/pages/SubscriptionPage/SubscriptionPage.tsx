@@ -36,7 +36,7 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
     const buyPlan = useBuyPlan();
     const cancel = useCancelSubscription();
 
-    const currentCode = subscription.data?.currentPlan.code;
+    const currentCode = subscription.data?.currentPlan?.code ?? subscription.data?.tier;
     const money = (amount: number, currency: string) =>
         new Intl.NumberFormat(i18n.language === "vi" ? "vi-VN" : "en-US", {
             style: "currency",
@@ -91,16 +91,20 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                         <div className="rounded-xl bg-vegan-green-light px-4 py-3">
                             <p className="flex items-center gap-2 text-sm font-bold text-vegan-green">
                                 <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                                {subscription.data.currentPlan.name}
-                                <Badge variant={subscription.data.status === "active" ? "default" : "amber"} size="sm">
-                                    {t(`status.${subscription.data.status}`)}
+                                {subscription.data.currentPlan?.name ?? subscription.data.tier ?? "FREE"}
+                                <Badge variant={(subscription.data.status ?? "active") === "active" ? "default" : "amber"} size="sm">
+                                    {subscription.data.status ? t(`status.${subscription.data.status}`) : "Active"}
                                 </Badge>
                             </p>
                             <p className="mt-0.5 text-xs text-muted-foreground">
-                                {t("current.usage", {
-                                    used: subscription.data.usage.used,
-                                    limit: subscription.data.usage.limit,
-                                })}
+                                {subscription.data.remainingUsage !== undefined
+                                    ? `Còn ${subscription.data.remainingUsage} câu hỏi`
+                                    : subscription.data.usage
+                                    ? t("current.usage", {
+                                          used: subscription.data.usage.used,
+                                          limit: subscription.data.usage.limit,
+                                      })
+                                    : null}
                             </p>
                         </div>
                     )}
@@ -298,21 +302,25 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                                 <div className="flex items-center justify-between gap-3">
                                     <dt className="text-muted-foreground">{t("history.plan")}</dt>
                                     <dd className="font-semibold text-vegan-green">
-                                        {subscription.data.currentPlan.name}
+                                        {subscription.data.currentPlan?.name ?? subscription.data.tier ?? "FREE"}
                                     </dd>
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
                                     <dt className="text-muted-foreground">{t("history.status")}</dt>
                                     <dd className="font-semibold text-dark">
-                                        {t(`status.${subscription.data.status}`)}
+                                        {subscription.data.status ? t(`status.${subscription.data.status}`) : "Active"}
                                     </dd>
                                 </div>
-                                <div className="flex items-center justify-between gap-3">
-                                    <dt className="text-muted-foreground">{t("current.quota")}</dt>
-                                    <dd className="font-semibold text-dark">
-                                        {subscription.data.usage.used}/{subscription.data.usage.limit}
-                                    </dd>
-                                </div>
+                                {(subscription.data.remainingUsage !== undefined || subscription.data.usage) && (
+                                    <div className="flex items-center justify-between gap-3">
+                                        <dt className="text-muted-foreground">{t("current.quota")}</dt>
+                                        <dd className="font-semibold text-dark">
+                                            {subscription.data.remainingUsage !== undefined
+                                                ? `Còn ${subscription.data.remainingUsage} câu hỏi`
+                                                : `${subscription.data.usage?.used ?? 0}/${subscription.data.usage?.limit ?? 20}`}
+                                        </dd>
+                                    </div>
+                                )}
                                 {subscription.data.renewalDate && (
                                     <div className="flex items-center justify-between gap-3">
                                         <dt className="text-muted-foreground">{t("history.renewalDate")}</dt>
