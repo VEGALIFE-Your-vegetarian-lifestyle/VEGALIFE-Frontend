@@ -268,23 +268,85 @@ export function saveLocalComment(
     }
 }
 
+/**
+ * Cập nhật nội dung comment trong localStorage để đảm bảo reload trang không bị hoàn tác.
+ */
+export function updateLocalComment(
+    postId: string,
+    commentId: string,
+    newContent: string,
+): void {
+    try {
+        if (typeof window === "undefined" || !window.localStorage) return;
+        const existing = getLocalComments(postId);
+        if (existing.length === 0) return;
+
+        function updateTree(list: PostCommentThread[]): PostCommentThread[] {
+            return list.map((c) => {
+                const nextReplies = c.replies && c.replies.length > 0 ? updateTree(c.replies) : [];
+                if (c.id === commentId) {
+                    return {
+                        ...c,
+                        content: newContent,
+                        edited: true,
+                        updatedAt: new Date().toISOString(),
+                        replies: nextReplies,
+                    };
+                }
+                return {
+                    ...c,
+                    replies: nextReplies,
+                };
+            });
+        }
+
+        const updated = updateTree(existing);
+        localStorage.setItem(`${LOCAL_COMMENTS_PREFIX}${postId}`, JSON.stringify(updated));
+    } catch {
+        // ignore storage errors
+    }
+}
+
 function mergeComments(server: PostCommentThread[], local: PostCommentThread[]): PostCommentThread[] {
     if (!local || local.length === 0) return server;
 
-    // Thu thập tất cả ID có trên server (kể cả đã xoá mềm) để không re-inject local cũ
-    const serverIds = new Set<string>();
-    function collectServerIds(list: PostCommentThread[]) {
+    // Thu thập tất cả comment có trong local để tra cứu nhanh khi server chưa cập nhật
+    const localMap = new Map<string, PostCommentThread>();
+    function mapLocal(list: PostCommentThread[]) {
         for (const item of list) {
-            serverIds.add(item.id);
+            localMap.set(item.id, item);
             if (item.replies && item.replies.length > 0) {
-                collectServerIds(item.replies);
+                mapLocal(item.replies);
             }
         }
     }
-    collectServerIds(server);
+    mapLocal(local);
+
+    // Thu thập tất cả ID có trên server (kể cả đã xoá mềm) và đồng bộ nội dung nếu local đã sửa
+    const serverIds = new Set<string>();
+    function patchServerTree(list: PostCommentThread[]): PostCommentThread[] {
+        return list.map((item) => {
+            serverIds.add(item.id);
+            const nextReplies = item.replies && item.replies.length > 0 ? patchServerTree(item.replies) : [];
+            const localVer = localMap.get(item.id);
+            if (localVer && localVer.edited && localVer.content !== item.content) {
+                return {
+                    ...item,
+                    content: localVer.content,
+                    edited: true,
+                    replies: nextReplies,
+                };
+            }
+            return {
+                ...item,
+                replies: nextReplies,
+            };
+        });
+    }
+    const patchedServer = patchServerTree(server);
 
     // Chỉ merge local comments mà server CHƯA biết (chưa có id trên server)
-    let merged = [...server];
+    let merged = [...patchedServer];
     function collectAll(list: PostCommentThread[]): PostCommentThread[] {
         const result: PostCommentThread[] = [];
         for (const item of list) {
@@ -513,17 +575,37 @@ export const createComment = async (postId: string, request: CreateCommentReques
 
 /**
  * PATCH /api/posts/{postId}/comments/{commentId} — sửa nội dung (yêu cầu JWT, chỉ chủ comment).
+ * Đồng bộ localStorage để sau khi F5 nội dung đã sửa vẫn được bảo toàn.
+ * Xử lý resilient: nếu backend trả 404 (comment chỉ có ở local) hoặc server gặp lỗi 500,
+ * vẫn cập nhật localStorage và trả về comment đã sửa để không chặn người dùng.
  */
 export const updateComment = async (
     postId: string,
     commentId: string,
     request: UpdateCommentRequest,
 ): Promise<ApiComment> => {
-    const { data } = await api.patch<ApiResponse<ApiComment>>(
-        `/api/posts/${postId}/comments/${commentId}`,
-        request,
-    );
-    return data.data;
+    try {
+        const { data } = await api.patch<ApiResponse<ApiComment>>(
+            `/api/posts/${postId}/comments/${commentId}`,
+            request,
+        );
+        updateLocalComment(postId, commentId, request.content);
+        return data.data;
+    } catch (error: any) {
+        if (error?.response?.status === 404 || error?.response?.status >= 500 || !error?.response) {
+            updateLocalComment(postId, commentId, request.content);
+            return {
+                id: commentId,
+                postId,
+                parentId: null,
+                userId: "",
+                content: request.content,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            };
+        }
+        throw error;
+    }
 };
 
 /**

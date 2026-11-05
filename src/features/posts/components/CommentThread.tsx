@@ -11,7 +11,7 @@ import { formatDateLocale } from "@/shared/utils/formatDate";
 import { cn } from "@/shared/utils/cn";
 import { useAuth } from "@/features/auth/useAuth";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
-import { countAllComments, deleteComment, removeLocalComment, reportComment, updateComment } from "../api";
+import { countAllComments, deleteComment, removeLocalComment, reportComment, updateComment, updateLocalComment } from "../api";
 import { CommentComposer } from "./CommentComposer";
 import type { PostCommentThread } from "../types";
 import type { PageResponse } from "@/shared/types/common";
@@ -116,6 +116,7 @@ export function CommentThread({
         onSuccess: (updated) => {
             setIsEditing(false);
             toast.success(t("comments.editedSuccess"));
+            if (postId) updateLocalComment(postId, comment.id, updated.content);
             if (postId) {
                 queryClient.setQueriesData<PageResponse<PostCommentThread>>(
                     { queryKey: ["post-comments", postId] },

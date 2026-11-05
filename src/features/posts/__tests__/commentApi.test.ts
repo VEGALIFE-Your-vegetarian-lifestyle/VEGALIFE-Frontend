@@ -9,6 +9,7 @@ import {
     reportComment,
     saveLocalComment,
     updateComment,
+    updateLocalComment,
 } from "../api";
 import type { PostCommentThread } from "../types";
 
@@ -342,6 +343,60 @@ describe("commentApi — post comment endpoints", () => {
         vi.mocked(api.delete).mockRejectedValueOnce(error403);
 
         await expect(deleteComment(postId, "forbidden-id")).rejects.toThrow();
+    });
+
+    it("updateLocalComment cập nhật nội dung comment trong localStorage", () => {
+        const mockComment: PostCommentThread = {
+            id: "c-to-update",
+            userId: "u1",
+            parentId: null,
+            replyToUsername: null,
+            username: "trungtin",
+            displayName: "trungtin",
+            avatarUrl: null,
+            content: "Nội dung cũ",
+            edited: false,
+            deleted: false,
+            createdAt: "2026-11-05T10:00:00Z",
+            updatedAt: "2026-11-05T10:00:00Z",
+            replies: [],
+        };
+        saveLocalComment(postId, mockComment);
+        updateLocalComment(postId, "c-to-update", "Nội dung đã sửa");
+
+        const local = getLocalComments(postId);
+        expect(local).toHaveLength(1);
+        expect(local[0].content).toBe("Nội dung đã sửa");
+        expect(local[0].edited).toBe(true);
+    });
+
+    it("updateComment xử lý an toàn khi server trả 404 (comment chỉ có ở local) và cập nhật local", async () => {
+        const mockComment: PostCommentThread = {
+            id: "local-only-c",
+            userId: "u1",
+            parentId: null,
+            replyToUsername: null,
+            username: "trungtin",
+            displayName: "trungtin",
+            avatarUrl: null,
+            content: "Nội dung ban đầu",
+            edited: false,
+            deleted: false,
+            createdAt: "2026-11-05T10:00:00Z",
+            updatedAt: "2026-11-05T10:00:00Z",
+            replies: [],
+        };
+        saveLocalComment(postId, mockComment);
+
+        const error404: any = new Error("Comment not found");
+        error404.response = { status: 404, data: { message: "Comment not found" } };
+        vi.mocked(api.patch).mockRejectedValueOnce(error404);
+
+        const res = await updateComment(postId, "local-only-c", { content: "Nội dung đã sửa an toàn" });
+        expect(res.content).toBe("Nội dung đã sửa an toàn");
+
+        const local = getLocalComments(postId);
+        expect(local[0].content).toBe("Nội dung đã sửa an toàn");
     });
 });
 
