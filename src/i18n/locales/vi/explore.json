@@ -1,38 +1,60 @@
 {
     "title": "Khám phá",
-    "subtitle": "Khám phá công thức, blog và video nấu ăn từ cộng đồng.",
-    "searchPlaceholder": "Tìm công thức, nguyên liệu hoặc thẻ...",
+    "hero": {
+        "eyebrow": "Tuyển chọn biên tập & cộng đồng",
+        "title": "Khám phá Văn hoá Thực vật & Biên niên",
+        "subtitle": "Khám phá câu chuyện, công thức thuần chay, khoa học dinh dưỡng và thảo luận được tuyển chọn từ những người sáng tạo và đầu bếp thực vật có chứng nhận trên toàn thế giới."
+    },
+    "searchPlaceholder": "Tìm câu chuyện, công thức, hướng dẫn dinh dưỡng, nguyên liệu...",
     "searchButton": "Tìm kiếm",
-    "filters": "Bộ lọc",
-    "filtersActive": "Bộ lọc ({{count}})",
+    "filterTitle": "Bộ lọc nội dung",
+    "categoryTitle": "Danh mục",
+    "resetFilters": "Xóa tất cả",
     "clearSearch": "Xóa từ khóa",
-    "masterclass": "Lớp chuyên sâu",
-    "verified": "Cơ sở dữ liệu thực vật đã xác minh 100%",
-    "resultsFor": "Hiển thị {{count}} kết quả cho",
-    "sortBy": "Sắp xếp",
+    "resultsFor": "Kết quả cho",
+    "items": "{{count}} biên niên",
+    "filteredAcross": "được lọc từ cộng đồng thực vật",
+    "showing": "Đang hiện {{shown}} / {{total}} biên niên",
+    "sortBy": "Sắp xếp:",
     "sort": {
         "popular": "Nhiều lượt xem",
         "recent": "Mới nhất"
     },
     "tab": {
         "all": "Tất cả",
-        "recipe": "Công thức",
-        "blog": "Blog",
-        "video": "Video"
+        "recipe": "Có công thức",
+        "blog": "Bài viết & Câu chuyện"
     },
-    "relatedTitle": "Tìm kiếm liên quan",
-    "relatedSubtitle": "Tiếp tục khám phá nguồn đạm thực vật và cảm hứng chuẩn bị bữa ăn:",
-    "related": {
-        "tempeh": "Món từ tempeh",
-        "highProtein": "Bữa trưa giàu đạm",
-        "crispyTofu": "Đậu hũ chiên giòn",
-        "nutritionalYeast": "Công thức men dinh dưỡng"
+    "format": {
+        "title": "Định dạng nội dung",
+        "all": "Mọi định dạng",
+        "recipe": "Kèm công thức",
+        "article": "Chỉ bài viết"
+    },
+    "reading": {
+        "title": "Thời gian đọc",
+        "any": "Mọi độ dài",
+        "quick": "Đọc nhanh (< 5 phút)",
+        "deep": "Chuyên sâu (> 10 phút)"
+    },
+    "recipe": {
+        "protein": "{{count}}g protein"
+    },
+    "cta": {
+        "title": "Bạn có câu chuyện thực vật?",
+        "body": "Chia sẻ thử nghiệm nấu nướng, thành quả lên men, hoặc nghiên cứu dinh dưỡng dựa trên bằng chứng của bạn.",
+        "action": "Tạo biên niên mới"
     },
     "empty": {
         "title": "Không tìm thấy nội dung ăn chay phù hợp",
         "description": "Thử tìm với từ khóa rộng hơn như 'Rau chân vịt', 'Cà ri' hoặc 'Mì Ý'.",
         "action": "Xóa bộ lọc"
     },
-    "error": "Không thể tải bài viết. Vui lòng thử lại sau.",
-    "votes": "{{count}} phiếu"
+    "card": {
+        "comments": "Bình luận",
+        "commentsWithCount_other": "{{count}} bình luận",
+        "readFullPost": "Đọc bài đầy đủ",
+        "readMore": "Đọc tiếp"
+    },
+    "error": "Không thể tải bài viết. Vui lòng thử lại sau."
 }

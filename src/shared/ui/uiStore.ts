@@ -4,6 +4,10 @@ import type { SupportedLanguage } from "@/i18n";
 interface UiState {
     sidebarCollapsed: boolean;
     language: SupportedLanguage;
+    /** `postId: null` = tạo mới; có id = sửa bài. Dialog mount một lần ở Layout. */
+    composer: { postId: string | null } | null;
+    openComposer: (postId?: string | null) => void;
+    closeComposer: () => void;
     toggleSidebar: () => void;
     setLanguage: (language: SupportedLanguage) => void;
 }
@@ -19,6 +23,9 @@ function getInitialLanguage(): SupportedLanguage {
 export const useUiStore = create<UiState>((set) => ({
     sidebarCollapsed: window.innerWidth < 1024,
     language: getInitialLanguage(),
+    composer: null,
+    openComposer: (postId = null) => set({ composer: { postId } }),
+    closeComposer: () => set({ composer: null }),
     toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
     setLanguage: (language) => {
         localStorage.setItem(STORAGE_KEY, language);

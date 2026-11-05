@@ -1,4 +1,4 @@
-import type { UpdateProfileRequest, UserProfile } from "@/shared/types/user";
+import type { UserProfile } from "@/shared/types/user";
 
 /** Giới hạn backend cho 4 mảng dietary — PUT /api/profile. */
 export const MAX_DIETARY_ITEMS = 50;
@@ -7,6 +7,27 @@ export const MAX_HEALTH_GOAL_LENGTH = 200;
 
 export const DIETARY_LIST_KEYS = ["preferences", "dislikes", "allergies", "restrictions"] as const;
 export type DietaryListKey = (typeof DIETARY_LIST_KEYS)[number];
+
+/**
+ * Gợi ý UI cho chip — KHÔNG phải enum: backend nhận chuỗi tự do cho cả 5 field,
+ * nên người dùng luôn gõ được giá trị ngoài danh sách này.
+ */
+export const DIETARY_SUGGESTIONS: Record<DietaryListKey, readonly string[]> = {
+    preferences: ["Vegan", "Vegetarian", "Gluten-free", "Low-carb", "High-protein"],
+    allergies: ["Peanuts", "Tree nuts", "Soy", "Sesame", "Shellfish"],
+    dislikes: ["Cilantro", "Mushroom", "Olives", "Onion"],
+    restrictions: ["No added sugar", "Low sodium", "No fried food", "No alcohol"],
+};
+
+export const GOAL_SUGGESTIONS = ["Lose weight", "Maintain weight", "Gain muscle", "Improve digestion"];
+
+/** Dị ứng tô màu cảnh báo; 3 nhóm còn lại màu xanh thương hiệu. */
+export const DIETARY_TONE: Record<DietaryListKey, "green" | "alert"> = {
+    preferences: "green",
+    dislikes: "green",
+    allergies: "alert",
+    restrictions: "green",
+};
 
 export interface DietaryValues {
     preferences: string[];
@@ -45,33 +66,4 @@ export function normalizeTags(values: readonly string[]): string[] {
     }
 
     return result;
-}
-
-function sameTags(left: readonly string[], right: readonly string[]): boolean {
-    const a = normalizeTags(left);
-    const b = normalizeTags(right);
-    return a.length === b.length && a.every((value, index) => value === b[index]);
-}
-
-/**
- * Chỉ trả field đã đổi so với dữ liệu đang lưu.
- *
- * Backend merge từng field: vắng mặt = giữ nguyên, `[]` = xoá sạch. Nhờ vậy lưu
- * dietary không đụng tới height/weight/age/... của form hồ sơ.
- * `healthGoal` xoá trắng thì gửi `""` (backend không có cách riêng để null hoá — gửi
- * `null` nghĩa là "giữ nguyên"). Hệ quả: lần đọc sau trả `""` chứ không vắng field,
- * `toDietaryValues` đã xử lý qua `?? ""`.
- */
-export function buildDietaryPatch(initial: DietaryValues, current: DietaryValues): UpdateProfileRequest {
-    const patch: UpdateProfileRequest = {};
-
-    for (const key of DIETARY_LIST_KEYS) {
-        const next = normalizeTags(current[key]);
-        if (!sameTags(next, initial[key])) patch[key] = next;
-    }
-
-    const goal = current.healthGoal.trim();
-    if (goal !== initial.healthGoal.trim()) patch.healthGoal = goal;
-
-    return patch;
 }

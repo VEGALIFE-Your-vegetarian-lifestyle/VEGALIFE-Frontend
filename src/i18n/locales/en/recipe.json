@@ -1,23 +1,28 @@
 {
     "title": "Create Recipe",
     "breadcrumb": "Recipes",
-    "sectionLabel": "Section {{letter}}",
     "section": {
-        "basic": "Basic Information",
-        "ingredients": "Ingredients",
-        "instructions": "Cooking Instructions",
-        "details": "Recipe Details"
+        "overview": "Recipe Overview",
+        "overviewHint": "Give your recipe a title, dish name, and brief story",
+        "ingredients": "Ingredients & Quantities",
+        "ingredientsHint": "List your ingredients and exact amounts",
+        "instructions": "Cooking Steps",
+        "instructionsHint": "Step-by-step instructions with cooking timers",
+        "details": "Servings & Cook Time",
+        "detailsHint": "Specify serving size, preparation time, and skill level"
     },
     "field": {
-        "name": "Recipe Name",
+        "name": "Recipe Title",
         "dishName": "Dish Name",
-        "description": "Description",
-        "prepTime": "Prep Time (min)",
-        "cookTime": "Cook Time (min)",
+        "description": "About This Dish & Notes",
+        "prepTime": "Prep Time",
+        "cookTime": "Cook Time",
+        "totalTime": "Total Time",
         "servings": "Servings",
         "difficulty": "Difficulty",
-        "instructions": "Cooking Instructions",
-        "ingredientName": "Ingredient Name",
+        "stepTitle": "Step {{step}} title",
+        "stepBody": "Step {{step}} instructions",
+        "ingredientName": "Ingredient",
         "amount": "Amount",
         "unit": "Unit"
     },
@@ -27,55 +32,155 @@
         "description": "What makes this recipe special?",
         "ingredientName": "Start typing an ingredient",
         "amount": "1",
-        "unit": "g, ml, tbsp…",
-        "instructions": "Write the steps, one per line."
+        "stepTitle": "e.g. Bloom the aromatics",
+        "stepBody": "Describe what happens in this step…"
     },
     "counter": {
-        "characters": "{{count}} / {{max}}",
-        "steps": "{{steps}} steps · {{characters}} characters"
+        "characters": "{{count}} / {{max}} chars",
+        "words": "{{count}} words"
     },
     "difficulty": {
         "EASY": "Easy",
         "MEDIUM": "Medium",
         "HARD": "Hard"
     },
+    "myRecipes": {
+        "breadcrumb": "My Recipes",
+        "breadcrumbMyAccount": "My Account",
+        "eyebrow": "Creator Studio",
+        "syncStatus": "Auto-sync active",
+        "title": "My Recipes",
+        "subtitle": "Every recipe you have created, with its moderation status and nutrition at a glance.",
+        "create": "Create New Recipe",
+        "search": "Search by name, dish, or ingredient...",
+        "showing": "Showing {{from}}–{{to}} of {{total}} recipes",
+        "synced": "Drafts synced from the server",
+        "noDescription": "No description yet.",
+        "updated": "Updated {{date}}",
+        "filter": {
+            "difficulty": "Difficulty",
+            "difficultyAll": "All difficulties"
+        },
+        "sort": {
+            "label": "Sort recipes",
+            "updated": "Recently modified",
+            "created": "Recently created",
+            "name": "Name (A–Z)",
+            "hint": {
+                "updated": "Sorted by recent modifications",
+                "created": "Sorted by creation date",
+                "name": "Sorted by name"
+            }
+        },
+        "tab": {
+            "all": "All",
+            "APPROVED": "Published",
+            "PENDING": "Under Review",
+            "REJECTED": "Needs Changes"
+        },
+        "status": {
+            "APPROVED": "Published",
+            "PENDING": "Under Review",
+            "REJECTED": "Needs Changes"
+        },
+        "stats": {
+            "total": "Total recipes",
+            "approved": "Published",
+            "pending": "Under review",
+            "quick": "Quick meals",
+            "quickHint": "30 minutes or less"
+        },
+        "meta": {
+            "servings_one": "{{count}} serving",
+            "servings_other": "{{count}} servings",
+            "prep": "Prep: {{count}}m",
+            "cook": "Cook: {{count}}m",
+            "ingredients_one": "{{count}} ingredient",
+            "ingredients_other": "{{count}} ingredients"
+        },
+        "action": {
+            "view": "View Recipe"
+        },
+        "detail": {
+            "dishPending": "This recipe is published, but its shared dish name is still awaiting moderation."
+        },
+        "empty": {
+            "title": "No recipes yet",
+            "hint": "Recipes you create will show up here with their moderation status.",
+            "filtered": "No recipes match these filters",
+            "filteredHint": "Try another keyword, difficulty, or status tab."
+        }
+    },
+    "servings": {
+        "unit": "servings",
+        "decrease": "One serving less",
+        "increase": "One serving more",
+        "helper": "Whole number, at least 1."
+    },
+    "time": {
+        "prepHelper": "Cutting & pressing",
+        "cookHelper": "Active cooking",
+        "minutesShort": "mins"
+    },
+    "steps": {
+        "add": "Add Cooking Step",
+        "hint": "Blank steps are skipped when the recipe is saved.",
+        "moveUp": "Move step up",
+        "moveDown": "Move step down",
+        "remove": "Remove step"
+    },
+    "preview": {
+        "title": "Live Card Preview",
+        "liveSync": "Live Sync",
+        "more": "+{{count}} more",
+        "creator": "Community Creator"
+    },
     "ingredient": {
         "add": "Add Ingredient",
         "remove": "Remove ingredient",
-        "hint": "Supports up to 3 decimal places (e.g. 0.125 tsp)."
+        "action": "Action",
+        "hint": "Up to 3 decimal places (e.g. 0.125 tsp).",
+        "itemCount": "{{count}} of {{max}} items · decimal precision active"
     },
     "readiness": {
-        "title": "Recipe Readiness",
+        "title": "Recipe Checklist",
         "percent": "{{percent}}% Ready",
-        "name": "Recipe Name",
-        "dish": "Dish Name",
-        "ingredients": "Ingredients",
-        "instructions": "Cooking Instructions",
-        "servings": "Servings Count",
+        "name": "Recipe Title & Dish",
+        "ingredients": "Standardized Ingredients",
+        "instructions": "Cooking Steps",
+        "servings": "Servings & Time",
         "value": {
             "valid": "Valid",
-            "assigned": "Assigned",
-            "items": "{{count}} items",
-            "provided": "Provided",
-            "servings": "{{count}} servings"
+            "items": "{{count}} verified",
+            "phases": "{{count}} steps",
+            "configured": "Configured",
+            "missing": "Missing",
+            "perServing": "{{calories}} kcal / serving"
         },
-        "footnote": "Prevents accidental duplicate submissions while the request is in progress. Form data is retained if a temporary network error occurs."
+        "rank": {
+            "outline": "Outline",
+            "balanced": "Balanced effort",
+            "challenging": "Challenging"
+        }
     },
     "standards": {
-        "title": "Form Standards",
-        "units": {
-            "title": "Standardized Units",
-            "description": "Use common kitchen measurements (grams, ml, cups, tbsp, tsp) for consistency across international users."
+        "plantFirst": {
+            "title": "Plant-First",
+            "description": "Free from meat, dairy, honey and animal derivatives.",
+            "chip": "100% Plant-Based"
         },
-        "precision": {
-            "title": "Numerical Precision",
-            "description": "Ingredient amounts accept decimal values up to 3 decimal places."
+        "tracker": {
+            "title": "Nutritional Info",
+            "description": "Calories and macros attached to this recipe follow it everywhere it appears."
         },
-        "unique": {
-            "title": "Uniqueness Rule",
-            "description": "Ingredient names must be distinct within this recipe formula."
+        "seo": {
+            "title": "Search Engine Ready",
+            "description": "A clear title and dish name help the recipe surface in VEGALIFE search and listings."
         },
-        "previewJson": "Preview JSON Payload"
+        "moderate": {
+            "title": "Review Required",
+            "description": "A new recipe and its shared dish name go to moderation before they appear publicly."
+        }
     },
     "action": {
         "cancel": "Cancel",
@@ -87,10 +192,9 @@
         "failed": "Could not create the recipe. Please try again."
     },
     "hint": {
-        "name": "Provide a descriptive, appetizing title. Maximum 255 characters.",
         "autocomplete": "Pick a suggestion or type a new name — it will be created.",
         "noSuggestions": "No matches — keep typing to create a new one.",
-        "instructions": "Formatted as newline-separated instructions for cooking execution."
+        "description": "Highlight umami depth, texture contrasts, and pairing notes."
     },
     "errors": {
         "servingsMin": "Servings must be a whole number of at least 1",
@@ -98,6 +202,8 @@
         "ingredientsMax": "A recipe can have at most 50 ingredients",
         "ingredientDuplicate": "Each ingredient can only appear once",
         "amountInvalid": "Amount must be greater than 0 with at most 3 decimals",
-        "minutesInvalid": "Enter a whole number of minutes (0 or more)"
+        "minutesInvalid": "Enter a whole number of minutes (0 or more)",
+        "numberInvalid": "Enter a number of 0 or more",
+        "stepBodyRequired": "Add instructions for this step, or clear its title"
     }
 }

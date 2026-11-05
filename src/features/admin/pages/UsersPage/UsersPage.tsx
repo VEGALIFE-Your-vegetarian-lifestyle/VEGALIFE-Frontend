@@ -77,7 +77,7 @@ export default function UsersPage() {
     const filteredUsers =
         data?.data.filter(
             (user) =>
-                user.username.toLowerCase().includes(debouncedQ.toLowerCase()) ||
+                (user.displayName ?? "").toLowerCase().includes(debouncedQ.toLowerCase()) ||
                 user.email.toLowerCase().includes(debouncedQ.toLowerCase()),
         ) ?? [];
 
@@ -133,7 +133,7 @@ export default function UsersPage() {
                             ) : (
                                 filteredUsers.map((user) => (
                                     <TableRow key={user.id}>
-                                        <TableCell className="font-medium">{user.username}</TableCell>
+                                        <TableCell className="font-medium">{user.displayName}</TableCell>
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>
                                             <Badge variant={user.role === "ADMIN" ? "default" : "secondary"}>
@@ -193,7 +193,7 @@ export default function UsersPage() {
                 open={confirm !== null}
                 title={t(confirm?.type === "suspend" ? "users.confirm.lockTitle" : "users.confirm.unlockTitle")}
                 description={t(confirm?.type === "suspend" ? "users.confirm.lockDescription" : "users.confirm.unlockDescription", {
-                    username: confirm?.user.username ?? "",
+                    username: confirm?.user.displayName ?? "",
                 })}
                 confirmLabel={t(confirm?.type === "suspend" ? "users.confirm.lockConfirm" : "users.confirm.unlockConfirm")}
                 destructive={confirm?.type === "suspend"}

@@ -1,22 +1,20 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Bookmark, Eye, FileText, Heart, MessageCircle, Play } from "lucide-react";
+import { ArrowRight, Bookmark, Clock, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Avatar } from "@/components/ui/avatar";
+import { useCategoryNames } from "@/features/categories/usePublicCategories";
 import { cn } from "@/shared/utils/cn";
-import { formatDateLocale } from "@/shared/utils/formatDate";
+import { FALLBACK_IMAGE, showFallbackImage, stripMarkdown } from "@/shared/utils/display";
+import { estimateReadMinutes, formatDateLocale } from "@/shared/utils/formatDate";
 import type { PostListResponse } from "../types";
 
 interface PostCardProps {
     post: PostListResponse;
     language: string;
-    /** Hiện nút bookmark góc ảnh (chỉ ở feed Home/Explore). */
+    /** Hiện nút bookmark ở chân card (chỉ ở feed Home/Explore). */
     bookmark?: boolean;
     className?: string;
 }
-
-const PLACEHOLDER =
-    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format&fit=crop";
 
 function compactNumber(value: number, language: string): string {
     return value.toLocaleString(language === "vi" ? "vi-VN" : "en-US", {
@@ -26,140 +24,93 @@ function compactNumber(value: number, language: string): string {
 }
 
 /**
- * Card feed dùng chung cho Home / Explore / Post Detail (related).
- * ponytail: `type` chỉ có blog|video; nhãn "Recipe" suy từ việc bài có category.
- * Nhãn nút "View …" lấy từ `home.card.view*` — đã có sẵn ở cả en và vi.
+ * Card feed dùng chung cho Home / Explore / Post Detail (related) — theo mockup Stitch
+ * `screen01_home`: card TRẮNG có padding, ảnh nằm trong card (không tràn viền), chân
+ * card là hàng meta + bookmark.
+ *
+ * ponytail: BE bỏ `type`/`videoUrl` khỏi `PostListResponse` (`GET /api/posts/{id}` cũng không
+ * trả) → không có field nào phân biệt video/recipe/blog, chỉ còn `categoryIds`. Đang tạm coi
+ * "có category = recipe", "còn lại = blog"; nhãn video vẫn giữ trong i18n nhưng không dùng.
+ * Xem DOCS/UI-DATA-MAP.md §4.
  */
 export function PostCard({ post, language, bookmark = false, className }: PostCardProps) {
     const { t } = useTranslation("home");
-
-    const isVideo = post.type === "video";
-    const label = isVideo
-        ? t("card.video")
-        : post.categoryIds.length > 0
-          ? t("card.recipe")
-          : t("card.blog");
-    const actionLabel = isVideo
-        ? t("card.viewVideo")
-        : post.categoryIds.length > 0
-          ? t("card.viewRecipe")
-          : t("card.viewBlog");
+    const categoryNames = useCategoryNames();
+    const categoryName = post.categoryIds.map((id) => categoryNames.get(id)).find(Boolean);
 
     return (
         <article
             className={cn(
-                "group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:shadow-md",
+                "group flex flex-col overflow-hidden rounded-3xl bg-card shadow-sm transition-shadow hover:shadow-xl",
                 className,
             )}
         >
-            <Link to={`/posts/${post.id}`} className="relative block h-48 overflow-hidden">
+            <Link to={`/posts/${post.id}`} className="relative block aspect-[16/11] overflow-hidden bg-muted-bg">
                 <img
-                    src={post.featuredImageUrl || PLACEHOLDER}
+                    src={post.featuredImageUrl || FALLBACK_IMAGE}
+                    onError={showFallbackImage()}
                     alt={post.title}
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     loading="lazy"
                 />
-                <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-surface/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-dark backdrop-blur-sm">
-                    {isVideo ? <Play className="h-3 w-3" aria-hidden="true" /> : <FileText className="h-3 w-3" aria-hidden="true" />}
-                    {label}
+                <span
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"
+                />
+                <span className="absolute left-4 top-4 rounded-full bg-surface/90 px-3 py-1 text-[11px] font-semibold text-dark shadow-sm backdrop-blur-sm">
+                    {categoryName ? t("card.recipe") : t("card.blog")}
                 </span>
-                {isVideo && (
-                    <span className="absolute inset-0 flex items-center justify-center">
-                        <Play className="h-12 w-12 text-white/85 drop-shadow-md" aria-hidden="true" />
+                <span className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] font-medium text-white">
+                    <span className="flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                        {t("card.mins", { count: estimateReadMinutes(post.content) })}
                     </span>
-                )}
-                {bookmark && (
-                    <span
-                        aria-hidden="true"
-                        className="absolute right-3 top-3 rounded-full bg-white/80 p-2 text-dark transition group-hover:text-vegan-green"
-                    >
-                        <Bookmark className="h-4 w-4" />
-                    </span>
-                )}
-                {/* Nhãn thời lượng — mockup đặt ở góc dưới-phải ảnh. */}
-                {post.durationLabel && (
-                    <span className="absolute bottom-3 right-3 rounded-full bg-dark/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
-                        {post.durationLabel}
-                    </span>
-                )}
-            </Link>
-
-            <div className="flex flex-1 flex-col p-5">
-                <h3 className="mb-2 line-clamp-2 font-bold text-dark">
-                    <Link to={`/posts/${post.id}`} className="hover:text-vegan-green">
-                        {post.title}
-                    </Link>
-                </h3>
-                <p className="mb-4 line-clamp-2 flex-1 text-sm text-muted-foreground">{post.content}</p>
-
-                {post.authorCard && (
-                    <div className="mb-4 flex items-center gap-2.5">
-                        <Avatar name={post.authorCard.username} src={post.authorCard.avatarUrl} size="sm" verified />
-                        <div className="min-w-0">
-                            <p className="truncate text-xs font-bold text-dark">{post.authorCard.username}</p>
-                            <p className="truncate text-[11px] text-muted-foreground">{post.authorCard.role}</p>
-                        </div>
-                    </div>
-                )}
-
-                <div className="mt-auto flex items-center gap-4 border-t border-border pt-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1.5">
-                        <Heart className="h-3.5 w-3.5" aria-hidden="true" />
-                        {compactNumber(post.saveCount ?? 0, language)}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                        <MessageCircle className="h-3.5 w-3.5 text-info" aria-hidden="true" />
-                        {compactNumber(post.commentCount ?? 0, language)}
-                    </span>
-                    <span className="ml-auto flex items-center gap-1.5">
+                    <span className="flex items-center gap-1">
                         <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                         {compactNumber(post.viewCount, language)}
                     </span>
+                </span>
+            </Link>
+
+            <div className="flex flex-1 flex-col justify-between gap-4 p-5">
+                <div>
+                    <h3 className="line-clamp-2 text-base font-bold leading-snug text-dark transition-colors group-hover:text-vegan-green md:text-lg">
+                        <Link to={`/posts/${post.id}`}>{post.title}</Link>
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground md:text-sm">
+                        {stripMarkdown(post.content)}
+                    </p>
                 </div>
 
-                <Link
-                    to={`/posts/${post.id}`}
-                    className="mt-4 flex h-11 w-full items-center justify-center rounded-xl bg-lavender text-sm font-semibold text-lavender-strong transition-colors hover:bg-lavender-hover"
-                >
-                    {actionLabel}
-                </Link>
+                <div className="flex items-center justify-between gap-2 pt-2">
+                    {/* ponytail: BE không trả tác giả trong feed → ô này hiện category (thật).
+                        Mockup vẽ avatar + tên tác giả + nút bookmark; cần `GET /api/profile/{userId}`
+                        mới có, và chưa có API lưu bài nên bookmark chỉ là icon trang trí. */}
+                    {categoryName ? (
+                        <Badge variant="lightgreen" size="sm">
+                            {categoryName}
+                        </Badge>
+                    ) : (
+                        <span className="text-[11px] text-muted-foreground">
+                            {formatDateLocale(post.createdAt, language)}
+                        </span>
+                    )}
+
+                    {bookmark ? (
+                        <span className="text-muted-foreground transition-colors group-hover:text-vegan-green" aria-hidden="true">
+                            <Bookmark className="h-4 w-4" />
+                        </span>
+                    ) : (
+                        <Link
+                            to={`/posts/${post.id}`}
+                            className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-vegan-green hover:underline"
+                        >
+                            {categoryName ? t("card.viewRecipe") : t("card.viewBlog")}
+                            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                        </Link>
+                    )}
+                </div>
             </div>
         </article>
-    );
-}
-
-/** Card dạng hàng ngang nhỏ — dùng cho mục "Related" và sidebar. */
-export function PostCardCompact({ post, language }: { post: PostListResponse; language: string }) {
-    const { t } = useTranslation("home");
-    const isVideo = post.type === "video";
-
-    return (
-        <Link
-            to={`/posts/${post.id}`}
-            className={cn(
-                "flex gap-3 overflow-hidden rounded-xl border border-border bg-card p-3 transition hover:shadow-md",
-            )}
-        >
-            <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-lg">
-                <img
-                    src={post.featuredImageUrl || PLACEHOLDER}
-                    alt={post.title}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                />
-                {isVideo && (
-                    <span className="absolute inset-0 flex items-center justify-center">
-                        <Play className="h-7 w-7 text-white/85 drop-shadow-sm" aria-hidden="true" />
-                    </span>
-                )}
-            </div>
-            <div className="flex min-w-0 flex-col justify-center">
-                <Badge variant={isVideo ? "cream" : "lightgreen"} size="sm" className="mb-1 w-fit">
-                    {isVideo ? t("card.video") : t("card.recipe")}
-                </Badge>
-                <h4 className="line-clamp-2 text-sm font-bold text-dark">{post.title}</h4>
-                <p className="mt-1 text-xs text-muted-foreground">{formatDateLocale(post.createdAt, language)}</p>
-            </div>
-        </Link>
     );
 }

@@ -1,7 +1,7 @@
 # Cấu trúc source code — VEGALIFE Frontend
 
-> Cập nhật: 2026-10-24 · Branch: `feat/recipes`
-> Kiến trúc **feature-based**. **164 file `.ts`/`.tsx`** trong **68 thư mục** dưới `src/`.
+> Cập nhật: 2026-10-30 · Branch: `update/ui-ux`
+> Kiến trúc **feature-based**. **194 file `.ts`/`.tsx`** trong **81 thư mục** dưới `src/`.
 > Plan gốc: [PLAN-REFACTOR.md](PLAN-REFACTOR.md).
 
 ## 1. Cây thư mục
@@ -45,7 +45,7 @@ VEGALIFE-Frontend/
 │   │   │   └── pill-tabs.tsx
 │   │   └── common/              10 component ghép sẵn theo pattern của app
 │   │       ├── PageHeader.tsx       tiêu đề trang + slot action
-│   │       ├── SectionCard.tsx      khối nội dung có tiêu đề
+│   │       ├── SectionCard.tsx      khối nội dung có tiêu đề (`inlineHeader`: badge cạnh tiêu đề + kẻ xám)
 │   │       ├── StatCard.tsx         ô số liệu
 │   │       ├── EmptyState.tsx       trạng thái rỗng
 │   │       ├── ErrorState.tsx       trạng thái lỗi + nút thử lại
@@ -65,13 +65,14 @@ VEGALIFE-Frontend/
 │   │   ├── posts/               xem mục 3.6
 │   │   ├── profile/             xem mục 3.7
 │   │   ├── recipes/             xem mục 3.9
+│   │   ├── subscription/        xem mục 3.11
 │   │   └── videos/              xem mục 3.8
 │   │
 │   ├── i18n/
-│   │   ├── index.ts             khởi tạo i18next, đăng ký 13 namespace
-│   │   └── locales/{en,vi}/     13 namespace mỗi thứ tiếng, key phải khớp nhau
+│   │   ├── index.ts             khởi tạo i18next, đăng ký 14 namespace
+│   │   └── locales/{en,vi}/     14 namespace mỗi thứ tiếng, key phải khớp nhau
 │   │       admin · aiNutrition · auth · common · explore · home ·
-│   │       location · menu · nearby · post · profile · recipe · validation
+│   │       location · menu · nearby · post · profile · recipe · subscription · validation
 │   │
 │   ├── shared/                  hạ tầng dùng chung, KHÔNG import features/ hay components/
 │   │   ├── api/
@@ -84,7 +85,7 @@ VEGALIFE-Frontend/
 │   │   │   └── useDebounce.ts       debounce giá trị (mặc định 300ms)
 │   │   ├── types/
 │   │   │   ├── common.ts            ApiResponse, Paginated, PageResponse, ListParams
-│   │   │   ├── user.ts              User, UserProfile, role, status, gender
+│   │   │   ├── user.ts              User, UserProfile (đọc: + username/email/bmi), role, status, gender
 │   │   │   ├── dish.ts              Dish đầy đủ (có createdAt)
 │   │   │   └── media.ts
 │   │   ├── ui/uiStore.ts            ngôn ngữ, state UI toàn cục
@@ -214,30 +215,32 @@ Có `ponytail:` tại chỗ; gỡ khi backend bổ sung endpoint.
 | `api.ts` | feed, CRUD bài, duyệt/từ chối, bình luận |
 | `useFeedPosts.ts` | `useQuery` cho feed |
 | `types.ts` | `Post`, `PostStatus`, `PostFlag`, `JSONContent`, kiểu request/response |
-| `constants.ts` | `POST_STATUS_VARIANT`, `POST_FLAG_VARIANT`, `canPublish`, `canUnpublish` |
-| `mockEnrichment.ts` | điền field mock (dinh dưỡng, nguyên liệu, bước, tip) |
+| `constants.ts` | `POST_STATUS_VARIANT`, `POST_FLAG_VARIANT`, `canPublish`, `canReject` |
+| `mockEnrichment.ts` | điền field mock **cấp card** cho Home/Explore/MyPosts (`enrichListItem`, `getMockActivity`) — mock cấp detail đã xoá 2026-10-29 |
 | `mockAuthors.ts` | thẻ tác giả giả |
-| `components/PostCard.tsx` | card bài (có `PostCardCompact`) |
+| `components/PostCard.tsx` | card bài — dùng ở Home / PostDetail (Related) |
 | `components/PostStatusBadge.tsx` | badge trạng thái |
+| `components/CommentThread.tsx` | cây comment đệ quy — Explore dialog + Post Detail |
+| `components/CommentComposer.tsx` | form gửi comment gốc — Explore dialog + Post Detail |
+| `components/PostVoteButtons.tsx` | cặp nút vote ↑↓ + `GET/PUT /api/posts/{id}/votes` — Explore card + dialog |
 | `components/editor/` | `RichTextEditor.tsx`, `EditorToolbar.tsx`, `PostContent.tsx`, `editorContent.ts` |
-| `pages/HomePage/` | trang chủ |
-| `pages/ExplorePage/` | danh sách bài, filter + phân trang |
+| `pages/HomePage/` | `HomePage.tsx` — MỘT file chứa cả trang lẫn các khối con (`HomeHero`, khối `SectionHeader` dùng chung, `HomeWeeklyBar`, `HomeDishes`, `HomeNearbyPicks`, `CommunityCard`) — và `homeData.ts` (shim gọi `/api/locations`, `/api/menus/details` vì `posts` không được import `locations`/`menus`) |
+| `pages/ExplorePage/` | `ExplorePage.tsx` (hero + search pill + feed + phân trang số) + `ExploreFilterPanel.tsx` (cột lọc Category / Content Format / Reading Time + CTA) + `FeedPostCard.tsx` (card có tác giả, block công thức đính kèm, vote, nút 💬) + `PostCommentsDialog.tsx` (bình luận trong dialog) + `__tests__/` |
 | `pages/MyPostsPage/` | bài của tôi |
-| `pages/PostDetailPage/` | `PostDetailPage.tsx` + `FactStrip`, `IngredientsCard`, `InstructionsCard`, `ChefSecretCard`, `CommentsSection`, `__tests__/` |
-| `pages/CreatePostPage/` | `CreatePostPage.tsx`, `schema.ts`, `payload.ts`, `ContentFormatSelector.tsx`, `PostSidebar.tsx`, `__tests__/` |
+| `pages/PostDetailPage/` | `PostDetailPage.tsx` + `CommentsSection.tsx` (tự lo query/mutation bình luận) + `__tests__/` |
+| `components/composer/` | Dialog soạn bài dùng chung create + edit (không còn route): `PostComposerDialog.tsx`, `PostPreviewCard.tsx`, `RecipePickerDialog.tsx`, `recipeMeta.ts`, `schema.ts`, `payload.ts`, `__tests__/` |
 | `__tests__/postApi.test.ts` | test service post |
 
 ### 3.7 `features/profile/`
 
 | File | Vai trò |
 |---|---|
-| `ProfilePage.tsx` | hồ sơ (`embedded` để nhúng vào admin) |
-| `api.ts` | đọc/cập nhật profile (wire format **camelCase**; 5 field dietary) |
+| `ProfilePage.tsx` | hồ sơ (`embedded` để nhúng vào admin). 2 cột: rail danh tính (avatar, tên, email, BMI + metrics, quick links) + 1 form gộp cả 11 field, sticky save bar khi dirty |
+| `api.ts` | đọc/cập nhật profile (wire format **camelCase**; 5 field dietary). Ghi 11 field; `username`/`email`/`bmi` chỉ đọc |
 | `useProfile.ts` | query + mutation cập nhật profile |
-| `DietaryPreferencesSection.tsx` | khối sửa 4 mảng dietary + `healthGoal`, lưu riêng từng field đổi; mount trong `ProfilePage` (ngoài form hồ sơ) |
 | `TagInput.tsx` | ô nhập tag dạng chip: Enter để thêm, giới hạn 50 tag × 100 ký tự |
-| `dietary.ts` | `toDietaryValues`, `normalizeTags`, `buildDietaryPatch` — chỉ gửi field đã đổi |
-| `__tests__/dietary.test.ts` | test logic thuần: chuẩn hoá tag, patch từng field |
+| `dietary.ts` | hằng số giới hạn, `DIETARY_SUGGESTIONS`/`GOAL_SUGGESTIONS`/`DIETARY_TONE` cho chip gợi ý, `toDietaryValues`, `normalizeTags` |
+| `__tests__/dietary.test.ts` | test logic thuần: chuẩn hoá tag, copy mảng khi đọc profile |
 
 ### 3.8 `features/videos/`
 
@@ -252,19 +255,25 @@ Có `ponytail:` tại chỗ; gỡ khi backend bổ sung endpoint.
 
 | File | Vai trò |
 |---|---|
-| `api.ts` | `createRecipe`, `searchDishes`, `searchIngredients` (gợi ý autocomplete) |
+| `api.ts` | `createRecipe`, `getMyRecipes` (`GET /api/recipes/me`), `searchIngredients` (gợi ý autocomplete) |
 | `adminApi.ts` | `getAdminRecipes` — `GET /api/admin/recipes`, phân trang server |
+| `constants.ts` | `MODERATION_VARIANT` — màu badge theo `ModerationStatus` |
 | `types.ts` | `Recipe`, `CreateRecipeRequest`, `AdminRecipe`, `Difficulty`, `RecipeSort`, `Dish`, `Ingredient` |
-| `pages/CreateRecipePage/CreateRecipePage.tsx` | form 4 khối, route `/recipes/create` |
-| `pages/CreateRecipePage/schema.ts` | `buildRecipeSchema(t)`, giới hạn, `duplicateIngredientIndexes` |
-| `pages/CreateRecipePage/payload.ts` | `buildRecipePayload` — bỏ field rỗng thay vì gửi `""` |
-| `pages/CreateRecipePage/IngredientEditor.tsx` | danh sách hàng nguyên liệu động (tên + số lượng + đơn vị) |
+| `pages/CreateRecipePage/CreateRecipePage.tsx` | form 4 khối (đánh số 1–4), route `/recipes/create` |
+| `pages/CreateRecipePage/schema.ts` | `buildRecipeSchema(t)`, giới hạn, `RecipeStep`, `visibleSteps`, `duplicateIngredientIndexes`, `difficultyRankKey` |
+| `pages/CreateRecipePage/payload.ts` | `buildRecipePayload` + `joinSteps` — gộp mảng bước thành 1 chuỗi `instructions`, bỏ field rỗng thay vì gửi `""` |
+| `pages/CreateRecipePage/IngredientEditor.tsx` | bảng hàng nguyên liệu động (tên + số lượng + đơn vị + xoá) |
+| `pages/CreateRecipePage/StepEditor.tsx` | mỗi bước 1 ô riêng (tiêu đề + thân), thêm/xoá/đổi thứ tự |
 | `pages/CreateRecipePage/AutocompleteField.tsx` | Input + dropdown gợi ý; dùng chung cho dish và ingredient |
-| `pages/CreateRecipePage/RecipeSidebar.tsx` | checklist mức độ hoàn thiện + nút lưu |
+| `pages/CreateRecipePage/RecipeSidebar.tsx` | thẻ xem trước + checklist mức độ hoàn thiện + `actions` (nút Cancel/Create Recipe) + tiêu chuẩn thuần thực vật |
+| `pages/CreateRecipePage/RecipePreviewCard.tsx` | thẻ xem trước dựng từ chính giá trị form (không có ảnh bìa — endpoint không nhận) |
+| `pages/MyRecipesPage/MyRecipesPage.tsx` | danh sách công thức của mình, route `/recipes` — 4 `StatCard` + `PillTabs` (moderation) + lọc độ khó/tìm kiếm/sort + thẻ recipe (badge + meta prep/cook) + dialog chi tiết |
+| `pages/MyRecipesPage/filter.ts` | `matchesRecipe` / `sortRecipes` / `recipeStats` + `PAGE_SIZE` — logic thuần để test được (endpoint trả mảng phẳng, không tham số) |
 | `pages/AdminRecipesPage/AdminRecipesPage.tsx` | danh sách recipe cho admin (chỉ đọc) |
-| `pages/AdminRecipesPage/RecipeDetailDialog.tsx` | chi tiết recipe render từ row đã tải (không có `GET /api/recipes/{id}`) |
+| `pages/AdminRecipesPage/RecipeDetailDialog.tsx` | chi tiết recipe render từ row đã tải (BE **có** `GET /api/admin/recipes/{id}`; FE cố ý không gọi — row đủ field) |
 | `__tests__/adminApi.test.ts` | test `adminApi` |
 | `pages/CreateRecipePage/__tests__/schema.test.ts` | validate + payload |
+| `pages/MyRecipesPage/__tests__/filter.test.ts` | filter/sort/thống kê client |
 
 ### 3.10 `features/menus/`
 
@@ -293,6 +302,19 @@ Tự lập được menu (`POST /api/menus`, luôn `drafted`) và đổi trạng
 Sửa nội dung menu (`PATCH`) chưa làm. Tuần đang xem nằm trên URL (`?from=YYYY-MM-DD`, luôn là
 Thứ 2). `POST`/`PATCH`/`status` trả shape **khác** `GET /api/menus/details` (thiếu `dish` đầy
 đủ) → sau khi ghi luôn invalidate `["meal-plans"]`.
+
+### 3.11 `features/subscription/`
+
+| File | Vai trò |
+|---|---|
+| `api.ts` | 7 hàm: `getPlans`, `getMySubscription`, `getSubscriptionHistory`, `cancelSubscription`, `checkPurchaseEligibility`, `createCheckout`, `getPayments`, `getPayment` |
+| `useBilling.ts` | 6 hook React Query: `usePlans`, `useSubscriptionHistory`, `usePayments`, `usePayment` (poll 3s khi `pending`), `useCancelSubscription`, `useBuyPlan` (eligibility → checkout) |
+| `types.ts` | `SubscriptionHistoryItem`, `CancelSubscriptionResponse`, `CheckoutResponse`, `PaymentItem`, `PaymentDetail`, `PaymentStatus`, `SubscriptionRowStatus` |
+| `pages/SubscriptionPage/SubscriptionPage.tsx` | route `/subscription` — 2 tab (lịch sử mua / lịch sử thanh toán), huỷ gói qua `ConfirmDialog` |
+| `pages/PaymentResultPage/PaymentResultPage.tsx` | route `/payment/result/:paymentId` — đọc trạng thái sau khi VNPay redirect về |
+
+Namespace i18n riêng: `subscription`. IPN của VNPay là nguồn sự thật; trang kết quả chỉ
+hiển thị (poll `GET /api/payments/{paymentId}` tới khi hết `pending`).
 
 ## 4. Hạ tầng test (`src/test/`)
 
@@ -326,8 +348,9 @@ Lỗi hiển thị: `getApiErrorMessage(error, t("..."))` — đọc `errors[]` 
 
 - **Gọi API thật**: auth, posts, categories, profile (kể cả 5 field dietary), media,
   videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`,
-  `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus
-  (`GET /api/menus/details`, `POST /api/menus`, `POST /api/menus/{id}/status`).
+  `GET /api/recipes/me`, `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus
+  (`GET /api/menus/details`, `POST /api/menus`, `POST /api/menus/{id}/status`),
+  subscription + payment (`subscription` feature — 7 endpoint).
 - **Còn mock**: `features/admin/dashboardApi.ts` (backend chưa có endpoint dashboard);
   `features/posts/{mockEnrichment,mockAuthors}.ts` (field hiển thị BE chưa trả).
 - `features/locations/mocks.ts` **không phải** mock API — chỉ là toạ độ tâm các quận

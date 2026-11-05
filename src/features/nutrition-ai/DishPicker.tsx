@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { ChefHat, Loader2, Search, Sparkles, X } from "lucide-react";
+import { ChevronRight, ChefHat, Loader2, Search, Sparkles, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/common/Pagination";
 import { useDebounce } from "@/shared/hooks/useDebounce";
@@ -19,20 +20,24 @@ interface DishPickerProps {
 }
 
 /**
- * Danh sách món để user chỉ đích danh món muốn đưa vào thực đơn. Hiện cả `name`
- * lẫn `id` — AI cần tên để lập plan, user cần id để đối chiếu lại với menu đã lưu.
+ * Rail chỉ là một dòng mở dialog; danh sách món nằm trong `Dialog` cho đủ chỗ.
+ * Hiện cả `name` lẫn `id` — AI cần tên để lập plan, user cần id để đối chiếu
+ * lại với menu đã lưu.
  */
 export function DishPicker({ onAsk, disabled }: DishPickerProps) {
     const { t } = useTranslation("aiNutrition");
+    const [open, setOpen] = useState(false);
     const [q, setQ] = useState("");
     const [page, setPage] = useState(1);
     const [selected, setSelected] = useState<Dish[]>([]);
 
     const debouncedQ = useDebounce(q.trim(), 300);
+    // Chỉ gọi khi dialog mở — tiết kiệm một request cho mỗi lần vào trang.
     const { data, isFetching, isError, refetch } = useQuery({
         queryKey: ["dishes", debouncedQ, page],
         queryFn: () => searchDishes({ name: debouncedQ || undefined, page: page - 1, size: PAGE_SIZE }),
         staleTime: 60_000,
+        enabled: open,
     });
 
     const dishes = data?.content ?? [];
@@ -45,72 +50,25 @@ export function DishPicker({ onAsk, disabled }: DishPickerProps) {
                 : [...prev, dish],
         );
 
+    const submit = () => {
+        setOpen(false);
+        onAsk(selected);
+    };
+
     return (
-        <section className="rounded-2xl border border-border bg-card p-5">
+        <section className="rounded-2xl border border-border bg-card p-4">
             <div className="flex items-center justify-between gap-3">
-                <h2 className="flex items-center gap-2 font-bold text-dark">
+                <h2 className="flex items-center gap-2 text-sm font-bold text-dark">
                     <ChefHat className="h-4 w-4 text-vegan-green" aria-hidden="true" />
                     {t("dishPicker.title")}
                 </h2>
-                <Badge variant="outline" size="sm">
-                    {t("dishPicker.selected", { n: selected.length })}
-                </Badge>
+                {selected.length > 0 && (
+                    <Badge variant="lightgreen" size="sm">
+                        {t("dishPicker.selected", { n: selected.length })}
+                    </Badge>
+                )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">{t("dishPicker.subtitle")}</p>
-
-            <Input
-                className="mt-3"
-                value={q}
-                leadingIcon={Search}
-                placeholder={t("dishPicker.placeholder")}
-                aria-label={t("dishPicker.placeholder")}
-                onChange={(event) => {
-                    setQ(event.target.value);
-                    setPage(1);
-                }}
-                trailing={
-                    isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-muted-foreground" /> : undefined
-                }
-            />
-
-            {isError ? (
-                <div className="mt-3 flex items-center justify-between gap-2 text-xs text-danger" role="alert">
-                    <span>{t("dishPicker.loadFailed")}</span>
-                    <Button variant="outline" size="xs" onClick={() => void refetch()}>
-                        {t("dishPicker.retry")}
-                    </Button>
-                </div>
-            ) : dishes.length === 0 ? (
-                <p className="mt-3 text-xs text-muted-foreground">
-                    {isFetching ? t("dishPicker.loading") : t("dishPicker.empty")}
-                </p>
-            ) : (
-                <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto">
-                    {dishes.map((dish) => (
-                        <li key={dish.id}>
-                            <label className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 hover:bg-muted-bg">
-                                <input
-                                    type="checkbox"
-                                    checked={isSelected(dish.id)}
-                                    onChange={() => toggle(dish)}
-                                    className="mt-0.5 h-4 w-4 rounded border-border text-vegan-green focus:ring-vegan-green"
-                                />
-                                <span className="min-w-0 flex-1">
-                                    <span className="block truncate text-xs font-semibold text-dark">{dish.name}</span>
-                                    <span className="block truncate font-mono text-[10px] text-muted-foreground">
-                                        {dish.id}
-                                    </span>
-                                    {dish.cuisineType && (
-                                        <span className="text-[10px] text-muted-foreground">{dish.cuisineType}</span>
-                                    )}
-                                </span>
-                            </label>
-                        </li>
-                    ))}
-                </ul>
-            )}
-
-            <Pagination page={page} totalPages={data?.totalPages ?? 1} onChange={setPage} />
 
             {selected.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
@@ -133,15 +91,102 @@ export function DishPicker({ onAsk, disabled }: DishPickerProps) {
                 </div>
             )}
 
-            <Button
-                className="mt-3 w-full"
-                size="sm"
-                disabled={disabled || selected.length === 0}
-                onClick={() => onAsk(selected)}
-            >
-                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                {t("dishPicker.action")}
+            <Button variant="outline" size="sm" block className="mt-3" onClick={() => setOpen(true)} disabled={disabled}>
+                {t("dishPicker.open")}
+                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
+
+            <Dialog
+                open={open}
+                onClose={() => setOpen(false)}
+                title={t("dishPicker.title")}
+                description={t("dishPicker.subtitle")}
+                className="max-w-xl"
+            >
+                <Input
+                    value={q}
+                    leadingIcon={Search}
+                    placeholder={t("dishPicker.placeholder")}
+                    aria-label={t("dishPicker.placeholder")}
+                    onChange={(event) => {
+                        setQ(event.target.value);
+                        setPage(1);
+                    }}
+                    trailing={
+                        isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-muted-foreground" /> : undefined
+                    }
+                />
+
+                {selected.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                        {selected.map((dish) => (
+                            <span
+                                key={dish.id}
+                                className="flex items-center gap-1 rounded-full bg-vegan-green-light px-2 py-0.5 text-[10px] font-semibold text-vegan-green"
+                            >
+                                {dish.name}
+                                <button
+                                    type="button"
+                                    onClick={() => toggle(dish)}
+                                    aria-label={t("dishPicker.remove", { name: dish.name })}
+                                    className="rounded-full p-0.5 hover:bg-white/50"
+                                >
+                                    <X className="h-3 w-3" aria-hidden="true" />
+                                </button>
+                            </span>
+                        ))}
+                    </div>
+                )}
+
+                {isError ? (
+                    <div className="mt-3 flex items-center justify-between gap-2 text-xs text-danger" role="alert">
+                        <span>{t("dishPicker.loadFailed")}</span>
+                        <Button variant="outline" size="xs" onClick={() => void refetch()}>
+                            {t("dishPicker.retry")}
+                        </Button>
+                    </div>
+                ) : dishes.length === 0 ? (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                        {isFetching ? t("dishPicker.loading") : t("dishPicker.empty")}
+                    </p>
+                ) : (
+                    <ul className="mt-3 max-h-80 space-y-1 overflow-y-auto">
+                        {dishes.map((dish) => (
+                            <li key={dish.id}>
+                                <label className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 hover:bg-muted-bg">
+                                    <input
+                                        type="checkbox"
+                                        checked={isSelected(dish.id)}
+                                        onChange={() => toggle(dish)}
+                                        className="mt-0.5 h-4 w-4 rounded border-border text-vegan-green focus:ring-vegan-green"
+                                    />
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block truncate text-xs font-semibold text-dark">{dish.name}</span>
+                                        <span className="block truncate font-mono text-[10px] text-muted-foreground">
+                                            {dish.id}
+                                        </span>
+                                        {dish.cuisineType && (
+                                            <span className="text-[10px] text-muted-foreground">{dish.cuisineType}</span>
+                                        )}
+                                    </span>
+                                </label>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+
+                <Pagination page={page} totalPages={data?.totalPages ?? 1} onChange={setPage} />
+
+                <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+                    <span className="text-xs text-muted-foreground">
+                        {t("dishPicker.selected", { n: selected.length })}
+                    </span>
+                    <Button size="sm" disabled={disabled || selected.length === 0} onClick={submit}>
+                        <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                        {t("dishPicker.action")}
+                    </Button>
+                </div>
+            </Dialog>
         </section>
     );
 }

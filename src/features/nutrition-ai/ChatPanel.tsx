@@ -7,6 +7,7 @@ import {
     Calculator,
     Leaf,
     Loader2,
+    Lock,
     Mic,
     Plus,
     RefreshCw,
@@ -51,20 +52,10 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
         logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
     }, [chat.messages.length, chat.pendingText, chat.error]);
 
-    const ask = (text: string) => {
-        if (!isAuthenticated) {
-            onRequireLogin();
-            return;
-        }
-        void chat.send(text);
-    };
+    const ask = (text: string) => void chat.send(text);
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        if (!isAuthenticated) {
-            onRequireLogin();
-            return;
-        }
         const text = draft;
         if (!text.trim()) return;
         setDraft("");
@@ -78,6 +69,23 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
     const isQuotaError = (chat.error as { response?: { status?: number } } | null)?.response?.status === 429;
     const quotaResetDate = chat.usage?.windowEnd ?? chat.usage?.periodEnd;
     const showGreeting = chat.messages.length === 0 && !chat.historyLoading;
+
+    // Khách: chat bị khoá, chỉ còn lời mời đăng nhập. Không gọi API nào nên
+    // không dựng header/composer rỗng làm khung trông như lỗi tải.
+    if (!isAuthenticated) {
+        return (
+            <section className="flex min-h-[520px] flex-col items-center justify-center rounded-2xl border border-border bg-card p-8 text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted-bg text-muted-foreground">
+                    <Lock className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <h2 className="mt-4 text-xl font-semibold text-dark">{t("chat.lockedTitle")}</h2>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t("chat.lockedBody")}</p>
+                <Button className="mt-5" onClick={onRequireLogin}>
+                    {t("chat.lockedAction")}
+                </Button>
+            </section>
+        );
+    }
 
     return (
         <section className="flex flex-col rounded-2xl border border-border bg-card">
@@ -234,47 +242,41 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
             </div>
 
             <form onSubmit={submit} className="border-t border-border p-4">
-                {isAuthenticated ? (
-                    <div className="flex gap-2">
-                        <Input
-                            value={draft}
-                            onChange={(event) => setDraft(event.target.value)}
-                            placeholder={t("chat.placeholder")}
-                            aria-label={t("chat.placeholder")}
-                            maxLength={MAX_MESSAGE_LENGTH}
-                            disabled={chat.isSending}
-                            className="rounded-full"
-                            trailing={
-                                <button
-                                    type="button"
-                                    disabled
-                                    aria-label={t("chat.voiceInput")}
-                                    title={t("chat.voiceInput")}
-                                    className="rounded-full p-2 text-muted-foreground opacity-50"
-                                >
-                                    <Mic className="h-4 w-4" aria-hidden="true" />
-                                </button>
-                            }
-                        />
-                        <Button
-                            type="submit"
-                            size="icon"
-                            className="rounded-full"
-                            aria-label={t("chat.send")}
-                            disabled={chat.isSending || !draft.trim()}
-                        >
-                            {chat.isSending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <Send className="h-4 w-4" />
-                            )}
-                        </Button>
-                    </div>
-                ) : (
-                    <Button type="button" block onClick={onRequireLogin}>
-                        {t("chat.loginRequired")}
+                <div className="flex gap-2">
+                    <Input
+                        value={draft}
+                        onChange={(event) => setDraft(event.target.value)}
+                        placeholder={t("chat.placeholder")}
+                        aria-label={t("chat.placeholder")}
+                        maxLength={MAX_MESSAGE_LENGTH}
+                        disabled={chat.isSending}
+                        className="rounded-full"
+                        trailing={
+                            <button
+                                type="button"
+                                disabled
+                                aria-label={t("chat.voiceInput")}
+                                title={t("chat.voiceInput")}
+                                className="rounded-full p-2 text-muted-foreground opacity-50"
+                            >
+                                <Mic className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                        }
+                    />
+                    <Button
+                        type="submit"
+                        size="icon"
+                        className="rounded-full"
+                        aria-label={t("chat.send")}
+                        disabled={chat.isSending || !draft.trim()}
+                    >
+                        {chat.isSending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Send className="h-4 w-4" />
+                        )}
                     </Button>
-                )}
+                </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                     {t("chat.supported")}
                     {(t("chat.supportedTags", { returnObjects: true }) as unknown as string[]).map((tag) => (

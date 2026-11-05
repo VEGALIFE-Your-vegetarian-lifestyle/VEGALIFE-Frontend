@@ -7,6 +7,10 @@ import type { UpdateProfileRequest, UserProfile } from "@/shared/types/user";
  * `UpdateProfileRequest.java` và `ProfileControllerIntegrationTest` (jsonPath
  * `$.data.heightCm`). Bản snake_case cũ gửi `height_cm` nên bị backend bỏ qua.
  */
+/**
+ * Field **gửi lên** trong `PUT /api/profile`. `username`/`email`/`bmi` là
+ * chỉ-đọc — backend trả trong response nhưng không nhận khi ghi.
+ */
 const PROFILE_FIELDS = [
     "heightCm",
     "weightKg",
@@ -27,8 +31,11 @@ function toUserProfile(raw: Record<string, unknown>): UserProfile {
     return {
         id: String(raw.id ?? ""),
         userId: String(raw.userId ?? ""),
+        displayName: String(raw.displayName ?? ""),
+        email: String(raw.email ?? ""),
         heightCm: (value("heightCm") as number | null | undefined) ?? null,
         weightKg: (value("weightKg") as number | null | undefined) ?? null,
+        bmi: (raw.bmi as number | null | undefined) ?? null,
         age: (value("age") as number | null | undefined) ?? null,
         gender: (value("gender") as UserProfile["gender"] | undefined) ?? null,
         description: (value("description") as string | null | undefined) ?? null,

@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Nutrition dựng lại</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f4f5f7; --surface:#ffffff; --ink:#0d1117; --ink-soft:#5c6675; --ink-faint:#7b8593;
+  --line:#e3e6ea; --green:#12724a; --green-soft:#e6f2ec; --green-subtle:#f2f9f5;
+  --muted:#eaeef2; --blue-soft:#eaf1fb; --blue:#2a5f9e; --amber-soft:#fef3c7; --amber:#8a5a0c;
+  --danger:#c2653f; --danger-soft:#fdf0ea;
+  --r-sm:6px; --r-md:10px; --r-lg:16px;
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --display:"Fraunces",Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--font);
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 80px;
+}
+.wrap{max-width:1200px;margin:0 auto;padding-top:clamp(28px,5vw,56px)}
+
+/* ── đầu trang tài liệu ── */
+.doc-eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin:0 0 12px}
+h1.doc{font-family:var(--display);font-weight:600;font-size:clamp(28px,4.4vw,40px);line-height:1.1;letter-spacing:-.018em;margin:0 0 12px;max-width:20ch;text-wrap:balance}
+.doc-lede{font-size:16px;color:var(--ink-soft);max-width:62ch;margin:0 0 8px;text-wrap:pretty}
+.doc-changes{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:0;border-top:1px solid var(--line);max-width:70ch}
+.doc-changes li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:0 12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-soft)}
+.doc-changes b{color:var(--ink);font-weight:600}
+.doc-changes .dot{color:var(--green);font-weight:700}
+
+/* ── nhãn trạng thái khung ── */
+.frame-label{
+  display:flex;align-items:baseline;gap:10px;margin:clamp(36px,5vw,56px) 0 14px;
+}
+.frame-label .n{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:var(--r-sm);background:var(--ink);color:var(--bg);
+  font-size:12px;font-weight:600;flex:0 0 auto;
+}
+.frame-label h2{font-family:var(--font);font-size:15px;font-weight:600;margin:0;letter-spacing:-.005em}
+.frame-label p{margin:0;font-size:13.5px;color:var(--ink-faint)}
+
+/* ── khung app ── */
+.app{
+  background:var(--bg); border:1px solid var(--line); border-radius:var(--r-lg);
+  overflow:hidden; font-size:14px;
+}
+.app-dim{opacity:.55;filter:saturate(.6)}
+
+/* navbar */
+.nav{display:flex;align-items:center;gap:22px;height:58px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;letter-spacing:-.02em;white-space:nowrap}
+.mark{width:24px;height:24px;border-radius:8px;background:var(--green-soft);display:grid;place-items:center;flex:0 0 auto}
+.mark svg{width:14px;height:14px;stroke:var(--green);fill:none;stroke-width:2}
+.nav-links{display:flex;gap:20px;font-size:13.5px;font-weight:500;color:var(--ink-soft);white-space:nowrap}
+.nav-links .on{color:var(--green)}
+.nav-search{margin-left:auto;display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;background:var(--muted);color:var(--ink-faint);font-size:13px;min-width:220px}
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:12px}
+.btn{border:0;font-family:inherit;font-size:13px;font-weight:600;padding:0 14px;height:34px;border-radius:var(--r-md);cursor:default;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--green);color:#fff}
+.btn.pill{border-radius:999px}
+.btn.outline{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink);padding:0 10px}
+.btn.sm{height:28px;font-size:12px;padding:0 10px;border-radius:var(--r-sm)}
+.btn.block{width:100%;justify-content:center}
+
+/* page */
+.page{padding:20px}
+.acct-pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:999px;background:var(--green-soft);color:var(--green);font-size:12px;font-weight:600;white-space:nowrap}
+.acct-pill.warn{background:var(--amber-soft);color:var(--amber)}
+.hdr{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.hdr h1{font-family:var(--display);font-weight:600;font-size:28px;line-height:1.15;letter-spacing:-.018em;margin:0 0 4px}
+.hdr .sub{font-size:13.5px;color:var(--ink-soft);margin:0;max-width:58ch}
+.hdr .scope{font-size:12px;color:var(--ink-faint);margin:6px 0 0;display:flex;align-items:center;gap:5px}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start;margin-top:20px;padding-bottom:0}
+.rail{display:grid;gap:16px;position:sticky;top:0}
+
+/* card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.card-pad{padding:16px}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.card-h.flat{border-bottom:0;padding-bottom:0}
+.card-h h2{font-family:var(--font);font-size:13.5px;font-weight:600;margin:0;display:flex;align-items:center;gap:7px}
+.card-h h2 svg{width:15px;height:15px;stroke:var(--green);fill:none;stroke-width:2}
+.mono-tag{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);border:1px solid var(--line);border-radius:var(--r-sm);padding:2px 6px;white-space:nowrap}
+
+/* chat */
+.chat-body{padding:18px 16px;display:grid;gap:16px;min-height:430px;align-content:start}
+.msg{display:flex;gap:10px}
+.msg.me{justify-content:flex-end}
+.av{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;flex:0 0 auto;font-size:11px;font-weight:700}
+.av.bot{background:var(--green-soft);color:var(--green)}
+.av.bot svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.av.me{background:var(--green);color:#fff}
+.bubble{max-width:78%;padding:12px 14px;border-radius:14px;font-size:13.5px}
+.bubble.bot{background:var(--muted);border-top-left-radius:4px;color:var(--ink-soft)}
+.bubble.me{background:var(--green);border-top-right-radius:4px;color:#fff}
+.bubble .who{font-size:11px;font-weight:600;letter-spacing:.02em;margin:0 0 4px;opacity:.85}
+.bubble p{margin:0}
+.bubble p + p{margin-top:8px}
+
+.domains{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.domain{display:flex;gap:9px;padding:9px 10px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface)}
+.domain .ic{width:26px;height:26px;border-radius:8px;background:var(--blue-soft);display:grid;place-items:center;flex:0 0 auto;position:relative}
+.domain .ic svg{width:13px;height:13px;stroke:var(--blue);fill:none;stroke-width:2}
+.domain .ic i{position:absolute;right:-4px;top:-4px;width:14px;height:14px;border-radius:999px;background:var(--green);color:#fff;font-size:9px;font-weight:700;font-style:normal;display:grid;place-items:center}
+.domain b{display:block;font-size:11.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.domain span{display:block;font-size:10.5px;color:var(--ink-faint);line-height:1.35;margin-top:1px}
+
+.quick{margin-top:14px}
+.quick .lbl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:12px;color:var(--ink-soft);white-space:nowrap}
+.chip svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;flex:0 0 auto}
+
+.composer{border-top:1px solid var(--line);padding:12px 16px 14px;background:var(--surface)}
+.inputrow{display:flex;gap:8px}
+.input{flex:1;min-width:0;height:40px;border:1px solid var(--line);border-radius:var(--r-md);padding:0 12px;font-size:13.5px;font-family:inherit;color:var(--ink);background:var(--surface)}
+.input::placeholder{color:var(--ink-faint)}
+.supported{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.supported .lbl{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint)}
+.tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--muted);color:var(--ink-soft);white-space:nowrap}
+.counter{margin-left:auto;font-size:11px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+
+/* locked */
+.locked{display:grid;place-items:center;text-align:center;padding:64px 24px;min-height:390px}
+.locked .lock{width:52px;height:52px;border-radius:999px;background:var(--green-soft);display:grid;place-items:center;margin-bottom:16px}
+.locked .lock svg{width:24px;height:24px;stroke:var(--green);fill:none;stroke-width:2}
+.locked h3{font-family:var(--display);font-size:21px;font-weight:600;margin:0 0 6px;letter-spacing:-.01em}
+.locked p{margin:0 0 18px;font-size:13.5px;color:var(--ink-soft);max-width:38ch}
+
+/* bmi */
+.field{margin-top:10px}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--ink-soft);margin-bottom:5px}
+.field .ctl{width:100%;height:36px;border:1px solid var(--line);border-radius:var(--r-md);padding:0 10px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--surface)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.result{margin-top:14px;padding:14px;border-radius:var(--r-md);background:var(--green-soft)}
+.result .row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.result .row span{font-size:11px;color:var(--ink-soft)}
+.result .row b{font-size:10.5px;font-weight:600;color:var(--green);white-space:nowrap}
+.result .big{font-family:var(--display);font-size:32px;font-weight:600;line-height:1.1;color:var(--green);margin:2px 0 0;letter-spacing:-.02em}
+.result .tgt{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(18,114,74,.18)}
+.result .tgt .k{font-size:11px;color:var(--ink-soft);display:block}
+.result .tgt .v{font-size:13px;font-weight:600;color:var(--ink)}
+
+/* picker entry */
+.picker-entry{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);margin-top:12px;text-align:left;width:100%;font-family:inherit;cursor:default}
+.picker-entry .ic{width:30px;height:30px;border-radius:8px;background:var(--green-soft);display:grid;place-items:center;flex:0 0 auto}
+.picker-entry .ic svg{width:15px;height:15px;stroke:var(--green);fill:none;stroke-width:2}
+.picker-entry b{display:block;font-size:12.5px;font-weight:600;color:var(--ink)}
+.picker-entry span{display:block;font-size:11px;color:var(--ink-faint)}
+.picker-entry .go{margin-left:auto;color:var(--green);font-weight:600;font-size:12px;white-space:nowrap}
+
+/* history list */
+.hlist{list-style:none;margin:0;padding:6px}
+.hlist li + li{margin-top:1px}
+.hitem{display:block;width:100%;text-align:left;border:0;background:transparent;font-family:inherit;padding:8px 10px;border-radius:var(--r-sm);cursor:default}
+.hitem.on{background:var(--green-subtle)}
+.hitem b{display:block;font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hitem span{display:block;font-size:10.5px;color:var(--ink-faint);margin-top:1px}
+
+/* dialog */
+.scrim{background:rgba(13,17,23,.42);padding:36px 20px;border-radius:var(--r-lg)}
+.dialog{max-width:520px;margin:0 auto;background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--line);overflow:hidden}
+.dialog-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dialog-h h3{margin:0;font-family:var(--font);font-size:15px;font-weight:600;display:flex;align-items:center;gap:7px}
+.dialog-h h3 svg{width:16px;height:16px;stroke:var(--green);fill:none;stroke-width:2}
+.dialog-h p{margin:3px 0 0;font-size:12px;color:var(--ink-faint);max-width:42ch}
+.dialog-body{padding:14px 18px}
+.dish-list{list-style:none;margin:10px 0 0;padding:0;max-height:230px;overflow:auto;display:grid;gap:1px}
+.dish{display:flex;align-items:flex-start;gap:9px;padding:7px 8px;border-radius:var(--r-sm)}
+.dish.on{background:var(--green-subtle)}
+.box{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--line);flex:0 0 auto;margin-top:2px;display:grid;place-items:center;background:var(--surface)}
+.box.on{background:var(--green);border-color:var(--green)}
+.box.on::after{content:"";width:7px;height:4px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.dish .nm{font-size:12.5px;font-weight:500;color:var(--ink);display:block}
+.dish .id{font-size:10px;color:var(--ink-faint);font-family:ui-monospace,Menlo,Consolas,monospace}
+.dialog-f{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--line);background:var(--bg)}
+.sel-chips{display:flex;flex-wrap:wrap;gap:5px;padding:10px 0 0}
+.sel-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:999px;background:var(--green-soft);color:var(--green);font-weight:600;white-space:nowrap}
+.sel-chip i{font-style:normal;opacity:.6}
+
+/* ghi chú */
+.notes{margin-top:clamp(36px,5vw,56px);padding-top:18px;border-top:1px solid var(--line);max-width:72ch}
+.notes h3{font-size:11px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 12px}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:9px;font-size:14px;color:var(--ink-soft)}
+.notes b{color:var(--ink);font-weight:600}
+.notes code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86em;background:var(--muted);padding:1px 4px;border-radius:4px}
+
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .rail{position:static}
+  .domains{grid-template-columns:1fr}
+  .nav-links,.nav-search{display:none}
+  .hdr h1{font-size:23px}
+}
+@media (max-width:560px){
+  .page{padding:14px}
+  .bubble{max-width:100%}
+  .btn.primary.pill,.nav-right .btn{font-size:12px}
+  .frame-label{flex-wrap:wrap}
+  .frame-label p{flex-basis:100%}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <p class="doc-eyebrow">AI Nutrition · dựng lại</p>
+  <h1 class="doc">Bỏ cheat sheet, chat rộng ra, công cụ gọn vào rail</h1>
+  <p class="doc-lede">
+    Bốn quyết định bạn vừa chốt, dựng thành HTML để xem trước. Toàn bộ dùng token hướng A
+    vừa áp cho hệ thống: nền lạnh, viền hairline, xanh chỉ cho hành động.
+  </p>
+
+  <ul class="doc-changes">
+    <li><span class="dot">−</span><div><b>Bỏ Instant Swap Cheat Sheet.</b> 4 thẻ "From → To" rời khỏi rail. Mục <code>swaps.*</code> trong locale không còn dùng — xoá luôn.</div></li>
+    <li><span class="dot">+</span><div><b>Chat rộng hơn.</b> Rail từ 360px xuống 320px, chat từ ~1fr lên ~62% → chỗ đọc câu trả lời dài rộng thêm.</div></li>
+    <li><span class="dot">+</span><div><b>Header gọn.</b> Bỏ 3 badge rời; cảnh báo y tế thành một dòng nhỏ dưới phụ đề; quỹ câu hỏi thành pill cạnh tiêu đề.</div></li>
+    <li><span class="dot">+</span><div><b>Chọn món vào dialog.</b> Rail chỉ còn nút mở; tìm kiếm, checkbox và chip món đã chọn nằm trong dialog.</div></li>
+    <li><span class="dot">+</span><div><b>Khách thấy khung khoá rõ ràng.</b> Thay vì nút xanh "Sign in to ask" nằm lẫn ở chân khung chat.</div></li>
+  </ul>
+
+  <!-- ══════ 1. Đã đăng nhập ══════ -->
+  <div class="frame-label"><span class="n">1</span><h2>Đã đăng nhập — trạng thái chính</h2><p>Chat chiếm phần lớn bề ngang, rail dính bên phải</p></div>
+
+  <div class="app">
+    <div class="nav">
+      <div class="brand"><span class="mark"><svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></span>VEGALIFE</div>
+      <div class="nav-links"><span>Home</span><span>Explore</span><span>Nearby</span><span class="on">AI Nutrition</span><span>AI Plans</span></div>
+      <div class="nav-search">Search recipes, ingredients, or tags…</div>
+      <div class="nav-right">
+        <span class="btn outline">EN</span>
+        <span class="btn primary pill">+ New Post</span>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="hdr">
+        <div>
+          <h1>AI Nutrition Assistant</h1>
+          <p class="sub">Verified botanical nutrition guidance on vegetarian macros, ingredient swaps and plant-first recipes.</p>
+          <p class="scope">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"/></svg>
+            Dietary scope restricted · Informational only, not medical advice
+          </p>
+        </div>
+        <span class="acct-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"/></svg>
+          Pro · 42/500 questions used
+        </span>
+      </div>
+
+      <div class="grid">
+        <!-- CHAT -->
+        <section class="card">
+          <div class="card-h">
+            <h2>
+              <span class="av bot" style="width:30px;height:30px"><svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/></svg></span>
+              <span>
+                VEGALIFE Core Botanical AI
+                <span style="display:block;font-size:11px;font-weight:400;color:var(--ink-faint)">GreenHealth 4.2 · 4 plant domains</span>
+              </span>
+            </h2>
+            <span class="btn ghost sm">+ New chat</span>
+          </div>
+
+          <div class="chat-body">
+            <div class="msg">
+              <span class="av bot"><svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/></svg></span>
+              <div class="bubble bot">
+                <p class="who">VEGALIFE ASSISTANT</p>
+                <p>Welcome back, Minh! I am your companion for verified plant-based living. My domain is calibrated to four core areas:</p>
+                <div class="domains">
+                  <div class="domain"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg><i>1</i></span><div><b>Plant Nutrition &amp; Macros</b><span>Bioavailability, B12, iron, zinc</span></div></div>
+                  <div class="domain"><span class="ic"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg><i>2</i></span><div><b>Ingredient Substitutions</b><span>Egg replacers, cashew creams</span></div></div>
+                  <div class="domain"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h4"/></svg><i>3</i></span><div><b>BMI &amp; Caloric Tracking</b><span>Calorie budgeting, energy density</span></div></div>
+                  <div class="domain"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/></svg><i>4</i></span><div><b>Vegetarian Recipes</b><span>Culinary pairings, community dishes</span></div></div>
+                </div>
+                <div class="quick">
+                  <p class="lbl">Quick suggestions to get started</p>
+                  <div class="chips">
+                    <span class="chip"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l14 8M19 8L5 16"/></svg>Optimize non-heme iron in lentil bowls</span>
+                    <span class="chip"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>Best 1:1 vegan binders for baking</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="msg me">
+              <div class="bubble me">
+                <p class="who">YOU</p>
+                <p>Build me a daily plant protein plan for my BMI and activity level.</p>
+              </div>
+              <span class="av me">MI</span>
+            </div>
+
+            <div class="msg">
+              <span class="av bot"><svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/></svg></span>
+              <div class="bubble bot">
+                <p class="who">VEGALIFE ASSISTANT</p>
+                <p>With BMI 21.9 and moderate activity, aim for 80–92&nbsp;g of plant protein a day. Split across four moments:</p>
+                <p>• <b>Breakfast</b> — 20&nbsp;g: soy yogurt with hemp hearts<br>
+                   • <b>Lunch</b> — 25&nbsp;g: lentil bowl with quinoa<br>
+                   • <b>Snack</b> — 15&nbsp;g: edamame<br>
+                   • <b>Dinner</b> — 25&nbsp;g: tofu stir-fry with tempeh</p>
+                <p>Pair the lentils with vitamin C (tomato, lime) to lift non-heme iron absorption roughly threefold.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="composer">
+            <div class="inputrow">
+              <span class="input" style="display:flex;align-items:center;color:var(--ink-faint)">Ask about plant nutrition, substitutions, calories…</span>
+              <span class="btn primary">Send</span>
+              <span class="btn outline" style="width:40px;justify-content:center;padding:0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+              </span>
+            </div>
+            <div class="supported">
+              <span class="lbl">Supported</span>
+              <span class="tag">Nutrition &amp; Macros</span>
+              <span class="tag">Ingredient Swaps</span>
+              <span class="tag">BMI &amp; Calories</span>
+              <span class="tag">Recipe Guides</span>
+              <span class="counter">0/4000</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- RAIL -->
+        <aside class="rail">
+          <!-- BMI -->
+          <section class="card">
+            <div class="card-h">
+              <h2><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h4"/></svg>BMI &amp; Protein Target</h2>
+              <span class="mono-tag">Mini tool</span>
+            </div>
+            <div class="card-pad">
+              <div class="two">
+                <div class="field" style="margin:0"><label>Height (cm)</label><span class="ctl" style="display:flex;align-items:center">175</span></div>
+                <div class="field" style="margin:0"><label>Weight (kg)</label><span class="ctl" style="display:flex;align-items:center">67</span></div>
+              </div>
+              <div class="field"><label>Activity level</label><span class="ctl" style="display:flex;align-items:center;justify-content:space-between">Moderate (3-4 workouts/wk)<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7b8593" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span></div>
+
+              <div class="result">
+                <div class="row"><span>Estimated BMI</span><b>Healthy range 18.5–24.9</b></div>
+                <p class="big">21.9</p>
+                <div class="tgt">
+                  <div><span class="k">Daily plant protein target</span><span class="v">80–92 g / day</span></div>
+                  <span class="btn outline sm">Chat plan</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Pick dishes -->
+          <section class="card">
+            <div class="card-pad">
+              <span class="picker-entry">
+                <span class="ic"><svg viewBox="0 0 24 24"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><path d="M6 17h12"/></svg></span>
+                <span style="min-width:0"><b>Pick dishes</b><span>Choose dishes, then ask for a plan</span></span>
+                <span class="go">Choose →</span>
+              </span>
+            </div>
+          </section>
+
+          <!-- History -->
+          <section class="card">
+            <div class="card-h">
+              <h2><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Conversations</h2>
+              <span class="btn ghost sm" style="padding:0 6px">+</span>
+            </div>
+            <ul class="hlist">
+              <li><span class="hitem on"><b>Daily plant protein plan</b><span>Nov 2, 2026</span></span></li>
+              <li><span class="hitem"><b>Iron absorption in lentil bowls</b><span>Oct 28, 2026</span></span></li>
+              <li><span class="hitem"><b>Egg replacer for banana bread</b><span>Oct 24, 2026</span></span></li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 2. Khách ══════ -->
+  <div class="frame-label"><span class="n">2</span><h2>Khách chưa đăng nhập — khung chat khoá</h2><p>Rail chỉ còn BMI; chọn món và lịch sử ẩn vì đều cần JWT</p></div>
+
+  <div class="app">
+    <div class="nav">
+      <div class="brand"><span class="mark"><svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/></svg></span>VEGALIFE</div>
+      <div class="nav-links"><span>Home</span><span>Explore</span><span>Nearby</span><span class="on">AI Nutrition</span><span>AI Plans</span></div>
+      <div class="nav-search">Search recipes, ingredients, or tags…</div>
+      <div class="nav-right"><span class="btn outline">EN</span><span class="btn primary pill">+ New Post</span></div>
+    </div>
+    <div class="page">
+      <div class="hdr">
+        <div>
+          <h1>AI Nutrition Assistant</h1>
+          <p class="sub">Verified botanical nutrition guidance on vegetarian macros, ingredient swaps and plant-first recipes.</p>
+          <p class="scope">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"/></svg>
+            Dietary scope restricted · Informational only, not medical advice
+          </p>
+        </div>
+        <span class="acct-pill warn">Sign in to see your quota</span>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <div class="locked">
+            <span class="lock">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <h3>Sign in to ask the assistant</h3>
+            <p>Every question is tied to your monthly quota. Signing in also keeps your conversation history.</p>
+            <span class="btn primary" style="height:40px;padding:0 22px">Sign in to continue</span>
+          </div>
+        </section>
+
+        <aside class="rail">
+          <section class="card">
+            <div class="card-h">
+              <h2><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h4"/></svg>BMI &amp; Protein Target</h2>
+              <span class="mono-tag">Mini tool</span>
+            </div>
+            <div class="card-pad">
+              <div class="two">
+                <div class="field" style="margin:0"><label>Height (cm)</label><span class="ctl" style="display:flex;align-items:center">175</span></div>
+                <div class="field" style="margin:0"><label>Weight (kg)</label><span class="ctl" style="display:flex;align-items:center">67</span></div>
+              </div>
+              <div class="field"><label>Activity level</label><span class="ctl" style="display:flex;align-items:center;justify-content:space-between">Moderate (3-4 workouts/wk)<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7b8593" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span></div>
+              <div class="result">
+                <div class="row"><span>Estimated BMI</span><b>Healthy range 18.5–24.9</b></div>
+                <p class="big">21.9</p>
+                <div class="tgt">
+                  <div><span class="k">Daily plant protein target</span><span class="v">80–92 g / day</span></div>
+                  <span class="btn outline sm">Chat plan</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 3. Dialog chọn món ══════ -->
+  <div class="frame-label"><span class="n">3</span><h2>Dialog chọn món</h2><p>Mở từ nút trong rail · tìm kiếm debounce 300ms · chip món đã chọn ở chân</p></div>
+
+  <div class="scrim">
+    <div class="dialog">
+      <div class="dialog-h">
+        <div>
+          <h3><svg viewBox="0 0 24 24"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/></svg>Pick dishes</h3>
+          <p>Choose the dishes for the plan — the assistant receives each name and its dish id.</p>
+        </div>
+        <span class="btn ghost sm" style="padding:0 6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </span>
+      </div>
+
+      <div class="dialog-body">
+        <span class="input" style="display:flex;align-items:center;gap:8px;height:38px;color:var(--ink-faint)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          Search dishes by name
+        </span>
+
+        <div class="sel-chips">
+          <span class="sel-chip">Phở chay Hà Nội <i>×</i></span>
+          <span class="sel-chip">Bún chả chay <i>×</i></span>
+          <span class="sel-chip">Gỏi cuốn <i>×</i></span>
+        </div>
+
+        <ul class="dish-list">
+          <li class="dish on"><span class="box on"></span><span style="min-width:0"><span class="nm">Phở chay Hà Nội</span><span class="id">bea07ac6-a80c</span></span></li>
+          <li class="dish on"><span class="box on"></span><span style="min-width:0"><span class="nm">Bún chả chay</span><span class="id">7f31c9e2-1044</span></span></li>
+          <li class="dish on"><span class="box on"></span><span style="min-width:0"><span class="nm">Gỏi cuốn</span><span class="id">2d9e55b1-88a0</span></span></li>
+          <li class="dish"><span class="box"></span><span style="min-width:0"><span class="nm">Bánh mì chay</span><span class="id">a4102cc7-3f55</span></span></li>
+          <li class="dish"><span class="box"></span><span style="min-width:0"><span class="nm">Cao lầu chay</span><span class="id">c82b7711-90de</span></span></li>
+          <li class="dish"><span class="box"></span><span style="min-width:0"><span class="nm">Mì Quảng chay</span><span class="id">5fe3a8b2-61c9</span></span></li>
+        </ul>
+      </div>
+
+      <div class="dialog-f">
+        <span style="font-size:12px;color:var(--ink-faint)">3 selected</span>
+        <span class="btn primary sm">Build a plan with these dishes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>Cần làm khi duyệt</h3>
+    <ul>
+      <li><b>Xoá</b> <code>SWAPS</code>, khối JSX "swaps", icon <code>ArrowRight</code> nếu không còn dùng, và mục <code>swaps.*</code> trong <code>en</code> + <code>vi</code>. Khối "Access Policy &amp; Quotas" đang lặp lại đúng thông tin của pill quỹ — đề xuất bỏ luôn, gộp cảnh báo y tế vào dòng <code>scope</code>.</li>
+      <li><b>DishPicker → Dialog:</b> cần component <code>Dialog</code> (đã có ở <code>src/components/ui/dialog.tsx</code>). Logic tìm kiếm + <code>selected</code> giữ nguyên, chỉ đổi vỏ. Nút trong rail hiện số món đã chọn nếu có.</li>
+      <li><b>Khung khoá:</b> chỉ render khi <code>!isAuthenticated</code>, thay cho nhánh nút xanh ở chân composer.</li>
+      <li><b>Rail sticky:</b> <code>lg:sticky lg:top-20</code> — cuộn chat dài thì BMI vẫn thấy.</li>
+      <li>Nếu duyệt, tôi sửa thẳng <code>AiNutritionPage.tsx</code> + <code>ChatPanel.tsx</code> + <code>DishPicker.tsx</code> + 2 file locale.</li>
+    </ul>
+  </div>
+
+</main>
+</body>
+</html>

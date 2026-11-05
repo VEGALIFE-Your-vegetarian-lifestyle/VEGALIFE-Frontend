@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import * as Yup from "yup";
 import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
@@ -24,6 +24,7 @@ interface LoginFormValues extends LoginRequest {
 export default function LoginPage() {
     const { t } = useTranslation("auth");
     const navigate = useNavigate();
+    const location = useLocation();
     const { setAuth } = useAuth();
     const rememberMeRef = useRef(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -49,7 +50,7 @@ export default function LoginPage() {
                 {
                     user: {
                         id: data.userId,
-                        username: data.username,
+                        username: data.displayName,
                         email: data.email,
                         role,
                         status: "activated",
@@ -61,7 +62,12 @@ export default function LoginPage() {
                 rememberMeRef.current,
             );
             toast.success(t("login.success"));
-            navigate(role === "ADMIN" ? "/admin/dashboard" : "/", { replace: true });
+            // `ProtectedRoute` gửi kèm trang đang muốn vào → đăng nhập xong quay lại đó
+            // (vd bấm chi tiết một quán ở `/nearby/:id`), thay vì luôn về trang chủ.
+            const from = (location.state as { from?: { pathname: string; search?: string } } | null)?.from;
+            navigate(from ? `${from.pathname}${from.search ?? ""}` : role === "ADMIN" ? "/admin/dashboard" : "/", {
+                replace: true,
+            });
         },
         onError: (error: unknown) => {
             toast.error(getApiErrorMessage(error, t("errors.loginFailed")));

@@ -61,7 +61,7 @@ describe.skipIf(!HAS_ADMIN)("adminRecipeService — cần JWT admin (E2E_ADMIN_*
                 expect(["PENDING", "APPROVED", "REJECTED"]).toContain(recipe.moderationStatus);
                 expect(["PENDING", "APPROVED", "REJECTED"]).toContain(recipe.dishModerationStatus);
                 expect(Array.isArray(recipe.ingredients)).toBe(true);
-                expect(typeof recipe.username).toBe("string");
+                expect(typeof recipe.displayName).toBe("string");
                 expect(Array.isArray(recipe.categoryIds)).toBe(true);
                 expect(Number.isNaN(Date.parse(recipe.createdAt))).toBe(false);
             }

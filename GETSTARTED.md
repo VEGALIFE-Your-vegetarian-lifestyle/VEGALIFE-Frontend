@@ -136,7 +136,7 @@ src/
 │   ├── locations/        # Nearby, LocationDetail, AdminLocations + geo/openingHours
 │   ├── nutrition-ai/     # Chatbot dinh dưỡng
 │   ├── posts/            # Home, Explore, PostDetail, CreatePost, MyPosts + editor
-│   ├── profile/          # ProfilePage + DietaryPreferencesSection, TagInput
+│   ├── profile/          # ProfilePage (rail + 1 form gộp), TagInput, dietary
 │   ├── recipes/          # CreateRecipePage, AdminRecipesPage
 │   └── videos/           # VideosPage (admin)
 │

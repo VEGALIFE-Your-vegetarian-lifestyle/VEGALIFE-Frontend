@@ -25,17 +25,9 @@ export interface AdminPost {
     publishedAt: string | null;
     createdAt: string;
     userId: string;
-    username: string;
+    /** Tên hiển thị của tác giả — BE trả `displayName` (không có `username`). */
+    displayName: string;
     email: string;
-}
-
-/** `POST /api/admin/posts/{postId}/moderate` — duyệt hoặc từ chối bài chờ duyệt. */
-export type ModerationAction = "PUBLISH" | "UNPUBLISH";
-
-export interface ModeratePostRequest {
-    action: ModerationAction;
-    /** ≤1000 ký tự — lưu vào moderation_log. Bỏ trống khi không cần nêu lý do. */
-    reason?: string;
 }
 
 /* ------------------------------------------------------------------ *
@@ -46,8 +38,9 @@ export interface ModeratePostRequest {
  * ------------------------------------------------------------------ */
 
 /* ------------------------------------------------------------------ *
- * Field hiển thị theo mockup nhưng backend CHƯA trả.
- * Tất cả optional — điền ở `./mockEnrichment.ts`, xoá khi BE có.
+ * Field hiển thị theo mockup nhưng backend CHƯA trả — CARD thôi.
+ * Blog/Explore/MyPosts vẫn bơm ở `./mockEnrichment.ts`; Post Detail đã bỏ
+ * hết (xem DOCS/MOCK-FIELDS.md § Post Detail).
  * ------------------------------------------------------------------ */
 
 export interface PostAuthorCard {
@@ -59,27 +52,7 @@ export interface PostAuthorCard {
     avatarUrl?: string;
 }
 
-export interface PostNutrition {
-    calories: number;
-    proteinG: number;
-    carbsG: number;
-    fatG: number;
-    fiberG: number;
-}
-
-export interface PostIngredientGroup {
-    title: string;
-    items: { quantity: string; name: string }[];
-}
-
-export interface PostStep {
-    title: string;
-    body: string;
-    /** "10 Mins" — nhãn thời gian ở góc phải mỗi bước. */
-    timestamp?: string;
-}
-
-/** `POST /api/posts/{postId}/comments` — shape BE trả về. */
+/** `POST /api/posts/{postId}/comments` — shape BE trả về khi tạo. */
 export interface ApiComment {
     id: string;
     postId: string;
@@ -97,17 +70,23 @@ export interface CreateCommentRequest {
     parentId?: string | null;
 }
 
-export interface PostComment {
+/**
+ * `GET /api/posts/{postId}/comments` — một mục trong cây bình luận.
+ * Chỉ comment gốc bị phân trang; `replies[]` là cả cây con, không phân trang.
+ */
+export interface PostCommentThread {
     id: string;
-    author: string;
-    badge?: string;
-    date: string;
+    /** null khi đã xoá mềm. */
+    userId: string | null;
+    username: string | null;
+    avatarUrl: string | null;
+    /** Đã xoá mềm thì BE trả đúng chuỗi `"[deleted]"`, các field tác giả null. */
     content: string;
-    likes: number;
-    /** "Insider Tip" của người bình luận. */
-    tip?: string;
-    /** Bình luận của tác giả bài, hiện khung nổi bật. */
-    isAuthor?: boolean;
+    edited: boolean;
+    deleted: boolean;
+    createdAt: string;
+    updatedAt: string;
+    replies: PostCommentThread[];
 }
 
 export interface PostActivity {
@@ -175,34 +154,25 @@ export interface PostListResponse {
     content: string;
     /** JSON ProseMirror (object) — BE trả về để render lại. */
     rawContent?: JSONContent | string | null;
-    /** JSON ProseMirror đã parse từ `rawContent` — xem `./mockEnrichment.ts`. */
+    /** JSON ProseMirror đã parse từ `rawContent` — xem `getPostDetail` trong `./api.ts`. */
     contentJson?: JSONContent | null;
     featuredImageUrl: string | null;
     videoUrl: string | null;
     categoryIds: string[];
     mediaIds: string[];
+    /** Công thức gắn vào bài — ghi qua `POST /api/posts/{id}/recipes`. */
+    recipeIds: string[];
     status: PostStatus;
     flag: string | null;
     viewCount: number;
     publishedAt: string | null;
     createdAt: string;
 
-    /* Field mock — xem khối PostAuthorCard phía trên. */
+    /* Field mock của CARD — xem khối PostAuthorCard phía trên. */
     authorCard?: PostAuthorCard;
     /** "25 mins" | "8:45" | "5 min read" — nhãn overlay góc ảnh. */
     durationLabel?: string;
     rating?: number;
     commentCount?: number;
     saveCount?: number;
-}
-
-export interface PostDetailResponse extends PostListResponse {
-    nutrition?: PostNutrition;
-    ingredientGroups?: PostIngredientGroup[];
-    steps?: PostStep[];
-    servings?: number;
-    difficulty?: string;
-    prepTimeMinutes?: number;
-    /** "Chef's Kitchen Secret". */
-    chefTip?: string;
 }

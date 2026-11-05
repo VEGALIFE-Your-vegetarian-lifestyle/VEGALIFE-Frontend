@@ -8,7 +8,7 @@ export default function NotFoundPage() {
     const { t } = useTranslation("common");
 
     return (
-        <div className="mx-auto max-w-7xl px-4 py-16">
+        <div className="mx-auto max-w-app px-4 py-16">
             <EmptyState
                 icon={SearchX}
                 title={t("notFound.title")}

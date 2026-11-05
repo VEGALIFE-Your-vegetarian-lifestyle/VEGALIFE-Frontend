@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
-import { PageHeader } from "@/components/common/PageHeader";
 import { MenuCard } from "../components/MenuCard";
 import { WeekNavigator } from "../components/WeekNavigator";
 import { useMealPlans } from "../useMealPlans";
@@ -30,27 +29,28 @@ export default function MealPlanPage() {
     const goToWeek = (next: Date) => setSearchParams({ from: toISODate(next) }, { replace: true });
 
     return (
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <PageHeader
-                breadcrumb={[t("breadcrumb")]}
-                title={t("title")}
-                description={t("subtitle")}
-                action={
-                    <div className="flex flex-wrap items-center gap-2">
-                        <WeekNavigator
-                            from={from}
-                            to={to}
-                            onPrev={() => goToWeek(shiftWeek(monday, -1))}
-                            onNext={() => goToWeek(shiftWeek(monday, 1))}
-                            onToday={() => goToWeek(startOfWeek(new Date()))}
-                        />
-                        <Button onClick={() => navigate(`/meal-plan/create?from=${from}`)}>
-                            <Plus className="h-4 w-4" aria-hidden="true" />
-                            {t("create.action")}
-                        </Button>
-                    </div>
-                }
-            />
+        <>
+            <header className="flex flex-wrap items-end justify-between gap-3 px-0.5">
+                <div>
+                    <h1 className="text-2xl font-semibold leading-tight text-dark sm:text-[25px]">{t("title")}</h1>
+                    <p className="mt-1 text-[12.5px] text-muted-foreground">{t("subtitle")}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 max-sm:w-full">
+                    <WeekNavigator
+                        from={from}
+                        to={to}
+                        onPrev={() => goToWeek(shiftWeek(monday, -1))}
+                        onNext={() => goToWeek(shiftWeek(monday, 1))}
+                        onToday={() => goToWeek(startOfWeek(new Date()))}
+                    />
+                    <Button className="max-sm:flex-1" onClick={() => navigate(`/meal-plan/create?from=${from}`)}>
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                        {t("create.action")}
+                    </Button>
+                </div>
+            </header>
+
+            <div className="space-y-4">
 
             {isLoading && (
                 <div className="space-y-4">
@@ -87,6 +87,7 @@ export default function MealPlanPage() {
                     ))}
                 </div>
             )}
-        </div>
+            </div>
+        </>
     );
 }

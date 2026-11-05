@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary-container":"#4caf50","outline-variant":"#becab9","secondary-fixed-dim":"#88d982","error":"#ba1a1a","on-surface-variant":"#3f4a3c","surface-container-low":"#eff4ff","on-secondary":"#ffffff","outline":"#6f7a6b","background":"#f8f9ff","on-error-container":"#93000a","surface-variant":"#d9e3f6","tertiary-fixed":"#d9e6da","on-tertiary-container":"#2a352d","inverse-surface":"#27313f","on-primary-fixed":"#002204","primary-fixed-dim":"#78dc77","on-primary":"#ffffff","primary-fixed":"#94f990","inverse-primary":"#78dc77","on-primary-fixed-variant":"#005313","on-tertiary":"#ffffff","surface-container-high":"#dee9fc","on-tertiary-fixed":"#131e17","on-secondary-fixed":"#002204","surface":"#f8f9ff","on-tertiary-fixed-variant":"#3e4a41","inverse-on-surface":"#eaf1ff","error-container":"#ffdad6","primary":"#006e1c","surface-bright":"#f8f9ff","on-background":"#121c2a","secondary-container":"#a0f399","tertiary-container":"#929e94","secondary":"#1b6d24","surface-tint":"#006e1c","surface-container-highest":"#d9e3f6","surface-dim":"#d0dbed","on-secondary-fixed-variant":"#005312","surface-container":"#e6eeff","tertiary-fixed-dim":"#bdcabe","secondary-fixed":"#a3f69c","tertiary":"#556158","on-surface":"#121c2a","on-secondary-container":"#217128","on-error":"#ffffff","on-primary-container":"#003c0b","surface-container-lowest":"#ffffff"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"margin-tablet":"2rem","space-xl":"2rem","gutter":"1.5rem","space-2xl":"3rem","space-xs":"0.25rem","margin-desktop":"3rem","margin":"1rem","space-sm":"0.5rem","gutter-desktop":"2rem","space-md":"1rem","space-lg":"1.5rem"},fontFamily:{"label-sm":["Inter"],"headline-xl":["Inter"],"body-sm":["Inter"],"body-lg":["Inter"],"headline-md":["Inter"],"headline-lg":["Inter"],"display-lg":["Inter"],"headline-sm":["Inter"],"body-md":["Inter"],"label-md":["Inter"],"label-lg":["Inter"]},fontSize:{"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.02em",fontWeight:"500"}],"headline-xl":["32px",{lineHeight:"40px",letterSpacing:"-0.015em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"body-lg":["16px",{lineHeight:"24px",fontWeight:"400"}],"headline-md":["20px",{lineHeight:"28px",fontWeight:"600"}],"headline-lg":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"display-lg":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"700"}],"headline-sm":["18px",{lineHeight:"26px",fontWeight:"600"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"label-md":["12px",{lineHeight:"16px",fontWeight:"500"}],"label-lg":["14px",{lineHeight:"20px",fontWeight:"600"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm flex-shrink-0"><img alt="VEGALIFE Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UoBa4D7SPL0ZX4sM0S8NqYWJ_-FJIjuuwvWrY5Px9uMfZew2RuhiJAhE9Z3q6ZJD4jzjZOYdLAkOkrDspoQfsMDm6DpNuUIGCPV4_V-UYHPRUSriJidKC1KIGGFEXc9MzcpMG_QbSSXOiQPvHbi9buNWblhJZhslOdnf5YEodr8Q9BvlUnmiWafU9EWxm-sE_GD4Wa-T1my-h76_oZPstGM-sCyiDA_Dw0iwzKFUWlIM6ba-QbnxHhm2Jf"/><a class="flex items-baseline gap-1" data-path="home" href="#"><span class="font-headline-md text-headline-md tracking-tight text-primary font-bold">VEGALIFE</span><span class="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-primary-container mb-1"></span></a></div><nav class="hidden md:flex items-center gap-space-lg" data-active-classes="text-primary font-label-lg text-label-lg"><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="home" href="#">Home</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="explore" href="#">Explore</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="nearby" href="#">Nearby</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="ai-nutrition" href="#">AI Nutrition</a></nav><div class="flex items-center gap-space-sm sm:gap-space-md"><div class="relative hidden sm:flex items-center"><span class="material-symbols-outlined absolute left-3 text-outline pointer-events-none text-base">search</span><input class="h-10 pl-9 pr-4 w-44 lg:w-56 rounded-xl bg-surface text-body-sm font-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-all" placeholder="Search plants, recipes..." type="text"/></div><a class="inline-flex items-center gap-space-xs h-10 px-space-md bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg shadow-sm hover:opacity-95 transition-opacity" data-path="create-post" href="#"><span class="material-symbols-outlined text-base">add</span><span class="hidden sm:inline">New Post</span></a><div class="flex items-center gap-space-xs pl-space-xs"><div class="relative flex items-center"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-surface-variant cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLWsonqyvhY18YTlFmD_5wzefA8Ua5ohaLebsIV3ehoty-Q7T1gOis0FTcjw7P14HZ-EVmW4oUq7AC_ttH1P-TvxMFo_2PbuJLoXAgb2QbEzYINjrPh-U_gtpIT7ths7KrXr3lYl_N8ryzRzzwqc7wTL-alfPw7p_yqD2L-VJZMcoylP0T75b-tsdXYigTClUKmjlL3NLs2f8WQi1kKWEx4v8OE3zMGTESqaQYVlxQstxjeJ8tmsAatA"/><span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-primary-container rounded-full ring-2 ring-surface-container-lowest"></span></div><button aria-label="User menu" class="p-1 text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none" type="button"><span class="material-symbols-outlined text-base">expand_more</span></button></div></div></div></header><main class="w-full pt-16 bg-surface min-h-[calc(100vh-16rem)]"><div class="flex flex-col w-full">
+<!-- Content Canvas Container -->
+<div class="w-full max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-space-lg flex flex-col gap-space-lg">
+<!-- Top Navigation / Breadcrumbs -->
+<nav aria-label="Breadcrumb" class="flex flex-wrap items-center justify-between gap-space-sm pb-space-xs">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+<a class="hover:text-primary transition-colors flex items-center gap-1" data-path="home" href="#">
+<span class="material-symbols-outlined text-sm">home</span>
+<span>Home</span>
+</a>
+<span class="text-outline">/</span>
+<a class="hover:text-primary transition-colors" data-path="nearby" href="#">Nearby</a>
+<span class="text-outline">/</span>
+<span class="text-on-surface font-semibold truncate max-w-[220px]">Green Sprout Bistro</span>
+</div>
+<a class="inline-flex items-center gap-space-xs text-primary font-label-lg text-label-lg hover:underline group" data-path="nearby" href="#">
+<span class="material-symbols-outlined text-base transition-transform group-hover:-translate-x-1">arrow_back</span>
+<span>Back to Nearby Vegan Places</span>
+</a>
+</nav>
+<!-- Header & Visual Gallery Card -->
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col gap-0">
+<!-- Media Mosaic -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-2 p-2 bg-surface-container-low">
+<!-- Main Primary Cover Image (Span 8) -->
+<div class="lg:col-span-8 relative h-[360px] md:h-[420px] rounded-lg overflow-hidden group">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.02]" data-alt="Warm sunlit interior of Green Sprout Bistro filled with lush hanging indoor plants, natural oak dining tables, large industrial glass windows, and ceramic bowls of vibrant gourmet vegan salads in a cozy Portland atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAKg9WnhPH06Iz_qwQCjyMgD4pRXEAG4p1E_YayDJZDJ8PH2oU61vdjk-KkEnMpGiqZfcy3Omga-PFASzma0ojdVzJBiqfWLW91vGHrhO2yEAgy-IFN4IOz2uiJzuT1NCX_46II7F0JCqd8HCOBEATWUOVM-UK3RG7y-AsGo07Mgho0AcS3u88f_e2vR6MIiHFCK_C0BompbeZcdNoPsd9Z0o6DoVRo_OqSHMSyIHP3wszyoks6UtcWeg')"></div>
+<!-- Badges Floating Over Image -->
+<div class="absolute top-4 left-4 flex flex-wrap gap-2 pointer-events-none">
+<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest/95 backdrop-blur text-primary font-label-md text-label-md shadow-sm">
+<span class="material-symbols-outlined text-sm text-primary-container" style="font-variation-settings: 'FILL' 1;">eco</span>
+              100% Vegan Restaurant
+            </span>
+<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-container text-on-primary font-label-md text-label-md shadow-sm">
+<span class="material-symbols-outlined text-sm">verified</span>
+              Verified Plant-First Partner
+            </span>
+</div>
+<!-- Bottom Image Counter / Tag -->
+<div class="absolute bottom-4 right-4 bg-inverse-surface/80 text-inverse-on-surface backdrop-blur px-3 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">photo_camera</span>
+<span>1 / 18 Photos</span>
+</div>
+</div>
+<!-- Thumbnail Column (Span 4) -->
+<div class="lg:col-span-4 grid grid-cols-3 lg:grid-cols-1 gap-2 h-full">
+<div class="relative h-28 lg:h-[134px] rounded-lg overflow-hidden group">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105" data-alt="Close up artisanal culinary plating of crispy air-fried sesame tofu bowl with ribboned green cucumbers, edamame beans, and roasted nori on speckled ceramic tableware." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCmV5SX0RuwiyKD6cUVt85VDBqwh1KoRpTsgkZmS6S1Y2sRyujp79k9IiVqSdlAaYxypptIN75mOsTDyaMS8q7r_lEB4Ar-g_3H7lH8lyOCy94fxUeuW0fVWUTiyqKyECDYhwFi9qhZVAoevzmec8HybpvmsEbavBLHXglQIovz6fGgbjDTLtXdZL5vg8dLsfFLj8wv-sXqjGBr4HjL5chIpDrchGKIWvHI1vJeoarg7W6ZN8kTGsAp5g')"></div>
+<span class="absolute bottom-2 left-2 text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded bg-surface-container-lowest/90 text-on-surface">Signature Bowl</span>
+</div>
+<div class="relative h-28 lg:h-[134px] rounded-lg overflow-hidden group">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105" data-alt="Juicy plant-based smoked tempeh burger with golden truffle cashew aioli, pickled shallots, baby arugula, served on a toasted artisanal brioche bun." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBlmXvb6PX4hsMl9mw09WXV4ccU8HAF0ni1UmngCIaajI_dkGgyQ4kSW3ejoRoDCgJnWJfbDz5iuQufimI7MnG9Cn9NOUDizH00A5WxvtyJ5fCM3IC2VL0qkR0RHcw4St-JgpQc_Gi4MuUaxvMNVJi78dsUIl-2QgLM8pLRIUfrrCxUa_-UMN22MB_9bFeQsBSc71QlaBK2-cOWash-7NiGL3TMnl8V9KFKd8fV659npcG_c8YKNwo22Q')"></div>
+<span class="absolute bottom-2 left-2 text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded bg-surface-container-lowest/90 text-on-surface">Tempeh Burger</span>
+</div>
+<div class="relative h-28 lg:h-[134px] rounded-lg overflow-hidden group">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105" data-alt="Charming leafy outdoor patio at Green Sprout Bistro with wooden bistro tables, string fairy lights, string ferns, and dappled afternoon sunshine." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBZCgzxll9EVROtHOKor3aJc2l7ewOeVyDKb5FtV1H2Z7PXwmoBI-XO0rohHpjQWHbaSkTEeNiM5d77qJgUI8comnM_qCi7lM5pvTnpXxTx5jn_V34jXxWefr-DVNewgD61p9iqDi1WqJC2OIvHz4nOw_adKuTMNzxSYcl2gitTZ9SHR4CsrVcVTWVK8hNsw5y31wjmc-cHAqbsvgGEXsgjBzaONoKvsHyrf1bN3yaTK0agbadG_9Bosw')"></div>
+<span class="absolute bottom-2 left-2 text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded bg-surface-container-lowest/90 text-on-surface">Garden Patio</span>
+</div>
+</div>
+</div>
+<!-- Place Identity & Action Bar -->
+<div class="p-space-lg flex flex-col gap-space-md">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3 flex-wrap">
+<h1 class="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">Green Sprout Bistro</h1>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-xs">local_florist</span>
+                Farm-Direct
+              </span>
+</div>
+<!-- Rating & Verified Count -->
+<div class="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md">
+<div class="flex items-center text-amber-500">
+<span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface ml-1">4.9</span>
+</div>
+<span class="text-outline">•</span>
+<a class="text-secondary hover:underline font-label-md text-label-md" href="#reviews">248 verified community reviews</a>
+<span class="text-outline">•</span>
+<span class="font-label-md text-label-md text-outline">Portland, OR</span>
+</div>
+</div>
+<!-- Strict Non-Transactional Primary Action Buttons -->
+<div class="flex items-center flex-wrap gap-space-sm">
+<button class="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg hover:opacity-95 shadow-sm transition-all focus:outline-none" onclick="document.getElementById('directions-card').scrollIntoView({behavior: 'smooth'})" type="button">
+<span class="material-symbols-outlined text-base">near_me</span>
+<span>Get Directions</span>
+</button>
+<button class="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-variant font-label-lg text-label-lg transition-colors focus:outline-none" id="btn-save-fav" onclick="toggleFavorite()" type="button">
+<span class="material-symbols-outlined text-base text-secondary" id="fav-icon">favorite_border</span>
+<span id="fav-text">Save to Favorites</span>
+</button>
+<button class="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-variant font-label-lg text-label-lg transition-colors focus:outline-none" onclick="navigator.clipboard.writeText(window.location.href); alert('Place link copied to clipboard!');" title="Share Place" type="button">
+<span class="material-symbols-outlined text-base">share</span>
+<span class="hidden sm:inline">Share</span>
+</button>
+</div>
+</div>
+<!-- Quick Facts Pill Bar -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-space-xs">
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface-container-low">
+<span class="material-symbols-outlined text-primary text-xl flex-shrink-0">distance</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Distance</span>
+<span class="font-label-md text-label-md text-on-surface truncate">0.4 mi (Pearl District)</span>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface-container-low">
+<span class="material-symbols-outlined text-primary-container text-xl flex-shrink-0">schedule</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Status Today</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold text-secondary truncate">Open • 11:00 AM – 9:30 PM</span>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface-container-low">
+<span class="material-symbols-outlined text-primary text-xl flex-shrink-0">payments</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Price Level</span>
+<span class="font-label-md text-label-md text-on-surface truncate">$$ • Moderate ($12–$22)</span>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg bg-surface-container-low">
+<span class="material-symbols-outlined text-secondary text-xl flex-shrink-0">spa</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Ethos</span>
+<span class="font-label-md text-label-md text-on-surface truncate">100% Plant • Organic</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Content Layout (65% / 35% 2-Column Desktop Grid) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- ================= LEFT BROAD COLUMN (65% -> 8 Cols) ================= -->
+<div class="lg:col-span-8 flex flex-col gap-space-xl">
+<!-- About Section -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">restaurant</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">About Green Sprout Bistro</h2>
+</div>
+<div class="font-body-lg text-body-lg text-on-surface-variant space-y-3 leading-relaxed">
+<p>
+              Founded in 2021 in the heart of Portland's Pearl District, Green Sprout Bistro is dedicated to reimagining compassionate, mindful eating without sacrificing depth, texture, or indulgence. We believe that whole-food plant nutrition is the most vibrant way to fuel human health and heal our living biosphere.
+            </p>
+<p>
+              Every single sauce, nut creamer, and grain ferment is prepared from scratch in our open kitchen. We partner exclusively with Willamette Valley organic growers, harvesting seasonal greens and wild Pacific Northwest mushrooms at their nutritional peak. No hydrogenated oils, zero synthetic preservatives, and zero animal exploitation.
+            </p>
+</div>
+<!-- Highlight Values Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-space-xs">
+<div class="p-3.5 rounded-lg bg-surface-container-low flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-xl">energy_savings_leaf</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">100% Solar Powered</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Carbon-neutral kitchen operations</span>
+</div>
+</div>
+<div class="p-3.5 rounded-lg bg-surface-container-low flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-xl">agriculture</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">35 Local Farm Partners</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Traceable Oregon soil origins</span>
+</div>
+</div>
+<div class="p-3.5 rounded-lg bg-surface-container-low flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-xl">compost</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Zero-Waste Certified</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">100% organic waste composted</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Popular Plant-Based Foods & Signature Dishes Section -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">lunch_dining</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">Popular Plant-Based Foods</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Signature community favorites crafted with whole, non-processed ingredients</p>
+</div>
+<span class="font-label-sm text-label-sm text-outline bg-surface-container-low px-3 py-1 rounded-full self-start sm:self-auto">Dine-in menu preview</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-space-xs">
+<!-- Dish 1: Crispy Air-Fried Sesame Tofu Bowl (Community Recipe Match) -->
+<article class="bg-surface-container-low rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div>
+<div class="relative h-44 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105" data-alt="Golden crisp cubes of sesame air-fried organic tofu atop fluffy purple rice, avocado rosettes, edamame beans, and roasted scallions in a modern earthen bowl." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBgMznIe_flxh9hrC2EvY6LIz6-olgX0Ln5tXYbvXxFUn3tfJzv79MlM0y2IbK72xm568S0UonJjGgLKdwcNZ9YB8wcQDH0vY8uf6XIobQCe_l_LMEJCR62NmQ_HQU08vIhjDxZhw66K7b1GkIb0ADEII8H6mlW7qGHRIADv96QSPmQRjbSZZi-_yEtjF5TEQmX-X9jGk8erCZgqX-qxgl24iaE_0NysTciOyHD9_EiGo8KsxeCesvuCw')"></div>
+<!-- Linked Community Recipe Match Badge -->
+<div class="absolute top-3 left-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm shadow-sm">
+<span class="material-symbols-outlined text-xs">menu_book</span>
+                      Community Recipe Match
+                    </span>
+</div>
+<div class="absolute bottom-3 right-3 bg-inverse-surface/85 backdrop-blur text-inverse-on-surface px-2.5 py-1 rounded-md font-label-md text-label-md font-bold">
+                    $14.50
+                  </div>
+</div>
+<div class="p-4 flex flex-col gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold group-hover:text-primary transition-colors">Crispy Air-Fried Sesame Tofu Bowl</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+                    House-pressed non-GMO organic tofu, toasted white &amp; black sesame crust, edamame ribbons, scallion crunch, and ginger-tamari vinaigrette.
+                  </p>
+<div class="flex flex-wrap gap-1.5 pt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">100% Vegan</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">Gluten-Free</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">22g Protein</span>
+</div>
+</div>
+</div>
+<!-- Recipe match callout banner -->
+<div class="px-4 py-2.5 bg-secondary-fixed/50 flex items-center justify-between text-secondary">
+<span class="font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">auto_awesome</span>
+                  Cook this at home via VEGALIFE recipe
+                </span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</div>
+</article>
+<!-- Dish 2: Smoked Tempeh Truffle Burger -->
+<article class="bg-surface-container-low rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div>
+<div class="relative h-44 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105" data-alt="Artisanal vegan tempeh burger with a smoked woodsy patty, garlic cashew cream, crispy pickled pink shallots, and peppery wild rocket on a warm toasted sesame bun." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCjaTKCtT9_oLjpFVCXbc33UwwxUVQk1f9p5LzIvYAyJvS3IHwGdODu1SKiQkEIRj5xV6KKJAltpvTeaaT91mHX1nZzdiTSOmdzyYPJU08-dugtSy0_FD088My-0UrdhkuasUw22ceJPNSMcVFif71wne3HksRVrjYmrLPaaayApzwIO2Fa02qaizp74dt2O7-LLo6Dt8M13XB6bKvj-ZuUERvYBSiMwxqRDeaIRRZD_7aC-2rVaJ3Tpw')"></div>
+<div class="absolute bottom-3 right-3 bg-inverse-surface/85 backdrop-blur text-inverse-on-surface px-2.5 py-1 rounded-md font-label-md text-label-md font-bold">
+                    $16.00
+                  </div>
+</div>
+<div class="p-4 flex flex-col gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold group-hover:text-primary transition-colors">Smoked Tempeh Truffle Burger</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+                    House-cultured organic soy &amp; flax tempeh patty, Oregon black truffle cashew aioli, pickled heirloom shallots, and baby arugula on brioche.
+                  </p>
+<div class="flex flex-wrap gap-1.5 pt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">100% Vegan</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">Nut-Free Bun</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">26g Protein</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Dish 3: Wild Forest Mushroom Bourguignon -->
+<article class="bg-surface-container-low rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div>
+<div class="relative h-44 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105" data-alt="Slow-simmered dark savory wild mushroom stew featuring chanterelles and baby portobellos, garnished with fresh thyme and rosemary sprigs over velvety parsnip puree." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBugV4osk3fQIgRk-GzagT9KikiC55uJg7g1xq9Y-3Dkf2KhegMLfuokEADTH_F5fPDJ3ldURxD_Tc351KhRkKvR9p5VjzVKpKGcZIrq4rGn18MDGV1Zieum8isWe08C5uaUffIOu7uNViPyzpNYifJf_r1eySkSSURc-UmK6zwfL6cR-nYf4nPM0mViY5ir5aD8VdtrQqC19eLr0iHZy_Ow6Lr29LUBMuXoQGJmSC6msZTRgggNDEe9Q')"></div>
+<div class="absolute bottom-3 right-3 bg-inverse-surface/85 backdrop-blur text-inverse-on-surface px-2.5 py-1 rounded-md font-label-md text-label-md font-bold">
+                    $17.50
+                  </div>
+</div>
+<div class="p-4 flex flex-col gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold group-hover:text-primary transition-colors">Wild Forest Mushroom Bourguignon</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+                    Slow-simmered Pacific chanterelles and portobellos in Oregon Pinot Noir reduction, over whipped parsnip-Yukon gold purée with glazed pearl onions.
+                  </p>
+<div class="flex flex-wrap gap-1.5 pt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">100% Vegan</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">Gluten-Free</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">Anti-Inflammatory</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Dish 4: Golden Glow Turmeric Rice Bowl -->
+<article class="bg-surface-container-low rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow group">
+<div>
+<div class="relative h-44 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105" data-alt="Vibrant golden turmeric infused brown rice bowl topped with steamed edamame, spiral zucchini ribbons, purple cabbage, toasted seeds, and creamy ginger miso dressing." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAtxJGUIPNjD9zkQbk-TzfWqhlvnZDcw6HPw_pvSLVC8jYTUj2CDzd4cf7bCMuVF39ZtfqpEjN2lDOMSt8fLG4E3VNkGnTy-d3hi4cOhJyWhdbZv17amsV3czCso-5vRUm1t5bC2qsSYxBQ5T-J65f6Y3DcSWGk4a7lH7B64rX5BLAN7i9_ATBwG4otUFYvMZjl5a5dx1xoQ8qpE4V3CV1HFK3YLkHo4h75UPMh5aRiDwgLK-g6QDrmzg')"></div>
+<div class="absolute bottom-3 right-3 bg-inverse-surface/85 backdrop-blur text-inverse-on-surface px-2.5 py-1 rounded-md font-label-md text-label-md font-bold">
+                    $13.50
+                  </div>
+</div>
+<div class="p-4 flex flex-col gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold group-hover:text-primary transition-colors">Golden Glow Turmeric Rice Bowl</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+                    Steamed organic California brown rice infused with fresh turmeric root, warm edamame, ribboned zucchini, roasted hemp hearts, and mild ginger-miso glaze.
+                  </p>
+<div class="flex flex-wrap gap-1.5 pt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">100% Vegan</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">Gluten-Free</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm">Gut-Health Friendly</span>
+</div>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Dietary & Allergen Transparency Section -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">health_and_safety</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">Dietary &amp; Allergen Transparency</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            We provide verified transparency so every plant-based diner can order with absolute peace of mind.
+          </p>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<div class="p-3.5 rounded-xl bg-surface-container-low flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-2xl" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">100% Dairy-Free</span>
+<span class="font-body-sm text-body-sm text-outline">Dedicated dairy-free production line</span>
+</div>
+<div class="p-3.5 rounded-xl bg-surface-container-low flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-2xl">shield_with_heart</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Peanut-Free</span>
+<span class="font-body-sm text-body-sm text-outline">100% Peanut-free kitchen certified</span>
+</div>
+<div class="p-3.5 rounded-xl bg-surface-container-low flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-2xl">grain</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">GF Options</span>
+<span class="font-body-sm text-body-sm text-outline">Dedicated gluten-safe preparation zone</span>
+</div>
+<div class="p-3.5 rounded-xl bg-surface-container-low flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-2xl">verified_user</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Non-GMO Verified</span>
+<span class="font-body-sm text-body-sm text-outline">All soy and grain inputs tested</span>
+</div>
+</div>
+</section>
+<!-- Community Reviews & Tips Section -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md" id="reviews">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">forum</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">Community Reviews &amp; Tips</h2>
+</div>
+<span class="font-label-md text-label-md text-secondary font-semibold">248 Total Reviews</span>
+</div>
+<!-- Review Highlights List -->
+<div class="flex flex-col gap-space-md divide-y-0">
+<!-- Review 1 -->
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center font-bold text-on-secondary-fixed-variant font-label-lg text-label-lg">
+                    MK
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Maya K.</span>
+<span class="font-body-sm text-body-sm text-outline">Plant-based eater for 6 years • Visited 3 days ago</span>
+</div>
+</div>
+<div class="flex items-center text-amber-500">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic">
+                “Hands down the best house-pressed tofu in the entire city of Portland. The crispness on the outside without excess oil is pure mastery. Definitely get the community turmeric bowl too!”
+              </p>
+<div class="flex items-center gap-2 pt-1 text-primary">
+<span class="material-symbols-outlined text-xs">tips_and_updates</span>
+<span class="font-label-sm text-label-sm font-semibold">Insider Tip: Ask for extra chili sesame crisp on the side.</span>
+</div>
+</div>
+<!-- Review 2 -->
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center font-bold text-primary font-label-lg text-label-lg">
+                    DR
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">David R.</span>
+<span class="font-body-sm text-body-sm text-outline">VEGALIFE Verified Ambassador • Visited last week</span>
+</div>
+</div>
+<div class="flex items-center text-amber-500">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic">
+                “The cashew dressing is extraordinary. It feels like fine-dining level emulsion technique applied to clean, unadulterated botanical ingredients. Patio seating fills up quickly around 6:30 PM.”
+              </p>
+<div class="flex items-center gap-2 pt-1 text-primary">
+<span class="material-symbols-outlined text-xs">tips_and_updates</span>
+<span class="font-label-sm text-label-sm font-semibold">Insider Tip: Outdoor patio is dog-friendly and heated in cooler months.</span>
+</div>
+</div>
+<!-- Review 3 -->
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center font-bold text-on-tertiary-fixed font-label-lg text-label-lg">
+                    SL
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Sarah L.</span>
+<span class="font-body-sm text-body-sm text-outline">Gluten-Free Vegan • Visited 2 weeks ago</span>
+</div>
+</div>
+<div class="flex items-center text-amber-500">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic">
+                “Finding authentic celiac-safe mushroom bourguignon felt like a dream. Rich, unctuous wine reduction without any wheat thickeners. Staff was knowledgeable about every single ingredient.”
+              </p>
+</div>
+</div>
+</section>
+</div>
+<!-- ================= RIGHT STICKY SIDEBAR (35% -> 4 Cols) ================= -->
+<aside class="lg:col-span-4 flex flex-col gap-space-lg lg:sticky lg:top-20">
+<!-- Location & Directions Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md scroll-mt-24" id="directions-card">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Location &amp; Map</h3>
+<span class="material-symbols-outlined text-primary text-xl">map</span>
+</div>
+<!-- Embedded Static Map Snippet Pinpointing the bistro -->
+<div class="w-full h-44 rounded-lg bg-cover bg-center relative overflow-hidden group shadow-inner" data-location="824 NW 12th Ave, Portland, OR 97209" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBMGJyKMJSF9yM4oN2QgXSgKJizzhIzQYqqvulgrNP9DrJWmXF5UpEP_Hi-K8BOU_fQGYH_aicsRet-ErIF8f9Kp_zBfskjYzx0JhTvvkvz5636Br1YgL6ivPRhizsL7HmeM0SKAQPLhYJLAE6Efo4rl7wUF4bvFMMIRa34XDL_XmBQX7MQlP-Qnlx6dwK9kvYmbTsP_ZyHIZaN00NeAxcDK5PiRqgJmjfonyaJI2tWFtxqh5aSTCSooA')">
+<div class="absolute inset-0 bg-primary/5 group-hover:bg-transparent transition-colors"></div>
+<!-- Pin Indicator -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-lg ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-xl">restaurant</span>
+</div>
+</div>
+</div>
+<!-- Address snippet with copy button -->
+<div class="p-3 rounded-lg bg-surface-container-low flex items-start justify-between gap-2">
+<div class="flex items-start gap-2 min-w-0">
+<span class="material-symbols-outlined text-primary text-lg flex-shrink-0 mt-0.5">place</span>
+<div class="flex flex-col text-on-surface min-w-0">
+<span class="font-label-md text-label-md font-semibold truncate">824 NW 12th Ave</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Portland, OR 97209</span>
+</div>
+</div>
+<button class="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-variant transition-colors" onclick="navigator.clipboard.writeText('824 NW 12th Ave, Portland, OR 97209'); alert('Address copied to clipboard!');" title="Copy Address" type="button">
+<span class="material-symbols-outlined text-base">content_copy</span>
+</button>
+</div>
+<!-- Directions Action CTA -->
+<a class="w-full flex items-center justify-center gap-2 h-11 px-4 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg hover:opacity-95 shadow-sm transition-opacity" href="https://maps.google.com/?q=824+NW+12th+Ave,+Portland,+OR+97209" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-base">directions</span>
+<span>Open in Google Maps</span>
+</a>
+<!-- Parking & Transit Info -->
+<div class="flex flex-col gap-2 pt-1 font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary text-base flex-shrink-0 mt-0.5">local_parking</span>
+<span>Street metered parking available on NW 12th &amp; NW Kearney.</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary text-base flex-shrink-0 mt-0.5">tram</span>
+<span>2 mins walk from NW 11th Streetcar station (North South Line).</span>
+</div>
+</div>
+</div>
+<!-- Opening Hours Timetable Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Opening Hours</h3>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+              Open Now
+            </span>
+</div>
+<!-- Clean Weekly Timetable (Tuesday Highlighted) -->
+<div class="flex flex-col gap-2 font-body-sm text-body-sm">
+<div class="flex justify-between py-1 text-on-surface-variant">
+<span>Monday</span>
+<span class="font-medium text-on-surface">11:00 AM – 9:00 PM</span>
+</div>
+<!-- Current Day Highlight -->
+<div class="flex justify-between py-1.5 px-2.5 rounded-lg bg-surface-container-low font-semibold text-primary">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs">arrow_right</span>
+                Tuesday (Today)
+              </span>
+<span>11:00 AM – 9:30 PM</span>
+</div>
+<div class="flex justify-between py-1 text-on-surface-variant">
+<span>Wednesday</span>
+<span class="font-medium text-on-surface">11:00 AM – 9:30 PM</span>
+</div>
+<div class="flex justify-between py-1 text-on-surface-variant">
+<span>Thursday</span>
+<span class="font-medium text-on-surface">11:00 AM – 9:30 PM</span>
+</div>
+<div class="flex justify-between py-1 text-on-surface-variant">
+<span>Friday</span>
+<span class="font-medium text-on-surface">11:00 AM – 10:00 PM</span>
+</div>
+<div class="flex justify-between py-1 text-on-surface-variant">
+<span>Saturday</span>
+<span class="font-medium text-on-surface">10:00 AM – 10:00 PM</span>
+</div>
+<div class="flex justify-between py-1 text-on-surface-variant">
+<span>Sunday</span>
+<span class="font-medium text-on-surface">10:00 AM – 9:00 PM</span>
+</div>
+</div>
+</div>
+<!-- Contact & Website Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Contact &amp; Links</h3>
+<div class="flex flex-col gap-3 font-body-sm text-body-sm">
+<a class="p-3 rounded-lg bg-surface-container-low flex items-center justify-between hover:bg-surface-variant transition-colors group" href="tel:5035550192">
+<div class="flex items-center gap-2.5 text-on-surface">
+<span class="material-symbols-outlined text-primary text-lg">call</span>
+<span class="font-medium">(503) 555-0192</span>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary text-sm transition-colors">chevron_right</span>
+</a>
+<a class="p-3 rounded-lg bg-surface-container-low flex items-center justify-between hover:bg-surface-variant transition-colors group" href="https://greensproutbistro.com" rel="noopener noreferrer" target="_blank">
+<div class="flex items-center gap-2.5 text-on-surface">
+<span class="material-symbols-outlined text-primary text-lg">language</span>
+<span class="font-medium">greensproutbistro.com</span>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary text-sm transition-colors">open_in_new</span>
+</a>
+<a class="p-3 rounded-lg bg-surface-container-low flex items-center justify-between hover:bg-surface-variant transition-colors group" href="https://instagram.com/greensproutbistro" rel="noopener noreferrer" target="_blank">
+<div class="flex items-center gap-2.5 text-on-surface">
+<span class="material-symbols-outlined text-primary text-lg">photo_camera</span>
+<span class="font-medium">@greensproutbistro</span>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary text-sm transition-colors">open_in_new</span>
+</a>
+</div>
+<!-- Community Guidelines Note -->
+<div class="pt-2 border-t-0 text-center">
+<p class="font-body-sm text-body-sm text-outline flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-xs">verified</span>
+              Information regularly verified by VEGALIFE community members
+            </p>
+</div>
+</div>
+</aside>
+</div>
+</div>
+<!-- Micro-interaction JS for favorites toggle -->
+<script>
+    function toggleFavorite() {
+      const favIcon = document.getElementById('fav-icon');
+      const favText = document.getElementById('fav-text');
+      const isSaved = favIcon.innerText === 'favorite';
+      
+      if (isSaved) {
+        favIcon.innerText = 'favorite_border';
+        favIcon.style.fontVariationSettings = "'FILL' 0";
+        favText.innerText = 'Save to Favorites';
+      } else {
+        favIcon.innerText = 'favorite';
+        favIcon.style.fontVariationSettings = "'FILL' 1";
+        favText.innerText = 'Saved to Favorites';
+      }
+    }
+  </script>
+</div></main><footer class="w-full bg-surface-container-lowest mt-space-2xl shadow-[0_-1px_6px_rgba(0,0,0,0.02)]"><div class="max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-space-xl flex flex-col md:flex-row items-center justify-between gap-space-lg"><div class="flex flex-col items-center md:items-start gap-space-xs"><div class="flex items-center gap-space-xs"><img alt="VEGALIFE Logo" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UoBa4D7SPL0ZX4sM0S8NqYWJ_-FJIjuuwvWrY5Px9uMfZew2RuhiJAhE9Z3q6ZJD4jzjZOYdLAkOkrDspoQfsMDm6DpNuUIGCPV4_V-UYHPRUSriJidKC1KIGGFEXc9MzcpMG_QbSSXOiQPvHbi9buNWblhJZhslOdnf5YEodr8Q9BvlUnmiWafU9EWxm-sE_GD4Wa-T1my-h76_oZPstGM-sCyiDA_Dw0iwzKFUWlIM6ba-QbnxHhm2Jf"/><span class="font-headline-sm text-headline-sm text-primary font-bold">VEGALIFE</span></div><p class="font-body-sm text-body-sm text-on-surface-variant text-center md:text-left">Dedicated to mindful green living, plant-based nutrition, and conscious daily dining.</p></div><nav class="flex flex-wrap items-center justify-center gap-space-md lg:gap-space-lg" data-active-classes="text-primary font-label-md text-label-md"><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="home" href="#">Home</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="explore" href="#">Explore</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="nearby" href="#">Nearby</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="ai-nutrition" href="#">AI Nutrition</a></nav></div><div class="max-w-[1280px] mx-auto px-margin md:px-margin-tablet lg:px-margin-desktop py-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm"><p class="font-body-sm text-body-sm text-outline">© 2025 VEGALIFE. Nurturing healthy vegetarian lifestyles together.</p><div class="flex items-center gap-space-xs text-secondary"><span class="material-symbols-outlined text-sm">eco</span><span class="font-label-sm text-label-sm">100% Plant-First Community</span></div></div></footer></body></html>

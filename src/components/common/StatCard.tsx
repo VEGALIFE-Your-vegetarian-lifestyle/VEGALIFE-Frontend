@@ -10,16 +10,18 @@ interface StatCardProps {
     className?: string;
 }
 
-/** Thẻ số liệu — My Posts, Profile, macro ở Post Detail. */
+/** Thẻ số liệu — My Posts, Profile, My Recipes. Nội dung nằm ngang với icon cho gọn. */
 export function StatCard({ icon: Icon, label, value, hint, className }: StatCardProps) {
     return (
-        <div className={cn("rounded-2xl border border-border bg-card p-4", className)}>
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-vegan-green-light text-vegan-green">
-                <Icon className="h-4 w-4" aria-hidden="true" />
+        <div className={cn("flex items-center gap-3 rounded-2xl border border-border bg-card p-4", className)}>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-vegan-green-light text-vegan-green">
+                <Icon className="h-5 w-5" aria-hidden="true" />
             </span>
-            <p className="mt-3 text-2xl font-bold text-dark">{value}</p>
-            <p className="text-sm text-muted-foreground">{label}</p>
-            {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
+            <div className="min-w-0">
+                <p className="text-xl font-bold leading-none text-dark">{value}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{label}</p>
+                {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
+            </div>
         </div>
     );
 }

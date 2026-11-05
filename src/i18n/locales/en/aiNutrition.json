@@ -1,9 +1,7 @@
 {
-    "badgeIntelligence": "Plant Nutrition Intelligence",
-    "badgeScope": "Dietary Scope Restricted",
-    "badgeDisclaimer": "Not Medical Advice",
     "title": "AI Nutrition Assistant",
     "subtitle": "Consult our verified botanical nutrition assistant on vegetarian macros, ingredient swaps, plant-first calories, and wholesome recipes.",
+    "scopeNote": "Dietary scope restricted · Informational only, not medical advice.",
     "chat": {
         "modelName": "VEGALIFE Core Botanical AI",
         "modelDetail": "Model: GreenHealth 4.2 · Specialized in 4 Plant Domains",
@@ -39,7 +37,10 @@
         "charCount": "{{used}}/{{max}}",
         "quotaExhausted": "You have reached this month's AI limit. It resets on {{date}}.",
         "quotaLeft": "{{used}}/{{limit}} questions used",
-        "loginRequired": "Sign in to ask the nutrition assistant."
+        "signInQuota": "Sign in to see your quota",
+        "lockedTitle": "Sign in to ask the assistant",
+        "lockedBody": "Every question is tied to your monthly quota. Signing in keeps your conversation history and saved meal plans together.",
+        "lockedAction": "Sign in to continue"
     },
     "quickPrompts": [
         "How do I optimize non-heme iron absorption in lentil bowls?",
@@ -67,15 +68,10 @@
         "chatPlanPrompt": "Build me a daily plant protein plan for my BMI and activity level.",
         "empty": "—"
     },
-    "swaps": {
-        "title": "Instant Swap Cheat Sheet",
-        "verified": "1:1 Verified",
-        "from": "From",
-        "to": "To"
-    },
     "dishPicker": {
         "title": "Pick dishes",
         "subtitle": "Choose the dishes you want in the plan — the assistant receives each name and its dish id.",
+        "open": "Choose dishes",
         "placeholder": "Search dishes by name",
         "selected": "{{n}} selected",
         "loading": "Loading dishes…",
@@ -85,15 +81,5 @@
         "remove": "Remove {{name}}",
         "action": "Build a plan with these dishes",
         "prompt": "Build a weekly meal plan using these dishes:\n{{dishes}}"
-    },
-    "access": {
-        "title": "Access Policy & Quotas",
-        "guestInquiries": "Monthly quota:",
-        "guestLimit": "Sign in required",
-        "currentStatus": "Current Status:",
-        "activeMember": "Authenticated Member (Active)",
-        "sessionModel": "Session Model:",
-        "guardrail": "Strict Guardrail On",
-        "notice": "Mandatory Medical Notice: VEGALIFE AI provides informational culinary guidance and macronutrient references. It is not an alternative to licensed clinical healthcare or medical therapy."
     }
 }

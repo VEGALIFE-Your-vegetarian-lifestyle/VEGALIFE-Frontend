@@ -58,7 +58,7 @@ export default function LocationDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-app space-y-6 px-4 py-8 sm:px-6 lg:px-8">
                 <Skeleton className="h-48 w-full rounded-3xl" />
                 <Skeleton className="h-96 w-full rounded-2xl" />
             </div>
@@ -98,7 +98,7 @@ export default function LocationDetailPage() {
     ].filter((item): item is { icon: LucideIcon; text: string; highlight: boolean } => Boolean(item));
 
     return (
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
             <nav aria-label="Breadcrumb" className="mb-5 flex items-center justify-between gap-4">
                 <ol className="flex items-center gap-2 text-sm text-muted-foreground">
                     <li>

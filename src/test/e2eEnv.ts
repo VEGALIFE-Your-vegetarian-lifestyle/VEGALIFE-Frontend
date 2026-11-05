@@ -1,5 +1,6 @@
 import { login } from "@/features/auth/api";
 import { useAuthStore } from "@/shared/auth/authStore";
+import { decodeJwt } from "@/shared/utils/jwt";
 
 /**
  * Credentials cho test chạm backend thật — đọc từ biến môi trường, KHÔNG hard-code.
@@ -47,13 +48,15 @@ export const REMOTE_TIMEOUT_MS = 60_000;
 /** Đăng nhập rồi nạp token vào authStore để các service có JWT. */
 export async function signInAs(account: { identifier?: string; password?: string }): Promise<void> {
     const data = await login({ identifier: account.identifier!, password: account.password! });
+    // `role`/`status` không còn trong `LoginResponse` — lấy từ JWT như `LoginPage`.
+    const role = decodeJwt(data.accessToken)?.role === "ADMIN" ? "ADMIN" : "USER";
     useAuthStore.getState().setAuth({
         user: {
             id: data.userId,
-            username: data.username,
+            username: data.displayName,
             email: data.email,
-            role: data.role,
-            status: data.status,
+            role,
+            status: "activated",
         },
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,

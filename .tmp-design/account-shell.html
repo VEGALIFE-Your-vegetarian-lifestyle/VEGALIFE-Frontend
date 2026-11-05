@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Account Shell — VEGALIFE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    --green:#12724a; --green-hover:#0f6140; --green-light:#e6f2ec; --green-muted:#b0d3bd;
+    --green-subtle:#f2f9f5; --green-bright:#4caf50;
+    --amber-soft:#fef3c7; --amber-strong:#b45309;
+    --danger:#dc2626; --danger-soft:#fef2f2;
+    --info-soft:#eff6ff; --lavender-strong:#2a5f9e;
+    --dark:#0d1117; --bg:#f4f5f7; --surface:#fff; --muted-bg:#eaeef2;
+    --border:#e3e6ea; --muted-fg:#5c6675;
+    --font-sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    --font-display:"Fraunces",Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--dark);font-family:var(--font-sans);
+    font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.02em;
+    text-wrap:balance;margin:0}
+  p{margin:0}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit}
+
+  .shell{max-width:1240px;margin:0 auto;padding:24px clamp(16px,3vw,32px) 80px;
+    display:grid;grid-template-columns:238px minmax(0,1fr);gap:20px;align-items:start}
+
+  /* ================= RAIL (sáng, cùng tông card của dự án) ================= */
+  .rail{position:sticky;top:20px;background:var(--surface);border:1px solid var(--border);
+    border-radius:16px;color:var(--dark);display:flex;flex-direction:column;overflow:hidden}
+
+  .me{display:flex;align-items:center;gap:10px;padding:15px 15px 14px;
+    border-bottom:1px solid var(--border);background:var(--green-subtle)}
+  .me .av{width:40px;height:40px;border-radius:999px;background:var(--green-light);
+    color:var(--green);display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:16px;font-weight:700;flex:none;
+    box-shadow:0 0 0 1px var(--green-muted)}
+  .me .n{min-width:0;flex:1}
+  .me b{display:block;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;color:var(--dark)}
+  .me span{display:block;font-size:10.5px;color:var(--muted-fg);margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .nums{display:flex;gap:0;padding:12px 0;border-bottom:1px solid var(--border)}
+  .nums div{flex:1;min-width:0;padding:0 10px;border-left:1px solid var(--border)}
+  .nums div:first-child{border-left:0}
+  .nums b{display:block;font-family:var(--font-display);font-size:17px;font-weight:700;
+    line-height:1;font-variant-numeric:tabular-nums;color:var(--dark)}
+  .nums b.amber{color:var(--amber-strong)}
+  .nums span{display:block;font-size:10px;font-weight:600;color:var(--muted-fg);
+    margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .cap{padding:14px 15px 6px;font-size:9px;font-weight:800;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--muted-fg)}
+
+  .nav{display:flex;flex-direction:column;gap:2px;padding:0 9px}
+  .nav a{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;
+    font-size:12.5px;font-weight:600;color:var(--muted-fg);position:relative;
+    transition:.14s}
+  .nav a svg{flex:none}
+  .nav a:hover{background:var(--muted-bg);color:var(--dark)}
+  .nav a.on{background:var(--green-subtle);color:var(--green);font-weight:700}
+  .nav a.on svg{color:var(--green)}
+  .nav a.on::before{content:"";position:absolute;left:-9px;top:50%;transform:translateY(-50%);
+    width:3px;height:17px;border-radius:0 3px 3px 0;background:var(--green)}
+  .nav a .c{margin-left:auto;font-size:9.5px;font-weight:800;padding:1px 6px;
+    border-radius:999px;background:var(--muted-bg);color:var(--muted-fg);
+    font-variant-numeric:tabular-nums}
+  .nav a.on .c{background:var(--green-light);color:var(--green)}
+  .nav a .c.amber{background:var(--amber-soft);color:var(--amber-strong)}
+
+  .rail-foot{margin-top:14px;padding:10px 9px;border-top:1px solid var(--border)}
+  .rail-foot a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;
+    font-size:12px;font-weight:600;color:var(--muted-fg);transition:.14s}
+  .rail-foot a:hover{background:var(--muted-bg);color:var(--dark)}
+  .rail-foot a.danger:hover{background:var(--danger-soft);color:var(--danger)}
+
+  /* ================= MAIN ================= */
+  .main{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .panel{display:none;flex-direction:column;gap:14px}
+  .panel.on{display:flex}
+
+  .head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+    gap:12px;padding:0 2px}
+  .head h1{font-size:25px;line-height:1.2}
+  .head .sub{font-size:12.5px;color:var(--muted-fg);margin-top:3px}
+  .head .act{display:flex;gap:8px;flex:none}
+
+  .btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;
+    border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;
+    border:1px solid transparent;transition:.15s;background:none}
+  .btn.primary{background:var(--green);color:#fff}
+  .btn.primary:hover{background:var(--green-hover)}
+  .btn.outline{background:var(--surface);border-color:var(--border);color:var(--dark)}
+  .btn.outline:hover{border-color:var(--green);color:var(--green)}
+  .btn.sm{height:30px;font-size:11.5px;padding:0 12px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px}
+
+  /* overview */
+  .cols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+  .sec-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+    padding:14px 16px 11px;border-bottom:1px solid var(--border)}
+  .sec-h h2{font-size:15.5px;margin-top:2px}
+  .lbl{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--green)}
+  .sec-b{padding:6px 16px 12px}
+  .sec-f{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:10px 16px;border-top:1px solid var(--border);font-size:11.5px;
+    font-weight:600;color:var(--muted-fg);transition:background .15s}
+  .sec-f:hover{background:var(--green-subtle)}
+  .sec-f b{color:var(--dark)}
+  .sec-f:hover b{color:var(--green)}
+  .arow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border)}
+  .arow:first-child{border-top:0}
+  .arow .ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;
+    justify-content:center;flex:none;background:var(--amber-soft);color:var(--amber-strong)}
+  .arow .ico.i{background:var(--info-soft);color:var(--lavender-strong)}
+  .arow-t{min-width:0;flex:1}
+  .arow-t b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .arow-t span{display:block;font-size:11px;color:var(--muted-fg);margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .arow .go{flex:none;font-size:11px;font-weight:700;color:var(--green);
+    padding:4px 9px;border-radius:999px;border:1px solid var(--green-light);white-space:nowrap}
+  .lrow{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px solid var(--border)}
+  .lrow:first-child{border-top:0}
+  .lrow .t{min-width:0;flex:1}
+  .lrow .t b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .lrow .t span{display:block;font-size:10.5px;color:var(--muted-fg);margin-top:1px}
+  .bmi-box{padding:14px 16px}
+  .bmi-box .v{display:flex;align-items:baseline;gap:7px}
+  .bmi-box .v b{font-family:var(--font-display);font-size:28px;font-weight:700;line-height:1;
+    font-variant-numeric:tabular-nums}
+  .goal{margin-top:10px;padding:8px 10px;border-radius:9px;background:var(--green-subtle);
+    font-size:11.5px;line-height:1.5}
+  .goal .k{font-size:8.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--green)}
+  .week-note{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    margin-top:11px;padding-top:10px;border-top:1px solid var(--border);font-size:11.5px;
+    color:var(--muted-fg);font-weight:600}
+
+  /* filter row */
+  .filters{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+  .search{flex:0 1 260px;display:flex;align-items:center;gap:7px;height:34px;padding:0 13px;
+    border-radius:999px;border:1px solid var(--border);background:var(--surface);
+    color:var(--muted-fg);font-size:12.5px}
+  .seg{margin-left:auto;display:inline-flex;align-items:center;padding:3px;border-radius:999px;
+    background:var(--muted-bg);gap:2px}
+  .seg button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;
+    padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:600;
+    color:var(--muted-fg);cursor:pointer;white-space:nowrap}
+  .seg button b{font-variant-numeric:tabular-nums}
+  .seg button.on{background:var(--surface);color:var(--green);
+    box-shadow:0 1px 2px rgba(13,17,23,.08)}
+
+  /* post rows */
+  .plist{display:flex;flex-direction:column;gap:9px}
+  .prow{display:flex;gap:0;overflow:hidden;border:1px solid var(--border);
+    border-radius:12px;background:var(--surface);transition:border-color .15s}
+  .prow:hover{border-color:var(--green-muted)}
+  .prow .thumb{width:100px;flex:none;display:flex;align-items:center;justify-content:center;
+    background:var(--muted-bg);color:var(--green-muted)}
+  .prow .body{flex:1;min-width:0;padding:12px 13px;display:flex;flex-direction:column}
+  .ptop{display:flex;align-items:flex-start;gap:10px}
+  .ptop h3{flex:1;min-width:0;font-family:var(--font-sans);font-size:14px;font-weight:700;
+    line-height:1.35;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .badges{display:flex;gap:5px;flex:none;flex-wrap:wrap}
+  .b{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:1px 7px;
+    font-size:9.5px;font-weight:700;white-space:nowrap}
+  .b.ok{background:var(--green-light);color:var(--green)}
+  .b.wait{background:var(--amber-soft);color:var(--amber-strong)}
+  .b.cream{background:#fdf3e3;color:#8a5a12}
+  .b.grey{background:var(--muted-bg);color:var(--muted-fg)}
+  .pex{font-size:12px;color:var(--muted-fg);margin-top:3px;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .pfoot{display:flex;flex-wrap:wrap;align-items:center;gap:13px;margin-top:auto;padding-top:9px}
+  .meta{display:inline-flex;align-items:center;gap:4px;font-size:11px;
+    color:var(--muted-fg);font-variant-numeric:tabular-nums}
+  .pacts{margin-left:auto;display:flex;gap:6px}
+  .mini{display:inline-flex;align-items:center;gap:5px;height:27px;padding:0 10px;
+    border-radius:8px;border:1px solid var(--border);background:var(--surface);
+    font-size:11.5px;font-weight:600;color:var(--dark);cursor:pointer}
+  .mini:hover{background:var(--muted-bg)}
+  .mini.icon{width:27px;padding:0;justify-content:center;border:0;color:var(--muted-fg)}
+  .mini.icon:hover{background:var(--danger-soft);color:var(--danger)}
+
+  /* stat strip */
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);overflow:hidden}
+  .strip div{padding:14px 16px;border-left:1px solid var(--border)}
+  .strip div:first-child{border-left:0}
+  .strip b{display:block;font-family:var(--font-display);font-size:24px;font-weight:700;
+    line-height:1;font-variant-numeric:tabular-nums}
+  .strip b.amber{color:var(--amber-strong)}
+  .strip span{display:block;font-size:10.5px;font-weight:600;color:var(--muted-fg);margin-top:4px}
+
+  /* recipe cards */
+  .rgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+  .rcard{border:1px solid var(--border);border-radius:14px;background:var(--surface);
+    padding:14px;display:flex;flex-direction:column;gap:8px}
+  .rcard h3{font-size:14.5px;line-height:1.3;font-family:var(--font-sans);font-weight:700;
+    letter-spacing:0}
+  .rcard p{font-size:11.5px;color:var(--muted-fg)}
+  .rcard .f{display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:8px;
+    border-top:1px solid var(--border);font-size:11px;color:var(--muted-fg)}
+
+  /* meal plan */
+  .wk-h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+    gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+  .wk-nav{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--border);
+    border-radius:999px;background:var(--surface);padding:2px}
+  .wk-nav button{width:26px;height:26px;border:0;background:none;border-radius:999px;
+    cursor:pointer;color:var(--muted-fg);display:flex;align-items:center;justify-content:center}
+  .wk-nav button:hover{background:var(--muted-bg);color:var(--dark)}
+  .wk-nav span{padding:0 10px;font-size:12px;font-weight:600;white-space:nowrap}
+  .menu{padding:14px 16px}
+  .menu-h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;
+    margin-bottom:11px}
+  .menu-h b{font-size:13.5px}
+  .days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+  .d{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .d span{font-size:9px;font-weight:700;color:var(--muted-fg);text-align:center}
+  .d i{display:block;height:22px;border-radius:5px;background:#e7ecf0}
+  .d i.on{background:var(--green-muted)}
+  .d.today span{color:var(--green)}
+  .d.today i.on:first-of-type{background:var(--green)}
+
+  /* profile preview */
+  .pf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;padding:16px}
+  .fld{min-width:0}
+  .fld .k{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted-fg)}
+  .fld .v{margin-top:4px;height:34px;display:flex;align-items:center;padding:0 11px;
+    border-radius:9px;border:1px solid var(--border);font-size:12.5px;background:var(--surface)}
+  .fld .v.muted{color:var(--muted-fg)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+  .chips span{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;
+    background:var(--muted-bg);color:var(--muted-fg);white-space:nowrap}
+  .chips span.alert{background:var(--danger-soft);color:var(--danger)}
+  .sec-t{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--green);padding:0 16px;margin-top:4px}
+
+  /* legend */
+  .legend{margin:0 auto;max-width:1240px;padding:0 clamp(16px,3vw,32px) 60px}
+  .legend .box{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:16px 18px}
+  .legend h3{font-family:var(--font-sans);font-size:10px;font-weight:800;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--green);margin-bottom:8px}
+  .legend ul{margin:0;padding-left:18px;font-size:12.5px;color:var(--muted-fg);line-height:1.8}
+  .legend li b{color:var(--dark);font-weight:600}
+  .legend .faint{font-size:11.5px;color:#98a1ad;margin-top:10px}
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width:1040px){
+    .shell{grid-template-columns:1fr;padding-top:16px;gap:14px}
+    .rail{position:static;flex-direction:row;flex-wrap:nowrap;align-items:center;
+      padding:7px 8px;gap:6px;border-radius:14px}
+    .me{border:0;padding:0;flex:none}
+    .me .n,.nums,.cap,.rail-foot{display:none}
+    .nav{flex-direction:row;flex-wrap:nowrap;padding:0;gap:3px;flex:1;min-width:0;
+      overflow-x:auto;scrollbar-width:none}
+    .nav::-webkit-scrollbar{display:none}
+    .nav a{padding:7px 11px;font-size:12px;white-space:nowrap}
+    .nav a.on::before{display:none}
+    .nav a .c{margin-left:2px}
+  }
+  @media (max-width:700px){
+    .cols{grid-template-columns:1fr}
+    .rgrid,.pf{grid-template-columns:1fr}
+    .strip{grid-template-columns:1fr 1fr}
+    .strip div:nth-child(odd){border-left:0}
+    .strip div:nth-child(n+3){border-top:1px solid var(--border)}
+  }
+  @media (max-width:560px){
+    .head h1{font-size:20px}
+    .head .act{width:100%}
+    .head .act .btn{flex:1;justify-content:center}
+    .search{flex:1 1 100%}
+    .seg{width:100%;margin-left:0;justify-content:space-between}
+    .seg button{flex:1;justify-content:center}
+    .prow{flex-direction:column}
+    .prow .thumb{width:100%;height:128px}
+    .badges{display:none}
+    .d i{height:16px}
+    .days{gap:3px}
+    .week-note{flex-wrap:wrap}
+    .arow .go{display:none}
+    /* rail: 2 hàng đều nhau thay vì cuộn ngang bị cắt chữ */
+    .rail{flex-wrap:wrap}
+    .nav{flex:1 1 100%;flex-wrap:wrap;overflow:visible}
+    .nav a{flex:1 1 calc(50% - 3px);justify-content:center;padding:9px 8px}
+    .nav a:last-child{flex-basis:100%}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ==================== RAIL ==================== -->
+  <aside class="rail">
+    <div class="me">
+      <div class="av">M</div>
+      <div class="n"><b>minh.hong</b><span>minh.hong@vegalife.vn</span></div>
+    </div>
+
+    <!-- số đếm thật: posts.counts.{published,draft} + recipes.stats.total -->
+    <div class="nums">
+      <div><b>7</b><span>Đã đăng</span></div>
+      <div><b class="amber">3</b><span>Nháp</span></div>
+      <div><b>9</b><span>Công thức</span></div>
+    </div>
+
+    <div class="cap">Tài khoản</div>
+    <nav class="nav">
+      <a class="on" data-go="overview" href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Tổng quan
+      </a>
+      <a data-go="posts" href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>
+        Bài viết<span class="c">10</span>
+      </a>
+      <a data-go="recipes" href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18M5 11a7 7 0 0 1 14 0M5 11v8h14v-8"/><path d="M9 7c0-1 1-1 1-2s-1-1-1-2"/></svg>
+        Công thức<span class="c amber">2</span>
+      </a>
+      <a data-go="plan" href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        Thực đơn
+      </a>
+      <a data-go="profile" href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+        Hồ sơ
+      </a>
+    </nav>
+
+    <div class="rail-foot">
+      <a href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 8.4l6.1-.8z"/></svg>
+        <span>Gói AI</span>
+      </a>
+      <a class="danger" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        <span>Đăng xuất</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN ==================== -->
+  <main class="main">
+
+    <!-- ---------- PANEL: TỔNG QUAN ---------- -->
+    <section class="panel on" data-panel="overview">
+      <header class="head">
+        <div>
+          <h1>Chào minh.hong</h1>
+          <p class="sub">Tuần 27/10 – 02/11 · Tác giả thực vật đã xác minh</p>
+        </div>
+        <div class="act">
+          <a class="btn outline" href="#">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+            Tạo thực đơn
+          </a>
+          <a class="btn primary" href="#">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Viết bài
+          </a>
+        </div>
+      </header>
+
+      <section class="card strip" aria-label="Tổng quan">
+        <div><b>7</b><span>Bài đã đăng</span></div>
+        <div><b>1.840</b><span>Lượt xem</span></div>
+        <div><b class="amber">2</b><span>Công thức chờ duyệt</span></div>
+        <div><b>14</b><span>Bữa tuần này</span></div>
+      </section>
+
+      <div class="cols">
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+
+          <!-- việc cần xử lý -->
+          <section class="card">
+            <div class="sec-h">
+              <div>
+                <div class="lbl">Cần bạn</div>
+                <h2>3 việc đang chờ</h2>
+              </div>
+            </div>
+            <div class="sec-b">
+              <a class="arow" href="#">
+                <div class="ico">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v5a4 4 0 0 0 0 6v5H4v-5a4 4 0 0 0 0-6z"/></svg>
+                </div>
+                <div class="arow-t"><b>Bún chả chay</b><span>Công thức chờ duyệt · nộp 29/10</span></div>
+                <span class="go">Xem ›</span>
+              </a>
+              <a class="arow" href="#">
+                <div class="ico i">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+                </div>
+                <div class="arow-t"><b>Tuần 27/10 – 02/11</b><span>Thực đơn đang ở trạng thái nháp</span></div>
+                <span class="go">Kích hoạt ›</span>
+              </a>
+              <a class="arow" href="#">
+                <div class="ico">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                </div>
+                <div class="arow-t"><b>Gỏi cuốn rau theo mùa</b><span>Bản nháp tạo 26/10 — chưa đăng</span></div>
+                <span class="go">Sửa ›</span>
+              </a>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="sec-h">
+              <div><div class="lbl">Nội dung</div><h2>Bài viết</h2></div>
+              <a href="#" style="font-size:11px;font-weight:700;color:var(--green);flex:none">Tất cả ›</a>
+            </div>
+            <div class="sec-b">
+              <a class="lrow" href="#">
+                <div class="t"><b>Phở chay nấm hương</b><span>28/10 · 412 lượt xem</span></div>
+                <span class="b ok">Đã đăng</span>
+              </a>
+              <a class="lrow" href="#">
+                <div class="t"><b>Gỏi cuốn rau theo mùa</b><span>26/10 · 0 lượt xem</span></div>
+                <span class="b wait">Bản nháp</span>
+              </a>
+              <a class="lrow" href="#">
+                <div class="t"><b>3 phút sơ chế đậu hũ non</b><span>21/10 · 188 lượt xem</span></div>
+                <span class="b ok">Đã đăng</span>
+              </a>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="sec-h">
+              <div><div class="lbl">Bếp của bạn</div><h2>Công thức</h2></div>
+              <a href="#" style="font-size:11px;font-weight:700;color:var(--green);flex:none">Tất cả ›</a>
+            </div>
+            <div class="sec-b">
+              <a class="lrow" href="#">
+                <div class="t"><b>Bún chả chay</b><span>Bún chả · 45 phút · 2 phần</span></div>
+                <span class="b wait">Chờ duyệt</span>
+              </a>
+              <a class="lrow" href="#">
+                <div class="t"><b>Canh chua chay</b><span>Canh · 25 phút · 3 phần</span></div>
+                <span class="b ok">Đã duyệt</span>
+              </a>
+            </div>
+          </section>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+          <!-- thực đơn tuần -->
+          <section class="card" style="border-color:var(--green-light);background:var(--green-subtle)">
+            <div class="sec-h" style="border-color:var(--green-light)">
+              <div>
+                <div class="lbl">Tuần này</div>
+                <h2>Thực đơn</h2>
+              </div>
+              <span class="b wait" style="flex:none">Nháp</span>
+            </div>
+            <div class="bmi-box">
+              <div class="days" aria-label="14 trên 21 ô bữa đã điền">
+                <div class="d"><span>T2</span><i class="on"></i><i class="on"></i><i></i></div>
+                <div class="d"><span>T3</span><i class="on"></i><i class="on"></i><i class="on"></i></div>
+                <div class="d"><span>T4</span><i class="on"></i><i></i><i class="on"></i></div>
+                <div class="d"><span>T5</span><i class="on"></i><i class="on"></i><i></i></div>
+                <div class="d"><span>T6</span><i class="on"></i><i class="on"></i><i class="on"></i></div>
+                <div class="d today"><span>T7</span><i class="on"></i><i class="on"></i><i></i></div>
+                <div class="d"><span>CN</span><i></i><i></i><i></i></div>
+              </div>
+              <div class="week-note">
+                <span><b style="font-family:var(--font-display);font-size:15px;color:var(--dark)">14</b> / 21 ô</span>
+                <a class="btn primary sm" href="#">Mở tuần ›</a>
+              </div>
+            </div>
+          </section>
+
+          <!-- hồ sơ -->
+          <section class="card">
+            <div class="sec-h">
+              <div><div class="lbl">Hồ sơ</div><h2>Sức khoẻ</h2></div>
+              <a href="#" style="font-size:11px;font-weight:700;color:var(--green);flex:none">Sửa ›</a>
+            </div>
+            <div class="bmi-box">
+              <div class="v"><b>22.5</b><span class="b ok">Bình thường</span></div>
+              <div class="goal">
+                <div class="k">Mục tiêu</div>
+                <p>Giảm 3 kg trong 3 tháng, giữ đủ đạm cho buổi tập.</p>
+              </div>
+              <div class="chips" style="margin-top:11px">
+                <span>2 sở thích</span><span>1 không thích</span>
+                <span class="alert">1 dị ứng</span><span>1 hạn chế</span>
+              </div>
+            </div>
+            <a class="sec-f" href="#">
+              <span>Cập nhật lần cuối <b>24/10/2026</b></span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </a>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PANEL: BÀI VIẾT ---------- -->
+    <section class="panel" data-panel="posts">
+      <header class="head">
+        <div>
+          <h1>Bài viết của tôi</h1>
+          <p class="sub">12 bài · 7 đã đăng · 3 bản nháp · 2 video</p>
+        </div>
+        <div class="act">
+          <a class="btn outline" href="#">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+            Sửa hồ sơ
+          </a>
+          <a class="btn primary" href="#">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Nội dung mới
+          </a>
+        </div>
+      </header>
+
+      <div class="filters">
+        <div class="search">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          Lọc bài viết...
+        </div>
+        <div class="seg">
+          <button class="on">Tất cả <b>10</b></button>
+          <button>Đã đăng <b>7</b></button>
+          <button>Bản nháp <b>3</b></button>
+        </div>
+      </div>
+
+      <div class="plist">
+        <article class="prow">
+          <div class="thumb">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <div class="body">
+            <div class="ptop">
+              <h3>Phở chay nấm hương — nước dùng trong 4 tiếng</h3>
+              <div class="badges"><span class="b ok">Đã đăng</span><span class="b cream">Bài viết</span></div>
+            </div>
+            <p class="pex">Bí quyết nằm ở việc rang gừng và hành tím trước khi ninh, nước dùng sẽ thơm mà không đục...</p>
+            <div class="pfoot">
+              <span class="meta">28/10/2026</span>
+              <span class="meta">412 lượt xem</span>
+              <span class="meta">4 phút đọc</span>
+              <div class="pacts">
+                <button class="mini">Ngừng đăng</button>
+                <button class="mini">Sửa bài</button>
+                <button class="mini icon" aria-label="Xoá">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="prow">
+          <div class="thumb">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <div class="body">
+            <div class="ptop">
+              <h3>Gỏi cuốn rau theo mùa</h3>
+              <div class="badges"><span class="b wait">Bản nháp</span><span class="b grey">Chỉ bạn thấy</span></div>
+            </div>
+            <p class="pex">Một đĩa gỏi cuốn không cần nước chấm mặn vẫn đủ vị nếu bạn chọn đúng loại rau...</p>
+            <div class="pfoot">
+              <span class="meta">26/10/2026</span>
+              <span class="meta">0 lượt xem</span>
+              <span class="meta">2 phút đọc</span>
+              <div class="pacts">
+                <button class="mini">Sửa bài</button>
+                <button class="mini icon" aria-label="Xoá">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="prow">
+          <div class="thumb">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>
+          </div>
+          <div class="body">
+            <div class="ptop">
+              <h3>3 phút sơ chế đậu hũ non cho người mới</h3>
+              <div class="badges"><span class="b ok">Đã đăng</span><span class="b cream">Video</span></div>
+            </div>
+            <p class="pex">Đừng cắt đậu ngay khi mở hộp — chần qua nước muối loãng giúp miếng đậu chắc hơn...</p>
+            <div class="pfoot">
+              <span class="meta">21/10/2026</span>
+              <span class="meta">188 lượt xem</span>
+              <span class="meta">1 phút đọc</span>
+              <div class="pacts">
+                <button class="mini">Ngừng đăng</button>
+                <button class="mini">Sửa bài</button>
+                <button class="mini icon" aria-label="Xoá">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ---------- PANEL: CÔNG THỨC ---------- -->
+    <section class="panel" data-panel="recipes">
+      <header class="head">
+        <div>
+          <h1>Công thức của tôi</h1>
+          <p class="sub">9 công thức · 5 đã duyệt · 2 chờ duyệt · 2 cần sửa</p>
+        </div>
+        <div class="act">
+          <a class="btn primary" href="#">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tạo công thức
+          </a>
+        </div>
+      </header>
+
+      <div class="card strip">
+        <div><b>9</b><span>Tổng cộng</span></div>
+        <div><b>5</b><span>Đã duyệt</span></div>
+        <div><b class="amber">2</b><span>Chờ duyệt</span></div>
+        <div><b>2</b><span>Cần sửa</span></div>
+      </div>
+
+      <div class="filters">
+        <div class="search">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          Tìm công thức...
+        </div>
+        <div class="seg">
+          <button class="on">Tất cả</button><button>Đã duyệt</button><button>Chờ duyệt</button>
+        </div>
+      </div>
+
+      <div class="rgrid">
+        <article class="rcard">
+          <div class="badges"><span class="b wait">Chờ duyệt</span></div>
+          <h3>Bún chả chay</h3>
+          <p>Bún chả · 45 phút · 2 phần</p>
+          <div class="f"><span>Nộp 29/10/2026</span><a style="margin-left:auto;color:var(--green);font-weight:700" href="#">Xem ›</a></div>
+        </article>
+        <article class="rcard">
+          <div class="badges"><span class="b wait">Chờ duyệt</span></div>
+          <h3>Chả giò rế khoai môn</h3>
+          <p>Chả giò · 60 phút · 4 phần</p>
+          <div class="f"><span>Nộp 27/10/2026</span><a style="margin-left:auto;color:var(--green);font-weight:700" href="#">Xem ›</a></div>
+        </article>
+        <article class="rcard">
+          <div class="badges"><span class="b ok">Đã duyệt</span></div>
+          <h3>Canh chua chay</h3>
+          <p>Canh · 25 phút · 3 phần</p>
+          <div class="f"><span>Duyệt 20/10/2026</span><a style="margin-left:auto;color:var(--green);font-weight:700" href="#">Xem ›</a></div>
+        </article>
+        <article class="rcard">
+          <div class="badges"><span class="b ok">Đã duyệt</span></div>
+          <h3>Đậu hũ sốt nấm đông cô</h3>
+          <p>Món chính · 30 phút · 2 phần</p>
+          <div class="f"><span>Duyệt 14/10/2026</span><a style="margin-left:auto;color:var(--green);font-weight:700" href="#">Xem ›</a></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ---------- PANEL: THỰC ĐƠN ---------- -->
+    <section class="panel" data-panel="plan">
+      <header class="head">
+        <div>
+          <h1>Thực đơn tuần</h1>
+          <p class="sub">3 bữa mỗi ngày · 7 ngày · 21 ô</p>
+        </div>
+        <div class="act">
+          <div class="wk-nav">
+            <button aria-label="Tuần trước">‹</button>
+            <span>27/10 – 02/11</span>
+            <button aria-label="Tuần sau">›</button>
+          </div>
+          <a class="btn primary" href="#">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tạo thực đơn
+          </a>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="menu-h" style="padding:14px 16px 0">
+          <b>Tuần 27/10 – 02/11</b>
+          <span class="b wait">Nháp</span>
+        </div>
+        <div class="menu">
+          <div class="days">
+            <div class="d"><span>T2</span><i class="on"></i><i class="on"></i><i></i></div>
+            <div class="d"><span>T3</span><i class="on"></i><i class="on"></i><i class="on"></i></div>
+            <div class="d"><span>T4</span><i class="on"></i><i></i><i class="on"></i></div>
+            <div class="d"><span>T5</span><i class="on"></i><i class="on"></i><i></i></div>
+            <div class="d"><span>T6</span><i class="on"></i><i class="on"></i><i class="on"></i></div>
+            <div class="d today"><span>T7</span><i class="on"></i><i class="on"></i><i></i></div>
+            <div class="d"><span>CN</span><i></i><i></i><i></i></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;padding:0 16px 14px">
+          <button class="mini">Huỷ</button>
+          <button class="mini" style="border-color:var(--green);color:var(--green)">Kích hoạt</button>
+        </div>
+      </section>
+    </section>
+
+    <!-- ---------- PANEL: HỒ SƠ ---------- -->
+    <section class="panel" data-panel="profile">
+      <header class="head">
+        <div>
+          <h1>Hồ sơ của tôi</h1>
+          <p class="sub">Cập nhật lần cuối 24/10/2026</p>
+        </div>
+        <div class="act">
+          <a class="btn primary" href="#">Lưu thay đổi</a>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="sec-t">Về bạn &amp; cơ thể</div>
+        <div class="pf">
+          <div class="fld"><div class="k">Chiều cao</div><div class="v">165 cm</div></div>
+          <div class="fld"><div class="k">Cân nặng</div><div class="v">61 kg</div></div>
+          <div class="fld"><div class="k">Tuổi</div><div class="v">26</div></div>
+          <div class="fld"><div class="k">Giới tính</div><div class="v">Nữ</div></div>
+          <div class="fld" style="grid-column:1/-1">
+            <div class="k">Giới thiệu</div>
+            <div class="v">Nấu chay cho gia đình ba người, thích món Việt truyền thống.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="sec-t">Khẩu vị &amp; chế độ ăn</div>
+        <div class="pf">
+          <div class="fld"><div class="k">Sở thích</div><div class="chips"><span>cay</span><span>giàu đạm</span></div></div>
+          <div class="fld"><div class="k">Không thích</div><div class="chips"><span>ngò rí</span></div></div>
+          <div class="fld"><div class="k">Dị ứng</div><div class="chips"><span class="alert">đậu phộng</span></div></div>
+          <div class="fld"><div class="k">Hạn chế</div><div class="chips"><span>không đường thêm</span></div></div>
+          <div class="fld" style="grid-column:1/-1">
+            <div class="k">Mục tiêu sức khoẻ</div>
+            <div class="v">Giảm 3 kg trong 3 tháng, giữ đủ đạm cho buổi tập.</div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+  </main>
+</div>
+
+<div class="legend">
+  <div class="box">
+    <h3>Shell dùng chung — ghi chú</h3>
+    <ul>
+      <li><b>Rail</b> nằm ngoài <code>&lt;Outlet/&gt;</code>: bấm đổi mục chỉ đổi vùng phải, rail không unmount, không fetch lại.</li>
+      <li><b>5 mục</b>: Tổng quan (mặc định) · Bài viết · Công thức · Thực đơn · Hồ sơ.</li>
+      <li><b>Số trên rail</b> ← <code>getMyPosts().counts</code> (published / draft) và <code>getMyRecipes()</code> đếm tại client. Badge amber = cần bạn xử lý.</li>
+      <li><b>Tổng quan</b> ghép từ 4 nguồn đang có: <code>getMyPosts</code> (đếm + 3 bài mới), <code>getMyRecipes</code> (đếm + recipe chờ duyệt), <code>useMealPlans</code> (tuần này, <code>mealCount</code>), <code>useProfile</code> (BMI, mục tiêu, dietary, updatedAt). Không thêm endpoint.</li>
+      <li><b>Header từng page</b> vẫn nằm trong vùng phải (tiêu đề + nút tạo) vì mỗi page có CTA riêng.</li>
+      <li><b>Breakpoint</b> 1040px: rail thu thành thanh ngang trên cùng, ẩn khối số đếm.</li>
+      <li>Bấm 5 mục trên rail để xem trước từng page. Đây là bản vẽ tĩnh — chuyển mục bằng JS chỉ để review.</li>
+    </ul>
+    <p class="faint">Toàn bộ màu dùng token có sẵn trong <code>@theme</code>. Không gradient, không mock data mới — mọi con số đều lấy từ field API đang trả.</p>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll(".nav a[data-go]").forEach(function (link) {
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+      var target = link.dataset.go;
+      document.querySelectorAll(".nav a[data-go]").forEach(function (a) {
+        a.classList.toggle("on", a === link);
+      });
+      document.querySelectorAll(".panel").forEach(function (panel) {
+        panel.classList.toggle("on", panel.dataset.panel === target);
+      });
+    });
+  });
+</script>
+</body>
+</html>

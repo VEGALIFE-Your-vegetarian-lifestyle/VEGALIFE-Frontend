@@ -12,6 +12,11 @@ interface ImageUploaderProps {
     disabled?: boolean;
     /** `video` dùng cùng luồng upload 3 bước, chỉ khác định dạng và nhãn. */
     kind?: "image" | "video";
+    /**
+     * `compact` thu về một ô thumbnail thấp — cho chỗ chật (dialog soạn bài),
+     * nơi ảnh bìa chỉ có một và không đáng chiếm cả khối kéo-thả.
+     */
+    variant?: "default" | "compact";
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -39,13 +44,14 @@ const LABELS = {
     },
 } as const;
 
-export function ImageUploader({ value, onChange, disabled, kind = "image" }: ImageUploaderProps) {
+export function ImageUploader({ value, onChange, disabled, kind = "image", variant = "default" }: ImageUploaderProps) {
     const { t } = useTranslation("admin");
     const [isUploading, setIsUploading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const isVideo = kind === "video";
+    const compact = variant === "compact";
     const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_FILE_SIZE;
     const label = LABELS[kind];
 
@@ -92,7 +98,7 @@ export function ImageUploader({ value, onChange, disabled, kind = "image" }: Ima
         if (file) void upload(file);
     };
 
-    const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    const handleDrop = (event: DragEvent<HTMLElement>) => {
         event.preventDefault();
         setIsDragging(false);
         if (disabled || isUploading) return;
@@ -100,8 +106,10 @@ export function ImageUploader({ value, onChange, disabled, kind = "image" }: Ima
         if (file) void upload(file);
     };
 
+    const pick = () => inputRef.current?.click();
+
     return (
-        <div className="space-y-3">
+        <div className={cn(compact ? "" : "space-y-3")}>
             <input
                 ref={inputRef}
                 type="file"
@@ -111,7 +119,68 @@ export function ImageUploader({ value, onChange, disabled, kind = "image" }: Ima
                 className="hidden"
             />
 
-            {value ? (
+            {compact ? (
+                value ? (
+                    <div
+                        className="group relative h-[68px] w-[104px] overflow-hidden rounded-lg border border-border bg-muted-bg"
+                        onDragOver={(event) => {
+                            event.preventDefault();
+                            setIsDragging(true);
+                        }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={handleDrop}
+                    >
+                        {isVideo ? (
+                            <video src={value} className="h-full w-full object-cover" muted />
+                        ) : (
+                            <img src={value} alt="Cover" className="h-full w-full object-cover" />
+                        )}
+                        <button
+                            type="button"
+                            onClick={pick}
+                            disabled={disabled || isUploading}
+                            className="absolute inset-0 flex items-center justify-center bg-black/50 text-[11px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-0"
+                        >
+                            {isUploading ? t("posts.form.uploading") : t(label.upload)}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => onChange(null)}
+                            disabled={disabled || isUploading}
+                            className="absolute right-1 top-1 rounded-full bg-danger p-0.5 text-white shadow-sm disabled:opacity-50"
+                            aria-label={t(label.remove)}
+                        >
+                            <X className="h-3 w-3" />
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={pick}
+                        onDragOver={(event) => {
+                            event.preventDefault();
+                            setIsDragging(true);
+                        }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={handleDrop}
+                        disabled={disabled || isUploading}
+                        className={cn(
+                            "flex h-[68px] w-[104px] flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-[11px] font-semibold transition",
+                            isDragging
+                                ? "border-vegan-green bg-vegan-green-subtle text-vegan-green"
+                                : "border-border bg-muted-bg text-muted-foreground hover:border-vegan-green-muted",
+                            disabled && "cursor-not-allowed opacity-50",
+                        )}
+                    >
+                        {isUploading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        ) : (
+                            <ImagePlus className="h-4 w-4" aria-hidden="true" />
+                        )}
+                        {isUploading ? t("posts.form.uploading") : t("posts.form.addCover")}
+                    </button>
+                )
+            ) : value ? (
                 <div className="relative inline-block">
                     {isVideo ? (
                         <video src={value} controls className="w-full rounded-xl border border-border" />

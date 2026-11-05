@@ -21,9 +21,10 @@
     "subscription": "Gói AI",
     "newPost": "Tạo bài viết",
     "myPosts": "Bài viết của tôi",
-    "newRecipe": "Tạo công thức",
+    "myRecipes": "Công thức của tôi",
     "mealPlan": "Thực đơn",
     "profile": "Hồ sơ",
+    "myAccount": "Tài khoản của tôi",
     "admin": "Quản trị",
     "login": "Đăng nhập",
     "register": "Đăng ký",
@@ -43,7 +44,6 @@
         "community": "Cộng đồng thuần thực vật 100%"
     },
     "editor": {
-        "wordCount": "{{count}} từ",
         "bold": "Đậm",
         "italic": "Nghiêng",
         "h2": "Tiêu đề",
@@ -59,7 +59,8 @@
         "divider": "Đường phân cách",
         "undo": "Hoàn tác",
         "redo": "Làm lại",
-        "placeholder": "Kể câu chuyện phía sau món ăn, kỹ thuật nấu và điều làm nên khác biệt..."
+        "placeholder": "Kể câu chuyện phía sau món ăn, kỹ thuật nấu và điều làm nên khác biệt...",
+        "minRead": "~{{count}} phút đọc"
     },
     "postStatus": {
         "created": "Mới tạo",
@@ -93,5 +94,6 @@
         "previous": "Trang trước",
         "next": "Trang sau",
         "page": "Trang {{page}}"
-    }
+    },
+    "optional": "không bắt buộc"
 }
