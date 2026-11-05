@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import {
     Activity,
     AlertCircle,
@@ -67,7 +68,6 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
 
     const errorText = chat.error ? getApiErrorMessage(chat.error, t("chat.error")) : null;
     const isQuotaError = (chat.error as { response?: { status?: number } } | null)?.response?.status === 429;
-    const quotaResetDate = chat.usage?.windowEnd ?? chat.usage?.periodEnd;
     const showGreeting = chat.messages.length === 0 && !chat.historyLoading;
 
     // Khách: chat bị khoá, chỉ còn lời mời đăng nhập. Không gọi API nào nên
@@ -227,12 +227,24 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
                 {errorText && (
                     <div className="flex flex-wrap items-start gap-2 rounded-xl border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
                         <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                        <p className="flex-1">
-                            {isQuotaError && quotaResetDate
-                                ? t("chat.quotaExhausted", { date: formatDateLocale(quotaResetDate) })
-                                : errorText}
-                        </p>
-                        {chat.failedText && (
+                        <div className="flex-1">
+                            {isQuotaError ? (
+                                <div>
+                                    <p className="font-semibold">{t("chat.quotaExhaustedTitle")}</p>
+                                    <p className="mt-1 text-xs text-danger/90">{t("chat.quotaExhaustedHint")}</p>
+                                    <div className="mt-2.5 flex items-center gap-2">
+                                        <Link to="/account/subscription">
+                                            <Button variant="outline" size="xs" className="border-danger/40 text-danger hover:bg-danger/10">
+                                                {t("chat.goToSubscription")}
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p>{errorText}</p>
+                            )}
+                        </div>
+                        {chat.failedText && !isQuotaError && (
                             <Button variant="outline" size="xs" onClick={chat.retry}>
                                 {t("chat.retry")}
                             </Button>

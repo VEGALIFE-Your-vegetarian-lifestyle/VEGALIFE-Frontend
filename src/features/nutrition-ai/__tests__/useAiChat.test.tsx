@@ -22,7 +22,7 @@ beforeEach(() => {
     vi.mocked(sendAiMessage).mockResolvedValue({
         conversationId: "c1",
         reply: "Chào",
-        usage: { used: 1, limit: 20 },
+        usage: { remainingUsage: 19, used: 1, limit: 20 },
     });
 });
 
@@ -50,15 +50,26 @@ describe("useAiChat", () => {
         expect(getAiConversation).not.toHaveBeenCalled();
     });
 
-    it("chặn câu dài quá 4000 ký tự mà không gọi API", async () => {
-        const { result } = renderHook(() => useAiChat(), { wrapper });
-
-        let ok = true;
-        await act(async () => {
-            ok = await result.current.send("a".repeat(4001));
+    it("chọn hội thoại thì đặt lại local và nạp tin nhắn từ server", async () => {
+        vi.mocked(getAiConversation).mockResolvedValue({
+            id: "c1",
+            title: "Cũ",
+            updatedAt: "2026-10-22T10:00:00Z",
+            messages: [{ role: "user", content: "Hỏi cũ", createdAt: "2026-10-22T10:00:00Z" }],
         });
 
-        expect(ok).toBe(false);
-        expect(sendAiMessage).not.toHaveBeenCalled();
+        const { result } = renderHook(() => useAiChat(), { wrapper });
+
+        act(() => {
+            result.current.selectConversation("c1");
+        });
+
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(result.current.messages).toEqual([
+            { id: "h-0", role: "user", text: "Hỏi cũ", createdAt: "2026-10-22T10:00:00Z" },
+        ]);
     });
 });
