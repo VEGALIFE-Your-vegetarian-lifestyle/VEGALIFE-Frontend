@@ -11,7 +11,7 @@ import { formatDateLocale } from "@/shared/utils/formatDate";
 import { cn } from "@/shared/utils/cn";
 import { useAuth } from "@/features/auth/useAuth";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
-import { deleteComment, reportComment, updateComment } from "../api";
+import { countAllComments, deleteComment, removeLocalComment, reportComment, updateComment } from "../api";
 import { CommentComposer } from "./CommentComposer";
 import type { PostCommentThread } from "../types";
 import type { PageResponse } from "@/shared/types/common";
@@ -47,15 +47,23 @@ function markDeletedInTree(
     threads: PostCommentThread[],
     commentId: string,
 ): PostCommentThread[] {
-    return threads.map((c) => {
-        if (c.id === commentId) {
-            return { ...c, deleted: true, content: "[deleted]" };
-        }
-        if (c.replies && c.replies.length > 0) {
-            return { ...c, replies: markDeletedInTree(c.replies, commentId) };
-        }
-        return c;
-    });
+    return threads
+        .map((c) => {
+            const nextReplies = c.replies && c.replies.length > 0 ? markDeletedInTree(c.replies, commentId) : [];
+            if (c.id === commentId) {
+                // Có câu trả lời con → giữ chỗ deleted để không làm mất cây reply
+                if (nextReplies.length > 0) {
+                    return { ...c, deleted: true, content: "[deleted]", replies: nextReplies };
+                }
+                // Không có câu trả lời con → biến mất hoàn toàn
+                return null;
+            }
+            if (c.deleted && nextReplies.length === 0) {
+                return null;
+            }
+            return { ...c, replies: nextReplies };
+        })
+        .filter((c): c is PostCommentThread => c !== null);
 }
 
 /**
@@ -130,14 +138,31 @@ export function CommentThread({
         onSuccess: () => {
             setShowDeleteConfirm(false);
             toast.success(t("comments.deletedSuccess"));
+
+            // Xoá khỏi localStorage để không bị re-inject khi reload
+            if (postId) removeLocalComment(postId, comment.id);
+
             if (postId) {
                 queryClient.setQueriesData<PageResponse<PostCommentThread>>(
                     { queryKey: ["post-comments", postId] },
                     (old) => {
                         if (!old) return old;
+                        const newContent = markDeletedInTree(old.content ?? [], comment.id);
                         return {
                             ...old,
-                            content: markDeletedInTree(old.content ?? [], comment.id),
+                            content: newContent,
+                            totalElements: Math.max(0, countAllComments(newContent)),
+                        };
+                    },
+                );
+                // Cập nhật bộ đếm ở card feed
+                queryClient.setQueriesData<PageResponse<PostCommentThread>>(
+                    { queryKey: ["post-comment-count", postId] },
+                    (old) => {
+                        if (!old) return old;
+                        return {
+                            ...old,
+                            totalElements: Math.max(0, (old.totalElements ?? 0) - 1),
                         };
                     },
                 );
@@ -382,16 +407,18 @@ export function CommentThread({
             {/* Recursive replies */}
             {comment.replies.length > 0 && (
                 <div className="mt-3 space-y-2.5 border-l-2 border-vegan-green/30 pl-3 sm:pl-5 ml-2 sm:ml-4">
-                    {comment.replies.map((reply) => (
-                        <CommentThread
-                            key={reply.id}
-                            comment={reply}
-                            postId={postId}
-                            depth={depth + 1}
-                            language={language}
-                            parentAuthor={author}
-                        />
-                    ))}
+                    {comment.replies
+                        .filter((reply) => !reply.deleted || (reply.replies && reply.replies.length > 0))
+                        .map((reply) => (
+                            <CommentThread
+                                key={reply.id}
+                                comment={reply}
+                                postId={postId}
+                                depth={depth + 1}
+                                language={language}
+                                parentAuthor={author}
+                            />
+                        ))}
                 </div>
             )}
         </div>

@@ -128,14 +128,16 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
                                 {t("post:comments.empty")}
                             </p>
                         ) : (
-                            (comments?.content ?? []).map((comment) => (
-                                <CommentThread
-                                    key={comment.id}
-                                    postId={post.id}
-                                    comment={comment}
-                                    language={language}
-                                />
-                            ))
+                            (comments?.content ?? [])
+                                .filter((comment) => !comment.deleted || (comment.replies && comment.replies.length > 0))
+                                .map((comment) => (
+                                    <CommentThread
+                                        key={comment.id}
+                                        postId={post.id}
+                                        comment={comment}
+                                        language={language}
+                                    />
+                                ))
                         )}
                     </div>
 

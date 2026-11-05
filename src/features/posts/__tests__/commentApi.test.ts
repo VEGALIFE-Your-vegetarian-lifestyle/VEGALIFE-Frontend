@@ -5,6 +5,7 @@ import {
     deleteComment,
     getLocalComments,
     getPostComments,
+    removeLocalComment,
     reportComment,
     saveLocalComment,
     updateComment,
@@ -197,6 +198,125 @@ describe("commentApi — post comment endpoints", () => {
         const res = await getPostComments(postId, { page: 0, size: 20 });
         expect(res.content).toEqual([mockComment]);
         expect(res.totalElements).toBe(1);
+    });
+
+    it("removeLocalComment xoá comment khỏi localStorage", () => {
+        const mockComment: PostCommentThread = {
+            id: "local-c1",
+            userId: "u-1",
+            parentId: null,
+            replyToUsername: null,
+            username: "MySelf",
+            displayName: "MySelf",
+            avatarUrl: null,
+            content: "Will be removed",
+            edited: false,
+            deleted: false,
+            createdAt: "2026-11-05T10:00:00Z",
+            updatedAt: "2026-11-05T10:00:00Z",
+            replies: [],
+        };
+        saveLocalComment(postId, mockComment);
+        expect(getLocalComments(postId).length).toBe(1);
+
+        removeLocalComment(postId, "local-c1");
+        expect(getLocalComments(postId)).toEqual([]);
+    });
+
+    it("removeLocalComment đánh dấu deleted nếu comment có replies", () => {
+        const parent: PostCommentThread = {
+            id: "parent-1",
+            userId: "u-1",
+            parentId: null,
+            replyToUsername: null,
+            username: "Author",
+            displayName: "Author",
+            avatarUrl: null,
+            content: "Parent comment",
+            edited: false,
+            deleted: false,
+            createdAt: "2026-11-05T10:00:00Z",
+            updatedAt: "2026-11-05T10:00:00Z",
+            replies: [{
+                id: "reply-1",
+                userId: "u-2",
+                parentId: "parent-1",
+                replyToUsername: "Author",
+                username: "Replier",
+                displayName: "Replier",
+                avatarUrl: null,
+                content: "Reply",
+                edited: false,
+                deleted: false,
+                createdAt: "2026-11-05T10:05:00Z",
+                updatedAt: "2026-11-05T10:05:00Z",
+                replies: [],
+            }],
+        };
+        saveLocalComment(postId, parent);
+        removeLocalComment(postId, "parent-1");
+
+        const result = getLocalComments(postId);
+        expect(result.length).toBe(1);
+        expect(result[0].deleted).toBe(true);
+        expect(result[0].content).toBe("[deleted]");
+        expect(result[0].replies.length).toBe(1);
+        expect(result[0].replies[0].content).toBe("Reply");
+    });
+
+    it("mergeComments không re-inject local comment đã bị xoá trên server", async () => {
+        // Lưu comment vào local
+        const mockComment: PostCommentThread = {
+            id: "server-c1",
+            userId: "u-1",
+            parentId: null,
+            replyToUsername: null,
+            username: "MySelf",
+            displayName: "MySelf",
+            avatarUrl: null,
+            content: "Old content",
+            edited: false,
+            deleted: false,
+            createdAt: "2026-11-05T10:00:00Z",
+            updatedAt: "2026-11-05T10:00:00Z",
+            replies: [],
+        };
+        saveLocalComment(postId, mockComment);
+
+        // Server trả về cùng id nhưng đã xoá
+        vi.mocked(api.get).mockResolvedValueOnce({
+            data: {
+                status: 200,
+                message: "OK",
+                data: {
+                    content: [{
+                        id: "server-c1",
+                        userId: null,
+                        displayName: null,
+                        avatarUrl: null,
+                        content: "[deleted]",
+                        edited: false,
+                        deleted: true,
+                        createdAt: "2026-11-05T10:00:00Z",
+                        updatedAt: "2026-11-05T10:01:00Z",
+                        replies: [],
+                    }],
+                    page: 0,
+                    size: 20,
+                    totalElements: 1,
+                    totalPages: 1,
+                    first: true,
+                    last: true,
+                },
+            },
+        });
+
+        const res = await getPostComments(postId, { page: 0, size: 20 });
+        // Server version (deleted) phải thắng, không bị đè bởi local
+        expect(res.content[0].deleted).toBe(true);
+        expect(res.content[0].content).toBe("[deleted]");
+        // deleted comment không nên tính vào totalElements
+        expect(res.totalElements).toBe(0);
     });
 });
 

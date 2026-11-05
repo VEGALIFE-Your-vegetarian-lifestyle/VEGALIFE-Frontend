@@ -158,17 +158,72 @@ export function organizeCommentTree(threads: PostCommentThread[]): PostCommentTh
 }
 
 /**
- * Đếm tổng số bình luận bao gồm cả bình luận gốc và toàn bộ các câu trả lời (replies).
+ * Đếm tổng số bình luận **chưa bị xoá** bao gồm cả bình luận gốc và các câu trả lời.
+ * Comment đã `deleted: true` không được tính vào tổng.
  */
 export function countAllComments(threads: PostCommentThread[]): number {
     let count = 0;
     for (const item of threads) {
-        count += 1;
+        if (!item.deleted) count += 1;
         if (item.replies && item.replies.length > 0) {
             count += countAllComments(item.replies);
         }
     }
     return count;
+}
+
+/**
+ * Xoá comment khỏi localStorage khi người dùng xoá thành công trên backend.
+ * Nếu comment có replies, đánh dấu `deleted: true` thay vì xoá hẳn (giữ cấu trúc cây cho replies).
+ * Nếu comment không có replies, xoá hẳn khỏi cây.
+ */
+export function removeLocalComment(postId: string, commentId: string): void {
+    try {
+        if (typeof window === "undefined" || !window.localStorage) return;
+        const existing = getLocalComments(postId);
+        if (existing.length === 0) return;
+
+        function processTree(list: PostCommentThread[]): PostCommentThread[] {
+            return list
+                .map((c) => {
+                    const nextReplies = c.replies && c.replies.length > 0 ? processTree(c.replies) : [];
+                    if (c.id === commentId) {
+                        // Có replies → đánh dấu deleted, giữ cấu trúc cây cho replies
+                        if (nextReplies.length > 0) {
+                            return {
+                                ...c,
+                                deleted: true,
+                                content: "[deleted]",
+                                userId: null,
+                                username: null,
+                                displayName: null,
+                                avatarUrl: null,
+                                replies: nextReplies,
+                            };
+                        }
+                        // Không có replies → xoá hẳn
+                        return null;
+                    }
+                    if (c.deleted && nextReplies.length === 0) {
+                        return null;
+                    }
+                    return {
+                        ...c,
+                        replies: nextReplies,
+                    };
+                })
+                .filter((c): c is PostCommentThread => c !== null);
+        }
+
+        const updated = processTree(existing);
+        if (updated.length === 0) {
+            localStorage.removeItem(`${LOCAL_COMMENTS_PREFIX}${postId}`);
+        } else {
+            localStorage.setItem(`${LOCAL_COMMENTS_PREFIX}${postId}`, JSON.stringify(updated));
+        }
+    } catch {
+        // ignore storage errors
+    }
 }
 
 export function getLocalComments(postId: string): PostCommentThread[] {
@@ -215,19 +270,35 @@ export function saveLocalComment(
 
 function mergeComments(server: PostCommentThread[], local: PostCommentThread[]): PostCommentThread[] {
     if (!local || local.length === 0) return server;
+
+    // Thu thập tất cả ID có trên server (kể cả đã xoá mềm) để không re-inject local cũ
+    const serverIds = new Set<string>();
+    function collectServerIds(list: PostCommentThread[]) {
+        for (const item of list) {
+            serverIds.add(item.id);
+            if (item.replies && item.replies.length > 0) {
+                collectServerIds(item.replies);
+            }
+        }
+    }
+    collectServerIds(server);
+
+    // Chỉ merge local comments mà server CHƯA biết (chưa có id trên server)
     let merged = [...server];
     function collectAll(list: PostCommentThread[]): PostCommentThread[] {
         const result: PostCommentThread[] = [];
         for (const item of list) {
-            result.push(item);
+            if (!serverIds.has(item.id)) {
+                result.push(item);
+            }
             if (item.replies && item.replies.length > 0) {
                 result.push(...collectAll(item.replies));
             }
         }
         return result;
     }
-    const allLocal = collectAll(local);
-    for (const loc of allLocal) {
+    const extraLocal = collectAll(local);
+    for (const loc of extraLocal) {
         merged = insertCommentIntoTree(merged, loc, loc.parentId);
     }
     return organizeCommentTree(merged);
@@ -252,12 +323,11 @@ export async function getPostComments(
         const local = getLocalComments(postId);
         const merged = mergeComments(normalized, local);
 
-        const allCount = countAllComments(merged);
-        const repliesInMerged = Math.max(0, allCount - merged.length);
-        const totalElements = Math.max(
-            Number(pageData?.totalElements ?? 0) + repliesInMerged,
-            allCount,
-        );
+        const allActiveCount = countAllComments(merged);
+        const isSinglePage = (pageData?.totalPages ?? 1) <= 1;
+        const totalElements = isSinglePage
+            ? allActiveCount
+            : Math.max(Number(pageData?.totalElements ?? 0), allActiveCount);
 
         return {
             ...pageData,

@@ -32,6 +32,7 @@ export function CommentsSection({ postId }: Props) {
 
     const comments = data?.content ?? [];
     const total = data ? Math.max(data.totalElements, countAllComments(comments)) : 0;
+    const visibleComments = comments.filter((c) => !c.deleted || (c.replies && c.replies.length > 0));
 
     return (
         <SectionCard eyebrow={t("comments.eyebrow", { count: total })} title={t("comments.title")}>
@@ -53,11 +54,11 @@ export function CommentsSection({ postId }: Props) {
                         {t("common:errorState.retry")}
                     </Button>
                 </div>
-            ) : comments.length === 0 ? (
+            ) : total === 0 || visibleComments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t("comments.empty")}</p>
             ) : (
                 <div className="space-y-4">
-                    {comments.map((comment) => (
+                    {visibleComments.map((comment) => (
                         <CommentThread key={comment.id} postId={postId} comment={comment} language={language} />
                     ))}
                 </div>

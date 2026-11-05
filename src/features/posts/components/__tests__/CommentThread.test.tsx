@@ -8,11 +8,12 @@ import type { PostCommentThread } from "../../types";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
 
-const { updateComment, deleteComment, reportComment, createComment } = vi.hoisted(() => ({
+const { updateComment, deleteComment, reportComment, createComment, removeLocalComment } = vi.hoisted(() => ({
     updateComment: vi.fn(),
     deleteComment: vi.fn(),
     reportComment: vi.fn(),
     createComment: vi.fn(),
+    removeLocalComment: vi.fn(),
 }));
 
 vi.mock("../../api", async (importOriginal) => {
@@ -23,6 +24,7 @@ vi.mock("../../api", async (importOriginal) => {
         deleteComment,
         reportComment,
         createComment,
+        removeLocalComment,
     };
 });
 
@@ -181,6 +183,7 @@ describe("CommentThread", () => {
 
         await waitFor(() => {
             expect(deleteComment).toHaveBeenCalledWith(POST_ID, "comment-1");
+            expect(removeLocalComment).toHaveBeenCalledWith(POST_ID, "comment-1");
         });
     });
 
