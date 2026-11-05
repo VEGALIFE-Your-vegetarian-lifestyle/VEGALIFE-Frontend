@@ -14,28 +14,47 @@ const MAX_COMMENT_LENGTH = 1000;
 
 interface CommentComposerProps {
     postId: string;
-    /** Compact = ô cao 9, dùng trong card feed. */
+    /** null = comment gốc; UUID = reply dưới comment đó. */
+    parentId?: string | null;
+    /** Tên người dùng đang được reply để hiện placeholder thân thiện. */
+    replyToUsername?: string;
+    /** Compact = ô cao 9, dùng trong card feed hoặc reply. */
     compact?: boolean;
+    /** Tự động focus ô nhập khi mở form reply. */
+    autoFocus?: boolean;
+    /** Callback gọi khi gửi thành công. */
+    onSuccess?: () => void;
+    /** Callback khi bấm Hủy (nếu truyền thì hiện nút Hủy). */
+    onCancel?: () => void;
 }
 
 /**
- * Form gửi bình luận gốc — dùng chung Post Detail (sidebar) và card feed Explore.
+ * Form gửi bình luận gốc hoặc reply — dùng chung Post Detail, card feed Explore và reply thread.
  *
  * `POST` trả `CommentResponse` (thiếu `username`/`replies`) nên sau khi gửi **phải**
  * invalidate `["post-comments", postId]` để đọc lại cây từ `GET`, không render từ response.
  */
-export function CommentComposer({ postId, compact = false }: CommentComposerProps) {
+export function CommentComposer({
+    postId,
+    parentId = null,
+    replyToUsername,
+    compact = false,
+    autoFocus = false,
+    onSuccess,
+    onCancel,
+}: CommentComposerProps) {
     const { t } = useTranslation("post");
     const { isAuthenticated } = useAuth();
     const queryClient = useQueryClient();
     const [draft, setDraft] = useState("");
 
     const commentMutation = useMutation({
-        mutationFn: (content: string) => createComment(postId, { content, parentId: null }),
+        mutationFn: (content: string) => createComment(postId, { content, parentId }),
         onSuccess: () => {
             setDraft("");
-            toast.success(t("comments.posted"));
+            toast.success(parentId ? t("comments.replyPosted") : t("comments.posted"));
             queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
+            onSuccess?.();
         },
         onError: (error: unknown) => toast.error(getApiErrorMessage(error, t("common:error"))),
     });
@@ -58,15 +77,20 @@ export function CommentComposer({ postId, compact = false }: CommentComposerProp
         );
     }
 
+    const placeholder = replyToUsername
+        ? t("comments.replyPlaceholder", { username: replyToUsername })
+        : t("comments.placeholder");
+
     return (
         <form className="flex gap-2" onSubmit={handleSubmit}>
             <input
                 type="text"
                 value={draft}
+                autoFocus={autoFocus}
                 onChange={(event) => setDraft(event.target.value)}
                 maxLength={MAX_COMMENT_LENGTH}
-                placeholder={t("comments.placeholder")}
-                aria-label={t("comments.placeholder")}
+                placeholder={placeholder}
+                aria-label={placeholder}
                 disabled={commentMutation.isPending}
                 className={
                     compact
@@ -74,11 +98,22 @@ export function CommentComposer({ postId, compact = false }: CommentComposerProp
                         : "h-11 flex-1 rounded-xl border border-border bg-surface px-4 text-sm text-dark placeholder:text-muted-foreground focus-visible:border-vegan-green focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vegan-green disabled:opacity-50"
                 }
             />
+            {onCancel && (
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size={compact ? "sm" : "default"}
+                    onClick={onCancel}
+                    disabled={commentMutation.isPending}
+                >
+                    {t("comments.cancel")}
+                </Button>
+            )}
             <Button
                 type="submit"
                 size={compact ? "sm" : "default"}
                 shape={compact ? "pill" : "default"}
-                aria-label={t("comments.submit")}
+                aria-label={parentId ? t("comments.replySubmit") : t("comments.submit")}
                 disabled={commentMutation.isPending || draft.trim().length === 0}
             >
                 {commentMutation.isPending ? (

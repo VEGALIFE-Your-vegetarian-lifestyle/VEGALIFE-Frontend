@@ -44,7 +44,7 @@ export function CommentsSection({ postId }: Props) {
             ) : (
                 <div className="space-y-4">
                     {comments.map((comment) => (
-                        <CommentThread key={comment.id} comment={comment} language={language} />
+                        <CommentThread key={comment.id} postId={postId} comment={comment} language={language} />
                     ))}
                 </div>
             )}

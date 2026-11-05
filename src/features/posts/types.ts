@@ -70,6 +70,14 @@ export interface CreateCommentRequest {
     parentId?: string | null;
 }
 
+export interface UpdateCommentRequest {
+    content: string;
+}
+
+export interface ReportCommentRequest {
+    reason?: string;
+}
+
 /**
  * `GET /api/posts/{postId}/comments` — một mục trong cây bình luận.
  * Chỉ comment gốc bị phân trang; `replies[]` là cả cây con, không phân trang.

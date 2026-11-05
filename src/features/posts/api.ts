@@ -13,6 +13,8 @@ import type {
     PostFlag,
     PostListResponse,
     PostStatus,
+    ReportCommentRequest,
+    UpdateCommentRequest,
     UpdatePostRequest,
 } from "./types";
 import { delay } from "@/shared/utils/delay";
@@ -239,6 +241,40 @@ export const rejectPost = async (id: string, reason?: string): Promise<void> => 
 export const createComment = async (postId: string, request: CreateCommentRequest): Promise<ApiComment> => {
     const { data } = await api.post<ApiResponse<ApiComment>>(`/api/posts/${postId}/comments`, request);
     return data.data;
+};
+
+/**
+ * PATCH /api/posts/{postId}/comments/{commentId} — sửa nội dung (yêu cầu JWT, chỉ chủ comment).
+ */
+export const updateComment = async (
+    postId: string,
+    commentId: string,
+    request: UpdateCommentRequest,
+): Promise<ApiComment> => {
+    const { data } = await api.patch<ApiResponse<ApiComment>>(
+        `/api/posts/${postId}/comments/${commentId}`,
+        request,
+    );
+    return data.data;
+};
+
+/**
+ * DELETE /api/posts/{postId}/comments/{commentId} — xoá comment (chủ comment hoặc admin).
+ * Backend soft-delete: chuyển thành "[deleted]" và giữ nguyên cấu trúc nhánh reply.
+ */
+export const deleteComment = async (postId: string, commentId: string): Promise<void> => {
+    await api.delete<ApiResponse<null>>(`/api/posts/${postId}/comments/${commentId}`);
+};
+
+/**
+ * POST /api/posts/{postId}/comments/{commentId}/report — báo cáo vi phạm comment.
+ */
+export const reportComment = async (
+    postId: string,
+    commentId: string,
+    request: ReportCommentRequest = {},
+): Promise<void> => {
+    await api.post<ApiResponse<unknown>>(`/api/posts/${postId}/comments/${commentId}/report`, request);
 };
 
 // PATCH /api/posts/{postId} { publish: false } — về draft, xoá publishedAt

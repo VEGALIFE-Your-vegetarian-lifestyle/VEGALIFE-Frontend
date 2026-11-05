@@ -115,7 +115,12 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
                             </p>
                         ) : (
                             (comments?.content ?? []).map((comment) => (
-                                <CommentThread key={comment.id} comment={comment} language={language} />
+                                <CommentThread
+                                    key={comment.id}
+                                    postId={post.id}
+                                    comment={comment}
+                                    language={language}
+                                />
                             ))
                         )}
                     </div>

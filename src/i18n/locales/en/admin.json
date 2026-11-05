@@ -415,5 +415,63 @@
             "restored": "Account unlocked",
             "restoreFailed": "Failed to unlock account. Please try again."
         }
+    },
+    "comments": {
+        "title": "Comments",
+        "description": "Review, search, and moderate community comments across the platform.",
+        "deletedAuthor": "[deleted]",
+        "status": {
+            "active": "Active",
+            "removed": "Removed"
+        },
+        "sort": {
+            "newest": "Newest",
+            "updated": "Recently updated"
+        },
+        "badge": {
+            "reply": "Reply",
+            "reports": "{{count}} reports"
+        },
+        "action": {
+            "moderate": "Moderate",
+            "moderated": "Moderated"
+        },
+        "list": {
+            "searchPlaceholder": "Search by content, author, or ID",
+            "searchLabel": "Search comments",
+            "filterStatusLabel": "Filter status",
+            "allStatuses": "All statuses",
+            "sortLabel": "Sort by",
+            "column": {
+                "author": "Author",
+                "content": "Comment",
+                "post": "Post",
+                "status": "Status",
+                "createdAt": "Date",
+                "actions": "Actions"
+            }
+        },
+        "empty": {
+            "title": "No comments found",
+            "filtered": "No comments matched the current filters.",
+            "all": "No comments have been posted yet.",
+            "clearFilters": "Clear filters"
+        },
+        "moderate": {
+            "title": "Moderate / Remove Comment",
+            "description": "Comment by {{author}}: \"{{snippet}}\" will be soft-deleted.",
+            "reasonLabel": "Reason for moderation",
+            "reasonPlaceholder": "Enter reason (spam, inappropriate language, guidelines violation...)",
+            "reasonHelper": "Reason is required and recorded in moderation audit log (max 1000 chars).",
+            "reasonRequired": "Please enter a moderation reason",
+            "reasonMax": "Reason cannot exceed 1000 characters",
+            "cancel": "Cancel",
+            "submit": "Confirm Moderation"
+        },
+        "toast": {
+            "moderatedSuccess": "Comment successfully moderated",
+            "moderateFailed": "Failed to moderate comment. Please try again.",
+            "loadFailed": "Failed to load comments."
+        }
     }
 }
