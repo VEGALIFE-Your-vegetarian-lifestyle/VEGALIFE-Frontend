@@ -70,6 +70,23 @@ export interface CommentListParams {
     size?: number;
 }
 
+function normalizeComment(item: any): PostCommentThread {
+    const displayName = item?.displayName ?? item?.username ?? null;
+    return {
+        id: item?.id ?? "",
+        userId: item?.userId ?? null,
+        username: displayName,
+        displayName,
+        avatarUrl: item?.avatarUrl ?? null,
+        content: item?.content ?? "",
+        edited: Boolean(item?.edited),
+        deleted: Boolean(item?.deleted),
+        createdAt: item?.createdAt ?? "",
+        updatedAt: item?.updatedAt ?? "",
+        replies: Array.isArray(item?.replies) ? item.replies.map(normalizeComment) : [],
+    };
+}
+
 /**
  * GET /api/posts/{postId}/comments — public, không cần JWT.
  * Phân trang ở comment gốc; mỗi comment mang theo **cả cây reply** (không phân trang).
@@ -83,7 +100,11 @@ export async function getPostComments(
     const { data } = await api.get<ApiResponse<PageResponse<PostCommentThread>>>(`/api/posts/${postId}/comments`, {
         params: { page, size },
     });
-    return data.data;
+    const pageData = data.data;
+    return {
+        ...pageData,
+        content: (pageData?.content ?? []).map(normalizeComment),
+    };
 }
 
 /** Hoạt động cộng đồng — ponytail: backend chưa có endpoint activity. */
@@ -239,7 +260,11 @@ export const rejectPost = async (id: string, reason?: string): Promise<void> => 
  * gửi phải invalidate `["post-comments", postId]` để lấy lại cây từ `GET`.
  */
 export const createComment = async (postId: string, request: CreateCommentRequest): Promise<ApiComment> => {
-    const { data } = await api.post<ApiResponse<ApiComment>>(`/api/posts/${postId}/comments`, request);
+    const payload: { content: string; parentId?: string } = { content: request.content.trim() };
+    if (request.parentId && request.parentId.trim()) {
+        payload.parentId = request.parentId.trim();
+    }
+    const { data } = await api.post<ApiResponse<ApiComment>>(`/api/posts/${postId}/comments`, payload);
     return data.data;
 };
 

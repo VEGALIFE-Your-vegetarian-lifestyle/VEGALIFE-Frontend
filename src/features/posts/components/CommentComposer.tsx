@@ -50,10 +50,11 @@ export function CommentComposer({
 
     const commentMutation = useMutation({
         mutationFn: (content: string) => createComment(postId, { content, parentId }),
-        onSuccess: () => {
+        onSuccess: async () => {
             setDraft("");
             toast.success(parentId ? t("comments.replyPosted") : t("comments.posted"));
-            queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
+            await queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
+            await queryClient.refetchQueries({ queryKey: ["post-comments", postId] });
             onSuccess?.();
         },
         onError: (error: unknown) => toast.error(getApiErrorMessage(error, t("common:error"))),

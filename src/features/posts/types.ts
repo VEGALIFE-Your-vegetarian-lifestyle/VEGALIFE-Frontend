@@ -87,6 +87,8 @@ export interface PostCommentThread {
     /** null khi đã xoá mềm. */
     userId: string | null;
     username: string | null;
+    /** Tên hiển thị người bình luận — BE trả `displayName`. */
+    displayName?: string | null;
     avatarUrl: string | null;
     /** Đã xoá mềm thì BE trả đúng chuỗi `"[deleted]"`, các field tác giả null. */
     content: string;

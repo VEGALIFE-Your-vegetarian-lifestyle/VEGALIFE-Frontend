@@ -79,6 +79,22 @@ describe("CommentThread", () => {
         expect(screen.getByRole("button", { name: "Reply" })).toBeInTheDocument();
     });
 
+    it("ưu tiên hiển thị displayName từ backend khi username là null", () => {
+        const commentWithDisplayName: PostCommentThread = {
+            ...MOCK_COMMENT,
+            id: "comment-display-name",
+            username: null,
+            displayName: "Chef Green",
+        };
+
+        renderWithProviders(
+            <CommentThread postId={POST_ID} comment={commentWithDisplayName} language="en" />,
+        );
+
+        expect(screen.getByText("Chef Green")).toBeInTheDocument();
+        expect(screen.queryByText("[deleted]")).not.toBeInTheDocument();
+    });
+
     it("comment đã xoá mềm hiển thị [deleted] và không có nút Trả lời hay nút Sửa/Xoá", () => {
         renderWithProviders(
             <CommentThread postId={POST_ID} comment={MOCK_DELETED_COMMENT} language="en" />,

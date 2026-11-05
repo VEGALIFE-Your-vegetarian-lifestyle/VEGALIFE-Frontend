@@ -46,16 +46,17 @@ export function CommentThread({ comment, postId = "", depth = 0, language }: Com
     const [showReportDialog, setShowReportDialog] = useState(false);
     const [reportReason, setReportReason] = useState("");
 
-    const author = comment.username ?? t("comments.deletedAuthor");
+    const author = comment.displayName ?? comment.username ?? t("comments.deletedAuthor");
     const isOwner = !comment.deleted && !!user?.id && user.id === comment.userId;
     const canEdit = isOwner;
     const canDelete = !comment.deleted && isAuthenticated && (isOwner || isAdmin);
     const canReport = !comment.deleted && isAuthenticated && !isOwner;
     const canReply = !comment.deleted;
 
-    const invalidate = () => {
+    const invalidate = async () => {
         if (postId) {
-            queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
+            await queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
+            await queryClient.refetchQueries({ queryKey: ["post-comments", postId] });
         }
     };
 
