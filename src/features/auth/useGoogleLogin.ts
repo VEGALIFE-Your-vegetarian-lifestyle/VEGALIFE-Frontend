@@ -45,7 +45,7 @@ interface UseGoogleLoginOptions {
 export function useGoogleLogin({ onSuccess, onError, scope = "openid email profile" }: UseGoogleLoginOptions) {
     const { t } = useTranslation("auth");
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || "";
-    const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim() || "http://localhost:5174/login";
+    const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI?.trim() || "http://localhost:5173/login";
     const uxMode = (import.meta.env.VITE_GOOGLE_UX_MODE?.trim() || "redirect") as "popup" | "redirect";
 
     const [isScriptLoaded, setIsScriptLoaded] = useState(
