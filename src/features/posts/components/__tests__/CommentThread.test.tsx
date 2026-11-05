@@ -95,7 +95,7 @@ describe("CommentThread", () => {
         useAuthStore.getState().setAuth({
             user: { id: "user-2", username: "VeganCook", email: "cook@example.com", role: "USER", status: "activated" },
             accessToken: "mock-token",
-            rememberMe: false,
+            refreshToken: "mock-refresh",
         });
 
         renderWithProviders(
@@ -113,7 +113,7 @@ describe("CommentThread", () => {
         useAuthStore.getState().setAuth({
             user: { id: USER_ID, username: "PlantLover", email: "plant@example.com", role: "USER", status: "activated" },
             accessToken: "mock-token",
-            rememberMe: false,
+            refreshToken: "mock-refresh",
         });
 
         renderWithProviders(
@@ -145,7 +145,7 @@ describe("CommentThread", () => {
         useAuthStore.getState().setAuth({
             user: { id: USER_ID, username: "PlantLover", email: "plant@example.com", role: "USER", status: "activated" },
             accessToken: "mock-token",
-            rememberMe: false,
+            refreshToken: "mock-refresh",
         });
 
         renderWithProviders(
@@ -172,7 +172,7 @@ describe("CommentThread", () => {
         useAuthStore.getState().setAuth({
             user: { id: "another-user-999", username: "Reader", email: "reader@example.com", role: "USER", status: "activated" },
             accessToken: "mock-token",
-            rememberMe: false,
+            refreshToken: "mock-refresh",
         });
 
         renderWithProviders(

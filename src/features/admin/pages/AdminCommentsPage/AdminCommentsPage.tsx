@@ -121,11 +121,7 @@ export default function AdminCommentsPage() {
 
             {/* Main table content */}
             {isError ? (
-                <ErrorState
-                    title={t("common:error")}
-                    description={t("comments.toast.loadFailed")}
-                    onRetry={() => void refetch()}
-                />
+                <ErrorState onRetry={() => void refetch()} />
             ) : !isLoading && comments.length === 0 ? (
                 <EmptyState
                     icon={MessageSquare}
@@ -217,7 +213,7 @@ export default function AdminCommentsPage() {
                                             {/* Status column */}
                                             <TableCell>
                                                 {isRemoved ? (
-                                                    <Badge variant="muted" size="sm">
+                                                    <Badge variant="outline" size="sm">
                                                         {t("comments.status.removed")}
                                                     </Badge>
                                                 ) : (

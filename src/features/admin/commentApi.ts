@@ -63,3 +63,4 @@ export async function getAdminComments({
 export async function moderateComment(commentId: string, request: ModerateCommentRequest): Promise<void> {
     await api.post<ApiResponse<unknown>>(`/api/admin/comments/${commentId}/moderate`, request);
 }
+
