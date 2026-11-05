@@ -2,22 +2,22 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Check, Receipt, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, Info, Receipt, ShieldCheck, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PillTabs } from "@/components/ui/pill-tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Pagination } from "@/components/common/Pagination";
 import { useAuth } from "@/features/auth/useAuth";
 import { useSubscription } from "@/features/nutrition-ai/useSubscription";
+import type { AiPlan } from "@/features/nutrition-ai/types";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { cn } from "@/shared/utils/cn";
 import { formatDateLocale } from "@/shared/utils/formatDate";
-import { useBuyPlan, useCancelSubscription, usePayments, usePlans, useSubscriptionHistory } from "../../useBilling";
+import { useAcquirePlan, usePayments, usePlans, useSubscriptionHistory } from "../../useBilling";
 
 export default function SubscriptionPage({ embedded = false }: { embedded?: boolean }) {
     const { t, i18n } = useTranslation("subscription");
@@ -26,49 +26,48 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
 
     const [historyPage, setHistoryPage] = useState(1);
     const [paymentPage, setPaymentPage] = useState(1);
-    const [confirmCancel, setConfirmCancel] = useState(false);
     const [tab, setTab] = useState<"history" | "payments">("history");
 
     const plans = usePlans();
     const subscription = useSubscription(isAuthenticated);
     const history = useSubscriptionHistory(historyPage - 1, isAuthenticated);
     const payments = usePayments(paymentPage - 1, isAuthenticated);
-    const buyPlan = useBuyPlan();
-    const cancel = useCancelSubscription();
+    const acquirePlan = useAcquirePlan();
 
-    const currentCode = subscription.data?.currentPlan?.code;
     const money = (amount: number, currency: string) =>
         new Intl.NumberFormat(i18n.language === "vi" ? "vi-VN" : "en-US", {
             style: "currency",
             currency,
         }).format(amount);
 
-    const handleBuy = (planCode: string) => {
+    const handleAcquire = (plan: AiPlan) => {
         if (!isAuthenticated) {
             navigate("/login");
             return;
         }
-        buyPlan.mutate(planCode, {
-            // IPN mới là nguồn sự thật; trang kết quả chỉ để hiển thị.
-            onSuccess: (checkout) => window.location.assign(checkout.paymentUrl),
-            onError: (error) => toast.error(getApiErrorMessage(error, t("toast.buyFailed"))),
+
+        acquirePlan.mutate(plan.code, {
+            onSuccess: (res) => {
+                if (res.action === "CHECKOUT_CREATED" && res.paymentUrl) {
+                    window.location.assign(res.paymentUrl);
+                } else if (res.action === "CLAIMED") {
+                    toast.success(t("toast.claimed"));
+                }
+            },
+            onError: (error: unknown) => {
+                const status = (error as { response?: { status?: number } })?.response?.status;
+                if (status === 409) {
+                    toast.info(t("toast.alreadyClaimed"));
+                } else if (status === 503) {
+                    toast.error(t("toast.gatewayUnavailable"));
+                } else {
+                    toast.error(getApiErrorMessage(error, t("toast.buyFailed")));
+                }
+            },
         });
     };
 
-    const handleCancel = () => {
-        cancel.mutate(undefined, {
-            onSuccess: () => {
-                toast.success(t("toast.cancelled"));
-                setConfirmCancel(false);
-            },
-            onError: (error) => {
-                toast.error(getApiErrorMessage(error, t("toast.cancelFailed")));
-                setConfirmCancel(false);
-            },
-        });
-    };
-
-    // Đã đăng nhập mà vào `/subscription` (bản ngoài shell) → đưa vào rail tài khoản, khỏi mất đường về.
+    // Đã đăng nhập mà vào `/subscription` (bản ngoài shell) → đưa vào rail tài khoản.
     if (!embedded && isAuthenticated) return <Navigate to="/account/subscription" replace />;
 
     return (
@@ -91,19 +90,11 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                         <div className="rounded-xl bg-vegan-green-light px-4 py-3">
                             <p className="flex items-center gap-2 text-sm font-bold text-vegan-green">
                                 <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                                {subscription.data.currentPlan?.name ?? subscription.data.tier}
-                                <Badge variant={subscription.data.status === "active" ? "default" : "amber"} size="sm">
-                                    {t(`status.${subscription.data.status}`)}
-                                </Badge>
+                                {t("current.remainingBadge", { count: subscription.data.remainingUsage })}
                             </p>
-                            {subscription.data.usage && (
-                                <p className="mt-0.5 text-xs text-muted-foreground">
-                                    {t("current.usage", {
-                                        used: subscription.data.usage.used,
-                                        limit: subscription.data.usage.limit,
-                                    })}
-                                </p>
-                            )}
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                                {t("current.lifetimeNotice")}
+                            </p>
                         </div>
                     )}
                 </div>
@@ -123,20 +114,20 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                             <div className="grid gap-4 sm:grid-cols-2">
                                 {plans.data.map((plan) => {
                                     const isFree = plan.price.amount <= 0;
-                                    const isCurrent = plan.code === currentCode;
+                                    const quota = plan.requestQuota ?? plan.monthlyRequestLimit ?? 0;
                                     return (
                                         <div
                                             key={plan.code}
                                             className={cn(
-                                                "flex flex-col rounded-2xl border bg-card p-6 shadow-sm",
-                                                isCurrent
-                                                    ? "border-vegan-green ring-1 ring-vegan-green"
-                                                    : "border-border",
+                                                "flex flex-col rounded-2xl border bg-card p-6 shadow-sm transition",
+                                                isFree ? "border-border" : "border-vegan-green/40 shadow-sm",
                                             )}
                                         >
                                             <div className="flex items-center justify-between">
                                                 <h2 className="text-lg font-bold text-dark">{plan.name}</h2>
-                                                {isCurrent && <Badge variant="lightgreen">{t("plans.current")}</Badge>}
+                                                <Badge variant={isFree ? "lightgreen" : "info"}>
+                                                    {isFree ? t("plans.claimHint") : t("plans.stackHint")}
+                                                </Badge>
                                             </div>
                                             <p className="mt-3 text-3xl font-bold text-dark">
                                                 {isFree
@@ -144,26 +135,32 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                                                     : money(plan.price.amount, plan.price.currency)}
                                                 {!isFree && (
                                                     <span className="text-sm font-normal text-muted-foreground">
-                                                        {t("plans.perMonth")}
+                                                        {t("plans.perQuota")}
                                                     </span>
                                                 )}
                                             </p>
+                                            {plan.description && (
+                                                <p className="mt-2 text-xs text-muted-foreground">
+                                                    {plan.description}
+                                                </p>
+                                            )}
                                             <p className="mt-4 flex items-center gap-2 text-sm text-dark">
                                                 <Check className="h-4 w-4 text-vegan-green" aria-hidden="true" />
-                                                {t("plans.requests", {
-                                                    count: plan.monthlyRequestLimit,
-                                                })}
+                                                {t("plans.requests", { count: quota })}
                                             </p>
                                             <div className="mt-6 flex-1" />
-                                            {!isFree && (
-                                                <Button
-                                                    disabled={buyPlan.isPending}
-                                                    onClick={() => handleBuy(plan.code)}
-                                                >
-                                                    <Sparkles className="h-4 w-4" aria-hidden="true" />
-                                                    {isCurrent ? t("plans.renew") : t("plans.buy")}
-                                                </Button>
-                                            )}
+                                            <Button
+                                                variant={isFree ? "outline" : "primary"}
+                                                disabled={acquirePlan.isPending}
+                                                onClick={() => handleAcquire(plan)}
+                                            >
+                                                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                                                {acquirePlan.isPending
+                                                    ? t("plans.buying")
+                                                    : isFree
+                                                      ? t("plans.claim")
+                                                      : t("plans.buy")}
+                                            </Button>
                                         </div>
                                     );
                                 })}
@@ -206,23 +203,49 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                                                 <TableHeader>
                                                     <TableRow>
                                                         <TableHead>{t("history.plan")}</TableHead>
+                                                        <TableHead>{t("history.source")}</TableHead>
+                                                        <TableHead>{t("history.grantedAt")}</TableHead>
+                                                        <TableHead>{t("history.amount")}</TableHead>
                                                         <TableHead>{t("history.status")}</TableHead>
-                                                        <TableHead>{t("history.startedAt")}</TableHead>
-                                                        <TableHead>{t("history.renewalDate")}</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
                                                     {history.data.content.map((row) => (
-                                                        <TableRow key={row.createdAt}>
-                                                            <TableCell>{row.planName}</TableCell>
-                                                            <TableCell>{t(`rowStatus.${row.status}`)}</TableCell>
+                                                        <TableRow key={row.createdAt + (row.paymentId ?? "")}>
+                                                            <TableCell className="font-medium">{row.planName}</TableCell>
                                                             <TableCell>
-                                                                {row.startedAt ? formatDateLocale(row.startedAt) : "—"}
+                                                                <Badge variant={row.source === "PURCHASE" ? "info" : "lightgreen"}>
+                                                                    {row.source === "PURCHASE"
+                                                                        ? t("history.sourcePurchase")
+                                                                        : t("history.sourceClaim")}
+                                                                </Badge>
                                                             </TableCell>
                                                             <TableCell>
-                                                                {row.renewalDate
-                                                                    ? formatDateLocale(row.renewalDate)
-                                                                    : "—"}
+                                                                {row.grantedAt ? formatDateLocale(row.grantedAt) : "—"}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {row.amount
+                                                                    ? money(row.amount, row.currency ?? "VND")
+                                                                    : t("plans.free")}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {row.status ? (
+                                                                    <Badge
+                                                                        variant={
+                                                                            row.status === "succeeded"
+                                                                                ? "default"
+                                                                                : row.status === "pending"
+                                                                                  ? "amber"
+                                                                                  : "destructive"
+                                                                        }
+                                                                    >
+                                                                        {t(`paymentStatus.${row.status}`, {
+                                                                            defaultValue: row.status,
+                                                                        })}
+                                                                    </Badge>
+                                                                ) : (
+                                                                    <span className="text-xs text-muted-foreground">—</span>
+                                                                )}
                                                             </TableCell>
                                                         </TableRow>
                                                     ))}
@@ -260,20 +283,36 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {payments.data.content.map((row) => (
-                                                        <TableRow key={row.id}>
-                                                            <TableCell>{row.plan?.name ?? "—"}</TableCell>
-                                                            <TableCell>{money(row.amount, row.currency)}</TableCell>
-                                                            <TableCell>
-                                                                {t(`paymentStatus.${row.status}`, {
-                                                                    defaultValue: row.status,
-                                                                })}
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {formatDateLocale(row.paidAt ?? row.createdAt)}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
+                                                    {payments.data.content.map((row) => {
+                                                        const planName =
+                                                            history.data?.content.find(
+                                                                (h) => h.paymentId === row.id,
+                                                            )?.planName ?? t("payments.defaultPlanName");
+                                                        return (
+                                                            <TableRow key={row.id}>
+                                                                <TableCell className="font-medium">{planName}</TableCell>
+                                                                <TableCell>{money(row.amount, row.currency)}</TableCell>
+                                                                <TableCell>
+                                                                    <Badge
+                                                                        variant={
+                                                                            row.status === "succeeded"
+                                                                                ? "default"
+                                                                                : row.status === "pending"
+                                                                                  ? "amber"
+                                                                                  : "destructive"
+                                                                        }
+                                                                    >
+                                                                        {t(`paymentStatus.${row.status}`, {
+                                                                            defaultValue: row.status,
+                                                                        })}
+                                                                    </Badge>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    {formatDateLocale(row.paidAt ?? row.createdAt)}
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        );
+                                                    })}
                                                 </TableBody>
                                             </Table>
                                             <Pagination
@@ -296,59 +335,28 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                             {t("current.eyebrow")}
                         </h2>
                         {isAuthenticated && subscription.data ? (
-                            <dl className="mt-3 space-y-2 text-sm">
-                                <div className="flex items-center justify-between gap-3">
-                                    <dt className="text-muted-foreground">{t("history.plan")}</dt>
-                                    <dd className="font-semibold text-vegan-green">
-                                        {subscription.data.currentPlan?.name ?? subscription.data.tier}
-                                    </dd>
-                                </div>
-                                <div className="flex items-center justify-between gap-3">
-                                    <dt className="text-muted-foreground">{t("history.status")}</dt>
-                                    <dd className="font-semibold text-dark">
-                                        {t(`status.${subscription.data.status}`)}
-                                    </dd>
-                                </div>
+                            <dl className="mt-3 space-y-2.5 text-sm">
                                 <div className="flex items-center justify-between gap-3">
                                     <dt className="text-muted-foreground">{t("current.quota")}</dt>
-                                    <dd className="font-semibold text-dark">
-                                        {subscription.data.usage
-                                            ? `${subscription.data.usage.used}/${subscription.data.usage.limit}`
-                                            : "—"}
+                                    <dd className="font-bold text-vegan-green">
+                                        {t("current.remaining", { count: subscription.data.remainingUsage })}
                                     </dd>
                                 </div>
-                                {subscription.data.renewalDate && (
-                                    <div className="flex items-center justify-between gap-3">
-                                        <dt className="text-muted-foreground">{t("history.renewalDate")}</dt>
-                                        <dd className="font-semibold text-dark">
-                                            {formatDateLocale(subscription.data.renewalDate)}
-                                        </dd>
-                                    </div>
-                                )}
+                                <div className="flex items-center justify-between gap-3">
+                                    <dt className="text-muted-foreground">{t("pill")}</dt>
+                                    <dd className="font-medium text-dark">{t("current.lifetimeNotice")}</dd>
+                                </div>
                             </dl>
                         ) : (
                             <p className="mt-3 text-sm text-muted-foreground">{t("current.loginRequired")}</p>
                         )}
-                        {subscription.data && subscription.data.tier !== "FREE" && (
-                            <Button variant="outline" size="sm" className="mt-4" onClick={() => setConfirmCancel(true)}>
-                                {t("current.cancel")}
-                            </Button>
-                        )}
-                        <p className="mt-4 rounded-xl bg-accent p-3 text-xs text-muted-foreground">{t("notice")}</p>
+                        <div className="mt-4 flex items-start gap-2 rounded-xl bg-accent p-3 text-xs text-muted-foreground">
+                            <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-vegan-green" aria-hidden="true" />
+                            <p>{t("notice")}</p>
+                        </div>
                     </section>
                 </aside>
             </div>
-
-            <ConfirmDialog
-                open={confirmCancel}
-                title={t("cancelDialog.title")}
-                description={t("cancelDialog.description")}
-                confirmLabel={t("cancelDialog.confirm")}
-                destructive
-                loading={cancel.isPending}
-                onConfirm={handleCancel}
-                onClose={() => setConfirmCancel(false)}
-            />
         </div>
     );
 }

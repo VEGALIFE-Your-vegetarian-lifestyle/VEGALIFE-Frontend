@@ -74,6 +74,7 @@ export function useAiChat(enabled = true) {
                 setActiveId(data.conversationId);
                 setUsage(data.usage);
                 void queryClient.invalidateQueries({ queryKey: CONVERSATIONS_KEY });
+                void queryClient.invalidateQueries({ queryKey: ["subscription", "me"] });
                 return true;
             } catch (err) {
                 // Giữ câu hỏi để gửi lại; BR-CHATBOT-003: không bịa câu trả lời.

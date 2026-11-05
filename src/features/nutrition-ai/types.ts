@@ -1,14 +1,16 @@
-/** AI Chatbot + AI Subscription — theo `docs/apis` nhóm 24–25 (BE đã xong #47–#55). */
+/** AI Chatbot + AI Subscription — theo `docs/apis` nhóm 24–25 (V48 Request-Allowance Release). */
 
 export type AiMessageRole = "user" | "assistant" | "system";
 
 /**
- * Hạn mức tháng. #47 trả `windowStart`/`windowEnd`, #52 trả `periodStart`/`periodEnd`
- * cho cùng một khái niệm — khai báo cả hai, chỗ đọc tự chọn field có mặt.
+ * Hạn mức câu hỏi AI.
+ * V48: Chỉ còn `remainingUsage` (số câu hỏi còn lại, không bao giờ hết hạn).
+ * Giữ các trường cũ dạng optional để tránh vỡ component phụ trợ.
  */
 export interface AiUsage {
-    used: number;
-    limit: number;
+    remainingUsage: number;
+    used?: number;
+    limit?: number;
     windowStart?: string;
     windowEnd?: string;
     periodStart?: string;
@@ -49,10 +51,17 @@ export interface AiSendMessageResponse {
 export interface AiPlan {
     code: string;
     name: string;
-    monthlyRequestLimit: number;
+    description?: string | null;
+    requestQuota: number;
+    /** @deprecated V48 renamed to requestQuota */
+    monthlyRequestLimit?: number;
     price: { amount: number; currency: string };
 }
 
+/**
+ * GET /api/subscriptions/me (V48)
+ * Backend chỉ trả về `{ remainingUsage: number }`.
+ */
 export interface AiSubscription {
     tier?: "FREE" | "PRO";
     status?: "active" | "cancelled" | "past_due";

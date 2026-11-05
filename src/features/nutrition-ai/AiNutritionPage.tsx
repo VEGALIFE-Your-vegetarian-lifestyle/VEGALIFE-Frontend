@@ -1,15 +1,18 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import { Activity, Calculator, MessageSquare, Plus, ShieldCheck } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Activity, Calculator, MessageSquare, Plus, ShieldCheck, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/features/auth/useAuth";
+import { useAcquirePlan } from "@/features/subscription/useBilling";
 import { useAiChat } from "./useAiChat";
 import { useSubscription } from "./useSubscription";
 import { formatDateLocale } from "@/shared/utils/formatDate";
+import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { ChatPanel } from "./ChatPanel";
 import { DishPicker } from "./DishPicker";
 import type { Dish } from "@/features/recipes/types";
@@ -22,11 +25,12 @@ const ACTIVITY_FACTORS: Record<string, number> = {
 };
 
 /**
- * AI Nutrition Assistant — UI theo mockup, nối API thật:
+ * AI Nutrition Assistant — V48 Request Allowance Release
  * POST /api/ai/messages, GET /api/ai/conversations[/{id}], GET /api/subscriptions/me.
  */
 export default function AiNutritionPage() {
     const { t } = useTranslation("aiNutrition");
+    const { t: tSub } = useTranslation("subscription");
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
 
@@ -37,13 +41,38 @@ export default function AiNutritionPage() {
     // Mọi endpoint AI đều cần JWT → khách chưa đăng nhập thì đừng gọi.
     const chat = useAiChat(isAuthenticated);
     const subscription = useSubscription(isAuthenticated);
-    const quota = chat.usage ?? subscription.data?.usage;
+    const acquirePlan = useAcquirePlan();
+
+    // V48: Số lượt hỏi còn lại là một con số duy nhất không hết hạn
+    const remainingCount = chat.usage?.remainingUsage ?? subscription.data?.remainingUsage ?? 0;
 
     const requireLogin = () => navigate("/login");
 
     const ask = (text: string) => {
         if (isAuthenticated) void chat.send(text);
         else requireLogin();
+    };
+
+    const handleClaimFree = () => {
+        if (!isAuthenticated) {
+            requireLogin();
+            return;
+        }
+        acquirePlan.mutate("FREE", {
+            onSuccess: (data) => {
+                if (data.action === "CLAIMED") {
+                    toast.success(tSub("toast.claimed"));
+                }
+            },
+            onError: (error: unknown) => {
+                const status = (error as { response?: { status?: number } })?.response?.status;
+                if (status === 409) {
+                    toast.info(tSub("toast.alreadyClaimed"));
+                } else {
+                    toast.error(getApiErrorMessage(error, tSub("toast.buyFailed")));
+                }
+            },
+        });
     };
 
     /**
@@ -97,6 +126,35 @@ export default function AiNutritionPage() {
                     )
                 )}
             </header>
+
+            {/* V48: Nhắc nhở nhận 5 câu hỏi miễn phí khi tài khoản có số dư 0 */}
+            {isAuthenticated && subscription.data && remainingCount === 0 && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-vegan-green/30 bg-vegan-green/5 p-4">
+                    <div className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-vegan-green text-white">
+                            <Sparkles className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                        <div>
+                            <p className="text-sm font-bold text-dark">{t("claimBanner.title")}</p>
+                            <p className="text-xs text-muted-foreground">{t("claimBanner.desc")}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            size="sm"
+                            disabled={acquirePlan.isPending}
+                            onClick={handleClaimFree}
+                        >
+                            {acquirePlan.isPending ? tSub("plans.buying") : t("claimBanner.claimBtn")}
+                        </Button>
+                        <Link to="/account/subscription">
+                            <Button variant="outline" size="sm">
+                                {t("claimBanner.buyBtn")}
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            )}
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
                 <ChatPanel chat={chat} onRequireLogin={requireLogin} />

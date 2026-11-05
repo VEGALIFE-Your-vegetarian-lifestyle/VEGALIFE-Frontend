@@ -1,4 +1,4 @@
-﻿import { useMemo, type ReactNode } from "react";
+ import { useMemo, type ReactNode } from "react";
 import { useFormik } from "formik";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -83,7 +83,7 @@ export default function CreateRecipePage() {
         initialValues: initialRecipeValues(),
         validationSchema,
         // TrÃ¹ng tÃªn cáº§n so cáº£ máº£ng nÃªn khÃ´ng Ä‘áº·t á»Ÿ Yup field-level â€” cháº·n á»Ÿ Ä‘Ã¢y.
-        // HÃ ng trÃ¹ng Ä‘Ã£ Ä‘Æ°á»£c tÃ´ Ä‘á» sáºµn bá»Ÿi `duplicateIngredientIndexes`.
+        // HÃ ng trÃ¹ng Ä‘Ã£ Ä‘Æ°á»£c tÃ´ Ä‘á» sáºµn bá»Ÿi `duplicateIngredientIndexes`.
         onSubmit: (values) => {
             if (duplicateIngredientIndexes(values.ingredients).length > 0) {
                 toast.error(t("recipe:errors.ingredientDuplicate"));
@@ -104,7 +104,7 @@ export default function CreateRecipePage() {
             formik.values.ingredients.filter((_, itemIndex) => itemIndex !== index),
         );
 
-    // Formik gom lá»—i máº£ng thÃ nh `errors.ingredients[index]` â€” page chá»‰ cáº§n Ä‘áº©y xuá»‘ng editor.
+    // Formik gom lá»—i máº£ng thÃ nh `errors.ingredients[index]` â€” page chá»‰ cáº§n Ä‘áº©y xuá»‘ng editor.
     const ingredientErrors = Array.isArray(formik.errors.ingredients)
         ? (formik.errors.ingredients as unknown as Array<{ name?: string; amount?: string; unit?: string } | undefined>)
         : undefined;
@@ -118,7 +118,7 @@ export default function CreateRecipePage() {
 
     const removeStep = (index: number) => setSteps(formik.values.steps.filter((_, itemIndex) => itemIndex !== index));
 
-    /** Äá»•i thá»© tá»± = Ä‘á»•i vá»‹ trÃ­ trong máº£ng; chuá»—i `instructions` gá»­i lÃªn theo Ä‘Ãºng thá»© tá»± nÃ y. */
+    /** Äá»•i thá»© tá»± = Ä‘á»•i vá»‹ trÃ­ trong máº£ng; chuá»—i `instructions` gá»­i lÃªn theo Ä‘Ãºng thá»© tá»± nÃ y. */
     const moveStep = (index: number, delta: number) => {
         const target = index + delta;
         if (target < 0 || target >= formik.values.steps.length) return;
@@ -252,7 +252,7 @@ export default function CreateRecipePage() {
                                     />
                                 </FormField>
 
-                                {/* BE khÃ´ng cÃ³ `categoryId` â€” tÃªn mÃ³n dÃ¹ng chung lÃ  thá»© gáº§n nháº¥t. */}
+                                {/* BE khÃ´ng cÃ³ `categoryId` â€” tÃªn mÃ³n dÃ¹ng chung lÃ  thá»© gáº§n nháº¥t. */}
                                 <FormField
                                     label={t("recipe:field.dishName")}
                                     htmlFor="recipe-dish"
@@ -341,7 +341,7 @@ export default function CreateRecipePage() {
                             </div>
                         </SectionCard>
 
-                        {/* Mockup gá»™p "kháº©u pháº§n & thá»i gian" vÃ  "Ä‘á»™ khÃ³" vÃ o **má»™t** khá»‘i. */}
+                        {/* Mockup gá»™p "kháº©u pháº§n & thá»i gian" vÃ  "Ä‘á»™ khÃ³" vÃ o **má»™t** khá»‘i. */}
                         <SectionCard
                             inlineHeader
                             eyebrow={<SectionBadge step={4} />}
