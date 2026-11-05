@@ -38,7 +38,7 @@ Mỗi FR có một dòng `> **FE:**` ghi trạng thái frontend thật.
 
 | Mã | Dòng | Module | FE |
 |---|---|---|---|
-| FR-01 | 406 | Authentication | ✅ trừ Google OAuth |
+| FR-01 | 406 | Authentication | ✅ đủ (kể cả Google OAuth) |
 | FR-02 | 471 | User Profile | 🟡 thiếu BMI |
 | FR-03 | 507 | Blog Posts | 🟡 search client-side, thiếu vote |
 | FR-04 | 584 | Videos | 🟡 thiếu upload video |
@@ -405,8 +405,8 @@ Xây dựng một web platform hoàn chỉnh cho phép:
 
 ### FR-01 - Authentication [MVP]
 
-> **FE:** ✅ đủ — register, login, refresh, logout, verify email, quên mật khẩu.
-> **Trừ Google OAuth**: nút "Continue with Google" chỉ báo `featureDeveloping`.
+> **FE:** ✅ đủ — register, login, Google OAuth (`POST /api/auth/google`), refresh, logout, verify email, quên mật khẩu.
+
 
 #### FR-01-01: Register Account
 
