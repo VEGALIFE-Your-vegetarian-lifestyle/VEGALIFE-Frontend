@@ -16,7 +16,7 @@ const navItems = [
     { to: "/admin/users", labelKey: "users", icon: Users, ready: true },
     { to: "/admin/posts", labelKey: "posts", icon: FileText, ready: true },
     { to: "/admin/videos", labelKey: "videos", icon: Video, ready: true },
-    { to: "/admin/comments", labelKey: "comments", icon: MessageSquare, ready: false },
+    { to: "/admin/comments", labelKey: "comments", icon: MessageSquare, ready: true },
     { to: "/admin/categories", labelKey: "categories", icon: Tags, ready: true },
     { to: "/admin/recipes", labelKey: "recipes", icon: ChefHat, ready: true },
     { to: "/admin/ingredients", labelKey: "ingredients", icon: Apple, ready: true },

@@ -1,55 +1,50 @@
 {
-    "overline": "AI Nutrition Plans",
-    "title": "AI Subscription",
-    "subtitle": "Pick a plan to ask the plant-based nutrition assistant more questions every month.",
-    "pill": "Monthly quota (UTC)",
-    "notice": "Payments go through VNPay. A plan is only activated once VNPay confirms the transaction.",
+    "overline": "Nutrition AI Credits",
+    "title": "AI Request Plans",
+    "subtitle": "Claim or purchase AI requests to consult the plant-based nutrition assistant. Requests never expire.",
+    "pill": "Non-expiring · Stacking",
+    "notice": "Payments via VNPay. Requests are added immediately after payment confirmation and never expire.",
     "current": {
-        "eyebrow": "CURRENT PLAN",
-        "usage": "Used {{used}}/{{limit}} questions this month",
-        "renewal": "Renews on {{date}}",
-        "quota": "Monthly quota",
-        "loginRequired": "Log in to see your current plan.",
-        "cancel": "Cancel plan"
-    },
-    "status": {
-        "active": "Active",
-        "cancelled": "Cancelled",
-        "past_due": "Past due"
+        "eyebrow": "CREDIT BALANCE",
+        "remaining": "{{count}} AI requests remaining",
+        "remainingBadge": "Available: {{count}} requests",
+        "quota": "Remaining requests",
+        "loginRequired": "Sign in to view your request balance.",
+        "claimFreePrompt": "Haven't claimed the free starter requests yet? Claim 5 free requests below.",
+        "lifetimeNotice": "Requests have no expiration date."
     },
     "plans": {
-        "title": "Plans",
-        "current": "Current plan",
+        "title": "Available Request Plans",
         "free": "Free",
-        "perMonth": " / month",
-        "requests": "{{count}} AI questions per month",
-        "buy": "Upgrade",
-        "renew": "Renew"
+        "perQuota": " / pack",
+        "requests": "{{count}} AI requests (never expire)",
+        "buy": "Purchase",
+        "claim": "Claim Free",
+        "buying": "Processing...",
+        "claimHint": "One-time claim per account",
+        "stackHint": "Stackable: purchase multiple times to add more requests"
     },
     "history": {
-        "title": "Plan history",
-        "emptyTitle": "No plan history yet",
-        "emptyDescription": "Your purchases and renewals will show up here.",
+        "title": "Acquisition History",
+        "emptyTitle": "No acquisition history",
+        "emptyDescription": "Your claimed and purchased plans will appear here.",
         "plan": "Plan",
-        "status": "Status",
-        "startedAt": "Started",
-        "renewalDate": "Renewal"
-    },
-    "rowStatus": {
-        "active": "Active",
-        "past_due": "Past due",
-        "scheduled": "Scheduled",
-        "cancelled": "Cancelled",
-        "expired": "Expired"
+        "source": "Source",
+        "sourcePurchase": "VNPay Purchase",
+        "sourceClaim": "Free Claim",
+        "status": "Payment Status",
+        "grantedAt": "Granted At",
+        "amount": "Amount"
     },
     "payments": {
-        "title": "Payment history",
-        "emptyTitle": "No payments yet",
-        "emptyDescription": "Your VNPay transactions will show up here.",
+        "title": "Payment History",
+        "emptyTitle": "No payment history",
+        "emptyDescription": "Your VNPay transactions will appear here.",
         "plan": "Plan",
         "amount": "Amount",
         "status": "Status",
-        "date": "Date"
+        "date": "Date",
+        "defaultPlanName": "Nutrition AI Plan"
     },
     "paymentStatus": {
         "pending": "Pending",
@@ -57,35 +52,31 @@
         "failed": "Failed",
         "refunded": "Refunded"
     },
-    "cancelDialog": {
-        "title": "Cancel current plan?",
-        "description": "The plan is cancelled immediately and your account returns to the Free plan.",
-        "confirm": "Cancel plan"
-    },
     "toast": {
-        "buyFailed": "Could not start the payment. Please try again.",
-        "cancelled": "Plan cancelled",
-        "cancelFailed": "Could not cancel the plan. Please try again."
+        "buyFailed": "Unable to initiate payment. Please try again.",
+        "claimed": "Successfully claimed 5 free AI requests!",
+        "alreadyClaimed": "You have already claimed this free plan.",
+        "gatewayUnavailable": "Payment gateway is temporarily unavailable. Please try again later."
     },
     "result": {
-        "loading": "Loading payment result",
-        "backToPlans": "Back to plans",
-        "toAi": "Use the AI assistant",
+        "loading": "Loading payment status",
+        "backToPlans": "Back to Plans",
+        "toAi": "Use AI Assistant",
         "pending": {
-            "title": "Confirming your payment",
-            "description": "Hang on a moment, this page updates by itself."
+            "title": "Confirming Payment",
+            "description": "Please wait a moment, this page will update automatically once VNPay confirms."
         },
         "succeeded": {
-            "title": "Payment successful",
-            "description": "Your plan is now active."
+            "title": "Payment Succeeded",
+            "description": "Your AI requests have been added to your account."
         },
         "failed": {
-            "title": "Payment failed",
-            "description": "The transaction did not go through. You can try again."
+            "title": "Payment Failed",
+            "description": "Transaction was not completed. You may try again."
         },
         "refunded": {
             "title": "Refunded",
-            "description": "This payment has been refunded."
+            "description": "This transaction has been refunded."
         }
     }
 }

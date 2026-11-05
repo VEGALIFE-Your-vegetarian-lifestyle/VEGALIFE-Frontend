@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/common/Pagination";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CommentComposer } from "@/features/posts/components/CommentComposer";
 import { CommentThread } from "@/features/posts/components/CommentThread";
-import { getPostComments } from "../../api";
+import { countAllComments, getPostComments } from "../../api";
 import { useUiStore } from "@/shared/ui/uiStore";
 
 /** Comment gốc mỗi trang; reply luôn về kèm cả cây nên không phân trang riêng. */
@@ -23,28 +24,42 @@ export function CommentsSection({ postId }: Props) {
     const [page, setPage] = useState(1);
 
     // GET /api/posts/{postId}/comments — public, phân trang comment gốc.
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ["post-comments", postId, page],
         queryFn: () => getPostComments(postId, { page: page - 1, size: PER_PAGE }),
         enabled: postId !== "",
     });
 
     const comments = data?.content ?? [];
-    const total = data?.totalElements ?? 0;
+    const total = data ? Math.max(data.totalElements, countAllComments(comments)) : 0;
+    const visibleComments = comments.filter((c) => !c.deleted || (c.replies && c.replies.length > 0));
 
     return (
         <SectionCard eyebrow={t("comments.eyebrow", { count: total })} title={t("comments.title")}>
+            {isError && comments.length > 0 && (
+                <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 p-2.5 text-center text-xs text-amber-700 dark:text-amber-300">
+                    {t("comments.serverSyncNotice")}
+                </div>
+            )}
+
             {isLoading ? (
                 <div className="space-y-3">
                     <Skeleton className="h-24 w-full rounded-xl" />
                     <Skeleton className="h-24 w-full rounded-xl" />
                 </div>
-            ) : comments.length === 0 ? (
+            ) : isError && comments.length === 0 ? (
+                <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center">
+                    <p className="text-sm text-destructive">{t("comments.loadError")}</p>
+                    <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+                        {t("common:errorState.retry")}
+                    </Button>
+                </div>
+            ) : total === 0 || visibleComments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t("comments.empty")}</p>
             ) : (
                 <div className="space-y-4">
-                    {comments.map((comment) => (
-                        <CommentThread key={comment.id} comment={comment} language={language} />
+                    {visibleComments.map((comment) => (
+                        <CommentThread key={comment.id} postId={postId} comment={comment} language={language} />
                     ))}
                 </div>
             )}

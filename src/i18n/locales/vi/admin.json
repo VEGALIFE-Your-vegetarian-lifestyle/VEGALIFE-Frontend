@@ -518,5 +518,63 @@
             "all": "Chưa có nguyên liệu nào.",
             "reload": "Tải lại"
         }
+    },
+    "comments": {
+        "title": "Quản lý bình luận",
+        "description": "Xem, tìm kiếm và kiểm duyệt bình luận của độc giả trên nền tảng.",
+        "deletedAuthor": "[đã xoá]",
+        "status": {
+            "active": "Đang hiện",
+            "removed": "Đã gỡ"
+        },
+        "sort": {
+            "newest": "Mới nhất",
+            "updated": "Cập nhật gần đây"
+        },
+        "badge": {
+            "reply": "Trả lời",
+            "reports": "{{count}} báo cáo"
+        },
+        "action": {
+            "moderate": "Gỡ bình luận",
+            "moderated": "Đã xử lý"
+        },
+        "list": {
+            "searchPlaceholder": "Tìm theo nội dung, tác giả hoặc ID",
+            "searchLabel": "Tìm bình luận",
+            "filterStatusLabel": "Lọc trạng thái",
+            "allStatuses": "Tất cả trạng thái",
+            "sortLabel": "Sắp xếp",
+            "column": {
+                "author": "Tác giả",
+                "content": "Nội dung bình luận",
+                "post": "Bài viết",
+                "status": "Trạng thái",
+                "createdAt": "Ngày gửi",
+                "actions": "Thao tác"
+            }
+        },
+        "empty": {
+            "title": "Không có bình luận nào",
+            "filtered": "Không có bình luận nào khớp với bộ lọc hiện tại.",
+            "all": "Chưa có bình luận nào trong hệ thống.",
+            "clearFilters": "Xoá bộ lọc"
+        },
+        "moderate": {
+            "title": "Kiểm duyệt / Gỡ bình luận",
+            "description": "Bình luận của {{author}}: \"{{snippet}}\" sẽ bị gỡ bỏ khỏi nền tảng.",
+            "reasonLabel": "Lý do gỡ bỏ",
+            "reasonPlaceholder": "Nhập lý do kiểm duyệt (spam, từ ngữ thô tục, vi phạm quy chuẩn...)",
+            "reasonHelper": "Lý do bắt buộc và sẽ được lưu vào nhật ký kiểm duyệt (tối đa 1000 ký tự).",
+            "reasonRequired": "Vui lòng nhập lý do kiểm duyệt",
+            "reasonMax": "Lý do tối đa 1000 ký tự",
+            "cancel": "Hủy",
+            "submit": "Xác nhận gỡ"
+        },
+        "toast": {
+            "moderatedSuccess": "Đã gỡ bình luận vi phạm",
+            "moderateFailed": "Kiểm duyệt bình luận thất bại. Vui lòng thử lại.",
+            "loadFailed": "Không thể tải danh sách bình luận."
+        }
     }
 }

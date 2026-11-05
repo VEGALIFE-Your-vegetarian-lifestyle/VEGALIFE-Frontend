@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+    acquirePlan,
     cancelSubscription,
-    checkPurchaseEligibility,
-    createCheckout,
     getPayment,
     getPayments,
     getPlans,
@@ -34,22 +33,29 @@ export function usePayment(paymentId: string) {
     });
 }
 
+/**
+ * V48: Nhận gói miễn phí hoặc tạo phiên thanh toán VNPay qua POST /api/subscriptions/acquire
+ */
+export function useAcquirePlan() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (planCode: string) => acquirePlan(planCode),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ["subscription"] });
+        },
+    });
+}
+
+/** Alias cho useAcquirePlan */
+export const useBuyPlan = useAcquirePlan;
+
+/** @deprecated V48 deleted on backend */
 export function useCancelSubscription() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: cancelSubscription,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["subscription"] });
-        },
-    });
-}
-
-/** Kiểm tra điều kiện rồi mới tạo phiên thanh toán; trả `paymentUrl` để chuyển hướng. */
-export function useBuyPlan() {
-    return useMutation({
-        mutationFn: async (planCode: string) => {
-            await checkPurchaseEligibility(planCode);
-            return createCheckout(planCode);
         },
     });
 }

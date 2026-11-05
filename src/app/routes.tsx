@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/app/guards/ProtectedRoute";
 import { PublicRoute } from "@/app/guards/PublicRoute";
 import CategoriesPage from "@/features/categories/CategoriesPage";
 import PostsPage from "@/features/admin/pages/PostsPage/PostsPage";
+import AdminCommentsPage from "@/features/admin/pages/AdminCommentsPage/AdminCommentsPage";
 import UsersPage from "@/features/admin/pages/UsersPage/UsersPage";
 import VideosPage from "@/features/videos/VideosPage";
 import AdminDashboardPage from "@/features/admin/pages/AdminDashboardPage/AdminDashboardPage";
@@ -140,6 +141,7 @@ export default function AppRoutes() {
                 <Route path="dashboard" element={<AdminDashboardPage />} />
                 <Route path="posts" element={<PostsPage />} />
                 <Route path="videos" element={<VideosPage />} />
+                <Route path="comments" element={<AdminCommentsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="recipes" element={<AdminRecipesPage />} />
                 <Route path="ingredients" element={<AdminIngredientsPage />} />
