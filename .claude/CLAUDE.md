@@ -13,7 +13,7 @@ React SPA cho nền tảng VEGALIFE (lối sống thực vật). File này là *
 - **i18n**: i18next + react-i18next — **14 namespace**: `common`, `auth`, `admin`, `validation`, `profile`, `home`, `explore`, `post`, `nearby`, `aiNutrition`, `location`, `subscription`, `recipe`, `menu`
 - **Editor**: TipTap 3 (`src/features/posts/components/editor/`)
 - **Map**: react-leaflet + leaflet (`src/features/locations/components/PlaceMap.tsx`)
-- **Toast**: sonner · **Icons**: lucide-react · **Port dev**: 5173
+- **Toast**: sonner · **Icons**: lucide-react · **Port dev**: 5174
 - **Proxy**: `/api` → `https://vegalife-backend.onrender.com`
 
 ## Tra cứu nhanh

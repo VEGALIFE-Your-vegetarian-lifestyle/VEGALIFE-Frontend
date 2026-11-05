@@ -26,7 +26,7 @@ const POSTS = { content: [], page: 0, size: 6, totalElements: 0, totalPages: 1 }
     route.fulfill({ status: 200, contentType: "application/json", body });
   });
 
-  await page.goto("http://localhost:5173/account", { waitUntil: "domcontentloaded" });
+  await page.goto("http://localhost:5174/account", { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(2500);
   console.log("URL", page.url());
   console.log("BODY LEN", (await page.evaluate(() => document.body.innerText)).length);

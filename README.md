@@ -10,7 +10,7 @@ React 19 · Vite 8 · TypeScript 6 · TailwindCSS v4 · react-router-dom v7 · Z
 
 ```bash
 npm install
-npm run dev     # http://localhost:5173
+npm run dev     # http://localhost:5174
 ```
 
 Dev server proxy `/api` → `https://vegalife-backend.onrender.com` (xem `vite.config.ts`).
@@ -19,7 +19,7 @@ Dev server proxy `/api` → `https://vegalife-backend.onrender.com` (xem `vite.c
 
 | Lệnh | Việc |
 |---|---|
-| `npm run dev` | Dev server, port 5173 |
+| `npm run dev` | Dev server, port 5174 |
 | `npm run build` | `tsc -b` + `vite build` |
 | `npm run typecheck` | Chỉ kiểm tra type (`tsc -b`) — dùng khi verify, nhanh hơn `build` |
 | `npm run lint` | ESLint |

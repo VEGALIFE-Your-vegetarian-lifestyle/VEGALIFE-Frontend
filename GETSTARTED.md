@@ -99,7 +99,7 @@ VITE_MAP_API_KEY=
 npm run dev
 ```
 
-Truy cập: http://localhost:5173
+Truy cập: http://localhost:5174
 
 ✅ Nếu thấy trang chủ VEGALIFE hiển thị → Setup thành công!
 
@@ -289,7 +289,7 @@ export function Card({ title, onClick }: Props) {
 
 | Command | Mô tả |
 |---------|-------|
-| `npm run dev` | Chạy dev server (http://localhost:5173) |
+| `npm run dev` | Chạy dev server (http://localhost:5174) |
 | `npm run build` | Build production version (`tsc -b && vite build`) |
 | `npm run typecheck` | Chỉ kiểm tra type — nhanh hơn `build` khi cần verify |
 | `npm run preview` | Preview build kết quả |
@@ -329,12 +329,12 @@ npm run build
 2. Reload TypeScript server: `Ctrl+Shift+P` → `TypeScript: Restart TS Server`
 3. Kiểm tra `tsconfig.app.json` có `paths` đúng chưa
 
-### ❌ Lỗi: `Port 5173 already in use`
+### ❌ Lỗi: `Port 5174 already in use`
 
 **Cách fix:**
 ```bash
 # Windows (PowerShell)
-netstat -ano | findstr :5173
+netstat -ano | findstr :5174
 taskkill /PID <PID> /F
 
 # Hoặc đổi port trong vite.config.ts
