@@ -365,7 +365,8 @@ Route `/admin/comments` đã hoàn thành và bật trên sidebar (`ready: true`
 | PUT /api/posts/{postId}/votes | ✅ | `setPostVote` — `{voteType: "UPVOTE"\|"DOWNVOTE"}`, **cần JWT**. Gửi lại cùng `voteType` để bỏ vote (BE toggle) |
 
 UI vote **chỉ có trên card Explore** (2026-11-02); Post Detail cố ý không có — mockup chốt
-không vẽ thanh vote ở trang chi tiết.
+không vẽ thanh vote ở trang chi tiết. Đã tích hợp **Optimistic Update** (cập nhật giao diện 0ms
+khi bấm vote/toggle và rollback tự động nếu lỗi mạng) cùng bộ unit test đầy đủ ở PostVoteButtons.test.tsx.
 
 ## 14. Home feeds — ✅ đủ
 
