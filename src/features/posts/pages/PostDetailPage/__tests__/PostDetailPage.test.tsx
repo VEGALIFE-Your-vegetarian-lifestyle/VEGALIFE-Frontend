@@ -54,7 +54,7 @@ describe("PostDetailPage", () => {
     );
 
     it(
-        "bài có thật thì render tiêu đề, breadcrumb và dải thông tin nhanh",
+        "bài có thật thì render tiêu đề, breadcrumb và hàng meta",
         async () => {
             const { getFeedPosts } = await import("../../../api");
             const feed = await getFeedPosts({ page: 0, size: 1 });
@@ -63,7 +63,8 @@ describe("PostDetailPage", () => {
             const post = feed.content[0];
             renderDetail(post.id);
 
-            // getPostDetail cần JWT; chưa đăng nhập có thể ra EmptyState — cả hai đều không sập.
+            // GET /api/posts/{id} là public (anon 200) — nhưng vẫn chấp nhận EmptyState
+            // phòng khi bài bị gỡ giữa chừng; cả hai nhánh đều không được sập.
             await waitFor(
                 () => {
                     const loaded =
@@ -80,6 +81,6 @@ describe("PostDetailPage", () => {
 
 describe("PostDetailPage — hành vi UI khi đã tải được bài", () => {
     it.todo("nút Share gọi clipboard và báo toast 'Link copied to clipboard'");
-    it.todo("nút Save Recipe báo 'Feature under development' (chưa có endpoint lưu bài)");
     it.todo("gửi bình luận khi chưa đăng nhập thì hiện 'Sign in to join the conversation'");
+    it.todo("cây bình luận render từ GET /api/posts/{id}/comments, comment xoá mềm hiện '[deleted]'");
 });

@@ -23,6 +23,8 @@ interface EditorToolbarProps {
     editor: Editor;
     onRequestImage?: () => void;
     disabled?: boolean;
+    /** Nội dung đẩy về cuối hàng (mockup: "~2 min read"). */
+    trailing?: ReactNode;
 }
 
 interface ToolButtonProps {
@@ -53,7 +55,7 @@ function ToolButton({ onClick, active, disabled, label, children }: ToolButtonPr
 }
 
 /** Thanh công cụ editor — mỗi nút chỉ gọi lệnh có sẵn của TipTap. */
-export function EditorToolbar({ editor, onRequestImage, disabled }: EditorToolbarProps) {
+export function EditorToolbar({ editor, onRequestImage, disabled, trailing }: EditorToolbarProps) {
     const { t } = useTranslation("common");
 
     const setLink = () => {
@@ -185,6 +187,8 @@ export function EditorToolbar({ editor, onRequestImage, disabled }: EditorToolba
             >
                 <Redo2 className="h-4 w-4" />
             </ToolButton>
+
+            {trailing}
         </div>
     );
 }

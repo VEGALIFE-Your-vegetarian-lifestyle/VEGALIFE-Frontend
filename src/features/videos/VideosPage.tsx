@@ -112,7 +112,7 @@ export default function VideosPage() {
                                                 <span className="font-medium">{video.title || t("videos.untitled")}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>@{video.uploader.username}</TableCell>
+                                        <TableCell>{video.uploader.displayName}</TableCell>
                                         <TableCell>
                                             <Badge variant={VIDEO_STATUS_VARIANT[video.status]}>{t(`common:videoStatus.${video.status}`)}</Badge>
                                         </TableCell>
@@ -151,7 +151,7 @@ export default function VideosPage() {
                 </>
             )}
 
-            <Dialog open={preview !== null} onClose={() => setPreview(null)} title={preview?.title || t("videos.untitled")} description={preview ? t("videos.preview.uploadedBy", { username: preview.uploader.username }) : undefined} className="max-w-2xl">
+            <Dialog open={preview !== null} onClose={() => setPreview(null)} title={preview?.title || t("videos.untitled")} description={preview ? t("videos.preview.uploadedBy", { name: preview.uploader.displayName }) : undefined} className="max-w-2xl">
                 {preview && (
                     <div className="space-y-4">
                         {preview.mediaUrl ? (

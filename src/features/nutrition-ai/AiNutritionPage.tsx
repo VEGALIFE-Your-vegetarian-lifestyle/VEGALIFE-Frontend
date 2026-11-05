@@ -1,16 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import {
-    Activity,
-    ArrowRight,
-    Calculator,
-    Info,
-    Leaf,
-    MessageSquare,
-    Plus,
-    ShieldCheck,
-} from "lucide-react";
+import { Activity, Calculator, MessageSquare, Plus, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,18 +9,10 @@ import { Select } from "@/components/ui/select";
 import { useAuth } from "@/features/auth/useAuth";
 import { useAiChat } from "./useAiChat";
 import { useSubscription } from "./useSubscription";
-import { cn } from "@/shared/utils/cn";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { ChatPanel } from "./ChatPanel";
 import { DishPicker } from "./DishPicker";
 import type { Dish } from "@/features/recipes/types";
-
-const SWAPS = [
-    { from: "1 Whole Egg (Baking)", to: "Flaxseed / Chia Gel", detail: "Mix 1 tbsp ground flax with 2.5 tbsp warm water. Rest 5 mins until viscous." },
-    { from: "Heavy Dairy Cream", to: "Raw Cashew Cream", detail: "Blend 1 cup soaked raw cashews with 3/4 cup water until velvety." },
-    { from: "Parmesan Cheese", to: "Nutri-Yeast & Walnuts", detail: "Pulse nutritional yeast, raw walnuts, garlic powder & sea salt." },
-    { from: "Dairy Buttermilk", to: "Curdled Soy Milk", detail: "1 cup unsweetened soy milk + 1 tbsp apple cider vinegar. Wait 10 mins." },
-];
 
 const ACTIVITY_FACTORS: Record<string, number> = {
     sedentary: 0.8,
@@ -88,42 +71,35 @@ export default function AiNutritionPage() {
     }, [weight, activity]);
 
     return (
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <header className="rounded-2xl border border-border bg-card p-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Badge variant="lightgreen">
-                                <Leaf className="h-3 w-3" aria-hidden="true" />
-                                {t("badgeIntelligence")}
-                            </Badge>
-                            <Badge variant="outline">{t("badgeScope")}</Badge>
-                            <Badge variant="destructive">{t("badgeDisclaimer")}</Badge>
-                        </div>
-                        <h1 className="mt-3 text-3xl font-extrabold text-dark">{t("title")}</h1>
-                        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("subtitle")}</p>
-                    </div>
-                    {isAuthenticated && subscription.data && (
-                        <div className="rounded-xl bg-vegan-green-light px-4 py-3">
-                            <p className="flex items-center gap-2 text-sm font-bold text-vegan-green">
-                                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                                {subscription.data.currentPlan.name}
-                            </p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                                {t("chat.quotaLeft", {
-                                    used: quota?.used ?? 0,
-                                    limit: quota?.limit ?? subscription.data.currentPlan.monthlyRequestLimit,
-                                })}
-                            </p>
-                        </div>
-                    )}
+        <div className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
+            <header className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0">
+                    <h1 className="text-3xl font-semibold text-dark">{t("title")}</h1>
+                    <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("subtitle")}</p>
+                    <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{t("scopeNote")}</p>
                 </div>
+                {isAuthenticated && subscription.data ? (
+                    <span className="flex items-center gap-2 rounded-full bg-vegan-green-light px-3.5 py-1.5 text-xs font-semibold text-vegan-green">
+                        <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                        {subscription.data.currentPlan.name} ·{" "}
+                        {t("chat.quotaLeft", {
+                            used: quota?.used ?? 0,
+                            limit: quota?.limit ?? subscription.data.currentPlan.monthlyRequestLimit,
+                        })}
+                    </span>
+                ) : (
+                    !isAuthenticated && (
+                        <span className="rounded-full bg-amber-soft px-3.5 py-1.5 text-xs font-semibold text-amber-strong">
+                            {t("chat.signInQuota")}
+                        </span>
+                    )
+                )}
             </header>
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
+            <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
                 <ChatPanel chat={chat} onRequireLogin={requireLogin} />
 
-                <aside className="space-y-5">
+                <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
                     {/* GET /api/dishes cần JWT — chỉ hiện khi đã đăng nhập. */}
                     {isAuthenticated && <DishPicker onAsk={askWithDishes} disabled={chat.isSending} />}
 
@@ -225,65 +201,6 @@ export default function AiNutritionPage() {
                                 </Button>
                             </div>
                         </div>
-                    </section>
-
-                    <section className="rounded-2xl border border-border bg-card p-5">
-                        <div className="flex items-center justify-between">
-                            <h2 className="flex items-center gap-2 font-bold text-dark">
-                                <Leaf className="h-4 w-4 text-vegan-green" aria-hidden="true" />
-                                {t("swaps.title")}
-                            </h2>
-                            <Badge variant="lightgreen" size="sm">
-                                {t("swaps.verified")}
-                            </Badge>
-                        </div>
-                        <ul className="mt-4 space-y-3">
-                            {SWAPS.map((swap) => (
-                                <li key={swap.from} className="rounded-xl border border-border p-3">
-                                    <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
-                                        <span className="rounded-full bg-muted-bg px-2 py-0.5 text-dark">{swap.from}</span>
-                                        <ArrowRight className="h-3.5 w-3.5 text-vegan-green" aria-hidden="true" />
-                                        <span className="rounded-full bg-vegan-green-light px-2 py-0.5 text-vegan-green">
-                                            {swap.to}
-                                        </span>
-                                    </div>
-                                    <p className="mt-2 text-[11px] text-muted-foreground">{swap.detail}</p>
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
-
-                    <section className="rounded-2xl border border-border bg-card p-5">
-                        <h2 className="flex items-center gap-2 font-bold text-dark">
-                            <ShieldCheck className="h-4 w-4 text-vegan-green" aria-hidden="true" />
-                            {t("access.title")}
-                        </h2>
-                        <dl className="mt-3 space-y-2 text-sm">
-                            <div className="flex items-center justify-between gap-3">
-                                <dt className="text-muted-foreground">{t("access.guestInquiries")}</dt>
-                                <dd className="font-semibold text-dark">
-                                    {quota ? t("chat.quotaLeft", { used: quota.used, limit: quota.limit }) : t("access.guestLimit")}
-                                </dd>
-                            </div>
-                            <div className="flex items-center justify-between gap-3">
-                                <dt className="text-muted-foreground">{t("access.currentStatus")}</dt>
-                                <dd className="font-semibold text-vegan-green">
-                                    {isAuthenticated ? t("access.activeMember") : t("access.guestLimit")}
-                                </dd>
-                            </div>
-                            <div className="flex items-center justify-between gap-3">
-                                <dt className="text-muted-foreground">{t("access.sessionModel")}</dt>
-                                <dd className="font-semibold text-dark">{t("access.guardrail")}</dd>
-                            </div>
-                        </dl>
-                        <p
-                            className={cn(
-                                "mt-4 flex gap-2 rounded-xl bg-cream p-3 text-[11px] leading-relaxed text-dark",
-                            )}
-                        >
-                            <Info className="h-4 w-4 flex-shrink-0 text-danger" aria-hidden="true" />
-                            {t("access.notice")}
-                        </p>
                     </section>
                 </aside>
             </div>

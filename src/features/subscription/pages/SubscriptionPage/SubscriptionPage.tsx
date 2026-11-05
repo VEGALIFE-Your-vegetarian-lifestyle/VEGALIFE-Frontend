@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Check, Receipt, ShieldCheck, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,7 @@ import { cn } from "@/shared/utils/cn";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { useBuyPlan, useCancelSubscription, usePayments, usePlans, useSubscriptionHistory } from "../../useBilling";
 
-export default function SubscriptionPage() {
+export default function SubscriptionPage({ embedded = false }: { embedded?: boolean }) {
     const { t, i18n } = useTranslation("subscription");
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
@@ -68,8 +68,11 @@ export default function SubscriptionPage() {
         });
     };
 
+    // Đã đăng nhập mà vào `/subscription` (bản ngoài shell) → đưa vào rail tài khoản, khỏi mất đường về.
+    if (!embedded && isAuthenticated) return <Navigate to="/account/subscription" replace />;
+
     return (
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className={embedded ? undefined : "mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8"}>
             <header className="rounded-2xl border border-border bg-card p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
@@ -81,7 +84,7 @@ export default function SubscriptionPage() {
                                 {t("pill")}
                             </Badge>
                         </div>
-                        <h1 className="text-3xl font-bold tracking-tight text-dark">{t("title")}</h1>
+                        <h1 className="text-3xl font-semibold tracking-tight text-dark">{t("title")}</h1>
                         <p className="mt-2 max-w-2xl text-muted-foreground">{t("subtitle")}</p>
                     </div>
                     {isAuthenticated && subscription.data && (

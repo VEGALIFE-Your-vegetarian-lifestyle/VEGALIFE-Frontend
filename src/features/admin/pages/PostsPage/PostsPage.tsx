@@ -11,15 +11,15 @@ import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useListParams } from "@/shared/hooks/useListParams";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
-import { deletePost, getPosts, moderatePost } from "@/features/posts/api";
+import { approvePost, deletePost, getPosts, rejectPost } from "@/features/posts/api";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Pagination } from "@/components/common/Pagination";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
-import { canPublish, canUnpublish, POST_FLAG_VARIANT } from "@/features/posts/constants";
-import type { AdminPost, ModerationAction, PostStatus } from "@/features/posts/types";
+import { canPublish, canReject, POST_FLAG_VARIANT } from "@/features/posts/constants";
+import type { AdminPost, PostStatus } from "@/features/posts/types";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { PostPreviewDialog } from "./PostPreviewDialog";
@@ -32,10 +32,10 @@ const POST_STATUSES: PostStatus[] = ["created", "processed", "published", "unpub
 
 interface ModerateVars {
     id: string;
-    action: ModerationAction;
+    action: "approve" | "reject";
     reason?: string;
-    /** Chọn câu toast vì UNPUBLISH mang hai nghĩa: từ chối (có reason) và ngừng đăng. */
-    toastKey: "approved" | "rejected" | "unpublished";
+    /** Chọn câu toast — mỗi action một câu, không suy từ `action` để chỗ gọi tự khai báo. */
+    toastKey: "approved" | "rejected";
 }
 
 export default function PostsPage() {
@@ -65,11 +65,13 @@ export default function PostsPage() {
     };
 
     /**
-     * POST /api/admin/posts/{id}/moderate — PUBLISH = duyệt, UNPUBLISH = ngừng đăng / từ chối.
-     * `toastKey` tách "từ chối" (kèm reason) khỏi "ngừng đăng" vì cùng action UNPUBLISH.
+     * `POST /api/admin/posts/{id}/approve` hoặc `/reject` (ADR-016 xoá `/moderate`).
+     * Approve publish bài + duyệt component PENDING; reject unpublish + từ chối component PENDING.
+     * `reason` optional — chỉ hộp thoại từ chối mới có.
      */
     const moderateMutation = useMutation({
-        mutationFn: ({ id, action, reason }: ModerateVars) => moderatePost(id, reason ? { action, reason } : { action }),
+        mutationFn: ({ id, action, reason }: ModerateVars) =>
+            action === "approve" ? approvePost(id, reason) : rejectPost(id, reason),
         onSuccess: (_result, variables) => {
             toast.success(t(`posts.toast.${variables.toastKey}`));
             setPreview(null);
@@ -167,7 +169,7 @@ export default function PostsPage() {
                                                 ))}
                                             </div>
                                         </TableCell>
-                                        <TableCell>@{post.username}</TableCell>
+                                        <TableCell>{post.displayName}</TableCell>
                                         <TableCell>
                                             <PostStatusBadge status={post.status} />
                                         </TableCell>
@@ -191,7 +193,7 @@ export default function PostsPage() {
                                                         onClick={() =>
                                                             moderateMutation.mutate({
                                                                 id: post.id,
-                                                                action: "PUBLISH",
+                                                                action: "approve",
                                                                 toastKey: "approved",
                                                             })
                                                         }
@@ -200,27 +202,15 @@ export default function PostsPage() {
                                                         {t("posts.list.action.approve")}
                                                     </Button>
                                                 )}
-                                                {canUnpublish(post.status) && (
+                                                {canReject(post.status) && (
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
                                                         disabled={moderateMutation.isPending}
-                                                        onClick={() =>
-                                                            post.status === "processed"
-                                                                ? setReject(post)
-                                                                : moderateMutation.mutate({
-                                                                      id: post.id,
-                                                                      action: "UNPUBLISH",
-                                                                      toastKey: "unpublished",
-                                                                  })
-                                                        }
+                                                        onClick={() => setReject(post)}
                                                     >
                                                         <XCircle className="h-4 w-4" />
-                                                        {t(
-                                                            post.status === "processed"
-                                                                ? "posts.list.action.reject"
-                                                                : "posts.list.action.unpublish",
-                                                        )}
+                                                        {t("posts.list.action.reject")}
                                                     </Button>
                                                 )}
                                                 <Button size="sm" variant="destructive" className="ml-2" onClick={() => setConfirm(post)}>
@@ -256,9 +246,8 @@ export default function PostsPage() {
                 post={preview}
                 categoryNames={categoryNames}
                 loading={moderateMutation.isPending}
-                onApprove={() => preview && moderateMutation.mutate({ id: preview.id, action: "PUBLISH", toastKey: "approved" })}
-                onUnpublish={() =>
-                    preview && moderateMutation.mutate({ id: preview.id, action: "UNPUBLISH", toastKey: "unpublished" })
+                onApprove={() =>
+                    preview && moderateMutation.mutate({ id: preview.id, action: "approve", toastKey: "approved" })
                 }
                 onReject={() => setReject(preview)}
                 onClose={() => setPreview(null)}
@@ -269,7 +258,7 @@ export default function PostsPage() {
                 post={reject}
                 loading={moderateMutation.isPending}
                 onSubmit={(reason) =>
-                    reject && moderateMutation.mutate({ id: reject.id, action: "UNPUBLISH", reason, toastKey: "rejected" })
+                    reject && moderateMutation.mutate({ id: reject.id, action: "reject", reason, toastKey: "rejected" })
                 }
                 onClose={() => setReject(null)}
             />

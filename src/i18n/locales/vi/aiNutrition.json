@@ -1,9 +1,7 @@
 {
-    "badgeIntelligence": "Trí tuệ dinh dưỡng thực vật",
-    "badgeScope": "Giới hạn phạm vi dinh dưỡng",
-    "badgeDisclaimer": "Không phải lời khuyên y khoa",
     "title": "Trợ lý AI Dinh dưỡng",
     "subtitle": "Tham khảo trợ lý dinh dưỡng thực vật đã xác minh về macro chay, thay thế nguyên liệu, calo thực vật và công thức lành mạnh.",
+    "scopeNote": "Giới hạn phạm vi dinh dưỡng · Chỉ mang tính tham khảo, không phải lời khuyên y khoa.",
     "chat": {
         "modelName": "VEGALIFE Core Botanical AI",
         "modelDetail": "Model: GreenHealth 4.2 · Chuyên sâu 4 lĩnh vực thực vật",
@@ -39,7 +37,10 @@
         "charCount": "{{used}}/{{max}}",
         "quotaExhausted": "Bạn đã dùng hết hạn mức AI tháng này. Hạn mức làm mới vào {{date}}.",
         "quotaLeft": "Đã dùng {{used}}/{{limit}} câu hỏi",
-        "loginRequired": "Đăng nhập để hỏi trợ lý dinh dưỡng."
+        "signInQuota": "Đăng nhập để xem hạn mức",
+        "lockedTitle": "Đăng nhập để hỏi trợ lý",
+        "lockedBody": "Mỗi câu hỏi gắn với hạn mức tháng của bạn. Đăng nhập để giữ lịch sử hội thoại và thực đơn đã lưu chung một chỗ.",
+        "lockedAction": "Đăng nhập để tiếp tục"
     },
     "quickPrompts": [
         "Làm sao tối ưu hấp thu sắt non-heme trong bát đậu lăng?",
@@ -67,15 +68,10 @@
         "chatPlanPrompt": "Lập cho tôi kế hoạch protein thực vật hằng ngày theo BMI và mức vận động.",
         "empty": "—"
     },
-    "swaps": {
-        "title": "Bảng thay thế nhanh",
-        "verified": "Đã xác minh 1:1",
-        "from": "Thay cho",
-        "to": "Bằng"
-    },
     "dishPicker": {
         "title": "Chọn món",
         "subtitle": "Chọn những món bạn muốn đưa vào thực đơn — trợ lý nhận tên món kèm dish id của từng món.",
+        "open": "Chọn món",
         "placeholder": "Tìm món theo tên",
         "selected": "Đã chọn {{n}}",
         "loading": "Đang tải danh sách món…",
@@ -85,15 +81,5 @@
         "remove": "Bỏ chọn {{name}}",
         "action": "Lập thực đơn với các món này",
         "prompt": "Lập thực đơn tuần với các món sau:\n{{dishes}}"
-    },
-    "access": {
-        "title": "Chính sách truy cập & Hạn mức",
-        "guestInquiries": "Hạn mức tháng:",
-        "guestLimit": "Cần đăng nhập",
-        "currentStatus": "Trạng thái hiện tại:",
-        "activeMember": "Thành viên đã đăng nhập (Hoạt động)",
-        "sessionModel": "Mô hình phiên:",
-        "guardrail": "Bật giới hạn nghiêm ngặt",
-        "notice": "Lưu ý y khoa bắt buộc: VEGALIFE AI cung cấp hướng dẫn ẩm thực mang tính tham khảo và số liệu macro. Đây không phải phương án thay thế cho chăm sóc y tế hoặc trị liệu có giấy phép."
     }
 }

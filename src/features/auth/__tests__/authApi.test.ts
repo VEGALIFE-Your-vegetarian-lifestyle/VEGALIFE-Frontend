@@ -18,6 +18,7 @@ import {
     verifyPasswordReset,
 } from "../api";
 import { E2E_USER, HAS_USER, REMOTE_TIMEOUT_MS, httpStatus } from "@/test/e2eEnv";
+import { decodeJwt } from "@/shared/utils/jwt";
 
 const FAKE_UUID_EMAIL = "vitest-no-such-account@example.invalid";
 
@@ -154,7 +155,7 @@ describe.skipIf(!HAS_USER)("authService — cần tài khoản thật (E2E_USER_
             expect(data.accessToken).toBeTruthy();
             expect(data.refreshToken).toBeTruthy();
             expect(data.userId).toBeTruthy();
-            expect(["ADMIN", "USER"]).toContain(data.role);
+            expect(["ADMIN", "USER"]).toContain(decodeJwt(data.accessToken)?.role);
         },
         REMOTE_TIMEOUT_MS,
     );

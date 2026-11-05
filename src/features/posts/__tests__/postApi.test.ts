@@ -5,7 +5,7 @@
  * khi thiếu `E2E_USER_*` / `E2E_ADMIN_*`.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { getFeedPosts, getPostDetail, getPosts, getMyPosts, moderatePost } from "../api";
+import { getFeedPosts, getPostDetail, getPosts, getMyPosts, approvePost, rejectPost } from "../api";
 import {
     E2E_ADMIN,
     E2E_USER,
@@ -117,6 +117,19 @@ describe.skipIf(!HAS_USER)("postService — cần JWT user (E2E_USER_*)", () => 
     );
 
     it(
+        "counts đếm toàn tài khoản — không đổi khi lọc hoặc đổi trang",
+        async () => {
+            const plain = await getMyPosts({ page: 1, size: 5 });
+            const filtered = await getMyPosts({ page: 1, size: 5, status: "published", q: "zzz-khong-khop-zzz" });
+
+            expect(filtered.data).toHaveLength(0);
+            expect(filtered.counts).toEqual(plain.counts);
+            expect(plain.counts.all).toBeGreaterThanOrEqual(plain.counts.published);
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
+    it(
         "getPostDetail trên bài của chính mình trả về object có id khớp",
         async () => {
             const mine = await getMyPosts({ page: 1, size: 1 });
@@ -183,9 +196,20 @@ describe.skipIf(!HAS_ADMIN)("postService — cần JWT admin (E2E_ADMIN_*)", () 
     );
 
     it(
-        "moderatePost trên UUID không tồn tại trả 4xx chứ không 5xx",
+        "approvePost trên UUID không tồn tại trả 4xx chứ không 5xx",
         async () => {
-            const error = await moderatePost(MISSING_UUID, { action: "PUBLISH" }).catch((e) => e);
+            const error = await approvePost(MISSING_UUID).catch((e) => e);
+
+            expect(httpStatus(error)).toBeGreaterThanOrEqual(400);
+            expect(httpStatus(error)).toBeLessThan(500);
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
+    it(
+        "rejectPost trên UUID không tồn tại trả 4xx chứ không 5xx",
+        async () => {
+            const error = await rejectPost(MISSING_UUID, "e2e probe").catch((e) => e);
 
             expect(httpStatus(error)).toBeGreaterThanOrEqual(400);
             expect(httpStatus(error)).toBeLessThan(500);
@@ -196,5 +220,5 @@ describe.skipIf(!HAS_ADMIN)("postService — cần JWT admin (E2E_ADMIN_*)", () 
 
 // Ghi dữ liệu lên backend thật — chỉ chạy khi bật E2E_ALLOW_WRITES=1.
 describe.skipIf(!HAS_ADMIN || !E2E_ALLOW_WRITES)("postService — ghi dữ liệu thật (E2E_ALLOW_WRITES=1)", () => {
-    it.todo("createPost → moderate PUBLISH → deletePost rồi kiểm tra đã biến mất khỏi danh sách");
+    it.todo("createPost → approvePost → deletePost rồi kiểm tra đã biến mất khỏi danh sách");
 });

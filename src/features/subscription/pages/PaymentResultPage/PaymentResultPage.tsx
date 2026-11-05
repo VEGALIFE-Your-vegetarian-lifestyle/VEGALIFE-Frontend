@@ -35,7 +35,7 @@ export default function PaymentResultPage() {
     return (
         <div className="mx-auto flex max-w-md flex-col items-center px-4 py-16 text-center">
             <Icon className={`mb-4 h-16 w-16 ${color} ${status === "pending" ? "animate-spin" : ""}`} aria-hidden="true" />
-            <h1 className="text-2xl font-bold text-dark">{t(`result.${status}.title`)}</h1>
+            <h1 className="text-2xl font-semibold text-dark">{t(`result.${status}.title`)}</h1>
             <p className="mt-2 text-muted-foreground">{t(`result.${status}.description`)}</p>
 
             <dl className="mt-6 w-full space-y-2 rounded-2xl border border-border bg-card p-5 text-left text-sm">
@@ -58,7 +58,7 @@ export default function PaymentResultPage() {
             </dl>
 
             <div className="mt-6 flex gap-2">
-                <Link to="/subscription">
+                <Link to="/account/subscription">
                     <Button variant="outline">{t("result.backToPlans")}</Button>
                 </Link>
                 <Link to="/ai-nutrition">

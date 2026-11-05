@@ -8,14 +8,18 @@ export const POST_STATUS_VARIANT: Record<PostStatus, "secondary" | "cream" | "li
     unpublished: "destructive",
 };
 
-/** `PUBLISH` đưa bài lên công khai; bài đang published thì không cần gọi lại. */
+/** `approvePost` đưa bài lên công khai; bài đang published thì không cần gọi lại. */
 export function canPublish(status: PostStatus): boolean {
     return status !== "published";
 }
 
-/** `UNPUBLISH` ẩn bài khỏi công khai — từ chối bài chờ duyệt hoặc ngừng đăng bài đã đăng. */
-export function canUnpublish(status: PostStatus): boolean {
-    return status === "published" || status === "processed";
+/**
+ * `rejectPost` chỉ nhận bài đang chờ duyệt (`processed`).
+ * Bài đã `published` không có endpoint admin để bỏ xuống nữa — ADR-016 xoá `/moderate`,
+ * và `PATCH /api/posts/{id}/visibility` (ẩn hẳn) là việc khác, chủ bài mới đăng lại được.
+ */
+export function canReject(status: PostStatus): boolean {
+    return status === "processed";
 }
 
 /**

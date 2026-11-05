@@ -9,6 +9,7 @@ import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { cn } from "@/shared/utils/cn";
+import { estimateReadMinutes } from "@/shared/utils/formatDate";
 import { EditorToolbar } from "./EditorToolbar";
 import { EMPTY_DOC, editorJsonToText } from "./editorContent";
 
@@ -23,6 +24,11 @@ interface RichTextEditorProps {
     disabled?: boolean;
     error?: boolean;
     className?: string;
+    /**
+     * Giãn kín chiều cao khung cha và tự cuộn bên trong — dùng cho composer dạng
+     * dialog, nơi chỉ vùng nội dung được cuộn chứ cả trang thì không.
+     */
+    fill?: boolean;
 }
 
 /**
@@ -41,6 +47,7 @@ export function RichTextEditor({
     disabled,
     error,
     className,
+    fill,
 }: RichTextEditorProps) {
     const { t } = useTranslation("common");
 
@@ -68,7 +75,7 @@ export function RichTextEditor({
         content: value ?? EMPTY_DOC,
         editorProps: {
             attributes: {
-                class: "vega-prose min-h-[320px] px-4 py-3 focus:outline-none",
+                class: cn("vega-prose px-4 py-3 focus:outline-none", fill ? "min-h-full" : "min-h-[320px]"),
             },
         },
         onUpdate: ({ editor: instance }) => {
@@ -94,23 +101,41 @@ export function RichTextEditor({
     }, [editor, onReady]);
 
     if (!editor) {
-        return <div className={cn("h-[380px] rounded-xl border border-border bg-surface", className)} />;
+        return (
+            <div
+                className={cn(
+                    "rounded-xl border border-border bg-surface",
+                    fill ? "h-full" : "h-[380px]",
+                    className,
+                )}
+            />
+        );
     }
 
     return (
         <div
             className={cn(
                 "overflow-hidden rounded-xl border bg-surface shadow-sm focus-within:ring-2 focus-within:ring-vegan-green",
+                fill && "flex min-h-0 flex-1 flex-col",
                 error ? "border-danger" : "border-border",
                 disabled && "opacity-60",
                 className,
             )}
         >
-            <EditorToolbar editor={editor} onRequestImage={onRequestImage} disabled={disabled} />
-            <EditorContent editor={editor} />
-            <p className="border-t border-border px-4 py-2 text-right text-xs text-muted-foreground">
-                {t("editor.wordCount", { count: editorJsonToText(editor.getJSON()).split(/\s+/).filter(Boolean).length })}
-            </p>
+            <EditorToolbar
+                editor={editor}
+                onRequestImage={onRequestImage}
+                disabled={disabled}
+                /* Mockup screen05 đặt "~2 min read" cuối hàng toolbar, đếm từ ở header khối. */
+                trailing={
+                    <span className="ml-auto text-xs text-muted-foreground">
+                        {t("editor.minRead", { count: estimateReadMinutes(editorJsonToText(editor.getJSON())) })}
+                    </span>
+                }
+            />
+            <div className={cn(fill && "min-h-0 flex-1 overflow-y-auto")}>
+                <EditorContent editor={editor} />
+            </div>
         </div>
     );
 }

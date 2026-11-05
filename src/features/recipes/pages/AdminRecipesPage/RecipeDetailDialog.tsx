@@ -60,7 +60,7 @@ export function RecipeDetailDialog({
             open={recipe !== null}
             onClose={onClose}
             title={recipe?.name ?? ""}
-            description={recipe ? t("recipes.detail.by", { username: recipe.username }) : undefined}
+            description={recipe ? t("recipes.detail.by", { name: recipe.displayName }) : undefined}
             className="max-w-3xl"
         >
             {recipe && (
@@ -110,7 +110,7 @@ export function RecipeDetailDialog({
                         />
                         <Meta label={t("recipes.column.createdAt")} value={formatDateLocale(recipe.createdAt)} />
                         <Meta label={t("recipes.detail.updatedAt")} value={formatDateLocale(recipe.updatedAt)} />
-                        <Meta label={t("recipes.column.creator")} value={`@${recipe.username}`} />
+                        <Meta label={t("recipes.column.creator")} value={recipe.displayName} />
                         <Meta label={t("recipes.detail.email")} value={recipe.email} />
                     </dl>
 

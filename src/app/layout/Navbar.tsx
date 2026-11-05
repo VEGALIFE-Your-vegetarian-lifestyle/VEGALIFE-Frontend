@@ -5,6 +5,8 @@ import { ChevronDown, Leaf, LogOut, Menu, Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { useAuth, useLogout } from "@/features/auth/useAuth";
+import { useProfile } from "@/features/profile/useProfile";
+import { useUiStore } from "@/shared/ui/uiStore";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const navLinks = [
@@ -12,13 +14,16 @@ const navLinks = [
     { labelKey: "explore", href: "/explore" },
     { labelKey: "nearby", href: "/nearby" },
     { labelKey: "aiNutrition", href: "/ai-nutrition" },
-    { labelKey: "subscription", href: "/subscription" },
+    { labelKey: "mealPlan", href: "/meal-plan" },
 ];
 
 export function Navbar() {
     const { t } = useTranslation("common");
-    const { isAuthenticated, isAdmin, user, profile } = useAuth();
+    const { isAuthenticated, isAdmin, user } = useAuth();
+    // `useAuth().profile` luôn null — đọc từ query (cache dùng chung với trang Hồ sơ).
+    const { data: profile } = useProfile(isAuthenticated);
     const doLogout = useLogout();
+    const openComposer = useUiStore((state) => state.openComposer);
     const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -41,7 +46,8 @@ export function Navbar() {
     };
 
     const handleCreatePost = () => {
-        navigate(isAuthenticated ? "/posts/create" : "/login");
+        if (isAuthenticated) openComposer();
+        else navigate("/login");
     };
 
     const handleSearch = (event: FormEvent) => {
@@ -52,7 +58,7 @@ export function Navbar() {
 
     return (
         <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
-            <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto flex h-16 max-w-app items-center gap-4 px-4 sm:px-6 lg:px-8">
                 <Link to="/" className="flex flex-shrink-0 items-center gap-2 text-dark transition-colors hover:text-vegan-green">
                     <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-vegan-green-light">
                         <Leaf className="h-5 w-5 text-vegan-green" />
@@ -124,36 +130,12 @@ export function Navbar() {
                                         <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
                                     </div>
                                     <Link
-                                        to="/my-posts"
+                                        to="/account"
                                         role="menuitem"
                                         onClick={() => setMenuOpen(false)}
                                         className="block px-4 py-2 text-sm text-dark hover:bg-accent"
                                     >
-                                        {t("myPosts")}
-                                    </Link>
-                                    <Link
-                                        to="/meal-plan"
-                                        role="menuitem"
-                                        onClick={() => setMenuOpen(false)}
-                                        className="block px-4 py-2 text-sm text-dark hover:bg-accent"
-                                    >
-                                        {t("mealPlan")}
-                                    </Link>
-                                    <Link
-                                        to="/recipes/create"
-                                        role="menuitem"
-                                        onClick={() => setMenuOpen(false)}
-                                        className="block px-4 py-2 text-sm text-dark hover:bg-accent"
-                                    >
-                                        {t("newRecipe")}
-                                    </Link>
-                                    <Link
-                                        to="/profile"
-                                        role="menuitem"
-                                        onClick={() => setMenuOpen(false)}
-                                        className="block px-4 py-2 text-sm text-dark hover:bg-accent"
-                                    >
-                                        {t("profile")}
+                                        {t("myAccount")}
                                     </Link>
                                     {isAdmin && (
                                         <Link
@@ -246,17 +228,8 @@ export function Navbar() {
                         </div>
                         {isAuthenticated ? (
                             <>
-                                <Link to="/my-posts" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
-                                    {t("myPosts")}
-                                </Link>
-                                <Link to="/profile" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
-                                    {t("profile")}
-                                </Link>
-                                <Link to="/meal-plan" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
-                                    {t("mealPlan")}
-                                </Link>
-                                <Link to="/recipes/create" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
-                                    {t("newRecipe")}
+                                <Link to="/account" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
+                                    {t("myAccount")}
                                 </Link>
                                 <button onClick={handleLogout} className="text-left text-sm font-semibold text-danger">
                                     {t("logout")}

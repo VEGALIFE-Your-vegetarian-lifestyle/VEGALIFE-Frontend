@@ -153,7 +153,7 @@ describe.skipIf(!HAS_ADMIN)("videoService — cần JWT admin (E2E_ADMIN_*)", ()
                 expect(video.id).toBeTruthy();
                 expect(typeof video.title).toBe("string");
                 expect(video.uploader).toBeDefined();
-                expect(typeof video.uploader.username).toBe("string");
+                expect(typeof video.uploader.displayName).toBe("string");
             }
         },
         REMOTE_TIMEOUT_MS,

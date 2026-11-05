@@ -79,7 +79,7 @@ export default function RegisterPage() {
                 {
                     user: {
                         id: data.userId,
-                        username: data.username,
+                        username: data.displayName,
                         email: data.email,
                         role,
                         status: "activated",

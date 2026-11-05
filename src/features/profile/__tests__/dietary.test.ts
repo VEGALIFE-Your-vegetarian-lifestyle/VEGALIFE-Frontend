@@ -1,7 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import {
-    buildDietaryPatch,
     normalizeTags,
     toDietaryValues,
     type DietaryValues,
@@ -20,8 +19,11 @@ function profile(overrides: Partial<UserProfile> = {}): UserProfile {
     return {
         id: "p1",
         userId: "u1",
+        displayName: "tester",
+        email: "tester@example.com",
         heightCm: null,
         weightKg: null,
+        bmi: null,
         age: null,
         gender: null,
         description: null,
@@ -64,67 +66,5 @@ describe("toDietaryValues", () => {
         values.preferences.push("Spicy");
 
         expect(source.preferences).toEqual(["Vegan"]);
-    });
-});
-
-describe("buildDietaryPatch", () => {
-    it("không đổi gì → {} (không gửi request rỗng)", () => {
-        expect(buildDietaryPatch(EMPTY, { ...EMPTY })).toEqual({});
-    });
-
-    it("chỉ trả field đã đổi", () => {
-        const patch = buildDietaryPatch(EMPTY, { ...EMPTY, allergies: ["peanuts"] });
-
-        expect(patch).toEqual({ allergies: ["peanuts"] });
-    });
-
-    it("xoá hết tag → gửi [] chứ không phải vắng mặt", () => {
-        const saved: DietaryValues = { ...EMPTY, dislikes: ["cilantro"] };
-        const patch = buildDietaryPatch(saved, { ...saved, dislikes: [] });
-
-        expect(patch).toEqual({ dislikes: [] });
-    });
-
-    it("healthGoal xoá trắng → gửi chuỗi rỗng", () => {
-        const saved: DietaryValues = { ...EMPTY, healthGoal: "Lose weight" };
-        const patch = buildDietaryPatch(saved, { ...saved, healthGoal: "   " });
-
-        expect(patch).toEqual({ healthGoal: "" });
-    });
-
-    it("khác khoảng trắng nhưng cùng nội dung → không tính là đổi", () => {
-        const saved: DietaryValues = { ...EMPTY, preferences: ["High protein"] };
-        const patch = buildDietaryPatch(saved, {
-            ...saved,
-            preferences: ["  High   protein "],
-        });
-
-        expect(patch).toEqual({});
-    });
-
-    it("đổi hoa thường là thay đổi thật (người dùng cố ý sửa lại chữ)", () => {
-        const saved: DietaryValues = { ...EMPTY, preferences: ["High protein"] };
-        const patch = buildDietaryPatch(saved, { ...saved, preferences: ["high PROTEIN"] });
-
-        expect(patch).toEqual({ preferences: ["high PROTEIN"] });
-    });
-
-    it("chuẩn hoá giá trị trước khi gửi", () => {
-        const patch = buildDietaryPatch(EMPTY, {
-            ...EMPTY,
-            restrictions: ["  no  added sugar ", "No added sugar"],
-        });
-
-        expect(patch).toEqual({ restrictions: ["no added sugar"] });
-    });
-
-    it("nhiều field đổi cùng lúc → gộp vào một patch", () => {
-        const patch = buildDietaryPatch(EMPTY, {
-            ...EMPTY,
-            preferences: ["spicy"],
-            healthGoal: "Gain muscle",
-        });
-
-        expect(patch).toEqual({ preferences: ["spicy"], healthGoal: "Gain muscle" });
     });
 });

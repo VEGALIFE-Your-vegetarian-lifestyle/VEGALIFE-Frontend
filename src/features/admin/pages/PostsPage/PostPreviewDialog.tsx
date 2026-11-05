@@ -4,7 +4,7 @@ import { PostStatusBadge } from "@/features/posts/components/PostStatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { POST_FLAG_VARIANT, canPublish, canUnpublish } from "@/features/posts/constants";
+import { POST_FLAG_VARIANT, canPublish, canReject } from "@/features/posts/constants";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import type { AdminPost } from "@/features/posts/types";
 
@@ -13,12 +13,10 @@ interface PostPreviewDialogProps {
     post: AdminPost | null;
     /** UUID → tên danh mục; thiếu thì hiện UUID. */
     categoryNames: Map<string, string>;
-    /** Đang gọi POST /api/admin/posts/{id}/moderate. */
+    /** Đang gọi POST /api/admin/posts/{id}/approve hoặc /reject. */
     loading: boolean;
     onApprove: () => void;
-    /** UNPUBLISH không kèm lý do — chỉ hiện cho bài đã `published`. */
-    onUnpublish: () => void;
-    /** Mở hộp thoại nhập lý do — chỉ dùng cho bài `processed`. */
+    /** Mở hộp thoại nhập lý do — chỉ hiện cho bài `processed`. */
     onReject: () => void;
     onClose: () => void;
 }
@@ -29,7 +27,6 @@ export function PostPreviewDialog({
     categoryNames,
     loading,
     onApprove,
-    onUnpublish,
     onReject,
     onClose,
 }: PostPreviewDialogProps) {
@@ -46,7 +43,7 @@ export function PostPreviewDialog({
                                 {t(`common:postFlag.${post.flag}`)}
                             </Badge>
                         )}
-                        <span>@{post.username}</span>
+                        <span>{post.displayName}</span>
                         <span aria-hidden="true">·</span>
                         <span>{post.email}</span>
                         <span aria-hidden="true">·</span>
@@ -64,18 +61,10 @@ export function PostPreviewDialog({
                         <Button variant="outline" onClick={onClose}>
                             {t("common:close")}
                         </Button>
-                        {canUnpublish(post.status) && (
-                            <Button
-                                variant="outline"
-                                disabled={loading}
-                                onClick={post.status === "processed" ? onReject : onUnpublish}
-                            >
+                        {canReject(post.status) && (
+                            <Button variant="outline" disabled={loading} onClick={onReject}>
                                 <XCircle className="h-4 w-4" />
-                                {t(
-                                    post.status === "processed"
-                                        ? "posts.list.action.reject"
-                                        : "posts.list.action.unpublish",
-                                )}
+                                {t("posts.list.action.reject")}
                             </Button>
                         )}
                         {canPublish(post.status) && (

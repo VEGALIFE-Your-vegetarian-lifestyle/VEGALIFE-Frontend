@@ -13,8 +13,13 @@ export interface User {
 export interface UserProfile {
     id: string;
     userId: string;
+    /** Chỉ đọc — `PUT /api/profile` không nhận 2 field này (backend lấy từ bảng user). */
+    displayName: string;
+    email: string;
     heightCm: number | null;
     weightKg: number | null;
+    /** Chỉ đọc — backend tính lúc đọc: `weightKg/(heightCm/100)²`, 1 số lẻ HALF_UP, null khi thiếu height/weight. */
+    bmi: number | null;
     age: number | null;
     gender: Gender | null;
     description: string | null;
@@ -33,10 +38,9 @@ export interface UserProfile {
 
 export interface LoginResponse {
     userId: string;
-    username: string;
+    /** BE trả `displayName` — không còn `username`. `LoginPage` map sang `User.username`. */
+    displayName: string;
     email: string;
-    role: UserRole;
-    status: UserStatus;
     accessToken: string;
     refreshToken: string;
     tokenType: string;
@@ -52,7 +56,7 @@ export interface RegisterRequest {
 
 export interface RegisterResponse {
     userId: string;
-    username: string;
+    displayName: string;
     email: string;
 }
 
@@ -63,7 +67,7 @@ export interface VerifyEmailRequest {
 
 export interface VerifyEmailResponse {
     userId: string;
-    username: string;
+    displayName: string;
     email: string;
 }
 
@@ -113,7 +117,8 @@ export interface UpdateProfileRequest {
 export interface AdminUser {
     id: string;
     email: string;
-    username: string;
+    /** BE trả `displayName` — không còn `username`. */
+    displayName: string;
     role: UserRole;
     status: UserStatus;
     createdAt: string;

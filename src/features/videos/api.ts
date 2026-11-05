@@ -18,7 +18,7 @@ interface AdminVideo {
     createdAt: string;
     updatedAt: string;
     userId: string | null;
-    username: string | null;
+    displayName: string | null;
     email: string | null;
     posts: { id: string; title: string; status: string }[];
 }
@@ -32,7 +32,7 @@ function toVideo(item: AdminVideo): Video {
         thumbnailUrl: item.thumbnailUrl ?? undefined,
         mimeType: item.mimeType,
         status: item.status,
-        uploader: { id: item.userId ?? "", username: item.username ?? "—" },
+        uploader: { id: item.userId ?? "", displayName: item.displayName ?? "—" },
         createdAt: item.createdAt,
     };
 }
