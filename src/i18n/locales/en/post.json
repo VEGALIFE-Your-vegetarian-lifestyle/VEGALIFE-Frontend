@@ -51,8 +51,8 @@
     "relatedSubtitle": "More community recipes and stories you might enjoy",
     "relatedViewAll": "View all articles",
     "votes": {
-        "like": "Helpful",
-        "dislike": "Not helpful",
+        "like": "Like",
+        "dislike": "Dislike",
         "loginRequired": "Sign in to vote on this post"
     },
     "sidebar": {

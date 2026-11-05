@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { MODERATION_VARIANT } from "../constants";
+import { nutritionTotals } from "../nutrition";
 import type { Recipe } from "../types";
 
 /** Nhãn nhỏ chữ hoa cho tiêu đề khối trong dialog chi tiết. */
@@ -14,6 +15,50 @@ function SectionHeading({ label, count }: { label: string; count?: number }) {
             {label}
             {count !== undefined && <span className="font-medium tabular-nums text-vegan-green-muted">{count}</span>}
         </h3>
+    );
+}
+
+/** Kcal làm tròn nguyên; macro 1 số lẻ — chỉ để đọc, không dùng để tính tiếp. */
+function formatGrams(value: number): string {
+    return Number.isInteger(value) ? `${value} g` : `${value.toFixed(1)} g`;
+}
+
+/** 5 tổng dinh dưỡng cả công thức; `nutritionResolved === false` → một dòng "chưa có". */
+function NutritionBlock({ recipe }: { recipe: Recipe }) {
+    const { t } = useTranslation("recipe");
+    const totals = nutritionTotals(recipe);
+
+    if (!totals) {
+        return (
+            <p className="border-b border-border bg-muted-bg/60 px-6 py-3 text-[13.5px] text-muted-foreground">
+                {t("myRecipes.meta.nutritionMissing")}
+            </p>
+        );
+    }
+
+    const cells = [
+        { label: t("nutrition.kcal"), value: `${Math.round(totals.kcal)} kcal` },
+        { label: t("nutrition.protein"), value: formatGrams(totals.proteinG) },
+        { label: t("nutrition.carbohydrate"), value: formatGrams(totals.carbohydrateG) },
+        { label: t("nutrition.fat"), value: formatGrams(totals.fatG) },
+        { label: t("nutrition.fiber"), value: formatGrams(totals.fiberG) },
+    ];
+
+    return (
+        <section className="border-b border-border bg-muted-bg/60 px-6 py-4">
+            <SectionHeading label={t("nutrition.title")} />
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-5">
+                {cells.map((cell) => (
+                    <div key={cell.label} className="min-w-0">
+                        <dt className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                            {cell.label}
+                        </dt>
+                        <dd className="text-[15px] font-semibold tabular-nums text-dark">{cell.value}</dd>
+                    </div>
+                ))}
+            </dl>
+            <p className="mt-2 text-[11px] text-muted-foreground">{t("nutrition.wholeRecipe")}</p>
+        </section>
     );
 }
 
@@ -128,6 +173,10 @@ export function RecipeDetailDialog({
                         ))}
                     </dl>
 
+                    {/* Tổng **cả công thức** (BE tính từ dinh dưỡng nguyên liệu). Chưa resolve
+                        thì nói thẳng là chưa có, không hiện ô 0 / thanh macro rỗng. */}
+                    <NutritionBlock recipe={recipe} />
+
                     <div className="grid sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
                         <section className="min-w-0 px-6 py-6">
                             <SectionHeading label={t("section.ingredients")} count={recipe.ingredients.length} />
@@ -142,7 +191,9 @@ export function RecipeDetailDialog({
                                         </span>
                                         <span className="min-w-0 break-words text-dark">{ingredient.name}</span>
                                         <span className="whitespace-nowrap text-[13.5px] tabular-nums text-muted-foreground">
-                                            {ingredient.amount} {ingredient.unit}
+                                            {ingredient.unit
+                                                ? `${ingredient.amount} ${ingredient.unit}`
+                                                : ingredient.amount}
                                         </span>
                                     </li>
                                 ))}

@@ -16,6 +16,7 @@ import AiNutritionPage from "@/features/nutrition-ai/AiNutritionPage";
 import CreateRecipePage from "@/features/recipes/pages/CreateRecipePage/CreateRecipePage";
 import MyRecipesPage from "@/features/recipes/pages/MyRecipesPage/MyRecipesPage";
 import AdminRecipesPage from "@/features/recipes/pages/AdminRecipesPage/AdminRecipesPage";
+import AdminIngredientsPage from "@/features/recipes/pages/AdminIngredientsPage/AdminIngredientsPage";
 import ExplorePage from "@/features/posts/pages/ExplorePage/ExplorePage";
 import LocationsPage from "@/features/locations/pages/AdminLocationsPage/LocationsPage";
 import LocationDetailPage from "@/features/locations/pages/LocationDetailPage";
@@ -143,6 +144,7 @@ export default function AppRoutes() {
                 <Route path="comments" element={<AdminCommentsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="recipes" element={<AdminRecipesPage />} />
+                <Route path="ingredients" element={<AdminIngredientsPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="locations" element={<LocationsPage />} />
                 <Route path="profile" element={<ProfilePage />} />

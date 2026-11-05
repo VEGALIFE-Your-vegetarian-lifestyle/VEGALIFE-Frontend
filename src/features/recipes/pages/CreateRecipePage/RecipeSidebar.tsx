@@ -84,6 +84,13 @@ export function RecipeSidebar({ items, percent, values, actions }: RecipeSidebar
                 </ul>
             </div>
 
+            {/* BE không có endpoint update recipe cho member → sai định lượng chỉ sửa được
+                bằng xoá + tạo lại. Nói trước, đừng để member phát hiện sau khi gửi. */}
+            <p className="flex items-start gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
+                <Circle className="mt-0.5 h-3 w-3 flex-shrink-0 text-amber-600" aria-hidden="true" />
+                {t("ingredient.pendingWarning")}
+            </p>
+
             {actions}
 
             <div className="rounded-2xl border border-vegan-green-muted bg-vegan-green-subtle p-5">

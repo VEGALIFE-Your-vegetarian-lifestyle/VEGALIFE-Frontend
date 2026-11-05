@@ -35,7 +35,8 @@
             "categories": "Categories",
             "locations": "Locations",
             "recipes": "Recipes",
-            "profile": "Profile"
+            "profile": "Profile",
+            "ingredients": "Ingredients"
         },
         "guide": {
             "retire": "Active categories can only be retired, not permanently deleted.",
@@ -342,8 +343,6 @@
             "reject": "Reject",
             "approveTitle": "Approve this recipe?",
             "approveBody": "\"{{name}}\" will become visible in search and dish suggestions.",
-            "rejectTitle": "Reject this recipe?",
-            "rejectBody": "\"{{name}}\" will stay hidden. The name cannot be reused later.",
             "approved": "Recipe approved",
             "rejected": "Recipe rejected",
             "approveDish": "Approve dish",
@@ -357,13 +356,50 @@
             "instructions": "Cooking instructions",
             "prepTime": "Prep time",
             "updatedAt": "Updated",
-            "email": "Email"
+            "email": "Email",
+            "missingIngredients": "{{count}} ingredient(s) have no unit or nutrition yet: {{names}}. This recipe has no nutrition totals until an admin fills them in."
         },
         "empty": {
             "title": "No recipes found",
             "filtered": "No recipes match the current filters.",
             "all": "No recipes have been created yet.",
             "reload": "Reload"
+        },
+        "edit": {
+            "action": "Edit",
+            "title": "Edit recipe",
+            "subtitle": "Only descriptive fields of “{{name}}” can be edited here.",
+            "dishLocked": "The shared dish name cannot be edited here.",
+            "ingredientsLocked": "Ingredients and amounts cannot be edited through the admin API — the member must delete and recreate the recipe.",
+            "difficultyKeep": "Keep current",
+            "submit": "Save changes",
+            "saving": "Saving…",
+            "updated": "Recipe updated"
+        },
+        "reject": {
+            "title": "Reject recipe",
+            "recipeLabel": "Recipe: {{name}}",
+            "reasonLabel": "Rejection reason",
+            "reasonPlaceholder": "Enter the reason for rejecting this recipe",
+            "reasonHelper": "The reason is stored in the moderation log.",
+            "reasonRequired": "Please enter a rejection reason",
+            "reasonMax": "Reason must not exceed 1000 characters",
+            "submit": "Reject recipe",
+            "cancel": "Cancel",
+            "warning": "Rejection is permanent — the name cannot be used again."
+        },
+        "delete": {
+            "action": "Delete",
+            "title": "Delete recipe?",
+            "body": "“{{name}}” will be soft-deleted and stay in the list labelled Deleted. There is no restore.",
+            "confirm": "Delete recipe",
+            "deleted": "Recipe deleted"
+        },
+        "approve": {
+            "noMissing": "This recipe already has complete ingredient data — approve it?",
+            "missingIntro": "{{count}} ingredient(s) still lack a unit or nutrition. Fill them in now so the recipe gets nutrition totals, or leave blank to curate later.",
+            "skip": "Skip (fill in later)",
+            "helper": "Unit and all five nutrition values must be given together. Partial nutrition is rejected by the backend."
         }
     },
     "users": {
@@ -414,6 +450,73 @@
             "suspendFailed": "Failed to lock account. Please try again.",
             "restored": "Account unlocked",
             "restoreFailed": "Failed to unlock account. Please try again."
+        }
+    },
+    "ingredients": {
+        "title": "Ingredient Management",
+        "description": "Shared ingredient names. {{count}} ingredients in total.",
+        "searchPlaceholder": "Search ingredients by name",
+        "filterUnit": "Filter by unit",
+        "filterUnitAll": "All units",
+        "filterUnitNone": "No unit yet",
+        "create": "New ingredient",
+        "column": {
+            "name": "Ingredient",
+            "unit": "Unit",
+            "actions": "Actions"
+        },
+        "unit": {
+            "G": "Gram (G)",
+            "ML": "Milliliter (ML)",
+            "PIECE": "Piece (PIECE)"
+        },
+        "nutrition": {
+            "calories": "Calories",
+            "proteinG": "Protein (g)",
+            "carbohydrateG": "Carbs (g)",
+            "fatG": "Fat (g)",
+            "fiberG": "Fiber (g)",
+            "perUnit": "Per one unit"
+        },
+        "action": {
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "form": {
+            "nameLabel": "Name",
+            "namePlaceholder": "e.g. tofu",
+            "unitLabel": "Unit",
+            "unitNone": "No unit yet",
+            "unitHelper": "All five nutrition values below are per ONE of this unit.",
+            "nutritionLegend": "Nutrition per unit",
+            "nutritionHelper": "Either fill all five or leave all blank — a partial set is rejected.",
+            "createTitle": "New ingredient",
+            "create": "Create ingredient",
+            "editTitle": "Edit ingredient",
+            "editSubtitle": "Update the unit and nutrition of “{{name}}”. Every recipe using this ingredient is recalculated immediately.",
+            "submit": "Save changes",
+            "error": {
+                "partialNutrition": "Fill all five nutrition values or leave all blank.",
+                "unitRequired": "Nutrition values need a unit.",
+                "invalidNumber": "Nutrition values must be numbers greater than or equal to 0."
+            }
+        },
+        "delete": {
+            "title": "Delete ingredient?",
+            "body": "“{{name}}” will be soft-deleted. The name is NOT freed — no member can reuse it, and there is no restore.",
+            "confirm": "Delete ingredient"
+        },
+        "toast": {
+            "created": "Ingredient created",
+            "updated": "Ingredient updated",
+            "deleted": "Ingredient deleted",
+            "failed": "Action failed. Please try again."
+        },
+        "empty": {
+            "title": "No ingredients found",
+            "filtered": "No ingredients match the current filters.",
+            "all": "No ingredients yet.",
+            "reload": "Reload"
         }
     },
     "comments": {

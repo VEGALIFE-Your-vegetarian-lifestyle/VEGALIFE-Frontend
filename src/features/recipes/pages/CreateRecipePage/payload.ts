@@ -31,11 +31,17 @@ export function buildRecipePayload(values: RecipeFormValues): CreateRecipeReques
         dishName: values.dishName.trim(),
         instructions: joinSteps(values.steps),
         servings: Number(values.servings.trim()),
-        ingredients: values.ingredients.map((item) => ({
-            name: item.name.trim(),
-            amount: Number(item.amount.trim()),
-            unit: item.unit.trim(),
-        })),
+        // `unit` chỉ gửi khi hàng là nguyên liệu **mới** và có giá trị — BE bỏ qua unit
+        // của nguyên liệu đã tồn tại, gửi kèm chỉ gây hiểu nhầm.
+        ingredients: values.ingredients.map((item) => {
+            const line: CreateRecipeRequest["ingredients"][number] = {
+                name: item.name.trim(),
+                amount: Number(item.amount.trim()),
+            };
+            const unit = item.unit.trim();
+            if (!item.existing && unit) line.unit = unit.toLowerCase();
+            return line;
+        }),
     };
 
     const description = values.description.trim();
@@ -48,21 +54,6 @@ export function buildRecipePayload(values: RecipeFormValues): CreateRecipeReques
     if (cookTime !== undefined) payload.cookTimeMinutes = cookTime;
 
     if (values.difficulty) payload.difficulty = values.difficulty;
-
-    const calories = toOptionalNumber(values.calories);
-    if (calories !== undefined) payload.calories = calories;
-
-    const proteinG = toOptionalNumber(values.proteinG);
-    if (proteinG !== undefined) payload.proteinG = proteinG;
-
-    const carbohydrateG = toOptionalNumber(values.carbohydrateG);
-    if (carbohydrateG !== undefined) payload.carbohydrateG = carbohydrateG;
-
-    const fatG = toOptionalNumber(values.fatG);
-    if (fatG !== undefined) payload.fatG = fatG;
-
-    const fiberG = toOptionalNumber(values.fiberG);
-    if (fiberG !== undefined) payload.fiberG = fiberG;
 
     return payload;
 }

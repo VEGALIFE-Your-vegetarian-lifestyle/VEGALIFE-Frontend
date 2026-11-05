@@ -38,6 +38,9 @@
         "open": "Open details for {{name}}",
         "eyebrow": "Dish"
     },
+    "recipe": {
+        "unavailable": "The full recipe is only visible to its author. Here is the summary from this week’s plan."
+    },
     "mealTypeLabel": "Meal",
     "servingsLabel": "Servings",
     "cuisineLabel": "Cuisine",

@@ -23,7 +23,6 @@ export function RecipePreviewCard({ values }: RecipePreviewCardProps) {
 
     const name = values.name.trim();
     const dishName = values.dishName.trim();
-    const calories = values.calories.trim();
     const totalMinutes = (Number(values.prepTimeMinutes) || 0) + (Number(values.cookTimeMinutes) || 0);
     const servings = Number(values.servings) || 0;
     const named = values.ingredients.filter((item) => item.name.trim());
@@ -38,11 +37,6 @@ export function RecipePreviewCard({ values }: RecipePreviewCardProps) {
                     <Badge variant="glass" size="sm">
                         {t("standards.plantFirst.chip")}
                     </Badge>
-                    {calories && (
-                        <Badge variant="glass" size="sm">
-                            {t("readiness.value.perServing", { calories })}
-                        </Badge>
-                    )}
                 </div>
             </div>
 

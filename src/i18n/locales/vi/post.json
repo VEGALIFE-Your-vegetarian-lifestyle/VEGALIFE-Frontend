@@ -51,8 +51,8 @@
     "relatedSubtitle": "Thêm công thức và câu chuyện cộng đồng bạn có thể thích",
     "relatedViewAll": "Xem tất cả bài viết",
     "votes": {
-        "like": "Hữu ích",
-        "dislike": "Không hữu ích",
+        "like": "Thích",
+        "dislike": "Không thích",
         "loginRequired": "Đăng nhập để bình chọn bài viết"
     },
     "sidebar": {

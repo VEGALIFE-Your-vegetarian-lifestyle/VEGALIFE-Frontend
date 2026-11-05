@@ -1,9 +1,28 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "@/test/renderWithProviders";
+import { getRecipe } from "@/features/recipes/api";
 import { MenuCard } from "../MenuCard";
 import type { MenuDetail } from "../../types";
+
+vi.mock("@/features/recipes/api", () => ({ getRecipe: vi.fn() }));
+
+const recommended = {
+    id: "r1",
+    name: "Phở chay",
+    description: "Phở chay description",
+    prepTimeMinutes: 35,
+    cookTimeMinutes: 25,
+    servings: 4,
+    difficulty: "MEDIUM",
+    calories: null,
+    proteinG: null,
+    carbohydrateG: null,
+    fatG: null,
+    fiberG: null,
+    nutritionResolved: false,
+};
 
 const dish = (id: string, name: string) => ({
     id,
@@ -85,5 +104,52 @@ describe("MenuCard", () => {
         const { container } = renderWithProviders(<MenuCard menu={{ ...menu, status: "cancelled" }} />);
         expect(within(container).getAllByText("Breakfast")).toHaveLength(7);
         expect(container.querySelector(".opacity-55")).not.toBeNull();
+    });
+});
+
+describe("MenuCard — món có recipe gợi ý", () => {
+    const withRecipe: MenuDetail = {
+        ...menu,
+        days: [
+            {
+                date: "2025-11-03",
+                meals: [{ mealType: "LUNCH", servings: 2, dish: dish("d1", "Phở chay"), recommendedRecipes: [recommended] }],
+            },
+        ],
+    };
+
+    it("bấm món → gọi GET /api/recipes/{id} rồi vẽ card công thức đầy đủ", async () => {
+        const user = userEvent.setup();
+        vi.mocked(getRecipe).mockResolvedValue({
+            ...recommended,
+            userId: "u1",
+            dishId: "d1",
+            dishName: "Phở chay",
+            instructions: "Nấu nước — Đun sôi nước.",
+            ingredients: [{ ingredientId: "i1", name: "Bánh phở", amount: 200, unit: "G" }],
+            moderationStatus: "APPROVED",
+            dishModerationStatus: "APPROVED",
+            createdAt: "2025-11-01T10:00:00Z",
+            updatedAt: "2025-11-01T10:00:00Z",
+        } as never);
+
+        renderWithProviders(<MenuCard menu={withRecipe} />);
+        await user.click(screen.getByRole("button", { name: "Open details for Phở chay" }));
+
+        expect(getRecipe).toHaveBeenCalledWith("r1");
+        expect(await screen.findByText("Bánh phở")).toBeInTheDocument();
+        expect(screen.getByText("200 G")).toBeInTheDocument();
+    });
+
+    it("404 (recipe của member khác) → hiện card tóm tắt từ response tuần, không vỡ", async () => {
+        const user = userEvent.setup();
+        vi.mocked(getRecipe).mockRejectedValue(Object.assign(new Error("404"), { response: { status: 404 } }));
+
+        renderWithProviders(<MenuCard menu={withRecipe} />);
+        await user.click(screen.getByRole("button", { name: "Open details for Phở chay" }));
+
+        expect(await screen.findByText(/only visible to its author/)).toBeInTheDocument();
+        expect(screen.getByText("35 mins")).toBeInTheDocument();
+        expect(screen.getByText("Medium")).toBeInTheDocument();
     });
 });

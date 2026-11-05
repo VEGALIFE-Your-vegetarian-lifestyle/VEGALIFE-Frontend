@@ -112,11 +112,8 @@ export default function AiNutritionPage() {
                         <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                         {subscription.data.currentPlan?.name ?? subscription.data.tier ?? "FREE"} ·{" "}
                         {subscription.data.remainingUsage !== undefined
-                            ? `Còn ${subscription.data.remainingUsage} câu hỏi`
-                            : t("chat.quotaLeft", {
-                                  used: quota?.used ?? 0,
-                                  limit: quota?.limit ?? subscription.data.currentPlan?.monthlyRequestLimit ?? 20,
-                              })}
+                            ? `Còn ${remainingCount} câu hỏi`
+                            : t("chat.quotaLeft", { count: remainingCount })}
                     </span>
                 ) : (
                     !isAuthenticated && (

@@ -38,6 +38,9 @@
         "open": "Xem chi tiết {{name}}",
         "eyebrow": "Món ăn"
     },
+    "recipe": {
+        "unavailable": "Công thức đầy đủ chỉ tác giả xem được. Đây là tóm tắt từ thực đơn tuần này."
+    },
     "mealTypeLabel": "Bữa",
     "servingsLabel": "Khẩu phần",
     "cuisineLabel": "Ẩm thực",

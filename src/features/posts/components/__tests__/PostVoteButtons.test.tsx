@@ -71,7 +71,7 @@ describe("PostVoteButtons", () => {
 
         await waitFor(() => expect(screen.getByText("10")).toBeInTheDocument());
 
-        const upvoteButton = screen.getByRole("button", { name: /^helpful$/i });
+        const upvoteButton = screen.getByRole("button", { name: /^like$/i });
         await userEvent.click(upvoteButton);
 
         expect(toast.error).toHaveBeenCalled();
@@ -86,7 +86,7 @@ describe("PostVoteButtons", () => {
 
         await waitFor(() => expect(screen.getByText("10")).toBeInTheDocument());
 
-        const upvoteButton = screen.getByRole("button", { name: /^helpful$/i });
+        const upvoteButton = screen.getByRole("button", { name: /^like$/i });
         await userEvent.click(upvoteButton);
 
         expect(setPostVote).toHaveBeenCalledWith(POST_ID, "UPVOTE");
@@ -104,7 +104,7 @@ describe("PostVoteButtons", () => {
 
         await waitFor(() => expect(screen.getByText("10")).toBeInTheDocument());
 
-        const upvoteButton = screen.getByRole("button", { name: /^helpful$/i });
+        const upvoteButton = screen.getByRole("button", { name: /^like$/i });
         await userEvent.click(upvoteButton);
 
         await waitFor(() => {
