@@ -54,7 +54,7 @@ export async function createCheckout(planCode: string): Promise<CheckoutResponse
 }
 
 /** @deprecated V48 deleted; no pre-check needed */
-export async function checkPurchaseEligibility(_planCode: string): Promise<void> {
+export async function checkPurchaseEligibility(): Promise<void> {
     // no-op for backward compatibility
 }
 
