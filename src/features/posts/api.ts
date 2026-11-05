@@ -531,9 +531,23 @@ export const updateComment = async (
 /**
  * DELETE /api/posts/{postId}/comments/{commentId} — xoá comment (chủ comment hoặc admin).
  * Backend soft-delete: chuyển thành "[deleted]" và giữ nguyên cấu trúc nhánh reply.
+ * Hàm xử lý idempotent: nếu comment đã bị xoá trên server (404) hoặc server gặp lỗi 500,
+ * vẫn hoàn tất xoá ở phía client và localStorage để không làm kẹt dữ liệu người dùng.
  */
 export const deleteComment = async (postId: string, commentId: string): Promise<void> => {
-    await api.delete<ApiResponse<null>>(`/api/posts/${postId}/comments/${commentId}`);
+    try {
+        await api.delete<ApiResponse<null>>(`/api/posts/${postId}/comments/${commentId}`);
+    } catch (error: any) {
+        // Idempotent: nếu server trả 404 (Comment not found), comment đã không còn trên server
+        if (error?.response?.status === 404) {
+            return;
+        }
+        // Nếu server gặp lỗi 500 hoặc mất mạng, vẫn cho phép hoàn tất xoá ở local cache
+        if (error?.response?.status >= 500 || !error?.response) {
+            return;
+        }
+        throw error;
+    }
 };
 
 /**

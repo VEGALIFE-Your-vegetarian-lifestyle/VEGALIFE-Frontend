@@ -169,7 +169,41 @@ export function CommentThread({
             }
             invalidate();
         },
-        onError: (error: unknown) => toast.error(getApiErrorMessage(error, t("common:error"))),
+        onError: (error: any) => {
+            // Nếu lỗi 404 (Comment not found), comment đã không còn trên server → dọn dẹp local và cập nhật UI luôn
+            if (error?.response?.status === 404) {
+                setShowDeleteConfirm(false);
+                if (postId) removeLocalComment(postId, comment.id);
+                if (postId) {
+                    queryClient.setQueriesData<PageResponse<PostCommentThread>>(
+                        { queryKey: ["post-comments", postId] },
+                        (old) => {
+                            if (!old) return old;
+                            const newContent = markDeletedInTree(old.content ?? [], comment.id);
+                            return {
+                                ...old,
+                                content: newContent,
+                                totalElements: Math.max(0, countAllComments(newContent)),
+                            };
+                        },
+                    );
+                    queryClient.setQueriesData<PageResponse<PostCommentThread>>(
+                        { queryKey: ["post-comment-count", postId] },
+                        (old) => {
+                            if (!old) return old;
+                            return {
+                                ...old,
+                                totalElements: Math.max(0, (old.totalElements ?? 0) - 1),
+                            };
+                        },
+                    );
+                }
+                toast.success(t("comments.deletedSuccess"));
+                invalidate();
+                return;
+            }
+            toast.error(getApiErrorMessage(error, t("common:error")));
+        },
     });
 
     const reportMutation = useMutation({

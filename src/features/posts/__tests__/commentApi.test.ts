@@ -318,5 +318,22 @@ describe("commentApi — post comment endpoints", () => {
         // deleted comment không nên tính vào totalElements
         expect(res.totalElements).toBe(0);
     });
+
+    it("deleteComment hoàn tất thành công khi server trả 404 (idempotent, comment đã không còn)", async () => {
+        const error404: any = new Error("Comment not found");
+        error404.response = { status: 404, data: { message: "Comment not found" } };
+        vi.mocked(api.delete).mockRejectedValueOnce(error404);
+
+        // Không ném lỗi ra ngoài
+        await expect(deleteComment(postId, "not-found-id")).resolves.toBeUndefined();
+    });
+
+    it("deleteComment ném lỗi 403 nếu người dùng không có quyền", async () => {
+        const error403: any = new Error("Forbidden");
+        error403.response = { status: 403, data: { message: "Forbidden" } };
+        vi.mocked(api.delete).mockRejectedValueOnce(error403);
+
+        await expect(deleteComment(postId, "forbidden-id")).rejects.toThrow();
+    });
 });
 
