@@ -35,6 +35,12 @@ export function CommentsSection({ postId }: Props) {
 
     return (
         <SectionCard eyebrow={t("comments.eyebrow", { count: total })} title={t("comments.title")}>
+            {isError && comments.length > 0 && (
+                <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 p-2.5 text-center text-xs text-amber-700 dark:text-amber-300">
+                    {t("comments.serverSyncNotice")}
+                </div>
+            )}
+
             {isLoading ? (
                 <div className="space-y-3">
                     <Skeleton className="h-24 w-full rounded-xl" />
@@ -42,9 +48,9 @@ export function CommentsSection({ postId }: Props) {
                 </div>
             ) : isError && comments.length === 0 ? (
                 <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center">
-                    <p className="text-sm text-destructive">{t("error")}</p>
+                    <p className="text-sm text-destructive">{t("comments.loadError")}</p>
                     <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
-                        {t("common:actions.retry")}
+                        {t("common:errorState.retry")}
                     </Button>
                 </div>
             ) : comments.length === 0 ? (

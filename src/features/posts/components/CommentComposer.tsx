@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/useAuth";
 import type { PageResponse } from "@/shared/types/common";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
-import { createComment } from "../api";
+import { createComment, saveLocalComment } from "../api";
 import type { PostCommentThread } from "../types";
 
 /** BE chưa khai báo giới hạn — chặn ở client cho khỏi gửi payload vô hạn. */
@@ -91,6 +91,9 @@ export function CommentComposer({
                 updatedAt: created.updatedAt || new Date().toISOString(),
                 replies: [],
             };
+
+            // Lưu dự phòng vào localStorage để F5 vẫn còn nếu backend gặp sự cố 500
+            saveLocalComment(postId, newThreadItem);
 
             // 1. Cập nhật ngay bộ nhớ đệm danh sách bình luận (mọi phân trang)
             queryClient.setQueriesData<PageResponse<PostCommentThread>>(

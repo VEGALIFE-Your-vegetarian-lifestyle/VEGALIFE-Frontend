@@ -41,7 +41,9 @@
         "reportReasonLabel": "Lý do báo cáo (tùy chọn)",
         "reportReasonPlaceholder": "Mô tả lý do bình luận vi phạm quy chuẩn...",
         "reportSubmit": "Gửi báo cáo",
-        "reportSuccess": "Đã gửi báo cáo bình luận"
+        "reportSuccess": "Đã gửi báo cáo bình luận",
+        "loadError": "Không thể tải danh sách bình luận do máy chủ phản hồi lỗi (500).",
+        "serverSyncNotice": "Máy chủ gặp sự cố khi tải bình luận cũ (500). Bình luận bạn gửi vẫn được lưu và hiển thị an toàn."
     },
     "relatedEyebrow": "Khám phá thêm",
     "relatedTitle": "Cảm hứng thực vật liên quan",

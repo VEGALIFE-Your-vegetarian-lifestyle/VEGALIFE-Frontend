@@ -87,6 +87,37 @@ function normalizeComment(item: any): PostCommentThread {
     };
 }
 
+const LOCAL_COMMENTS_PREFIX = "vegalife_local_comments_";
+
+export function getLocalComments(postId: string): PostCommentThread[] {
+    try {
+        if (typeof window === "undefined" || !window.localStorage) return [];
+        const raw = localStorage.getItem(`${LOCAL_COMMENTS_PREFIX}${postId}`);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
+
+export function saveLocalComment(postId: string, comment: PostCommentThread): void {
+    try {
+        if (typeof window === "undefined" || !window.localStorage) return;
+        const existing = getLocalComments(postId);
+        const filtered = existing.filter((c) => c.id !== comment.id);
+        const updated = [comment, ...filtered];
+        localStorage.setItem(`${LOCAL_COMMENTS_PREFIX}${postId}`, JSON.stringify(updated));
+    } catch {
+        // ignore storage errors
+    }
+}
+
+function mergeComments(server: PostCommentThread[], local: PostCommentThread[]): PostCommentThread[] {
+    if (!local || local.length === 0) return server;
+    const serverIds = new Set(server.map((c) => c.id));
+    const extraLocal = local.filter((c) => !serverIds.has(c.id));
+    return [...extraLocal, ...server];
+}
+
 /**
  * GET /api/posts/{postId}/comments — public, không cần JWT.
  * Phân trang ở comment gốc; mỗi comment mang theo **cả cây reply** (không phân trang).
@@ -97,14 +128,36 @@ export async function getPostComments(
     postId: string,
     { page = 0, size = 20 }: CommentListParams = {},
 ): Promise<PageResponse<PostCommentThread>> {
-    const { data } = await api.get<ApiResponse<PageResponse<PostCommentThread>>>(`/api/posts/${postId}/comments`, {
-        params: { page, size },
-    });
-    const pageData = data.data;
-    return {
-        ...pageData,
-        content: (pageData?.content ?? []).map(normalizeComment),
-    };
+    try {
+        const { data } = await api.get<ApiResponse<PageResponse<PostCommentThread>>>(`/api/posts/${postId}/comments`, {
+            params: { page, size },
+        });
+        const pageData = data.data;
+        const normalized = (pageData?.content ?? []).map(normalizeComment);
+        const local = getLocalComments(postId);
+        const merged = mergeComments(normalized, local);
+
+        return {
+            ...pageData,
+            content: merged,
+            totalElements: Math.max(Number(pageData?.totalElements ?? 0), merged.length),
+        };
+    } catch (error) {
+        // Fallback hiển thị bình luận local nếu backend bị sự cố 500
+        const local = getLocalComments(postId);
+        if (local.length > 0) {
+            return {
+                content: local,
+                page,
+                size,
+                totalElements: local.length,
+                totalPages: 1,
+                first: true,
+                last: true,
+            };
+        }
+        throw error;
+    }
 }
 
 /** Hoạt động cộng đồng — ponytail: backend chưa có endpoint activity. */

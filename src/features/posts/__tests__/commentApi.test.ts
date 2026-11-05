@@ -1,6 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/shared/api/client";
-import { createComment, deleteComment, getPostComments, reportComment, updateComment } from "../api";
+import {
+    createComment,
+    deleteComment,
+    getLocalComments,
+    getPostComments,
+    reportComment,
+    saveLocalComment,
+    updateComment,
+} from "../api";
+import type { PostCommentThread } from "../types";
 
 vi.mock("@/shared/api/client", () => ({
     api: {
@@ -13,6 +22,7 @@ vi.mock("@/shared/api/client", () => ({
 
 beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
 });
 
 describe("commentApi — post comment endpoints", () => {
@@ -139,6 +149,49 @@ describe("commentApi — post comment endpoints", () => {
         expect(api.post).toHaveBeenCalledWith(`/api/posts/${postId}/comments/${commentId}/report`, {
             reason: "Spam content",
         });
+    });
+
+    it("saveLocalComment và getLocalComments lưu trữ và đọc lại từ localStorage", () => {
+        const mockComment: PostCommentThread = {
+            id: "local-c1",
+            userId: "u-1",
+            username: "MySelf",
+            displayName: "MySelf",
+            avatarUrl: null,
+            content: "Locally saved comment",
+            edited: false,
+            deleted: false,
+            createdAt: "2026-11-05T10:00:00Z",
+            updatedAt: "2026-11-05T10:00:00Z",
+            replies: [],
+        };
+
+        expect(getLocalComments(postId)).toEqual([]);
+        saveLocalComment(postId, mockComment);
+        expect(getLocalComments(postId)).toEqual([mockComment]);
+    });
+
+    it("getPostComments fallback về local comments khi API server trả lỗi 500", async () => {
+        const mockComment: PostCommentThread = {
+            id: "local-c1",
+            userId: "u-1",
+            username: "MySelf",
+            displayName: "MySelf",
+            avatarUrl: null,
+            content: "Locally saved comment",
+            edited: false,
+            deleted: false,
+            createdAt: "2026-11-05T10:00:00Z",
+            updatedAt: "2026-11-05T10:00:00Z",
+            replies: [],
+        };
+        saveLocalComment(postId, mockComment);
+
+        vi.mocked(api.get).mockRejectedValueOnce(new Error("500 Internal Server Error"));
+
+        const res = await getPostComments(postId, { page: 0, size: 20 });
+        expect(res.content).toEqual([mockComment]);
+        expect(res.totalElements).toBe(1);
     });
 });
 

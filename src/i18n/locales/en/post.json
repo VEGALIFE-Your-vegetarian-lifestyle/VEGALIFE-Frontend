@@ -41,7 +41,9 @@
         "reportReasonLabel": "Report reason (optional)",
         "reportReasonPlaceholder": "Describe why this comment violates guidelines...",
         "reportSubmit": "Submit Report",
-        "reportSuccess": "Comment reported successfully"
+        "reportSuccess": "Comment reported successfully",
+        "loadError": "Unable to load comments due to server error (500).",
+        "serverSyncNotice": "Server encountered an error loading older comments (500). Your comments are safely saved and displayed."
     },
     "relatedEyebrow": "Keep Exploring",
     "relatedTitle": "Related Plant-Based Inspirations",

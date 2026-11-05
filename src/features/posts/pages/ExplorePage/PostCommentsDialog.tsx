@@ -104,6 +104,12 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
                         </span>
                     </div>
 
+                    {isError && comments && comments.content.length > 0 && (
+                        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-2.5 text-center text-xs text-amber-700 dark:text-amber-300">
+                            {t("post:comments.serverSyncNotice")}
+                        </div>
+                    )}
+
                     <div className="max-h-[45vh] space-y-3 overflow-y-auto pr-1">
                         {isLoading ? (
                             <>
@@ -112,9 +118,9 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
                             </>
                         ) : isError && (!comments || comments.content.length === 0) ? (
                             <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center">
-                                <p className="text-sm text-destructive">{t("post:error")}</p>
+                                <p className="text-sm text-destructive">{t("post:comments.loadError")}</p>
                                 <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
-                                    {t("common:actions.retry")}
+                                    {t("common:errorState.retry")}
                                 </Button>
                             </div>
                         ) : total === 0 ? (
