@@ -1,0 +1,419 @@
+{
+    "dashboard": {
+        "title": "Tổng quan",
+        "subtitle": "Xem nhanh số liệu nền tảng và các mục quản trị.",
+        "totalCategories": "Tổng danh mục",
+        "activeCategories": "Đang hoạt động",
+        "softDeletedCategories": "Đã xóa mềm",
+        "associatedContent": "Nội dung liên kết",
+        "quickManagement": "Quản lý nhanh",
+        "guideTitle": "Hướng dẫn",
+        "openCategoryManagement": "Mở quản lý danh mục",
+        "adminLabel": "Quản trị viên",
+        "metricDescription": {
+            "totalCategories": "Tất cả danh mục trong hệ thống",
+            "activeCategories": "Danh mục đang được dùng",
+            "softDeletedCategories": "Danh mục đã ngừng sử dụng",
+            "associatedContent": "Bài viết, công thức và video liên kết"
+        },
+        "quickLink": {
+            "categories": "Danh mục",
+            "posts": "Bài viết",
+            "videos": "Video",
+            "users": "Người dùng"
+        },
+        "manageBadge": "Quản lý",
+        "nav": {
+            "label": "Điều hướng quản trị",
+            "comingSoon": "Sắp ra mắt",
+            "toggleSidebar": "Bật/tắt thanh bên",
+            "dashboard": "Tổng quan",
+            "users": "Người dùng",
+            "posts": "Bài viết",
+            "videos": "Video",
+            "comments": "Bình luận",
+            "categories": "Danh mục",
+            "locations": "Địa điểm",
+            "recipes": "Công thức",
+            "profile": "Hồ sơ"
+        },
+        "guide": {
+            "retire": "Danh mục đang dùng chỉ có thể ngừng sử dụng, không xóa hẳn.",
+            "restore": "Danh mục đã xóa mềm có thể khôi phục hoặc xóa vĩnh viễn.",
+            "access": "Quản trị viên truy cập được mọi mục quản trị."
+        }
+    },
+    "categories": {
+        "title": "Quản lý danh mục",
+        "description": "Danh mục đang được dùng chỉ có thể ngừng sử dụng, không xóa hẳn.",
+        "createCategory": "Tạo danh mục",
+        "exportCsv": "Export CSV",
+        "tabs": {
+            "all": "Tất cả",
+            "active": "Đang hoạt động",
+            "deleted": "Đã xóa mềm"
+        },
+        "searchPlaceholder": "Tìm theo tên hoặc UUID",
+        "sort": {
+            "newest": "Mới nhất",
+            "name": "Tên A-Z",
+            "content": "Số nội dung"
+        },
+        "columns": {
+            "uuid": "Mã UUID",
+            "name": "Tên",
+            "description": "Mô tả",
+            "content": "Nội dung",
+            "status": "Trạng thái",
+            "createdAt": "Ngày tạo",
+            "actions": "Thao tác"
+        },
+        "status": {
+            "active": "Đang dùng",
+            "deleted": "Ngừng sử dụng"
+        },
+        "actions": {
+            "edit": "Sửa",
+            "retire": "Ngừng sử dụng",
+            "restore": "Khôi phục",
+            "permanentlyDelete": "Xóa"
+        },
+        "empty": {
+            "title": "Chưa có danh mục nào",
+            "description": "Tạo danh mục đầu tiên để phân loại bài viết và video."
+        },
+        "form": {
+            "createTitle": "Tạo danh mục mới",
+            "editTitle": "Chỉnh sửa danh mục",
+            "nameLabel": "Tên danh mục",
+            "namePlaceholder": "Nhập tên danh mục",
+            "descriptionLabel": "Mô tả",
+            "descriptionPlaceholder": "Nhập mô tả ngắn cho danh mục",
+            "save": "Lưu thay đổi"
+        },
+        "toast": {
+            "created": "Đã tạo danh mục",
+            "updated": "Đã cập nhật danh mục",
+            "retired": "Đã ngừng sử dụng danh mục",
+            "restored": "Đã khôi phục danh mục",
+            "deleted": "Đã xóa vĩnh viễn danh mục",
+            "copied": "Đã sao chép mã danh mục",
+            "exported": "Đã xuất CSV",
+            "failed": "Thao tác thất bại. Vui lòng thử lại."
+        }
+    },
+    "posts": {
+        "title": "Bài viết",
+        "description": "Duyệt, ngừng đăng hoặc xóa bài viết của cộng đồng.",
+        "create": {
+            "title": "Tạo bài viết",
+            "description": "Tạo bài viết blog hoặc video mới.",
+            "button": "Tạo bài viết"
+        },
+        "edit": {
+            "title": "Sửa bài viết"
+        },
+        "form": {
+            "titleLabel": "Tiêu đề bài viết",
+            "titlePlaceholder": "Nhập tiêu đề bài viết",
+            "featuredImageUrlPlaceholder": "https://example.com/image.jpg",
+            "categoryLabel": "Danh mục",
+            "categoryPlaceholder": "Chọn danh mục",
+            "noCategories": "Chưa có danh mục active.",
+            "saveDraft": "Lưu nháp",
+            "publish": "Đăng bài",
+            "update": "Cập nhật bài",
+            "invalidUrl": "URL không hợp lệ",
+            "uploadImage": "Tải ảnh lên",
+            "uploading": "Đang tải...",
+            "uploadFailed": "Tải ảnh thất bại",
+            "invalidImageType": "Vui lòng chọn file ảnh",
+            "imageTooLarge": "Ảnh không được vượt quá 5MB",
+            "removeImage": "Xóa ảnh",
+            "dropzoneTitle": "Kéo thả ảnh bìa vào đây",
+            "dropzoneHint": "PNG hoặc JPG, tối đa 5MB. Ảnh ngang tỉ lệ 16:9 là đẹp nhất.",
+            "saveChanges": "Lưu thay đổi",
+            "addCover": "Thêm ảnh",
+            "videoUpload": "Tải video lên",
+            "videoFailed": "Tải video thất bại",
+            "videoInvalidType": "Vui lòng chọn file video",
+            "videoTooLarge": "Video không được vượt quá 100MB",
+            "videoRemove": "Xóa video",
+            "videoDropzoneTitle": "Kéo thả file video vào đây",
+            "videoDropzoneHint": "MP4 hoặc WebM, tối đa 100MB.",
+            "videoSourceRequired": "Vui lòng tải file video lên"
+        },
+        "toast": {
+            "created": "Đã tạo bài viết",
+            "updated": "Đã cập nhật bài viết",
+            "failed": "Tạo bài viết thất bại. Vui lòng thử lại.",
+            "approved": "Đã duyệt bài viết",
+            "rejected": "Đã từ chối bài viết",
+            "deleted": "Đã xóa bài viết",
+            "actionFailed": "Thao tác thất bại. Vui lòng thử lại."
+        },
+        "list": {
+            "searchPlaceholder": "Tìm theo tiêu đề hoặc tác giả",
+            "searchLabel": "Tìm bài viết",
+            "filterLabel": "Lọc theo trạng thái",
+            "allStatuses": "Tất cả trạng thái",
+            "column": {
+                "title": "Tiêu đề",
+                "author": "Tác giả",
+                "status": "Trạng thái",
+                "moderation": "Kiểm duyệt",
+                "views": "Lượt xem",
+                "createdAt": "Ngày tạo",
+                "actions": "Thao tác"
+            },
+            "empty": {
+                "title": "Không có bài viết nào",
+                "filtered": "Không có bài viết khớp với bộ lọc hiện tại.",
+                "all": "Chưa có bài viết nào trên hệ thống.",
+                "clearFilters": "Xóa bộ lọc",
+                "reload": "Tải lại"
+            },
+            "action": {
+                "approve": "Duyệt",
+                "reject": "Từ chối",
+                "unpublish": "Ngừng đăng",
+                "delete": "Xóa"
+            },
+            "confirm": {
+                "deleteTitle": "Xóa bài viết?",
+                "deleteDescription": "Bài viết \"{{title}}\" sẽ bị xóa và không còn hiển thị công khai.",
+                "deleteConfirm": "Xóa bài viết"
+            }
+        },
+        "reject": {
+            "title": "Từ chối bài viết",
+            "postLabel": "Bài viết: {{title}}",
+            "reasonLabel": "Lý do từ chối",
+            "reasonPlaceholder": "Nhập lý do từ chối bài viết",
+            "reasonHelper": "Lý do được lưu vào nhật ký kiểm duyệt.",
+            "reasonRequired": "Vui lòng nhập lý do từ chối",
+            "reasonMax": "Lý do tối đa 1000 ký tự",
+            "submit": "Từ chối bài viết",
+            "cancel": "Hủy"
+        },
+        "composer": {
+            "subtitle": "Soạn trong một mạch cuộn — mọi phần lưu chung với danh sách kiểm tra xuất bản.",
+            "draftAutosaved": "Bản nháp đã tự lưu",
+            "summaryLabel": "Tóm tắt ngắn",
+            "summaryHint": "Hiện trên thẻ feed và kết quả tìm kiếm. Nên dưới 180 ký tự.",
+            "summaryPlaceholder": "Một dòng mô tả ngắn gọn vì sao món này đáng nấu...",
+            "breadcrumb": "Creator Studio",
+            "plantVerified": "Chuẩn 100% thực vật",
+            "section1Title": "Thông tin bài viết",
+            "section2Title": "Ảnh bìa",
+            "section3Title": "Nội dung bài",
+            "section4Title": "Công thức đính kèm",
+            "narrativeWords": "{{count}} từ",
+            "coverHint": "16:9 HD",
+            "attachedCount": "Đã gắn {{count}}",
+            "attachRecipe": "Thêm công thức",
+            "changeRecipe": "Đổi",
+            "detachRecipe": "Bỏ công thức",
+            "pickerTitle": "Chọn công thức",
+            "pickerSearch": "Tìm công thức của bạn…",
+            "pickerEmpty": "Bạn chưa có công thức nào để gắn.",
+            "pickerConfirm": "Gắn công thức đã chọn",
+            "recipePrep": "Sơ chế: {{count}} phút",
+            "recipeCook": "Nấu: {{count}} phút",
+            "recipeServings": "{{count}} phần",
+            "recipeIngredients": "{{count}} nguyên liệu",
+            "categoryCount": "{{count}} danh mục",
+            "previewHeading": "Xem trước thẻ feed",
+            "previewEmpty": "Tiêu đề và tóm tắt sẽ hiện ở đây.",
+            "pledge": {
+                "title": "Cam kết thuần thực vật",
+                "body": "Tuân thủ hiến chương 100% thực vật của VEGALIFE: không sản phẩm, thử nghiệm hay phụ phẩm động vật."
+            },
+            "dialogSubtitle": "Chia sẻ câu chuyện thuần thực vật với cộng đồng",
+            "dialogSubtitleEdit": "Cập nhật bài viết — thay đổi lên sóng khi bạn đăng",
+            "footerHintNew": "Bản nháp mới · đăng để tới cộng đồng",
+            "footerHintEdit": "Đang sửa · lưu lần cuối 2 phút trước",
+            "attachRecipeShort": "Gắn",
+            "discardTitle": "Bỏ bài viết này?",
+            "discardBody": "Bạn có thay đổi chưa lưu. Lưu nháp để làm tiếp sau, hoặc bỏ và đóng.",
+            "keepEditing": "Tiếp tục sửa",
+            "discard": "Bỏ bài"
+        },
+        "checklist": {
+            "heading": "Mức sẵn sàng",
+            "title": "Tiêu đề & tóm tắt",
+            "cover": "Ảnh bìa HD",
+            "content": "Nội dung bài",
+            "recipes": "Công thức đính kèm",
+            "standard": "Chuẩn 100% thực vật",
+            "complete": "Hoàn tất",
+            "progress": "{{done}} / {{total}} hoàn tất",
+            "value": {
+                "ready": "Sẵn sàng",
+                "words": "{{count}} từ",
+                "uploaded": "Đã tải lên",
+                "synced": "Đã đồng bộ {{count}}",
+                "verified": "Đã xác nhận",
+                "missing": "Còn thiếu"
+            },
+            "categories": "Danh mục"
+        }
+    },
+    "videos": {
+        "title": "Quản lý video",
+        "description": "Xem và xóa video hướng dẫn nấu ăn do người dùng tải lên.",
+        "searchPlaceholder": "Tìm theo tiêu đề hoặc người đăng",
+        "searchLabel": "Tìm video",
+        "filterLabel": "Lọc theo trạng thái tải lên",
+        "allStatuses": "Tất cả trạng thái",
+        "column": {
+            "video": "Video",
+            "uploader": "Người đăng",
+            "status": "Trạng thái tải lên",
+            "createdAt": "Ngày đăng",
+            "actions": "Thao tác"
+        },
+        "action": {
+            "view": "Xem"
+        },
+        "untitled": "Không có tiêu đề",
+        "empty": {
+            "title": "Không có video nào",
+            "filtered": "Không có video khớp với bộ lọc hiện tại.",
+            "all": "Chưa có video nào được tải lên.",
+            "reload": "Tải lại"
+        },
+        "preview": {
+            "uploadedBy": "Đăng bởi {{name}}",
+            "sample": "Video mẫu (dữ liệu giả lập)"
+        },
+        "confirm": {
+            "deleteTitle": "Xóa video?",
+            "deleteDescription": "Video \"{{title}}\" sẽ bị xóa và không còn hiển thị công khai.",
+            "deleteConfirm": "Xóa video"
+        },
+        "toast": {
+            "deleted": "Đã xóa video",
+            "failed": "Thao tác thất bại. Vui lòng thử lại."
+        }
+    },
+    "recipes": {
+        "title": "Quản lý công thức",
+        "description": "Toàn bộ công thức do thành viên tạo, kể cả công thức đã xóa mềm. Tổng cộng {{count}} công thức.",
+        "searchPlaceholder": "Tìm theo tên công thức hoặc người tạo",
+        "searchLabel": "Tìm công thức",
+        "minutes": "{{count}} phút",
+        "sortLabel": "Sắp xếp công thức",
+        "sort": {
+            "newest": "Mới nhất",
+            "updated": "Vừa cập nhật",
+            "name": "Tên A-Z"
+        },
+        "filters": {
+            "fromDate": "Tạo từ ngày",
+            "toDate": "Tạo đến ngày",
+            "clearDates": "Xóa ngày"
+        },
+        "column": {
+            "recipe": "Công thức",
+            "dish": "Món",
+            "creator": "Người tạo",
+            "ingredients": "Nguyên liệu",
+            "cookTime": "Thời gian nấu",
+            "servings": "Khẩu phần",
+            "difficulty": "Độ khó",
+            "moderation": "Duyệt",
+            "status": "Trạng thái",
+            "createdAt": "Ngày tạo"
+        },
+        "status": {
+            "ACTIVE": "Đang dùng",
+            "DELETED": "Đã xóa"
+        },
+        "moderation": {
+            "status": {
+                "PENDING": "Chờ duyệt",
+                "APPROVED": "Đã duyệt",
+                "REJECTED": "Đã từ chối"
+            },
+            "filterLabel": "Lọc theo trạng thái duyệt",
+            "filterAll": "Mọi trạng thái",
+            "approve": "Duyệt",
+            "reject": "Từ chối",
+            "approveTitle": "Duyệt recipe này?",
+            "approveBody": "\"{{name}}\" sẽ hiện trong tìm kiếm và gợi ý món.",
+            "rejectTitle": "Từ chối recipe này?",
+            "rejectBody": "\"{{name}}\" sẽ tiếp tục bị ẩn. Tên này không thể dùng lại sau đó.",
+            "approved": "Đã duyệt recipe",
+            "rejected": "Đã từ chối recipe",
+            "approveDish": "Duyệt tên món",
+            "dishApproved": "Đã duyệt tên món",
+            "actionFailed": "Thao tác thất bại. Vui lòng thử lại."
+        },
+        "detail": {
+            "by": "Tạo bởi {{name}}",
+            "description": "Mô tả",
+            "ingredients": "Nguyên liệu ({{count}})",
+            "instructions": "Các bước nấu",
+            "prepTime": "Thời gian sơ chế",
+            "updatedAt": "Cập nhật",
+            "email": "Email"
+        },
+        "empty": {
+            "title": "Không có công thức nào",
+            "filtered": "Không có công thức nào khớp bộ lọc hiện tại.",
+            "all": "Hệ thống chưa có công thức nào.",
+            "reload": "Tải lại"
+        }
+    },
+    "users": {
+        "title": "Quản lý người dùng",
+        "description": "Xem, tìm kiếm và quản lý trạng thái tài khoản.",
+        "searchPlaceholder": "Tìm theo username hoặc email",
+        "searchLabel": "Tìm người dùng",
+        "filterLabel": "Lọc theo trạng thái",
+        "allStatuses": "Tất cả trạng thái",
+        "column": {
+            "username": "Username",
+            "email": "Email",
+            "role": "Vai trò",
+            "status": "Trạng thái",
+            "createdAt": "Ngày tạo",
+            "actions": "Thao tác"
+        },
+        "status": {
+            "created": "Mới tạo",
+            "activated": "Đã kích hoạt",
+            "deactivated": "Đã vô hiệu",
+            "suspended": "Đã khóa"
+        },
+        "role": {
+            "ADMIN": "Quản trị viên",
+            "USER": "Người dùng"
+        },
+        "action": {
+            "lock": "Khóa",
+            "unlock": "Mở khóa"
+        },
+        "empty": {
+            "title": "Không có người dùng nào",
+            "filtered": "Không có người dùng khớp với bộ lọc.",
+            "all": "Chưa có người dùng nào trên hệ thống.",
+            "reload": "Tải lại"
+        },
+        "confirm": {
+            "lockTitle": "Khóa tài khoản?",
+            "lockDescription": "Tài khoản \"{{username}}\" sẽ bị khóa và không thể đăng nhập.",
+            "lockConfirm": "Khóa tài khoản",
+            "unlockTitle": "Mở khóa tài khoản?",
+            "unlockDescription": "Tài khoản \"{{username}}\" sẽ được mở khóa trở lại.",
+            "unlockConfirm": "Mở khóa tài khoản"
+        },
+        "toast": {
+            "suspended": "Đã khóa tài khoản",
+            "suspendFailed": "Khóa tài khoản thất bại. Vui lòng thử lại.",
+            "restored": "Đã mở khóa tài khoản",
+            "restoreFailed": "Mở khóa tài khoản thất bại. Vui lòng thử lại."
+        }
+    }
+}

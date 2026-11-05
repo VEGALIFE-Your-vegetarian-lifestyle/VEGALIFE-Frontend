@@ -1,0 +1,209 @@
+{
+    "title": "Tạo công thức",
+    "breadcrumb": "Công thức",
+    "section": {
+        "overview": "Tổng quan công thức",
+        "overviewHint": "Đặt tên công thức, tên món và đôi dòng giới thiệu",
+        "ingredients": "Nguyên liệu & định lượng",
+        "ingredientsHint": "Liệt kê nguyên liệu kèm định lượng chính xác",
+        "instructions": "Các bước nấu",
+        "instructionsHint": "Từng bước một, kèm mốc thời gian nấu",
+        "details": "Khẩu phần & thời gian",
+        "detailsHint": "Chọn khẩu phần, thời gian sơ chế và mức độ công sức"
+    },
+    "field": {
+        "name": "Tên công thức",
+        "dishName": "Tên món",
+        "description": "Giới thiệu món & ghi chú",
+        "prepTime": "Thời gian sơ chế",
+        "cookTime": "Thời gian nấu",
+        "totalTime": "Tổng thời gian",
+        "servings": "Khẩu phần",
+        "difficulty": "Độ khó",
+        "stepTitle": "Tiêu đề bước {{step}}",
+        "stepBody": "Nội dung bước {{step}}",
+        "ingredientName": "Nguyên liệu",
+        "amount": "Số lượng",
+        "unit": "Đơn vị"
+    },
+    "placeholder": {
+        "name": "Đậu hũ chiên giòn vỏ mè",
+        "dishName": "Bắt đầu gõ tên món",
+        "description": "Điều gì làm công thức này đặc biệt?",
+        "ingredientName": "Bắt đầu gõ tên nguyên liệu",
+        "amount": "1",
+        "stepTitle": "Ví dụ: Phi thơm hành tỏi",
+        "stepBody": "Mô tả việc cần làm ở bước này…"
+    },
+    "counter": {
+        "characters": "{{count}} / {{max}} ký tự",
+        "words": "{{count}} từ"
+    },
+    "difficulty": {
+        "EASY": "Dễ",
+        "MEDIUM": "Trung bình",
+        "HARD": "Khó"
+    },
+    "myRecipes": {
+        "breadcrumb": "Công thức của tôi",
+        "breadcrumbMyAccount": "Tài khoản của tôi",
+        "eyebrow": "Creator Studio",
+        "syncStatus": "Đang đồng bộ",
+        "title": "Công thức của tôi",
+        "subtitle": "Toàn bộ công thức bạn đã tạo, kèm trạng thái kiểm duyệt và dinh dưỡng.",
+        "create": "Tạo công thức mới",
+        "search": "Tìm theo tên công thức, tên món hoặc nguyên liệu...",
+        "showing": "Hiển thị {{from}}–{{to}} trong {{total}} công thức",
+        "synced": "Đã đồng bộ từ máy chủ",
+        "noDescription": "Chưa có mô tả.",
+        "updated": "Cập nhật {{date}}",
+        "filter": {
+            "difficulty": "Độ khó",
+            "difficultyAll": "Mọi độ khó"
+        },
+        "sort": {
+            "label": "Sắp xếp công thức",
+            "updated": "Mới sửa gần đây",
+            "created": "Mới tạo gần đây",
+            "name": "Tên (A–Z)",
+            "hint": {
+                "updated": "Sắp theo lần sửa gần nhất",
+                "created": "Sắp theo ngày tạo",
+                "name": "Sắp theo tên"
+            }
+        },
+        "tab": {
+            "all": "Tất cả",
+            "APPROVED": "Đã duyệt",
+            "PENDING": "Chờ duyệt",
+            "REJECTED": "Cần chỉnh sửa"
+        },
+        "status": {
+            "APPROVED": "Đã duyệt",
+            "PENDING": "Chờ duyệt",
+            "REJECTED": "Cần chỉnh sửa"
+        },
+        "stats": {
+            "total": "Tổng công thức",
+            "approved": "Đã duyệt",
+            "pending": "Chờ duyệt",
+            "quick": "Món nhanh",
+            "quickHint": "Từ 30 phút trở xuống"
+        },
+        "meta": {
+            "servings_one": "{{count}} phần",
+            "servings_other": "{{count}} phần",
+            "prep": "Sơ chế: {{count}} phút",
+            "cook": "Nấu: {{count}} phút",
+            "ingredients_one": "{{count}} nguyên liệu",
+            "ingredients_other": "{{count}} nguyên liệu"
+        },
+        "action": {
+            "view": "Xem công thức"
+        },
+        "detail": {
+            "dishPending": "Công thức đã được duyệt, nhưng tên món dùng chung vẫn đang chờ kiểm duyệt."
+        },
+        "empty": {
+            "title": "Chưa có công thức nào",
+            "hint": "Công thức bạn tạo sẽ hiện ở đây kèm trạng thái kiểm duyệt.",
+            "filtered": "Không có công thức khớp bộ lọc",
+            "filteredHint": "Thử từ khoá, độ khó hoặc tab trạng thái khác."
+        }
+    },
+    "servings": {
+        "unit": "phần",
+        "decrease": "Giảm một phần",
+        "increase": "Tăng một phần",
+        "helper": "Số nguyên, tối thiểu 1."
+    },
+    "time": {
+        "prepHelper": "Sơ chế & ướp",
+        "cookHelper": "Nấu trực tiếp",
+        "minutesShort": "phút"
+    },
+    "steps": {
+        "add": "Thêm bước nấu",
+        "hint": "Bước để trống sẽ bị bỏ qua khi lưu.",
+        "moveUp": "Đưa bước lên",
+        "moveDown": "Đưa bước xuống",
+        "remove": "Xoá bước"
+    },
+    "preview": {
+        "title": "Xem trước thẻ",
+        "liveSync": "Đồng bộ trực tiếp",
+        "more": "+{{count}} nữa",
+        "creator": "Người sáng tạo cộng đồng"
+    },
+    "ingredient": {
+        "add": "Thêm nguyên liệu",
+        "remove": "Xoá nguyên liệu",
+        "action": "Thao tác",
+        "hint": "Số lượng nhận tối đa 3 chữ số thập phân (ví dụ 0.125 thìa cà phê).",
+        "itemCount": "{{count}} / {{max}} nguyên liệu · nhận số thập phân"
+    },
+    "readiness": {
+        "title": "Danh sách kiểm",
+        "percent": "Sẵn sàng {{percent}}%",
+        "name": "Tên công thức & tên món",
+        "ingredients": "Nguyên liệu đã chuẩn hoá",
+        "instructions": "Các bước nấu",
+        "servings": "Khẩu phần & thời gian",
+        "value": {
+            "valid": "Hợp lệ",
+            "items": "{{count}} đã kiểm",
+            "phases": "{{count}} bước",
+            "configured": "Đã thiết lập",
+            "missing": "Còn thiếu",
+            "perServing": "{{calories}} kcal / phần"
+        },
+        "rank": {
+            "outline": "Phác thảo",
+            "balanced": "Vừa sức",
+            "challenging": "Thử thách"
+        }
+    },
+    "standards": {
+        "plantFirst": {
+            "title": "Thuần thực vật",
+            "description": "Không thịt, sữa, mật ong hay phụ phẩm động vật.",
+            "chip": "100% thực vật"
+        },
+        "tracker": {
+            "title": "Thông tin dinh dưỡng",
+            "description": "Calo và macro gắn với công thức này đi theo nó ở mọi nơi hiển thị."
+        },
+        "seo": {
+            "title": "Sẵn sàng cho tìm kiếm",
+            "description": "Tiêu đề và tên món rõ ràng giúp công thức dễ lộ diện trong tìm kiếm và danh sách của VEGALIFE."
+        },
+        "moderate": {
+            "title": "Cần kiểm duyệt",
+            "description": "Công thức mới và tên món dùng chung phải qua kiểm duyệt trước khi hiện công khai."
+        }
+    },
+    "action": {
+        "cancel": "Huỷ",
+        "submit": "Tạo công thức",
+        "submitting": "Đang tạo…"
+    },
+    "toast": {
+        "created": "Đã tạo công thức",
+        "failed": "Không tạo được công thức. Vui lòng thử lại."
+    },
+    "hint": {
+        "autocomplete": "Chọn gợi ý hoặc gõ tên mới — tên mới sẽ được tạo.",
+        "noSuggestions": "Không có kết quả — cứ gõ tiếp để tạo mới.",
+        "description": "Gợi mở vị umami, độ tương phản kết cấu và cách dùng kèm."
+    },
+    "errors": {
+        "servingsMin": "Khẩu phần phải là số nguyên từ 1 trở lên",
+        "ingredientsMin": "Cần ít nhất một nguyên liệu",
+        "ingredientsMax": "Một công thức tối đa 50 nguyên liệu",
+        "ingredientDuplicate": "Mỗi nguyên liệu chỉ được xuất hiện một lần",
+        "amountInvalid": "Số lượng phải lớn hơn 0 và tối đa 3 chữ số thập phân",
+        "minutesInvalid": "Nhập số phút nguyên (từ 0 trở lên)",
+        "numberInvalid": "Nhập số từ 0 trở lên",
+        "stepBodyRequired": "Nhập nội dung cho bước này, hoặc xoá tiêu đề đi"
+    }
+}

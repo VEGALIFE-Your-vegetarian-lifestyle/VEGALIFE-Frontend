@@ -1,0 +1,87 @@
+{
+    "badge": "VEGALIFE Smart Platform",
+    "title": "Your Vegetarian Lifestyle",
+    "subtitle": "Discover wholesome vegetarian blogs, step-by-step culinary videos, and nourishing plant-based recipes crafted for vibrant mindful dining every single day.",
+    "hero": {
+        "titleLead": "Nurture Your",
+        "titleAccent": "Plant-Based",
+        "titleTail": "Journey",
+        "prompt": "What would you like to do today?",
+        "highlight": "Daily Highlight",
+        "chips": {
+            "quick": "Explore Quick Recipes (<20m)",
+            "mealPlan": "Build a Weekly Meal Plan",
+            "restaurants": "Find Vegan Restaurants",
+            "ai": "Ask Nutrition AI"
+        }
+    },
+    "searchPlaceholder": "Search recipes, ingredients (e.g. tofu, spinach), or cooking tags...",
+    "searchButton": "Find",
+    "metrics": {
+        "stories": "Published Stories",
+        "categories": "Recipe Categories"
+    },
+    "pillBar": {
+        "all": "All"
+    },
+    "featuredEyebrow": "Curated Selections",
+    "featuredTitle": "Editorial Showcase",
+    "featuredSubtitle": "Hand-picked reads from the newest posts in the feed.",
+    "latestTitle": "Latest Recipes & Stories",
+    "viewAllFeed": "View all feed",
+    "spotlights": {
+        "eyebrow": "Kitchen Stories",
+        "title": "Community Buzz",
+        "subtitle": "What the community published most recently.",
+        "exploreFeed": "Explore Feed"
+    },
+    "dishes": {
+        "title": "Chef's Picks",
+        "subtitle": "Dishes you can cook right now with what the platform already has.",
+        "viewPosts": "View posts"
+    },
+    "nearbyPicks": {
+        "eyebrow": "Neighborhood Food",
+        "title": "Curated Vegan Gems",
+        "subtitle": "Top-rated places by the community rating.",
+        "badge": "Nearby",
+        "viewMap": "Directions",
+        "viewPlace": "View Menu",
+        "loginRequired": "Sign in to see top-rated vegan places near you.",
+        "login": "Sign in"
+    },
+    "weekly": {
+        "eyebrow": "Smart Meal Planning",
+        "title": "AI Weekly Meal Strategy",
+        "daysPlanned": "{{count}} of 7 days planned",
+        "progressLabel": "Weekly progress",
+        "daysUnit": "days planned",
+        "today": "Today",
+        "moreMeals": "+{{count}} more",
+        "empty": "No meal plan for this week yet.",
+        "open": "Open planner",
+        "create": "Launch planner"
+    },
+    "ctaBand": {
+        "eyebrow": "Join the community",
+        "title": "Cook, Share & Inspire the Plant-Based Shift",
+        "subtitle": "Publish your signature whole-food dishes, keep a weekly menu that matches your dietary profile, and let the assistant check the balance of every meal.",
+        "action": "Create free account",
+        "actionAuthed": "Build a meal plan",
+        "secondary": "Browse the feed"
+    },
+    "card": {
+        "recipe": "Recipe",
+        "video": "Video",
+        "blog": "Blog",
+        "by": "by {{name}}",
+        "minRead": "{{count}} min read",
+        "mins": "{{count}} mins",
+        "viewRecipe": "View Recipe",
+        "viewVideo": "View Video",
+        "viewBlog": "Read Guide"
+    },
+    "loading": "Loading content...",
+    "error": "Unable to load content. Please try again.",
+    "empty": "No content published yet."
+}

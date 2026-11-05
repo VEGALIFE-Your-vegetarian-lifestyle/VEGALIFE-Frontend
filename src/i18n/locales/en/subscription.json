@@ -1,0 +1,91 @@
+{
+    "overline": "AI Nutrition Plans",
+    "title": "AI Subscription",
+    "subtitle": "Pick a plan to ask the plant-based nutrition assistant more questions every month.",
+    "pill": "Monthly quota (UTC)",
+    "notice": "Payments go through VNPay. A plan is only activated once VNPay confirms the transaction.",
+    "current": {
+        "eyebrow": "CURRENT PLAN",
+        "usage": "Used {{used}}/{{limit}} questions this month",
+        "renewal": "Renews on {{date}}",
+        "quota": "Monthly quota",
+        "loginRequired": "Log in to see your current plan.",
+        "cancel": "Cancel plan"
+    },
+    "status": {
+        "active": "Active",
+        "cancelled": "Cancelled",
+        "past_due": "Past due"
+    },
+    "plans": {
+        "title": "Plans",
+        "current": "Current plan",
+        "free": "Free",
+        "perMonth": " / month",
+        "requests": "{{count}} AI questions per month",
+        "buy": "Upgrade",
+        "renew": "Renew"
+    },
+    "history": {
+        "title": "Plan history",
+        "emptyTitle": "No plan history yet",
+        "emptyDescription": "Your purchases and renewals will show up here.",
+        "plan": "Plan",
+        "status": "Status",
+        "startedAt": "Started",
+        "renewalDate": "Renewal"
+    },
+    "rowStatus": {
+        "active": "Active",
+        "past_due": "Past due",
+        "scheduled": "Scheduled",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+    },
+    "payments": {
+        "title": "Payment history",
+        "emptyTitle": "No payments yet",
+        "emptyDescription": "Your VNPay transactions will show up here.",
+        "plan": "Plan",
+        "amount": "Amount",
+        "status": "Status",
+        "date": "Date"
+    },
+    "paymentStatus": {
+        "pending": "Pending",
+        "succeeded": "Succeeded",
+        "failed": "Failed",
+        "refunded": "Refunded"
+    },
+    "cancelDialog": {
+        "title": "Cancel current plan?",
+        "description": "The plan is cancelled immediately and your account returns to the Free plan.",
+        "confirm": "Cancel plan"
+    },
+    "toast": {
+        "buyFailed": "Could not start the payment. Please try again.",
+        "cancelled": "Plan cancelled",
+        "cancelFailed": "Could not cancel the plan. Please try again."
+    },
+    "result": {
+        "loading": "Loading payment result",
+        "backToPlans": "Back to plans",
+        "toAi": "Use the AI assistant",
+        "pending": {
+            "title": "Confirming your payment",
+            "description": "Hang on a moment, this page updates by itself."
+        },
+        "succeeded": {
+            "title": "Payment successful",
+            "description": "Your plan is now active."
+        },
+        "failed": {
+            "title": "Payment failed",
+            "description": "The transaction did not go through. You can try again."
+        },
+        "refunded": {
+            "title": "Refunded",
+            "description": "This payment has been refunded."
+        }
+    }
+}

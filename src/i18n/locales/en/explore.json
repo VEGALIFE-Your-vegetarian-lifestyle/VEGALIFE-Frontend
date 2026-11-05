@@ -1,0 +1,61 @@
+{
+    "title": "Explore",
+    "hero": {
+        "eyebrow": "Curated editorial & community feed",
+        "title": "Explore Plant Culture & Chronicles",
+        "subtitle": "Discover stories, vegan recipes, nutritional science, and discussions curated by mindful creators and certified plant chefs worldwide."
+    },
+    "searchPlaceholder": "Search stories, recipes, nutrition guides, ingredients...",
+    "searchButton": "Search",
+    "filterTitle": "Filter Content",
+    "categoryTitle": "Categories",
+    "resetFilters": "Reset All",
+    "clearSearch": "Clear active search",
+    "resultsFor": "Showing results for",
+    "items": "{{count}} chronicles",
+    "filteredAcross": "filtered across the plant community",
+    "showing": "Showing {{shown}} of {{total}} chronicles",
+    "sortBy": "Sort by:",
+    "sort": {
+        "popular": "Most Viewed",
+        "recent": "Most Recent"
+    },
+    "tab": {
+        "all": "All Feeds",
+        "recipe": "Attached Recipes",
+        "blog": "Articles & Stories"
+    },
+    "format": {
+        "title": "Content Format",
+        "all": "Any format",
+        "recipe": "Recipe Attached",
+        "article": "Article Only"
+    },
+    "reading": {
+        "title": "Reading Time",
+        "any": "Any length",
+        "quick": "Quick read (< 5 min)",
+        "deep": "In-depth (> 10 min)"
+    },
+    "recipe": {
+        "protein": "{{count}}g protein"
+    },
+    "cta": {
+        "title": "Have a Plant Story?",
+        "body": "Share your original culinary experiments, fermenting wins, or evidence-based nutritional research.",
+        "action": "Create New Chronicle"
+    },
+    "empty": {
+        "title": "No matching vegetarian content found",
+        "description": "Try searching for broader terms like 'Spinach', 'Curry', or 'Pasta'.",
+        "action": "Clear Filters"
+    },
+    "card": {
+        "comments": "Comment",
+        "commentsWithCount_one": "{{count}} Comment",
+        "commentsWithCount_other": "{{count}} Comments",
+        "readFullPost": "Read the full post",
+        "readMore": "Read more"
+    },
+    "error": "Unable to load posts. Please try again later."
+}

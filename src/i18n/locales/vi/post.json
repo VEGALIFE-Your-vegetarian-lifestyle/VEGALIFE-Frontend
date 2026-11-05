@@ -1,0 +1,53 @@
+{
+    "breadcrumbHome": "Trang chủ",
+    "backToExplore": "Về trang Khám phá",
+    "publishedOn": "Đăng ngày {{date}}",
+    "views": "{{count}} lượt xem",
+    "readTime": "{{count}} phút đọc",
+    "editPost": "Sửa bài viết",
+    "share": "Chia sẻ",
+    "shareCopied": "Đã sao chép liên kết",
+    "notFound": {
+        "title": "Không tìm thấy bài viết",
+        "description": "Bài viết không tồn tại hoặc đã ngừng đăng.",
+        "action": "Về trang Khám phá"
+    },
+    "error": "Không thể tải bài viết này. Vui lòng thử lại.",
+    "comments": {
+        "eyebrow": "Bình luận · {{count}}",
+        "title": "Độc giả nói gì",
+        "empty": "Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ cảm nhận.",
+        "edited": "(đã sửa)",
+        "deletedAuthor": "[đã xoá]",
+        "placeholder": "Chia sẻ biến tấu hoặc mẹo của bạn...",
+        "submit": "Gửi bình luận",
+        "loginToComment": "Đăng nhập để tham gia thảo luận",
+        "posted": "Đã gửi bình luận"
+    },
+    "relatedEyebrow": "Khám phá thêm",
+    "relatedTitle": "Cảm hứng thực vật liên quan",
+    "relatedSubtitle": "Thêm công thức và câu chuyện cộng đồng bạn có thể thích",
+    "relatedViewAll": "Xem tất cả bài viết",
+    "votes": {
+        "like": "Hữu ích",
+        "dislike": "Không hữu ích",
+        "loginRequired": "Đăng nhập để bình chọn bài viết"
+    },
+    "sidebar": {
+        "aboutTitle": "Về bài viết này",
+        "published": "Đăng ngày",
+        "readTime": "Thời gian đọc",
+        "views": "Lượt xem",
+        "categories": "Danh mục"
+    },
+    "recipes": {
+        "eyebrow": "Nấu cùng bài viết",
+        "title": "Công thức đính kèm",
+        "loading": "Không tải được công thức.",
+        "prep": "Sơ chế {{count}} phút",
+        "servings": "{{count}} khẩu phần",
+        "ingredients": "{{list}}… · {{count}} nguyên liệu",
+        "browseMine": "Xem tất cả công thức của tôi",
+        "viewRecipe": "Xem công thức"
+    }
+}

@@ -1,0 +1,87 @@
+{
+    "badge": "Nền tảng VEGALIFE",
+    "title": "Phong cách Ăn chay của bạn",
+    "subtitle": "Khám phá blog ăn chay lành mạnh, video hướng dẫn nấu ăn từng bước và công thức thực vật bổ dưỡng cho bữa ăn tỉnh thức mỗi ngày.",
+    "hero": {
+        "titleLead": "Nuôi dưỡng hành trình",
+        "titleAccent": "Thuần thực vật",
+        "titleTail": "của bạn",
+        "prompt": "Hôm nay bạn muốn làm gì?",
+        "highlight": "Bài nổi bật hôm nay",
+        "chips": {
+            "quick": "Món nhanh (<20 phút)",
+            "mealPlan": "Lên thực đơn tuần",
+            "restaurants": "Tìm quán chay",
+            "ai": "Hỏi AI Dinh dưỡng"
+        }
+    },
+    "searchPlaceholder": "Tìm công thức, nguyên liệu (vd: đậu hũ, rau chân vịt) hoặc thẻ nấu ăn...",
+    "searchButton": "Tìm",
+    "metrics": {
+        "stories": "Bài viết đã đăng",
+        "categories": "Danh mục công thức"
+    },
+    "pillBar": {
+        "all": "Tất cả"
+    },
+    "featuredEyebrow": "Tuyển chọn",
+    "featuredTitle": "Tuyển chọn biên tập",
+    "featuredSubtitle": "Những bài đáng đọc nhất trong số bài mới lên bảng tin.",
+    "latestTitle": "Công thức & Câu chuyện mới nhất",
+    "viewAllFeed": "Xem toàn bộ",
+    "spotlights": {
+        "eyebrow": "Chuyện bếp núc",
+        "title": "Cộng đồng sôi nổi",
+        "subtitle": "Những gì cộng đồng vừa đăng gần đây.",
+        "exploreFeed": "Xem bảng tin"
+    },
+    "dishes": {
+        "title": "Món đầu bếp chọn",
+        "subtitle": "Món bạn có thể nấu ngay với những gì nền tảng đang có.",
+        "viewPosts": "Xem bài viết"
+    },
+    "nearbyPicks": {
+        "eyebrow": "Quán quanh đây",
+        "title": "Quán chay đáng ghé",
+        "subtitle": "Điểm đến được cộng đồng đánh giá cao nhất.",
+        "badge": "Gần đây",
+        "viewMap": "Chỉ đường",
+        "viewPlace": "Xem thực đơn",
+        "loginRequired": "Đăng nhập để xem quán chay đánh giá cao quanh bạn.",
+        "login": "Đăng nhập"
+    },
+    "weekly": {
+        "eyebrow": "Lên thực đơn thông minh",
+        "title": "Chiến lược bữa ăn tuần bằng AI",
+        "daysPlanned": "Đã lên món {{count}}/7 ngày",
+        "progressLabel": "Tiến độ tuần",
+        "daysUnit": "ngày đã lên món",
+        "today": "Hôm nay",
+        "moreMeals": "+{{count}} bữa",
+        "empty": "Tuần này chưa có thực đơn.",
+        "open": "Mở thực đơn",
+        "create": "Lên thực đơn"
+    },
+    "ctaBand": {
+        "eyebrow": "Tham gia cộng đồng",
+        "title": "Nấu, chia sẻ & lan toả lối sống thuần thực vật",
+        "subtitle": "Đăng món tủ của bạn, giữ thực đơn tuần khớp khẩu phần ăn và để trợ lý kiểm tra độ cân bằng của từng bữa.",
+        "action": "Tạo tài khoản miễn phí",
+        "actionAuthed": "Lên thực đơn tuần",
+        "secondary": "Dạo bảng tin"
+    },
+    "card": {
+        "recipe": "Công thức",
+        "video": "Video",
+        "blog": "Blog",
+        "by": "bởi {{name}}",
+        "minRead": "{{count}} phút đọc",
+        "mins": "{{count}} phút",
+        "viewRecipe": "Xem công thức",
+        "viewVideo": "Xem video",
+        "viewBlog": "Đọc bài"
+    },
+    "loading": "Đang tải nội dung...",
+    "error": "Không thể tải nội dung. Vui lòng thử lại.",
+    "empty": "Chưa có nội dung nào được đăng."
+}

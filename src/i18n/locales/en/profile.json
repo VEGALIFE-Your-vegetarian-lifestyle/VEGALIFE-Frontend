@@ -1,0 +1,185 @@
+{
+    "title": "Profile",
+    "editTitle": "Edit Profile",
+    "basics": {
+        "eyebrow": "Profile",
+        "title": "About you & your body",
+        "subtitle": "Used for BMI and to personalise your nutrition suggestions."
+    },
+    "changeAvatar": "Change profile photo",
+    "avatarDialogTitle": "Profile photo",
+    "lastUpdated": "Last updated {{date}}",
+    "unsavedChanges_one": "{{count}} unsaved change",
+    "unsavedChanges_other": "{{count}} unsaved changes",
+    "back": "Back",
+    "logout": "Logout",
+    "createPost": "Create Post",
+    "myPosts": "My Posts",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "success": "Profile updated successfully",
+    "failed": "Failed to update profile",
+    "fields": {
+        "heightCm": "Height (cm)",
+        "weightKg": "Weight (kg)",
+        "age": "Age",
+        "gender": "Gender",
+        "description": "About",
+        "avatarUrl": "Avatar URL"
+    },
+    "placeholders": {
+        "avatarUrl": "https://example.com/avatar.jpg",
+        "description": "Tell us about yourself..."
+    },
+    "genderOptions": {
+        "placeholder": "Select gender",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+    },
+    "bmi": "BMI",
+    "bmiHint": "Enter height and weight to see your BMI",
+    "metrics": {
+        "height": "Height",
+        "weight": "Weight",
+        "age": "Age",
+        "gender": "Gender"
+    },
+    "bmiCategories": {
+        "underweight": "Underweight",
+        "normal": "Normal",
+        "overweight": "Overweight",
+        "obese": "Obese"
+    },
+    "dietary": {
+        "eyebrow": "Nutrition profile",
+        "title": "Dietary preferences",
+        "subtitle": "Your AI assistant uses these to shape every suggestion.",
+        "footnote": "Your AI nutrition assistant uses these to tailor every suggestion. Allergies and restrictions are treated as hard limits.",
+        "saved": "Dietary preferences saved",
+        "saveFailed": "Could not save dietary preferences",
+        "cancel": "Discard changes",
+        "counter": "{{used}} / {{max}}",
+        "customHint": "These are shortcuts — type any value that fits you.",
+        "itemTooLong": "Each entry must be at most {{max}} characters.",
+        "limitReached": "You can add at most {{max}} entries.",
+        "duplicate": "That entry is already in the list.",
+        "removeTag": "Remove {{tag}}",
+        "preferences": {
+            "label": "Preferences",
+            "hint": "What you enjoy eating — the assistant leans towards these.",
+            "placeholder": "e.g. spicy, high-protein"
+        },
+        "dislikes": {
+            "label": "Dislikes",
+            "hint": "Dishes or ingredients you would rather not see.",
+            "placeholder": "e.g. cilantro, mushroom"
+        },
+        "allergies": {
+            "label": "Allergies",
+            "hint": "Hard limits — these are never suggested.",
+            "placeholder": "e.g. peanuts, soy"
+        },
+        "restrictions": {
+            "label": "Restrictions",
+            "hint": "Dietary rules you follow, such as medical or ethical ones.",
+            "placeholder": "e.g. no added sugar"
+        },
+        "healthGoal": {
+            "label": "Health goal",
+            "hint": "One line about what you are working towards.",
+            "placeholder": "e.g. lose 3 kg in 3 months",
+            "tooLong": "Health goal must be at most {{max}} characters."
+        }
+    },
+    "verifiedAuthor": "Verified Plant-Based Author",
+    "contributorAccount": "Contributor Account",
+    "editProfile": "Edit Profile",
+    "newContent": "New Content",
+    "numPosts": "Published",
+    "numDrafts": "Drafts",
+    "numVideos": "Videos",
+    "numViews": "Total views",
+    "tab": {
+        "posts": "My Posts",
+        "activity": "My Activity"
+    },
+    "filterPosts": "Filter my posts...",
+    "statusAll": "All",
+    "statusPublished": "Published",
+    "statusDraft": "Drafts",
+    "statusUnpublished": "Unpublished",
+    "draftVisible": "Draft - Visible only to you",
+    "underReview": "Under admin review",
+    "editPost": "Edit Post",
+    "deletePost": "Delete Post",
+    "activityTitle": "Recent Community Activity",
+    "activitySubtitle": "Real-time interactions",
+    "empty": {
+        "posts": "You have not written any posts yet.",
+        "postsHint": "Share your first plant-based recipe or story with the community.",
+        "activity": "No community activity yet.",
+        "action": "Write a post"
+    },
+    "confirm": {
+        "deleteTitle": "Delete this post?",
+        "deleteBody": "\"{{title}}\" will be removed and no longer visible publicly.",
+        "deleteConfirm": "Delete post"
+    },
+    "account": {
+        "caption": "Account",
+        "nav": {
+            "overview": "Overview",
+            "posts": "Posts",
+            "recipes": "Recipes",
+            "plan": "Meal plan",
+            "profile": "Profile"
+        },
+        "counts": {
+            "published": "Published",
+            "draft": "Drafts",
+            "recipes": "Recipes"
+        },
+        "greeting": "Hi {{name}}",
+        "week": "Week {{from}} – {{to}}",
+        "createPlan": "New meal plan",
+        "writePost": "Write a post",
+        "viewAll": "All ›",
+        "stats": {
+            "published": "Published posts",
+            "views": "Total views",
+            "pendingRecipes": "Recipes awaiting review",
+            "meals": "Meals this week"
+        },
+        "tasks": {
+            "eyebrow": "Needs you",
+            "title_one": "{{count}} item waiting",
+            "title_other": "{{count}} items waiting"
+        },
+        "task": {
+            "recipe": "Recipe awaiting review",
+            "menu": "Meal plan still in draft",
+            "week": "Week {{from}} – {{to}}",
+            "draft": "Draft created {{date}} — not published"
+        },
+        "posts": {
+            "eyebrow": "Content",
+            "title": "My posts",
+            "summary": "{{total}} posts · {{published}} published · {{draft}} drafts"
+        },
+        "recipes": {
+            "eyebrow": "Your kitchen",
+            "title": "My recipes"
+        },
+        "plan": {
+            "eyebrow": "This week",
+            "title": "Meal plan",
+            "slots": "slots",
+            "open": "Open week ›"
+        },
+        "health": {
+            "eyebrow": "Profile",
+            "title": "Health"
+        }
+    }
+}

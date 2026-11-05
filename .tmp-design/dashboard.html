@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User Dashboard — VEGALIFE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    --green:#12724a; --green-hover:#0f6140; --green-light:#e6f2ec; --green-muted:#b0d3bd;
+    --green-subtle:#f2f9f5; --green-bright:#4caf50;
+    --amber-soft:#fef3c7; --amber-strong:#b45309;
+    --danger:#dc2626; --danger-soft:#fef2f2;
+    --info-soft:#eff6ff; --lavender-strong:#2a5f9e;
+    --dark:#0d1117; --dark-hover:#1a2029; --bg:#f4f5f7; --surface:#fff; --muted-bg:#eaeef2;
+    --border:#e3e6ea; --muted-fg:#5c6675;
+    --font-sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    --font-display:"Fraunces",Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--dark);font-family:var(--font-sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.02em;text-wrap:balance;margin:0}
+  p{margin:0}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit}
+
+  .shell{max-width:1240px;margin:0 auto;padding:28px clamp(16px,3vw,34px) 88px;
+    display:grid;grid-template-columns:262px minmax(0,1fr);gap:22px;align-items:start}
+
+  /* ============================================================
+     RAIL TRÁI — tối, dính
+     ============================================================ */
+  .rail{position:sticky;top:24px;background:var(--dark);border-radius:20px;color:#fff;
+    display:flex;flex-direction:column;overflow:hidden}
+
+  .me{display:flex;align-items:center;gap:11px;padding:18px 18px 16px;border-bottom:1px solid rgba(255,255,255,.09)}
+  .me .av{width:42px;height:42px;border-radius:999px;background:rgba(76,175,80,.16);color:var(--green-bright);
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-display);
+    font-size:17px;font-weight:700;flex:none;box-shadow:0 0 0 1px rgba(76,175,80,.35)}
+  .me .n{min-width:0;flex:1}
+  .me b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .me span{display:block;font-size:10.5px;color:rgba(255,255,255,.45);margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .rail-cap{padding:16px 18px 7px;font-size:9px;font-weight:800;letter-spacing:.11em;
+    text-transform:uppercase;color:rgba(255,255,255,.34)}
+
+  .nav{display:flex;flex-direction:column;gap:1px;padding:0 10px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;
+    font-size:12.5px;font-weight:600;color:rgba(255,255,255,.68);position:relative;transition:.14s}
+  .nav a svg{flex:none;opacity:.8}
+  .nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+  .nav a.on{background:rgba(76,175,80,.15);color:#fff}
+  .nav a.on svg{opacity:1;color:var(--green-bright)}
+  .nav a.on::before{content:"";position:absolute;left:-10px;top:50%;transform:translateY(-50%);
+    width:3px;height:17px;border-radius:0 3px 3px 0;background:var(--green-bright)}
+  .nav a .c{margin-left:auto;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:999px;
+    background:var(--amber-soft);color:var(--amber-strong);font-variant-numeric:tabular-nums}
+  .nav a .c.n{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7)}
+
+  .rail-foot{margin-top:auto;padding:14px 10px 12px;border-top:1px solid rgba(255,255,255,.09);margin-top:16px}
+  .rail-foot a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;
+    font-size:12px;font-weight:600;color:rgba(255,255,255,.45);transition:.14s}
+  .rail-foot a:hover{background:rgba(255,255,255,.07);color:#fff}
+  .rail-foot a.danger:hover{background:rgba(220,38,38,.16);color:#fca5a5}
+
+  /* mini BMI trong rail */
+  .bmi-mini{margin:14px 18px 0;padding:11px 12px;border-radius:11px;background:rgba(255,255,255,.06)}
+  .bmi-mini .k{font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:rgba(255,255,255,.38)}
+  .bmi-mini .v{display:flex;align-items:baseline;gap:5px;margin-top:2px}
+  .bmi-mini b{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+  .bmi-mini span{font-size:10px;font-weight:700;color:var(--green-bright)}
+
+  /* ============================================================
+     PHẢI — nội dung
+     ============================================================ */
+  .main{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+  /* header */
+  .head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;
+    padding:2px 2px 4px}
+  .head h1{font-size:26px;line-height:1.2}
+  .head .sub{font-size:12.5px;color:var(--muted-fg);margin-top:4px}
+  .head .act{display:flex;gap:8px;flex:none}
+  .btn{display:inline-flex;align-items:center;gap:6px;height:37px;padding:0 15px;border-radius:999px;
+    font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s}
+  .btn.primary{background:var(--green);color:#fff}
+  .btn.primary:hover{background:var(--green-hover)}
+  .btn.outline{background:var(--surface);border-color:var(--border);color:var(--dark)}
+  .btn.outline:hover{border-color:var(--green);color:var(--green)}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:18px}
+
+  /* dải tổng */
+  .totals{display:grid;grid-template-columns:repeat(4,1fr);overflow:hidden}
+  .tot{padding:16px 18px;border-left:1px solid var(--border);transition:background .15s;cursor:pointer}
+  .tot:first-child{border-left:0}
+  .tot:hover{background:var(--muted-bg)}
+  .tot .k{font-size:9.5px;font-weight:800;letter-spacing:.085em;text-transform:uppercase;color:var(--muted-fg)}
+  .tot .v{display:flex;align-items:baseline;gap:5px;margin-top:3px}
+  .tot b{font-family:var(--font-display);font-size:27px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+  .tot span{font-size:11px;font-weight:600;color:var(--muted-fg)}
+  .tot em{font-style:normal;font-size:10px;font-weight:700;color:var(--green);
+    background:var(--green-light);padding:1px 6px;border-radius:999px;white-space:nowrap}
+
+  /* 2 cột nội dung */
+  .cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:start}
+  @media (max-width:900px){.cols{grid-template-columns:1fr}}
+
+  .sec-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+    padding:16px 18px 12px;border-bottom:1px solid var(--border)}
+  .lbl{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--green)}
+  .sec-h h2{font-size:16.5px;margin-top:3px}
+  .sec-h .sub{font-size:11.5px;color:var(--muted-fg);margin-top:2px}
+  .sec-b{padding:10px 18px 16px}
+  .sec-f{border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;
+    gap:8px;padding:11px 18px;font-size:11.5px;font-weight:600;color:var(--muted-fg);transition:background .15s}
+  .sec-f:hover{background:var(--green-subtle)}
+  .sec-f b{color:var(--dark)}
+  .sec-f:hover b{color:var(--green)}
+  .big{font-family:var(--font-display);font-size:25px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;flex:none}
+  .big small{display:block;font-family:var(--font-sans);font-size:9px;font-weight:800;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--muted-fg);text-align:right;margin-top:3px}
+
+  /* dòng việc cần */
+  .arow{display:flex;align-items:center;gap:11px;padding:10px 0;border-top:1px solid var(--border)}
+  .arow:first-child{border-top:0}
+  .arow .ico{width:33px;height:33px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none}
+  .arow .ico.a{background:var(--amber-soft);color:var(--amber-strong)}
+  .arow .ico.i{background:var(--info-soft);color:var(--lavender-strong)}
+  .arow-t{min-width:0;flex:1}
+  .arow-t b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;transition:color .15s}
+  .arow-t span{display:block;font-size:11px;color:var(--muted-fg);margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .arow:hover .arow-t b{color:var(--green)}
+  .arow .go{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;
+    color:var(--green);padding:5px 9px;border-radius:999px;border:1px solid var(--green-light);white-space:nowrap}
+
+  /* dòng danh sách */
+  .lrow{display:flex;align-items:center;gap:9px;padding:9px 0;border-top:1px solid var(--border)}
+  .lrow:first-child{border-top:0}
+  .lrow .t{min-width:0;flex:1}
+  .lrow .t b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lrow .t span{display:block;font-size:10.5px;color:var(--muted-fg);margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .b{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:1px 7px;
+    font-size:9.5px;font-weight:700;white-space:nowrap;flex:none}
+  .b.ok{background:var(--green-light);color:var(--green)}
+  .b.wait{background:var(--amber-soft);color:var(--amber-strong)}
+
+  /* thực đơn tuần */
+  .week{background:var(--green-subtle);border-color:var(--green-light)}
+  .week .days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px}
+  .d{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .d span{font-size:9px;font-weight:700;color:var(--muted-fg);text-align:center}
+  .d.today span{color:var(--green)}
+  .d i{display:block;height:20px;border-radius:4px;background:#dfe6e9}
+  .d i.on{background:var(--green-muted)}
+  .d.today i.on:first-of-type{background:var(--green)}
+  .pill{display:inline-flex;align-items:center;border-radius:999px;padding:2px 8px;
+    font-size:9.5px;font-weight:700;white-space:nowrap;background:var(--amber-soft);color:var(--amber-strong)}
+
+  /* hồ sơ */
+  .bmi{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding-top:4px}
+  .bmi b{font-family:var(--font-display);font-size:30px;font-weight:700;line-height:.9;
+    letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .scale{display:flex;height:5px;border-radius:999px;overflow:hidden;gap:2px;margin-top:10px}
+  .scale i{display:block;height:100%;opacity:.24}
+  .scale i.on{opacity:1}
+  .z-under{background:var(--amber-soft);flex:14}
+  .z-normal{background:var(--green);flex:26}
+  .z-over{background:var(--amber-strong);flex:20}
+  .z-obese{background:var(--danger);flex:40}
+  .goal{margin-top:12px;padding:8px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--green-light)}
+  .goal .k{font-size:8.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
+  .goal p{font-size:11.5px;margin-top:2px;line-height:1.45}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}
+  .chips span{font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:999px;
+    background:var(--muted-bg);color:var(--muted-fg);white-space:nowrap}
+  .chips span.alert{background:var(--danger-soft);color:var(--danger)}
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width:1000px){
+    .shell{grid-template-columns:1fr;padding-top:20px}
+    .rail{position:static;flex-direction:row;flex-wrap:wrap;align-items:center;
+      padding:10px 12px;gap:4px;border-radius:16px}
+    .me{border:0;padding:4px 8px 4px 4px;flex:none}
+    .me .n{display:none}
+    .bmi-mini{display:none}
+    .rail-cap{display:none}
+    .nav{flex-direction:row;flex-wrap:wrap;padding:0;gap:4px;flex:1}
+    .nav a{padding:7px 11px;font-size:12px}
+    .nav a.on::before{display:none}
+    .nav a .c{display:none}
+    .rail-foot{margin:0;padding:0;border:0}
+    .rail-foot a{padding:7px 11px}
+    .rail-foot a span{display:none}
+  }
+  @media (max-width:720px){
+    .totals{grid-template-columns:1fr 1fr}
+    .tot:nth-child(odd){border-left:0}
+    .tot:nth-child(n+3){border-top:1px solid var(--border)}
+  }
+  @media (max-width:560px){
+    .head h1{font-size:21px}
+    .head .act{width:100%}
+    .head .act .btn{flex:1;justify-content:center}
+    .totals{grid-template-columns:1fr}
+    .tot{border-left:0;border-top:1px solid var(--border)}
+    .tot:first-child{border-top:0}
+    .sec-h,.sec-b,.sec-f{padding-left:15px;padding-right:15px}
+    .arow .go{display:none}
+  }
+
+  /* legend */
+  .legend{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px}
+  .legend h3{font-family:var(--font-sans);font-size:10px;font-weight:800;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--green);margin-bottom:8px}
+  .legend ul{margin:0;padding-left:18px;font-size:12.5px;color:var(--muted-fg);line-height:1.8}
+  .legend li b{color:var(--dark);font-weight:600}
+  .legend .faint{font-size:11.5px;color:#98a1ad;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ==================== RAIL TRÁI ==================== -->
+  <aside class="rail">
+    <div class="me">
+      <div class="av">M</div>
+      <div class="n">
+        <b>minh.hong</b>
+        <span>minh.hong@vegalife.vn</span>
+      </div>
+    </div>
+
+    <div class="bmi-mini">
+      <div class="k">BMI</div>
+      <div class="v"><b>22.5</b><span>Bình thường</span></div>
+    </div>
+
+    <div class="rail-cap">Điều hướng</div>
+    <nav class="nav">
+      <a class="on" href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Tổng quan
+      </a>
+      <a href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>
+        Bài viết
+        <span class="c n">12</span>
+      </a>
+      <a href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18M5 11a7 7 0 0 1 14 0M5 11v8h14v-8"/><path d="M9 7c0-1 1-1 1-2s-1-1-1-2"/></svg>
+        Công thức
+        <span class="c">2</span>
+      </a>
+      <a href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        Thực đơn
+      </a>
+      <a href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+        Hồ sơ
+      </a>
+      <a href="#">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 8.4l6.1-.8z"/></svg>
+        Gói AI
+      </a>
+    </nav>
+
+    <div class="rail-foot">
+      <a href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z" opacity=".25"/><path d="M12 8v8M8 12h8"/></svg>
+        <span>Trợ lý dinh dưỡng</span>
+      </a>
+      <a class="danger" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        <span>Đăng xuất</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ==================== PHẢI ==================== -->
+  <main class="main">
+
+    <header class="head">
+      <div>
+        <h1>Chào buổi chiều, minh.hong</h1>
+        <p class="sub">Thứ Sáu, 30/10/2026 · Tuần 27/10 – 02/11 · Tác giả xác minh</p>
+      </div>
+      <div class="act">
+        <a class="btn outline" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+          Tạo thực đơn
+        </a>
+        <a class="btn primary" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Viết bài
+        </a>
+      </div>
+    </header>
+
+    <!-- tổng -->
+    <section class="card totals" aria-label="Tổng quan">
+      <div class="tot">
+        <div class="k">Bài đã đăng</div>
+        <div class="v"><b>7</b><span>bài</span></div>
+      </div>
+      <div class="tot">
+        <div class="k">Lượt xem</div>
+        <div class="v"><b>1.840</b></div>
+      </div>
+      <div class="tot">
+        <div class="k">Công thức</div>
+        <div class="v"><b>9</b><em>2 chờ duyệt</em></div>
+      </div>
+      <div class="tot">
+        <div class="k">Bữa tuần này</div>
+        <div class="v"><b>14</b><span>bữa</span></div>
+      </div>
+    </section>
+
+    <div class="cols">
+
+      <!-- cột trái nội dung -->
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+
+        <!-- việc cần -->
+        <section class="card">
+          <div class="sec-h">
+            <div>
+              <div class="lbl">Cần bạn</div>
+              <h2>3 việc đang chờ</h2>
+              <p class="sub">Bài nháp · chờ duyệt · chưa kích hoạt</p>
+            </div>
+          </div>
+          <div class="sec-b">
+            <a class="arow" href="#">
+              <div class="ico a"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v5a4 4 0 0 0 0 6v5H4v-5a4 4 0 0 0 0-6z"/></svg></div>
+              <div class="arow-t"><b>Bún chả chay</b><span>Công thức đang chờ duyệt · nộp 29/10</span></div>
+              <span class="go">Xem ›</span>
+            </a>
+            <a class="arow" href="#">
+              <div class="ico i"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+              <div class="arow-t"><b>Tuần 27/10 – 02/11</b><span>Thực đơn đã lập nhưng còn ở trạng thái nháp</span></div>
+              <span class="go">Kích hoạt ›</span>
+            </a>
+            <a class="arow" href="#">
+              <div class="ico a"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+              <div class="arow-t"><b>Phở chay nấm hương</b><span>Bản nháp tạo 26/10 — chưa đăng</span></div>
+              <span class="go">Sửa ›</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- bài viết -->
+        <section class="card">
+          <div class="sec-h">
+            <div>
+              <div class="lbl">Nội dung</div>
+              <h2>Bài viết</h2>
+            </div>
+            <div class="big">12<small>tổng</small></div>
+          </div>
+          <div class="sec-b">
+            <a class="lrow" href="#">
+              <div class="t"><b>Phở chay nấm hương</b><span>28/10 · 412 lượt xem</span></div>
+              <span class="b ok">Đã đăng</span>
+            </a>
+            <a class="lrow" href="#">
+              <div class="t"><b>Bún riêu chay từ cà chua</b><span>24/10 · 306 lượt xem</span></div>
+              <span class="b ok">Đã đăng</span>
+            </a>
+            <a class="lrow" href="#">
+              <div class="t"><b>Gỏi cuốn rau theo mùa</b><span>21/10 · 188 lượt xem</span></div>
+              <span class="b ok">Đã đăng</span>
+            </a>
+          </div>
+          <a class="sec-f" href="#">
+            <span><b>7</b> đã đăng · <b>3</b> nháp · <b>2</b> ngừng đăng</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </a>
+        </section>
+
+        <!-- công thức -->
+        <section class="card">
+          <div class="sec-h">
+            <div>
+              <div class="lbl">Bếp của bạn</div>
+              <h2>Công thức</h2>
+            </div>
+            <div class="big">9<small>tổng</small></div>
+          </div>
+          <div class="sec-b">
+            <a class="lrow" href="#">
+              <div class="t"><b>Bún chả chay</b><span>Bún chả · 45 phút · 2 phần</span></div>
+              <span class="b wait">Chờ duyệt</span>
+            </a>
+            <a class="lrow" href="#">
+              <div class="t"><b>Chả giò rế khoai môn</b><span>Chả giò · 60 phút · 4 phần</span></div>
+              <span class="b wait">Chờ duyệt</span>
+            </a>
+            <a class="lrow" href="#">
+              <div class="t"><b>Canh chua chay</b><span>Canh · 25 phút · 3 phần</span></div>
+              <span class="b ok">Đã duyệt</span>
+            </a>
+          </div>
+          <a class="sec-f" href="#">
+            <span><b>5</b> đã duyệt · <b>2</b> chờ duyệt · <b>2</b> từ chối</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </a>
+        </section>
+      </div>
+
+      <!-- cột phải nội dung -->
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+
+        <!-- thực đơn -->
+        <section class="card week">
+          <div class="sec-h" style="border-color:var(--green-light)">
+            <div>
+              <div class="lbl">Tuần này</div>
+              <h2>Thực đơn</h2>
+              <p class="sub" style="color:var(--muted-fg)">27/10 – 02/11</p>
+            </div>
+            <span class="pill">Nháp</span>
+          </div>
+          <div class="sec-b">
+            <div class="days" aria-label="14 trên 21 ô bữa đã điền">
+              <div class="d"><span>T2</span><i class="on"></i><i class="on"></i><i></i></div>
+              <div class="d"><span>T3</span><i class="on"></i><i class="on"></i><i class="on"></i></div>
+              <div class="d"><span>T4</span><i class="on"></i><i></i><i class="on"></i></div>
+              <div class="d"><span>T5</span><i class="on"></i><i class="on"></i><i></i></div>
+              <div class="d"><span>T6</span><i class="on"></i><i class="on"></i><i class="on"></i></div>
+              <div class="d today"><span>T7</span><i class="on"></i><i class="on"></i><i></i></div>
+              <div class="d"><span>CN</span><i></i><i></i><i></i></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:13px;
+              padding-top:11px;border-top:1px solid var(--green-light)">
+              <span style="font-size:11.5px;color:var(--muted-fg);font-weight:600">
+                <b style="font-family:var(--font-display);font-size:15px;color:var(--dark)">14</b> / 21 ô
+              </span>
+              <a class="btn primary" style="height:30px;font-size:11.5px;padding:0 12px" href="#">
+                Mở tuần
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- hồ sơ -->
+        <section class="card">
+          <div class="sec-h">
+            <div>
+              <div class="lbl">Hồ sơ</div>
+              <h2>Sức khoẻ</h2>
+            </div>
+            <a href="#" style="font-size:11px;font-weight:700;color:var(--green)">Sửa ›</a>
+          </div>
+          <div class="sec-b">
+            <div class="bmi">
+              <b>22.5</b>
+              <span class="b ok">Bình thường</span>
+            </div>
+            <div class="scale"><i class="z-under"></i><i class="z-normal on"></i><i class="z-over"></i><i class="z-obese"></i></div>
+            <div class="goal">
+              <div class="k">Mục tiêu</div>
+              <p>Giảm 3 kg trong 3 tháng, giữ đủ đạm cho buổi tập.</p>
+            </div>
+            <div class="chips">
+              <span>2 sở thích</span>
+              <span>1 không thích</span>
+              <span class="alert">1 dị ứng</span>
+              <span>1 hạn chế</span>
+            </div>
+          </div>
+          <a class="sec-f" href="#">
+            <span>Cập nhật lần cuối <b>24/10/2026</b></span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </a>
+        </section>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- legend -->
+<div class="shell" style="display:block;padding-top:0">
+  <div class="legend">
+    <h3>Bản vẽ này ăn khớp schema nào</h3>
+    <ul>
+      <li><b>Rail trái</b> ← <code>profile.username</code>, <code>email</code>, <code>bmi</code>; số cạnh mục nav ← <code>posts.total</code>, <code>recipes.pending</code>.</li>
+      <li><b>Dải tổng 4 ô</b> ← <code>posts.published</code>, <code>posts.totalViews</code>, <code>recipes.total/pending</code>, <code>mealPlan.current.mealCount</code>.</li>
+      <li><b>3 việc đang chờ</b> ← <code>attention[]</code> (kind, title, occurredAt, refId).</li>
+      <li><b>Bài viết / Công thức</b> ← <code>posts.latest[]</code>, <code>recipes.latest[]</code> + đếm theo status ở dòng footer.</li>
+      <li><b>Thực đơn</b> ← <code>mealPlan.current</code> (status, startDate/endDate, mealCount). 21 ô = 7 × 3 bữa.</li>
+      <li><b>Hồ sơ</b> ← <code>profile.bmi</code>, <code>bmiCategory</code>, <code>healthGoal</code>, <code>updatedAt</code>; chip đếm từ 4 mảng dietary.</li>
+    </ul>
+    <p class="faint">
+      Rail dùng <code>--dark</code> + <code>--green-bright</code>, ô tuần dùng <code>--green-subtle</code> — toàn token có sẵn trong <code>@theme</code>.
+      Không gradient. Không biểu đồ thời gian / streak / lượt lưu / bình luận: API chưa trả.
+    </p>
+  </div>
+</div>
+</body>
+</html>
