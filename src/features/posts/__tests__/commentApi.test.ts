@@ -200,6 +200,14 @@ describe("commentApi — post comment endpoints", () => {
         expect(res.totalElements).toBe(1);
     });
 
+    it("getPostComments trả về mảng rỗng an toàn khi server lỗi 500 và chưa có/đã xoá hết bình luận local", async () => {
+        vi.mocked(api.get).mockRejectedValueOnce(new Error("500 Internal Server Error"));
+
+        const res = await getPostComments(postId, { page: 0, size: 20 });
+        expect(res.content).toEqual([]);
+        expect(res.totalElements).toBe(0);
+    });
+
     it("removeLocalComment xoá comment khỏi localStorage", () => {
         const mockComment: PostCommentThread = {
             id: "local-c1",

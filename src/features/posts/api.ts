@@ -334,21 +334,19 @@ export async function getPostComments(
             content: merged,
             totalElements,
         };
-    } catch (error) {
-        // Fallback hiển thị bình luận local nếu backend bị sự cố 500
+    } catch {
+        // Fallback an toàn nếu backend bị sự cố 500 hoặc mất mạng:
+        // Trả về danh sách local (hoặc mảng rỗng nếu chưa có/đã xoá hết) thay vì làm sập UI
         const local = getLocalComments(postId);
-        if (local.length > 0) {
-            return {
-                content: local,
-                page,
-                size,
-                totalElements: countAllComments(local),
-                totalPages: 1,
-                first: true,
-                last: true,
-            };
-        }
-        throw error;
+        return {
+            content: local,
+            page,
+            size,
+            totalElements: countAllComments(local),
+            totalPages: 1,
+            first: true,
+            last: true,
+        };
     }
 }
 
