@@ -3,14 +3,18 @@ import { Link, useParams } from "react-router-dom";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/common/ErrorState";
+import { useAuth } from "@/features/auth/useAuth";
 import { formatDateLocale } from "@/shared/utils/formatDate";
-import { usePayment } from "../../useBilling";
+import { usePayment, useSubscriptionHistory } from "../../useBilling";
 
-/** VNPay redirect về `/payment/result/{paymentId}` — trang này chỉ hiển thị, IPN mới kích hoạt gói. */
+/** VNPay redirect về `/payment/result/{paymentId}` — V48 Request Allowance Release */
 export default function PaymentResultPage() {
     const { t, i18n } = useTranslation("subscription");
     const { paymentId = "" } = useParams();
+    const { isAuthenticated } = useAuth();
+
     const payment = usePayment(paymentId);
+    const history = useSubscriptionHistory(0, isAuthenticated);
 
     if (payment.isLoading) {
         return (
@@ -28,25 +32,41 @@ export default function PaymentResultPage() {
         );
     }
 
-    const { status, plan, amount, currency, paidAt } = payment.data;
+    const { status, amount, currency, paidAt } = payment.data;
+    // V48: Plan context đã được loại bỏ khỏi payment ledger, lấy từ history
+    const matchedPlanName =
+        history.data?.content.find((item) => item.paymentId === paymentId)?.planName ??
+        t("payments.defaultPlanName");
+
     const Icon = status === "succeeded" ? CheckCircle2 : status === "pending" ? Loader2 : XCircle;
-    const color = status === "succeeded" ? "text-vegan-green" : status === "pending" ? "text-amber-strong" : "text-terracotta";
+    const color =
+        status === "succeeded"
+            ? "text-vegan-green"
+            : status === "pending"
+              ? "text-amber-strong"
+              : "text-terracotta";
 
     return (
         <div className="mx-auto flex max-w-md flex-col items-center px-4 py-16 text-center">
-            <Icon className={`mb-4 h-16 w-16 ${color} ${status === "pending" ? "animate-spin" : ""}`} aria-hidden="true" />
+            <Icon
+                className={`mb-4 h-16 w-16 ${color} ${status === "pending" ? "animate-spin" : ""}`}
+                aria-hidden="true"
+            />
             <h1 className="text-2xl font-semibold text-dark">{t(`result.${status}.title`)}</h1>
             <p className="mt-2 text-muted-foreground">{t(`result.${status}.description`)}</p>
 
             <dl className="mt-6 w-full space-y-2 rounded-2xl border border-border bg-card p-5 text-left text-sm">
                 <div className="flex justify-between">
                     <dt className="text-muted-foreground">{t("payments.plan")}</dt>
-                    <dd className="font-semibold text-dark">{plan.name}</dd>
+                    <dd className="font-semibold text-dark">{matchedPlanName}</dd>
                 </div>
                 <div className="flex justify-between">
                     <dt className="text-muted-foreground">{t("payments.amount")}</dt>
                     <dd className="font-semibold text-dark">
-                        {new Intl.NumberFormat(i18n.language === "vi" ? "vi-VN" : "en-US", { style: "currency", currency }).format(amount)}
+                        {new Intl.NumberFormat(i18n.language === "vi" ? "vi-VN" : "en-US", {
+                            style: "currency",
+                            currency,
+                        }).format(amount)}
                     </dd>
                 </div>
                 {paidAt && (
