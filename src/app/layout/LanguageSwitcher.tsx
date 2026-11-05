@@ -7,7 +7,8 @@ const LANGUAGES: { value: SupportedLanguage; label: string }[] = [
     { value: "vi", label: "VI" },
 ];
 
-export function LanguageSwitcher() {
+/** `onBrand` — dùng khi đặt trên nền xanh đặc (header/footer). */
+export function LanguageSwitcher({ onBrand = false }: { onBrand?: boolean }) {
     const { i18n } = useTranslation();
     const { language, setLanguage } = useUiStore();
 
@@ -17,7 +18,11 @@ export function LanguageSwitcher() {
     };
 
     return (
-        <div className="flex items-center gap-1 rounded-xl border border-border bg-background p-1">
+        <div
+            className={`flex items-center gap-1 rounded-xl border p-1 ${
+                onBrand ? "border-white/25 bg-white/10" : "border-border bg-background"
+            }`}
+        >
             {LANGUAGES.map((lang) => (
                 <button
                     key={lang.value}
@@ -26,8 +31,12 @@ export function LanguageSwitcher() {
                     onClick={() => handleChange(lang.value)}
                     className={`flex h-7 items-center rounded-lg px-2 text-xs font-semibold transition-colors ${
                         language === lang.value
-                            ? "bg-vegan-green text-white shadow-sm"
-                            : "text-muted-foreground hover:text-vegan-green"
+                            ? onBrand
+                                ? "bg-white text-vegan-green shadow-sm"
+                                : "bg-vegan-green text-white shadow-sm"
+                            : onBrand
+                              ? "text-white/90 hover:text-white"
+                              : "text-muted-foreground hover:text-vegan-green"
                     }`}
                 >
                     {lang.label}

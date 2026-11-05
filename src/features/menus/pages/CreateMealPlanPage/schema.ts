@@ -1,13 +1,12 @@
 import type { MealType } from "../../types";
 import { addDays, parseISODate, toISODate } from "../../week";
 
-export const MEAL_TYPES: MealType[] = ["BREAKFAST", "LUNCH", "DINNER"];
-
-/** Khớp `MenuValidator` backend — sai là 400 cả tuần, không lưu gì. */
-export const MIN_DISTINCT_DISHES = 5;
-export const MAX_DISH_REPEATS = 3;
-export const MIN_SERVINGS = 1;
-export const MAX_NOTES_LENGTH = 500;
+/**
+ * Luật tuần sống ở `types.ts` vì bảng tuần (`MenuCard`) cũng cần hiển thị — đừng khai báo lại.
+ * Re-export để chỗ đang import từ `./schema` không phải sửa.
+ */
+export { MAX_DISH_REPEATS, MAX_NOTES_LENGTH, MEAL_TYPES, MIN_DISTINCT_DISHES, MIN_SERVINGS } from "../../types";
+import { MEAL_TYPES } from "../../types";
 
 /** Món đã chọn — chỉ giữ đủ để gửi `dishId` và hiện tên. */
 export interface PickedDish {

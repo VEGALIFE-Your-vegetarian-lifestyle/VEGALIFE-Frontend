@@ -67,7 +67,8 @@ src/
     locations/      # api, nearbyApi, geo, openingHours, types, mocks,
                     # components/PlaceMap, pages/{NearbyPage,LocationDetailPage,AdminLocationsPage}
     menus/          # api, useMealPlans, week.ts (tính tuần local), types,
-                    # components/{MenuCard,DayColumn,MealRow,WeekNavigator,MenuActions},
+                    # components/{MenuCard,DayColumn,MealRow,DishDetailDialog,
+                    #   WeekNavigator,MenuActions},
                     # pages/MealPlanPage (xem + đổi trạng thái),
                     # pages/CreateMealPlanPage/ (schema, validate, payload,
                     #   DayEditor, DishSlotPicker)
@@ -78,6 +79,7 @@ src/
     profile/        # ProfilePage (rail danh tính + 1 form gộp), api, useProfile,
                     # TagInput, dietary.ts (hằng số + toDietaryValues/normalizeTags)
     recipes/        # api (create + gợi ý dish/ingredient), adminApi (admin list), types,
+                    # components/RecipeDetailDialog (tờ công thức, MyRecipesPage dùng),
                     # pages/CreateRecipePage/ (schema, payload, IngredientEditor,
                     #   StepEditor, AutocompleteField, RecipeSidebar, RecipePreviewCard),
                     # pages/AdminRecipesPage/ (AdminRecipesPage, RecipeDetailDialog)
@@ -107,7 +109,8 @@ components/  →  ✗ KHÔNG import features/**
 
 Phụ thuộc giữa feature: `admin → posts, categories, videos, locations, profile, recipes`;
 `posts → categories, auth`; `recipes → categories` (chỉ `useCategoryNames`); `profile → auth`;
-`menus → auth`.
+`menus` không phụ thuộc feature nào (dialog chi tiết món dựng từ chính response
+`GET /api/menus/details` — xem `DishDetailDialog.tsx`).
 
 Page nhiều khối đã tách file con cùng thư mục: `PostDetailPage/`, `ExplorePage/`, `HomePage/`,
 `CreateRecipePage/`, `CreateMealPlanPage/`, `AdminLocationsPage/`, `AdminRecipesPage/`.
@@ -174,3 +177,4 @@ Sidebar admin khai báo ở `src/features/admin/AdminShell.tsx` (`navItems`, c�
 - `CreateRecipePage`: 4 khối đánh số (tổng quan → nguyên liệu → bước nấu → khẩu phần & thời gian). Cả 4 dùng `SectionCard` với `inlineHeader` (badge số nằm **cạnh** tiêu đề + đường kẻ xám phân cách body) — cờ này opt-in nên Create Post / Post Detail không đổi. 5 ô dinh dưỡng **đã bỏ khỏi UI** 2026-10-30 (mockup không có) nhưng `schema.ts`/`payload.ts` vẫn validate + gửi được. Nút Cancel/Create Recipe nằm ở prop `actions` của `RecipeSidebar` (dưới checklist), không ở header. `instructions` là `TEXT` thuần → form nhập **mỗi bước một ô** (`steps: {title, body}[]`), `joinSteps()` gộp thành `"tiêu đề — thân"` mỗi bước một dòng khi gửi; **không** dùng `RichTextEditor`. Không có field ảnh bìa (endpoint không nhận). Chưa có trang danh sách/chi tiết recipe công khai (thiếu `GET /api/recipes`).
 - `CreateMealPlanPage`: 7 ngày × 3 ô bữa cố định (`BREAKFAST`/`LUNCH`/`DINNER`), ô trống không gửi. `validate.ts` thuần (không Yup) vì luật BR-MENU-005 là quan hệ giữa các ô: **≥5 món khác nhau**, **≤3 lần/món**. Nút Lưu khoá tới khi hết lỗi. Chỉ tạo `drafted`; đổi trạng thái bằng nút trên `MenuCard` (`MenuActions`) qua `POST /api/menus/{id}/status`. Không có endpoint xoá menu — `cancelled` là đường bỏ duy nhất. Không có ai/cron nào khác đổi status hộ user.
 - `POST`/`PATCH`/`status` của menu trả shape khác `GET /api/menus/details` (thiếu `dish` đầy đủ) → sau khi ghi luôn `invalidateQueries(["meal-plans"])`, đừng render từ response.
+- `MealPlanPage` mặc định chỉ hiện menu `status === "scheduled"`; `drafted`/`cancelled`/`completed` chọn qua `PillTabs` gắn `?status=`. Lọc **client-side** vì `GET /api/menus/details` không nhận `status`. Ô bữa chỉ hiện tên món; bấm mở `DishDetailDialog` dựng từ chính response của tuần (không có endpoint dish → recipe).

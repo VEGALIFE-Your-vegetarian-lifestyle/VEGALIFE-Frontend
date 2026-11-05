@@ -16,6 +16,10 @@ const buttonVariants = cva(
                 soft: "bg-lavender text-lavender-strong hover:bg-lavender-hover",
                 /** Nút trắng có viền — "Continue with Google", tab chưa chọn. */
                 white: "border border-border bg-surface text-dark hover:bg-muted-bg",
+                /** Nút đặt trên nền xanh đặc (header/footer) — CTA chính. */
+                onBrand: "bg-white text-vegan-green hover:bg-vegan-green-light active:bg-vegan-green-light/80",
+                /** Nút phụ đặt trên nền xanh đặc — Login/Register, icon header admin. */
+                onBrandGhost: "text-white/90 hover:bg-white/15 hover:text-white",
             },
             size: {
                 xs: "h-8 px-3 text-xs",

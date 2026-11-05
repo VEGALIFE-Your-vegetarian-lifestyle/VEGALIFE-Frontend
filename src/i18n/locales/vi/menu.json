@@ -34,6 +34,27 @@
     "servings_other": "{{count}} phần",
     "noMeals": "Chưa có bữa",
     "notes": "Ghi chú",
+    "dish": {
+        "open": "Xem chi tiết {{name}}",
+        "eyebrow": "Món ăn"
+    },
+    "mealTypeLabel": "Bữa",
+    "servingsLabel": "Khẩu phần",
+    "cuisineLabel": "Ẩm thực",
+    "filter": {
+        "empty": "Tuần này không có thực đơn ở trạng thái “{{status}}”."
+    },
+    "updatedAt": "Cập nhật {{time}}",
+    "stats": {
+        "meals": "Số bữa đã lên",
+        "ofSlots": "trên {{total}} ô",
+        "distinct": "Món khác nhau",
+        "distinctOk": "tối thiểu {{min}} · đạt",
+        "distinctShort": "tối thiểu {{min}} · chưa đạt",
+        "days": "Ngày có bữa",
+        "servings": "Tổng khẩu phần",
+        "maxRepeat": "tối đa {{max}} lần/món"
+    },
     "empty": {
         "title": "Tuần này chưa có thực đơn",
         "description": "Bạn có thể tự lập thực đơn, hoặc nhờ trợ lý AI dinh dưỡng lập dựa trên hồ sơ ăn uống, dị ứng và BMI của bạn.",

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, Leaf, LogOut, Menu, Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,24 +57,33 @@ export function Navbar() {
     };
 
     return (
-        <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
+        /* `z-30`: bỏ `sticky` (header tĩnh theo yêu cầu thiết kế) nhưng vẫn phải nổi trên khối
+           hero cũng `relative`, nếu không dropdown tài khoản bị vẽ đè. */
+        <header className="chrome-field relative z-30 text-white">
             <div className="mx-auto flex h-16 max-w-app items-center gap-4 px-4 sm:px-6 lg:px-8">
-                <Link to="/" className="flex flex-shrink-0 items-center gap-2 text-dark transition-colors hover:text-vegan-green">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-vegan-green-light">
-                        <Leaf className="h-5 w-5 text-vegan-green" />
+                <Link to="/" className="flex flex-shrink-0 items-center gap-2 text-white transition-colors hover:text-vegan-green-light">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/15">
+                        <Leaf className="h-5 w-5 text-white" />
                     </div>
                     <span className="text-lg font-bold tracking-tight">{t("appName")}</span>
                 </Link>
 
-                <nav className="hidden items-center gap-6 lg:flex">
+                <nav className="hidden items-center gap-2 lg:flex">
                     {navLinks.map((link) => (
-                        <Link
+                        <NavLink
                             key={link.labelKey}
                             to={link.href}
-                            className="whitespace-nowrap text-sm font-semibold text-muted-foreground transition-colors hover:text-vegan-green"
+                            end={link.href === "/"}
+                            className={({ isActive }) =>
+                                `whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                                    isActive
+                                        ? "bg-white/15 text-white"
+                                        : "text-white/90 hover:bg-white/10 hover:text-white"
+                                }`
+                            }
                         >
                             {t(link.labelKey)}
-                        </Link>
+                        </NavLink>
                     ))}
                 </nav>
 
@@ -91,17 +100,17 @@ export function Navbar() {
                             onChange={(event) => setKeyword(event.target.value)}
                             placeholder={t("searchPlaceholder")}
                             aria-label={t("searchPlaceholder")}
-                            className="h-10 w-full rounded-full border border-border bg-muted-bg pl-10 pr-4 text-sm text-dark placeholder:text-muted-foreground focus-visible:border-vegan-green focus-visible:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vegan-green"
+                            className="h-10 w-full rounded-full border border-transparent bg-white/95 pl-10 pr-4 text-sm text-dark placeholder:text-muted-foreground focus-visible:border-transparent focus-visible:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                         />
                     </div>
                 </form>
 
                 <div className="ml-auto flex flex-shrink-0 items-center gap-2 md:ml-0">
                     <div className="hidden md:block">
-                        <LanguageSwitcher />
+                        <LanguageSwitcher onBrand />
                     </div>
 
-                    <Button variant="primary" shape="pill" onClick={handleCreatePost} className="hidden md:inline-flex">
+                    <Button variant="onBrand" shape="pill" onClick={handleCreatePost} className="hidden md:inline-flex">
                         <Plus className="h-4 w-4" aria-hidden="true" />
                         {t("newPost")}
                     </Button>
@@ -114,16 +123,16 @@ export function Navbar() {
                                 aria-haspopup="menu"
                                 aria-expanded={menuOpen}
                                 aria-label={t("accountMenu")}
-                                className="flex items-center gap-1 rounded-full p-0.5 transition hover:bg-accent"
+                                className="flex items-center gap-1 rounded-full p-0.5 transition hover:bg-white/15"
                             >
                                 <Avatar name={user?.username} src={profile?.avatarUrl} size="sm" />
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                                <ChevronDown className="h-4 w-4 text-white/70" aria-hidden="true" />
                             </button>
 
                             {menuOpen && (
                                 <div
                                     role="menu"
-                                    className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card py-1 shadow-lg"
+                                    className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card py-1 text-dark shadow-xl"
                                 >
                                     <div className="border-b border-border px-4 py-2.5">
                                         <p className="truncate text-sm font-bold text-dark">{user?.username}</p>
@@ -161,10 +170,14 @@ export function Navbar() {
                         </div>
                     ) : (
                         <div className="hidden items-center gap-2 md:flex">
-                            <Button variant="ghost" onClick={() => navigate("/login")}>
+                            <Button variant="onBrandGhost" onClick={() => navigate("/login")}>
                                 {t("login")}
                             </Button>
-                            <Button variant="outline" onClick={() => navigate("/register")}>
+                            <Button
+                                variant="onBrandGhost"
+                                className="border border-white/40"
+                                onClick={() => navigate("/register")}
+                            >
                                 {t("register")}
                             </Button>
                         </div>
@@ -172,7 +185,7 @@ export function Navbar() {
 
                     <button
                         type="button"
-                        className="rounded-md p-2 text-dark md:hidden"
+                        className="rounded-md p-2 text-white md:hidden"
                         onClick={() => setMobileMenuOpen((open) => !open)}
                         aria-label={mobileMenuOpen ? t("closeMenu") : t("openMenu")}
                     >
@@ -182,7 +195,7 @@ export function Navbar() {
             </div>
 
             {mobileMenuOpen && (
-                <div className="border-t border-border bg-card px-4 py-4 md:hidden">
+                <div className="border-t border-white/15 bg-black/10 px-4 py-4 md:hidden">
                     <form onSubmit={handleSearch} className="mb-4" role="search">
                         <div className="relative">
                             <Search
@@ -195,7 +208,7 @@ export function Navbar() {
                                 onChange={(event) => setKeyword(event.target.value)}
                                 placeholder={t("searchPlaceholder")}
                                 aria-label={t("searchPlaceholder")}
-                                className="h-10 w-full rounded-full border border-border bg-muted-bg pl-10 pr-4 text-sm text-dark"
+                                className="h-10 w-full rounded-full border border-transparent bg-white/95 pl-10 pr-4 text-sm text-dark placeholder:text-muted-foreground"
                             />
                         </div>
                     </form>
@@ -205,15 +218,15 @@ export function Navbar() {
                             <Link
                                 key={link.labelKey}
                                 to={link.href}
-                                className="text-sm font-semibold text-muted-foreground hover:text-vegan-green"
+                                className="text-sm font-semibold text-white/90 hover:text-white"
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 {t(link.labelKey)}
                             </Link>
                         ))}
-                        <hr className="border-border" />
+                        <hr className="border-white/15" />
                         <Button
-                            variant="primary"
+                            variant="onBrand"
                             shape="pill"
                             onClick={() => {
                                 handleCreatePost();
@@ -224,23 +237,23 @@ export function Navbar() {
                             {t("newPost")}
                         </Button>
                         <div className="py-1">
-                            <LanguageSwitcher />
+                            <LanguageSwitcher onBrand />
                         </div>
                         {isAuthenticated ? (
                             <>
-                                <Link to="/account" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
+                                <Link to="/account" className="text-sm font-semibold text-white" onClick={() => setMobileMenuOpen(false)}>
                                     {t("myAccount")}
                                 </Link>
-                                <button onClick={handleLogout} className="text-left text-sm font-semibold text-danger">
+                                <button onClick={handleLogout} className="text-left text-sm font-semibold text-white/80 underline-offset-2 hover:text-white hover:underline">
                                     {t("logout")}
                                 </button>
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
+                                <Link to="/login" className="text-sm font-semibold text-white" onClick={() => setMobileMenuOpen(false)}>
                                     {t("login")}
                                 </Link>
-                                <Link to="/register" className="text-sm font-semibold text-dark" onClick={() => setMobileMenuOpen(false)}>
+                                <Link to="/register" className="text-sm font-semibold text-white" onClick={() => setMobileMenuOpen(false)}>
                                     {t("register")}
                                 </Link>
                             </>
