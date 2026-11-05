@@ -10,13 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/common/Pagination";
 import { CommentComposer } from "@/features/posts/components/CommentComposer";
 import { CommentThread } from "@/features/posts/components/CommentThread";
-import { PostVoteButtons } from "@/features/posts/components/PostVoteButtons";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
 import { FALLBACK_IMAGE, showFallbackImage, stripMarkdown } from "@/shared/utils/display";
 import { estimateReadMinutes, formatDateLocale } from "@/shared/utils/formatDate";
 import { useUiStore } from "@/shared/ui/uiStore";
 import type { PostListResponse } from "../../types";
-import { getPostComments } from "../../api";
+import { countAllComments, getPostComments } from "../../api";
 
 /** 20 comment gốc/trang — cùng cỡ với `CommentsSection` ở Post Detail. */
 const PER_PAGE = 20;
@@ -49,7 +48,9 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
     });
 
     const categoryName = post?.categoryIds.map((id) => categoryNames.get(id)).find(Boolean);
-    const total = comments?.totalElements ?? 0;
+    const total = comments
+        ? Math.max(comments.totalElements, countAllComments(comments.content))
+        : 0;
 
     return (
         <Dialog
@@ -97,11 +98,10 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1 border-y border-border py-2">
-                        <PostVoteButtons postId={post.id} />
-                        <span className="ml-auto text-xs font-semibold text-muted-foreground">
+                    <div className="flex items-center justify-between border-y border-border py-2.5">
+                        <h3 className="text-sm font-bold text-dark">
                             {t("post:comments.eyebrow", { count: total })}
-                        </span>
+                        </h3>
                     </div>
 
                     {isError && comments && comments.content.length > 0 && (

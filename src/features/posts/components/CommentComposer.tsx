@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/useAuth";
 import type { PageResponse } from "@/shared/types/common";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
-import { createComment, saveLocalComment } from "../api";
+import { countAllComments, createComment, saveLocalComment } from "../api";
 import type { PostCommentThread } from "../types";
 
 /** BE chưa khai báo giới hạn — chặn ở client cho khỏi gửi payload vô hạn. */
@@ -112,10 +112,11 @@ export function CommentComposer({
                             last: true,
                         };
                     }
+                    const newContent = addCommentToTree(old.content ?? [], newThreadItem, parentId);
                     return {
                         ...old,
-                        totalElements: (old.totalElements ?? 0) + 1,
-                        content: addCommentToTree(old.content ?? [], newThreadItem, parentId),
+                        totalElements: Math.max((old.totalElements ?? 0) + 1, countAllComments(newContent)),
+                        content: newContent,
                     };
                 },
             );

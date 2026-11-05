@@ -157,6 +157,20 @@ export function organizeCommentTree(threads: PostCommentThread[]): PostCommentTh
     return roots;
 }
 
+/**
+ * Đếm tổng số bình luận bao gồm cả bình luận gốc và toàn bộ các câu trả lời (replies).
+ */
+export function countAllComments(threads: PostCommentThread[]): number {
+    let count = 0;
+    for (const item of threads) {
+        count += 1;
+        if (item.replies && item.replies.length > 0) {
+            count += countAllComments(item.replies);
+        }
+    }
+    return count;
+}
+
 export function getLocalComments(postId: string): PostCommentThread[] {
     try {
         if (typeof window === "undefined" || !window.localStorage) return [];
@@ -238,10 +252,17 @@ export async function getPostComments(
         const local = getLocalComments(postId);
         const merged = mergeComments(normalized, local);
 
+        const allCount = countAllComments(merged);
+        const repliesInMerged = Math.max(0, allCount - merged.length);
+        const totalElements = Math.max(
+            Number(pageData?.totalElements ?? 0) + repliesInMerged,
+            allCount,
+        );
+
         return {
             ...pageData,
             content: merged,
-            totalElements: Math.max(Number(pageData?.totalElements ?? 0), merged.length),
+            totalElements,
         };
     } catch (error) {
         // Fallback hiển thị bình luận local nếu backend bị sự cố 500
@@ -251,7 +272,7 @@ export async function getPostComments(
                 content: local,
                 page,
                 size,
-                totalElements: local.length,
+                totalElements: countAllComments(local),
                 totalPages: 1,
                 first: true,
                 last: true,

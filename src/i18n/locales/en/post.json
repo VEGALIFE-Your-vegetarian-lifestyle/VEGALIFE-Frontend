@@ -24,6 +24,7 @@
         "loginToComment": "Sign in to join the conversation",
         "posted": "Comment posted",
         "reply": "Reply",
+        "replyTo": "Replying to",
         "replyPlaceholder": "Reply to @{{username}}...",
         "replySubmit": "Post Reply",
         "replyPosted": "Reply posted",

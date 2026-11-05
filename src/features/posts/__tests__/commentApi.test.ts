@@ -80,6 +80,7 @@ describe("commentApi — post comment endpoints", () => {
         expect(res.content[0].username).toBe("Chef Green");
         expect(res.content[0].replies[0].displayName).toBe("Foodie");
         expect(res.content[0].replies[0].username).toBe("Foodie");
+        expect(res.totalElements).toBe(2);
     });
 
     it("createComment với parentId null/undefined chỉ gửi content và bỏ parentId", async () => {

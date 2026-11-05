@@ -7,7 +7,7 @@ import { SectionCard } from "@/components/common/SectionCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CommentComposer } from "@/features/posts/components/CommentComposer";
 import { CommentThread } from "@/features/posts/components/CommentThread";
-import { getPostComments } from "../../api";
+import { countAllComments, getPostComments } from "../../api";
 import { useUiStore } from "@/shared/ui/uiStore";
 
 /** Comment gốc mỗi trang; reply luôn về kèm cả cây nên không phân trang riêng. */
@@ -31,7 +31,7 @@ export function CommentsSection({ postId }: Props) {
     });
 
     const comments = data?.content ?? [];
-    const total = data?.totalElements ?? 0;
+    const total = data ? Math.max(data.totalElements, countAllComments(comments)) : 0;
 
     return (
         <SectionCard eyebrow={t("comments.eyebrow", { count: total })} title={t("comments.title")}>
