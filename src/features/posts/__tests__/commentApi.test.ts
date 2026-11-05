@@ -155,6 +155,8 @@ describe("commentApi — post comment endpoints", () => {
         const mockComment: PostCommentThread = {
             id: "local-c1",
             userId: "u-1",
+            parentId: null,
+            replyToUsername: null,
             username: "MySelf",
             displayName: "MySelf",
             avatarUrl: null,
@@ -175,6 +177,8 @@ describe("commentApi — post comment endpoints", () => {
         const mockComment: PostCommentThread = {
             id: "local-c1",
             userId: "u-1",
+            parentId: null,
+            replyToUsername: null,
             username: "MySelf",
             displayName: "MySelf",
             avatarUrl: null,

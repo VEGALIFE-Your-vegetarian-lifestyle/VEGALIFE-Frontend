@@ -198,4 +198,36 @@ describe("CommentThread", () => {
         expect(screen.queryByTitle("Edit comment")).not.toBeInTheDocument();
         expect(screen.getByTitle("Report comment")).toBeInTheDocument();
     });
+
+    it("render cây reply lồng nhau có badge Trả lời @username", () => {
+        const commentWithReply: PostCommentThread = {
+            ...MOCK_COMMENT,
+            replies: [
+                {
+                    id: "reply-nested-1",
+                    userId: "user-nested",
+                    parentId: MOCK_COMMENT.id,
+                    replyToUsername: "PlantLover",
+                    username: "SousChef",
+                    displayName: "SousChef",
+                    avatarUrl: null,
+                    content: "Tam 15 phut la ngon nhat nha!",
+                    edited: false,
+                    deleted: false,
+                    createdAt: "2026-11-01T10:05:00Z",
+                    updatedAt: "2026-11-01T10:05:00Z",
+                    replies: [],
+                },
+            ],
+        };
+
+        renderWithProviders(
+            <CommentThread postId={POST_ID} comment={commentWithReply} language="en" />,
+        );
+
+        expect(screen.getByText("PlantLover")).toBeInTheDocument();
+        expect(screen.getByText("SousChef")).toBeInTheDocument();
+        expect(screen.getByText("Tam 15 phut la ngon nhat nha!")).toBeInTheDocument();
+        expect(screen.getByText("@PlantLover")).toBeInTheDocument();
+    });
 });

@@ -81,6 +81,8 @@ export function CommentComposer({
             const newThreadItem: PostCommentThread = {
                 id: created.id,
                 userId: created.userId || user?.id || null,
+                parentId: parentId || created.parentId || null,
+                replyToUsername: replyToUsername || null,
                 username: authorName,
                 displayName: authorName,
                 avatarUrl: profile?.avatarUrl ?? null,
@@ -93,7 +95,7 @@ export function CommentComposer({
             };
 
             // Lưu dự phòng vào localStorage để F5 vẫn còn nếu backend gặp sự cố 500
-            saveLocalComment(postId, newThreadItem);
+            saveLocalComment(postId, newThreadItem, parentId, replyToUsername);
 
             // 1. Cập nhật ngay bộ nhớ đệm danh sách bình luận (mọi phân trang)
             queryClient.setQueriesData<PageResponse<PostCommentThread>>(

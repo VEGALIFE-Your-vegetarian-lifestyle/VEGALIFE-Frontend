@@ -21,6 +21,8 @@ interface CommentThreadProps {
     postId?: string;
     depth?: number;
     language: string;
+    /** Tên tác giả của comment cha (nếu đây là câu trả lời). */
+    parentAuthor?: string;
 }
 
 const MAX_COMMENT_LENGTH = 1000;
@@ -66,7 +68,13 @@ function markDeletedInTree(
  * - Xoá comment (nếu là chủ comment hoặc admin)
  * - Báo cáo vi phạm
  */
-export function CommentThread({ comment, postId = "", depth = 0, language }: CommentThreadProps) {
+export function CommentThread({
+    comment,
+    postId = "",
+    depth = 0,
+    language,
+    parentAuthor,
+}: CommentThreadProps) {
     const { t } = useTranslation(["post", "common"]);
     const queryClient = useQueryClient();
     const { user, isAuthenticated, isAdmin } = useAuth();
@@ -79,6 +87,7 @@ export function CommentThread({ comment, postId = "", depth = 0, language }: Com
     const [reportReason, setReportReason] = useState("");
 
     const author = comment.displayName ?? comment.username ?? t("comments.deletedAuthor");
+    const replyTarget = comment.replyToUsername || (depth > 0 ? parentAuthor : null);
     const isOwner = !comment.deleted && !!user?.id && user.id === comment.userId;
     const canEdit = isOwner;
     const canDelete = !comment.deleted && isAuthenticated && (isOwner || isAdmin);
@@ -167,17 +176,28 @@ export function CommentThread({ comment, postId = "", depth = 0, language }: Com
     return (
         <div
             className={cn(
-                "rounded-xl border p-4",
-                comment.deleted ? "border-dashed border-border bg-surface" : "border-border bg-muted-bg",
-                // ponytail: BE trả cây sâu tuỳ ý — thụt lề tối đa 2 cấp cho khỏi tràn trên mobile.
-                depth > 0 && "ml-4 mt-3 sm:ml-8",
+                "rounded-xl border transition-colors",
+                depth > 0
+                    ? "p-3 sm:p-3.5 bg-surface border-border/80 shadow-xs"
+                    : "p-4 bg-muted-bg border-border",
+                comment.deleted && "border-dashed opacity-80",
             )}
         >
             <div className="flex items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2.5">
                     <Avatar name={comment.deleted ? undefined : author} src={comment.avatarUrl} size="sm" />
                     <div className="min-w-0">
-                        <p className="text-sm font-bold text-dark">{author}</p>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                            <p className="text-sm font-bold text-dark">{author}</p>
+                            {replyTarget && !comment.deleted && (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-vegan-green/10 px-1.5 py-0.5 text-[11px] font-medium text-vegan-green">
+                                    <CornerDownRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+                                    <span>
+                                        {t("comments.replyTo")} <span className="font-semibold">@{replyTarget}</span>
+                                    </span>
+                                </span>
+                            )}
+                        </div>
                         <p className="text-[11px] text-muted-foreground">
                             {formatDateLocale(comment.createdAt, language)}
                             {comment.edited && !comment.deleted && (
@@ -361,14 +381,15 @@ export function CommentThread({ comment, postId = "", depth = 0, language }: Com
 
             {/* Recursive replies */}
             {comment.replies.length > 0 && (
-                <div className={cn(depth < 2 && "border-l-2 border-vegan-green-muted pl-1")}>
+                <div className="mt-3 space-y-2.5 border-l-2 border-vegan-green/30 pl-3 sm:pl-5 ml-2 sm:ml-4">
                     {comment.replies.map((reply) => (
                         <CommentThread
                             key={reply.id}
                             comment={reply}
                             postId={postId}
-                            depth={Math.min(depth + 1, 2)}
+                            depth={depth + 1}
                             language={language}
+                            parentAuthor={author}
                         />
                     ))}
                 </div>

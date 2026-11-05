@@ -70,11 +70,14 @@ export interface CommentListParams {
     size?: number;
 }
 
-function normalizeComment(item: any): PostCommentThread {
+function normalizeComment(item: any, parentId?: string | null, parentAuthor?: string | null): PostCommentThread {
     const displayName = item?.displayName ?? item?.username ?? null;
+    const pid = item?.parentId ?? parentId ?? null;
     return {
         id: item?.id ?? "",
         userId: item?.userId ?? null,
+        parentId: pid,
+        replyToUsername: item?.replyToUsername ?? parentAuthor ?? null,
         username: displayName,
         displayName,
         avatarUrl: item?.avatarUrl ?? null,
@@ -83,28 +86,113 @@ function normalizeComment(item: any): PostCommentThread {
         deleted: Boolean(item?.deleted),
         createdAt: item?.createdAt ?? "",
         updatedAt: item?.updatedAt ?? "",
-        replies: Array.isArray(item?.replies) ? item.replies.map(normalizeComment) : [],
+        replies: Array.isArray(item?.replies)
+            ? item.replies.map((r: any) => normalizeComment(r, item?.id, displayName))
+            : [],
     };
 }
 
 const LOCAL_COMMENTS_PREFIX = "vegalife_local_comments_";
 
+export function insertCommentIntoTree(
+    threads: PostCommentThread[],
+    newComment: PostCommentThread,
+    parentId?: string | null,
+): PostCommentThread[] {
+    const pid = parentId || newComment.parentId;
+    if (!pid) {
+        if (threads.some((c) => c.id === newComment.id)) return threads;
+        return [newComment, ...threads];
+    }
+    let inserted = false;
+    const updated = threads.map((c) => {
+        if (c.id === pid) {
+            inserted = true;
+            if (c.replies?.some((r) => r.id === newComment.id)) return c;
+            return { ...c, replies: [...(c.replies ?? []), newComment] };
+        }
+        if (c.replies && c.replies.length > 0) {
+            const nested = insertCommentIntoTree(c.replies, newComment, pid);
+            if (nested !== c.replies) inserted = true;
+            return { ...c, replies: nested };
+        }
+        return c;
+    });
+
+    if (!inserted) {
+        if (threads.some((c) => c.id === newComment.id)) return threads;
+        return [...threads, newComment];
+    }
+    return updated;
+}
+
+export function organizeCommentTree(threads: PostCommentThread[]): PostCommentThread[] {
+    const allItems: PostCommentThread[] = [];
+    function collect(list: PostCommentThread[]) {
+        for (const item of list) {
+            allItems.push({ ...item, replies: [] });
+            if (item.replies && item.replies.length > 0) {
+                collect(item.replies);
+            }
+        }
+    }
+    collect(threads);
+
+    const map = new Map<string, PostCommentThread>();
+    const roots: PostCommentThread[] = [];
+    for (const item of allItems) {
+        map.set(item.id, item);
+    }
+
+    for (const item of allItems) {
+        if (item.parentId && map.has(item.parentId)) {
+            const parent = map.get(item.parentId)!;
+            if (!parent.replies.some((r) => r.id === item.id)) {
+                parent.replies.push(item);
+            }
+        } else {
+            roots.push(item);
+        }
+    }
+    return roots;
+}
+
 export function getLocalComments(postId: string): PostCommentThread[] {
     try {
         if (typeof window === "undefined" || !window.localStorage) return [];
         const raw = localStorage.getItem(`${LOCAL_COMMENTS_PREFIX}${postId}`);
-        return raw ? JSON.parse(raw) : [];
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? organizeCommentTree(parsed) : [];
     } catch {
         return [];
     }
 }
 
-export function saveLocalComment(postId: string, comment: PostCommentThread): void {
+export function saveLocalComment(
+    postId: string,
+    comment: PostCommentThread,
+    parentId?: string | null,
+    replyToUsername?: string | null,
+): void {
     try {
         if (typeof window === "undefined" || !window.localStorage) return;
+        const target: PostCommentThread = {
+            ...comment,
+            parentId: parentId || comment.parentId || null,
+            replyToUsername: replyToUsername || comment.replyToUsername || null,
+        };
         const existing = getLocalComments(postId);
-        const filtered = existing.filter((c) => c.id !== comment.id);
-        const updated = [comment, ...filtered];
+        function remove(list: PostCommentThread[]): PostCommentThread[] {
+            return list
+                .filter((c) => c.id !== target.id)
+                .map((c) => ({
+                    ...c,
+                    replies: c.replies ? remove(c.replies) : [],
+                }));
+        }
+        const cleaned = remove(existing);
+        const updated = insertCommentIntoTree(cleaned, target, target.parentId);
         localStorage.setItem(`${LOCAL_COMMENTS_PREFIX}${postId}`, JSON.stringify(updated));
     } catch {
         // ignore storage errors
@@ -113,9 +201,22 @@ export function saveLocalComment(postId: string, comment: PostCommentThread): vo
 
 function mergeComments(server: PostCommentThread[], local: PostCommentThread[]): PostCommentThread[] {
     if (!local || local.length === 0) return server;
-    const serverIds = new Set(server.map((c) => c.id));
-    const extraLocal = local.filter((c) => !serverIds.has(c.id));
-    return [...extraLocal, ...server];
+    let merged = [...server];
+    function collectAll(list: PostCommentThread[]): PostCommentThread[] {
+        const result: PostCommentThread[] = [];
+        for (const item of list) {
+            result.push(item);
+            if (item.replies && item.replies.length > 0) {
+                result.push(...collectAll(item.replies));
+            }
+        }
+        return result;
+    }
+    const allLocal = collectAll(local);
+    for (const loc of allLocal) {
+        merged = insertCommentIntoTree(merged, loc, loc.parentId);
+    }
+    return organizeCommentTree(merged);
 }
 
 /**
@@ -133,7 +234,7 @@ export async function getPostComments(
             params: { page, size },
         });
         const pageData = data.data;
-        const normalized = (pageData?.content ?? []).map(normalizeComment);
+        const normalized = (pageData?.content ?? []).map((item) => normalizeComment(item));
         const local = getLocalComments(postId);
         const merged = mergeComments(normalized, local);
 

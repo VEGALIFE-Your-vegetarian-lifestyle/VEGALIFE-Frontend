@@ -86,6 +86,10 @@ export interface PostCommentThread {
     id: string;
     /** null khi đã xoá mềm. */
     userId: string | null;
+    /** ID của comment cha nếu là câu trả lời (reply). */
+    parentId?: string | null;
+    /** Tên người dùng đang được trả lời. */
+    replyToUsername?: string | null;
     username: string | null;
     /** Tên hiển thị người bình luận — BE trả `displayName`. */
     displayName?: string | null;
