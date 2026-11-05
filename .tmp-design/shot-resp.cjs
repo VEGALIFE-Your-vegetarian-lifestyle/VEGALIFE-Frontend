@@ -35,7 +35,7 @@ const PROFILE = { id: "pf1", userId: "u1", username: "minh.hong", email: "minh.h
       route.fulfill({ status: 200, contentType: "application/json", body });
     });
     for (const route_ of ["/account", "/my-posts", "/recipes", "/profile", "/meal-plan"]) {
-      await page.goto("http://localhost:5173" + route_, { waitUntil: "domcontentloaded" });
+      await page.goto("http://localhost:5174" + route_, { waitUntil: "domcontentloaded" });
       await page.waitForTimeout(1000);
       const sw = await page.evaluate(() => document.documentElement.scrollWidth);
       console.log(tag, route_, "scrollW:", sw, sw > w ? "OVERFLOW" : "ok");

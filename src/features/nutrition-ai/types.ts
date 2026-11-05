@@ -54,21 +54,22 @@ export interface AiPlan {
 }
 
 export interface AiSubscription {
-    tier: "FREE" | "PRO";
-    status: "active" | "cancelled" | "past_due";
-    renewalDate: string | null;
+    tier?: "FREE" | "PRO";
+    status?: "active" | "cancelled" | "past_due";
+    renewalDate?: string | null;
     /**
      * Backend cũng bỏ hẳn `usage` khi user chưa từng mua gói (giống `currentPlan`).
      * Đọc qua optional chaining, đừng giả định có.
      */
     usage?: AiUsage;
+    remainingUsage?: number;
     /**
      * Backend BỎ HẲN field này (không phải `null`) khi user chưa từng mua gói —
      * đã gặp crash `Cannot read properties of undefined (reading 'name')` ở
      * `AiNutritionPage` và `SubscriptionPage`. Luôn đọc qua optional chaining.
      */
     currentPlan?: AiPlan;
-    latestPayment: {
+    latestPayment?: {
         planCode: string;
         amount: number;
         currency: string;
