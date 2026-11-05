@@ -103,7 +103,7 @@ export function PostVoteButtons({ postId, compact = false }: PostVoteButtonsProp
                     aria-pressed={votes?.userVote === type}
                     aria-label={label}
                     className={cn(
-                        "flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-colors sm:px-3",
+                        "flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all duration-150 active:scale-95 sm:px-3",
                         votes?.userVote === type ? active : "text-muted-foreground hover:bg-muted-bg hover:text-dark",
                     )}
                 >
