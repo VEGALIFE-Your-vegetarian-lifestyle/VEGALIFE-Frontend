@@ -6,11 +6,34 @@ import { toast } from "sonner";
 import { Loader2, MessageCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/useAuth";
+import type { PageResponse } from "@/shared/types/common";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { createComment } from "../api";
+import type { PostCommentThread } from "../types";
 
 /** BE chưa khai báo giới hạn — chặn ở client cho khỏi gửi payload vô hạn. */
 const MAX_COMMENT_LENGTH = 1000;
+
+function addCommentToTree(
+    threads: PostCommentThread[],
+    newComment: PostCommentThread,
+    parentId?: string | null,
+): PostCommentThread[] {
+    if (!parentId) {
+        if (threads.some((c) => c.id === newComment.id)) return threads;
+        return [newComment, ...threads];
+    }
+    return threads.map((c) => {
+        if (c.id === parentId) {
+            if (c.replies?.some((r) => r.id === newComment.id)) return c;
+            return { ...c, replies: [...(c.replies ?? []), newComment] };
+        }
+        if (c.replies && c.replies.length > 0) {
+            return { ...c, replies: addCommentToTree(c.replies, newComment, parentId) };
+        }
+        return c;
+    });
+}
 
 interface CommentComposerProps {
     postId: string;
@@ -44,17 +67,79 @@ export function CommentComposer({
     onCancel,
 }: CommentComposerProps) {
     const { t } = useTranslation("post");
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user, profile } = useAuth();
     const queryClient = useQueryClient();
     const [draft, setDraft] = useState("");
 
     const commentMutation = useMutation({
         mutationFn: (content: string) => createComment(postId, { content, parentId }),
-        onSuccess: async () => {
+        onSuccess: async (created) => {
             setDraft("");
             toast.success(parentId ? t("comments.replyPosted") : t("comments.posted"));
+
+            const authorName = profile?.displayName || user?.username || "You";
+            const newThreadItem: PostCommentThread = {
+                id: created.id,
+                userId: created.userId || user?.id || null,
+                username: authorName,
+                displayName: authorName,
+                avatarUrl: profile?.avatarUrl ?? null,
+                content: created.content,
+                edited: false,
+                deleted: false,
+                createdAt: created.createdAt || new Date().toISOString(),
+                updatedAt: created.updatedAt || new Date().toISOString(),
+                replies: [],
+            };
+
+            // 1. Cập nhật ngay bộ nhớ đệm danh sách bình luận (mọi phân trang)
+            queryClient.setQueriesData<PageResponse<PostCommentThread>>(
+                { queryKey: ["post-comments", postId] },
+                (old) => {
+                    if (!old) {
+                        return {
+                            content: [newThreadItem],
+                            page: 0,
+                            size: 20,
+                            totalElements: 1,
+                            totalPages: 1,
+                            first: true,
+                            last: true,
+                        };
+                    }
+                    return {
+                        ...old,
+                        totalElements: (old.totalElements ?? 0) + 1,
+                        content: addCommentToTree(old.content ?? [], newThreadItem, parentId),
+                    };
+                },
+            );
+
+            // 2. Cập nhật ngay bộ nhớ đệm số lượng bình luận ở card feed
+            queryClient.setQueriesData<PageResponse<PostCommentThread>>(
+                { queryKey: ["post-comment-count", postId] },
+                (old) => {
+                    if (!old) {
+                        return {
+                            content: [],
+                            page: 0,
+                            size: 1,
+                            totalElements: 1,
+                            totalPages: 1,
+                            first: true,
+                            last: true,
+                        };
+                    }
+                    return {
+                        ...old,
+                        totalElements: (old.totalElements ?? 0) + 1,
+                    };
+                },
+            );
+
+            // 3. Invalidate để đồng bộ ngầm với backend
             await queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
-            await queryClient.refetchQueries({ queryKey: ["post-comments", postId] });
+            await queryClient.invalidateQueries({ queryKey: ["post-comment-count", postId] });
             onSuccess?.();
         },
         onError: (error: unknown) => toast.error(getApiErrorMessage(error, t("common:error"))),

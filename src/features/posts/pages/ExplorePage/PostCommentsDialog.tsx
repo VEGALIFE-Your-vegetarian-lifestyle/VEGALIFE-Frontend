@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/common/Pagination";
@@ -41,7 +42,7 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
     const categoryNames = useCategoryNames();
     const [page, setPage] = useState(1);
 
-    const { data: comments, isLoading } = useQuery({
+    const { data: comments, isLoading, isError, refetch } = useQuery({
         queryKey: ["post-comments", post?.id, page],
         queryFn: () => getPostComments(post!.id, { page: page - 1, size: PER_PAGE }),
         enabled: !!post,
@@ -109,6 +110,13 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
                                 <Skeleton className="h-20 w-full rounded-xl" />
                                 <Skeleton className="h-20 w-full rounded-xl" />
                             </>
+                        ) : isError && (!comments || comments.content.length === 0) ? (
+                            <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center">
+                                <p className="text-sm text-destructive">{t("post:error")}</p>
+                                <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+                                    {t("common:actions.retry")}
+                                </Button>
+                            </div>
                         ) : total === 0 ? (
                             <p className="py-4 text-center text-sm text-muted-foreground">
                                 {t("post:comments.empty")}

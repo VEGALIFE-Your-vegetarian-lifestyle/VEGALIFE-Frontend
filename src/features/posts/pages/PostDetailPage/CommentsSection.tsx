@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/common/Pagination";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,7 +24,7 @@ export function CommentsSection({ postId }: Props) {
     const [page, setPage] = useState(1);
 
     // GET /api/posts/{postId}/comments — public, phân trang comment gốc.
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ["post-comments", postId, page],
         queryFn: () => getPostComments(postId, { page: page - 1, size: PER_PAGE }),
         enabled: postId !== "",
@@ -38,6 +39,13 @@ export function CommentsSection({ postId }: Props) {
                 <div className="space-y-3">
                     <Skeleton className="h-24 w-full rounded-xl" />
                     <Skeleton className="h-24 w-full rounded-xl" />
+                </div>
+            ) : isError && comments.length === 0 ? (
+                <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center">
+                    <p className="text-sm text-destructive">{t("error")}</p>
+                    <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+                        {t("common:actions.retry")}
+                    </Button>
                 </div>
             ) : comments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t("comments.empty")}</p>

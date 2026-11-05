@@ -14,6 +14,7 @@ import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { deleteComment, reportComment, updateComment } from "../api";
 import { CommentComposer } from "./CommentComposer";
 import type { PostCommentThread } from "../types";
+import type { PageResponse } from "@/shared/types/common";
 
 interface CommentThreadProps {
     comment: PostCommentThread;
@@ -23,6 +24,37 @@ interface CommentThreadProps {
 }
 
 const MAX_COMMENT_LENGTH = 1000;
+
+function updateCommentInTree(
+    threads: PostCommentThread[],
+    commentId: string,
+    newContent: string,
+): PostCommentThread[] {
+    return threads.map((c) => {
+        if (c.id === commentId) {
+            return { ...c, content: newContent, edited: true };
+        }
+        if (c.replies && c.replies.length > 0) {
+            return { ...c, replies: updateCommentInTree(c.replies, commentId, newContent) };
+        }
+        return c;
+    });
+}
+
+function markDeletedInTree(
+    threads: PostCommentThread[],
+    commentId: string,
+): PostCommentThread[] {
+    return threads.map((c) => {
+        if (c.id === commentId) {
+            return { ...c, deleted: true, content: "[deleted]" };
+        }
+        if (c.replies && c.replies.length > 0) {
+            return { ...c, replies: markDeletedInTree(c.replies, commentId) };
+        }
+        return c;
+    });
+}
 
 /**
  * Một comment gốc + cả cây reply. Comment đã xoá mềm vẫn hiện (giữ chỗ cho reply)
@@ -56,15 +88,29 @@ export function CommentThread({ comment, postId = "", depth = 0, language }: Com
     const invalidate = async () => {
         if (postId) {
             await queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
+            await queryClient.invalidateQueries({ queryKey: ["post-comment-count", postId] });
             await queryClient.refetchQueries({ queryKey: ["post-comments", postId] });
+            await queryClient.refetchQueries({ queryKey: ["post-comment-count", postId] });
         }
     };
 
     const updateMutation = useMutation({
         mutationFn: (content: string) => updateComment(postId, comment.id, { content }),
-        onSuccess: () => {
+        onSuccess: (updated) => {
             setIsEditing(false);
             toast.success(t("comments.editedSuccess"));
+            if (postId) {
+                queryClient.setQueriesData<PageResponse<PostCommentThread>>(
+                    { queryKey: ["post-comments", postId] },
+                    (old) => {
+                        if (!old) return old;
+                        return {
+                            ...old,
+                            content: updateCommentInTree(old.content ?? [], comment.id, updated.content),
+                        };
+                    },
+                );
+            }
             invalidate();
         },
         onError: (error: unknown) => toast.error(getApiErrorMessage(error, t("common:error"))),
@@ -75,6 +121,18 @@ export function CommentThread({ comment, postId = "", depth = 0, language }: Com
         onSuccess: () => {
             setShowDeleteConfirm(false);
             toast.success(t("comments.deletedSuccess"));
+            if (postId) {
+                queryClient.setQueriesData<PageResponse<PostCommentThread>>(
+                    { queryKey: ["post-comments", postId] },
+                    (old) => {
+                        if (!old) return old;
+                        return {
+                            ...old,
+                            content: markDeletedInTree(old.content ?? [], comment.id),
+                        };
+                    },
+                );
+            }
             invalidate();
         },
         onError: (error: unknown) => toast.error(getApiErrorMessage(error, t("common:error"))),
