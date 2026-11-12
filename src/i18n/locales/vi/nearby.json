@@ -18,12 +18,6 @@
         "list": "Danh sách",
         "map": "Bản đồ"
     },
-    "recipeFinder": {
-        "title": "Tích hợp Recipe Finder",
-        "subtitle": "Ghép món bạn đã thích với bếp gần nhất đang phục vụ món đó hôm nay.",
-        "cta": "Tìm món khớp"
-    },
-    "recipeMatch": "Khớp công thức: {{dish}}",
     "viewDetails": "Xem chi tiết",
     "directions": "Chỉ đường",
     "filter": {

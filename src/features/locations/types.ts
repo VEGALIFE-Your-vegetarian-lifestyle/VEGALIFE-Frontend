@@ -1,18 +1,21 @@
-// Bám API Location của backend (docs mục "Location management" và "Danh sách địa điểm").
-export type LocationType = "restaurant" | "grocery" | "cafe" | "market";
-
-export const LOCATION_TYPES: LocationType[] = ["restaurant", "grocery", "cafe", "market"];
-
 /** Key = tên thứ trong tuần, giá trị = các khung giờ mở cửa trong ngày. */
 export type OpeningHours = Record<string, { open: string; close: string }[]>;
+
+export interface RestaurantDish {
+    id: string;
+    name: string;
+    description: string | null;
+    imageUrl: string | null;
+    cuisineType: string | null;
+}
 
 export interface LocationItem {
     id: string;
     name: string;
+    description?: string;
     address: string;
     latitude: number;
     longitude: number;
-    placeType: LocationType;
     phoneNumber?: string;
     openingHours?: OpeningHours;
     websiteUrl?: string;
@@ -20,8 +23,12 @@ export interface LocationItem {
     rating?: number;
     /** 1 đến 4 (1 = rẻ) */
     priceLevel?: number;
-    /** Chỉ có ở `GET /api/locations/nearby`, tính bằng mét. */
+    /** Chỉ có ở `GET /api/restaurants/nearby`, tính bằng mét. */
     distance?: number;
+    /** Chỉ có ở `GET /api/restaurants/{id}` (#195). */
+    dishes?: RestaurantDish[];
+    /** ID các món ăn đã gắn (#194). */
+    dishIds?: string[];
     /** Chỉ có ở response của Admin. */
     createdAt?: string;
     updatedAt?: string;
@@ -33,29 +40,30 @@ export interface LocationItem {
  */
 export interface LocationPayload {
     name: string;
+    description?: string;
     address: string;
     latitude: number;
     longitude: number;
-    placeType: LocationType;
     phoneNumber?: string;
     openingHours?: OpeningHours;
     websiteUrl?: string;
     rating?: number;
     priceLevel?: number;
+    dishIds?: string[];
 }
 
-/** `GET /api/locations/nearby` — `radius` tính bằng mét. */
+/** `GET /api/restaurants/nearby` — `radius` tính bằng mét. */
 export interface NearbyParams {
     lat: number;
     lng: number;
     radius: number;
 }
 
-/** `GET /api/locations` — các bộ lọc kết hợp bằng AND. */
+/** `GET /api/restaurants` — các bộ lọc kết hợp bằng AND. */
 export interface LocationListParams {
     page: number;
     size: number;
-    placeType?: LocationType;
+    keyword?: string;
     minRating?: number;
     maxPriceLevel?: number;
 }

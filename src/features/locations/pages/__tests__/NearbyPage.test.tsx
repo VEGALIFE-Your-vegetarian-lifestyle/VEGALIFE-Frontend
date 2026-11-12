@@ -3,7 +3,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import NearbyPage from "../NearbyPage";
-import { getNearbyLocations } from "../../api";
+import { getLocations, getNearbyLocations } from "../../api";
 
 // Bản đồ Leaflet cần layout thật của trình duyệt nên thay bằng khối đơn giản.
 vi.mock("../../components/PlaceMap", () => ({
@@ -13,7 +13,11 @@ vi.mock("../../components/PlaceMap", () => ({
 // Dùng bản giả của locationService (dữ liệu trong bộ nhớ) vì backend thật cần đăng nhập.
 vi.mock("../../api", async () => {
     const fake = await import("@/test/fakeLocationService");
-    return { ...fake, getNearbyLocations: vi.fn(fake.getNearbyLocations) };
+    return {
+        ...fake,
+        getNearbyLocations: vi.fn(fake.getNearbyLocations),
+        getLocations: vi.fn(fake.getLocations),
+    };
 });
 
 const cards = () => screen.getAllByRole("article");
@@ -26,7 +30,7 @@ describe("NearbyPage", () => {
         vi.restoreAllMocks();
     });
 
-    it("mặc định hiện khu vực Quận 1, xếp gần đến xa và có bản đồ", async () => {
+    it("mặc định hiện khu vực Quận 1, xếp gần đến xa, có bản đồ, không còn Recipe Finder và placeType", async () => {
         renderWithProviders(<NearbyPage />);
 
         expect(screen.getByRole("heading", { name: "Nearby Vegan Places" })).toBeInTheDocument();
@@ -35,19 +39,41 @@ describe("NearbyPage", () => {
         expect(names[0]).toBe("Quán Chay Lá Xanh");
         expect(names[1]).toBe("Cà Phê Hạt Sen");
         expect(screen.getByTestId("map")).toHaveTextContent(`${names.length} markers`);
+        expect(screen.queryByText("Recipe Finder Integration")).not.toBeInTheDocument();
+        expect(screen.queryByRole("tab", { name: /Vegan Market/ })).not.toBeInTheDocument();
     });
 
-    it("pill có số lượng, bấm vào chỉ hiện đúng loại", async () => {
+    it("tìm theo món/tên gọi GET /api/restaurants với keyword, xóa ô search quay về list theo location", async () => {
         const user = userEvent.setup();
         renderWithProviders(<NearbyPage />);
         await screen.findByText("Quán Chay Lá Xanh");
 
-        const marketTab = screen.getByRole("tab", { name: /Vegan Market/ });
-        expect(marketTab).toHaveTextContent("2");
-        await user.click(marketTab);
+        const searchInput = screen.getByLabelText("Search by dish or name");
+        await user.type(searchInput, "Sen");
 
-        const names = cards().map((card) => within(card).getByRole("heading").textContent);
-        expect(names).toEqual(["Chợ Chay Bình Thạnh", "Chợ Hữu Cơ Cuối Tuần Quận 7"]);
+        await waitFor(() =>
+            expect(vi.mocked(getLocations)).toHaveBeenCalledWith({
+                page: 1,
+                size: 50,
+                keyword: "Sen",
+            }),
+        );
+        expect(await screen.findByText("Cà Phê Hạt Sen")).toBeInTheDocument();
+        expect(screen.queryByText("Quán Chay Lá Xanh")).not.toBeInTheDocument();
+
+        await user.clear(searchInput);
+        await waitFor(() => expect(screen.getByText("Quán Chay Lá Xanh")).toBeInTheDocument());
+    });
+
+    it("search không có kết quả thì hiện trạng thái rỗng", async () => {
+        const user = userEvent.setup();
+        renderWithProviders(<NearbyPage />);
+        await screen.findByText("Quán Chay Lá Xanh");
+
+        await user.type(screen.getByLabelText("Search by dish or name"), "mon-khong-ton-tai");
+
+        expect(await screen.findByText("No places in this category")).toBeInTheDocument();
+        expect(screen.queryByRole("article")).not.toBeInTheDocument();
     });
 
     it("không hiện địa điểm đã xóa mềm", async () => {

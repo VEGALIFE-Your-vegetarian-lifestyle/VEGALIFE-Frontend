@@ -22,7 +22,6 @@ const RAW = {
     address: "12 Nguyễn Huệ, Quận 1",
     latitude: 10.7742,
     longitude: 106.7039,
-    placeType: "restaurant",
     phoneNumber: null,
     openingHours: null,
     websiteUrl: null,
@@ -37,12 +36,12 @@ const page = (content: unknown[], overrides = {}) =>
 beforeEach(() => vi.resetAllMocks());
 
 describe("getNearbyLocations", () => {
-    it("gọi GET /api/locations/nearby với lat, lng, radius (mét) và đổi null thành undefined", async () => {
+    it("gọi GET /api/restaurants/nearby với lat, lng, radius (mét) và đổi null thành undefined", async () => {
         vi.mocked(api.get).mockResolvedValue(ok([{ ...RAW, distance: 444.2 }]));
 
         const result = await getNearbyLocations({ lat: 10.7769, lng: 106.7009, radius: 10_000 });
 
-        expect(api.get).toHaveBeenCalledWith("/api/locations/nearby", {
+        expect(api.get).toHaveBeenCalledWith("/api/restaurants/nearby", {
             params: { lat: 10.7769, lng: 106.7009, radius: 10_000 },
         });
         expect(result).toHaveLength(1);
@@ -59,13 +58,13 @@ describe("getNearbyLocations", () => {
 });
 
 describe("getLocations", () => {
-    it("đổi trang bắt đầu từ 1 sang trang bắt đầu từ 0 của backend và chỉ gửi bộ lọc đã đặt", async () => {
+    it("đổi trang bắt đầu từ 1 sang trang bắt đầu từ 0 của backend và chỉ gửi bộ lọc đã đặt, nhận keyword", async () => {
         vi.mocked(api.get).mockResolvedValue(page([RAW], { page: 1, size: 8, totalElements: 9, totalPages: 2 }));
 
-        const result = await getLocations({ page: 2, size: 8, placeType: "cafe", minRating: 4 });
+        const result = await getLocations({ page: 2, size: 8, keyword: "tofu", minRating: 4 });
 
-        expect(api.get).toHaveBeenCalledWith("/api/locations", {
-            params: { page: 1, size: 8, placeType: "cafe", minRating: 4 },
+        expect(api.get).toHaveBeenCalledWith("/api/restaurants", {
+            params: { page: 1, size: 8, keyword: "tofu", minRating: 4 },
         });
         expect(result).toMatchObject({ page: 2, size: 8, total: 9, totalPages: 2 });
         expect(result.data).toHaveLength(1);
@@ -73,16 +72,19 @@ describe("getLocations", () => {
 });
 
 describe("getLocationById", () => {
-    it("tìm theo id trong danh sách, báo lỗi khi không có", async () => {
-        vi.mocked(api.get).mockResolvedValue(page([RAW]));
+    it("gọi GET /api/restaurants/{id} trực tiếp và trả thông tin nhà hàng kèm món", async () => {
+        vi.mocked(api.get).mockResolvedValue(ok({ ...RAW, dishes: [{ id: "d-1", name: "Đậu hũ chiên sả", description: null, imageUrl: null, cuisineType: null }] }));
 
-        expect((await getLocationById(RAW.id)).name).toBe("Quán Chay Lá Xanh");
-        await expect(getLocationById("khong-co")).rejects.toThrow("Location not found");
+        const detail = await getLocationById(RAW.id);
+        expect(api.get).toHaveBeenCalledWith(`/api/restaurants/${RAW.id}`);
+        expect(detail.name).toBe("Quán Chay Lá Xanh");
+        expect(detail.dishes).toHaveLength(1);
+        expect(detail.dishes?.[0].name).toBe("Đậu hũ chiên sả");
     });
 });
 
 describe("Admin CRUD", () => {
-    it("createLocation gọi POST /api/admin/locations và bỏ field rỗng", async () => {
+    it("createLocation gọi POST /api/admin/restaurants và bỏ field rỗng", async () => {
         vi.mocked(api.post).mockResolvedValue(ok({ ...RAW, createdAt: "2026-10-15T00:00:00Z", updatedAt: "2026-10-15T00:00:00Z" }));
 
         const created = await createLocation({
@@ -90,18 +92,16 @@ describe("Admin CRUD", () => {
             address: "1 Đường Test",
             latitude: 10.78,
             longitude: 106.7,
-            placeType: "cafe",
             phoneNumber: "",
             websiteUrl: "",
             rating: undefined,
         });
 
-        expect(api.post).toHaveBeenCalledWith("/api/admin/locations", {
+        expect(api.post).toHaveBeenCalledWith("/api/admin/restaurants", {
             name: "Quán Mới",
             address: "1 Đường Test",
             latitude: 10.78,
             longitude: 106.7,
-            placeType: "cafe",
         });
         expect(created.createdAt).toBe("2026-10-15T00:00:00Z");
     });
@@ -111,14 +111,14 @@ describe("Admin CRUD", () => {
 
         await updateLocation(RAW.id, { name: "Tên mới", phoneNumber: "", rating: undefined });
 
-        expect(api.patch).toHaveBeenCalledWith(`/api/admin/locations/${RAW.id}`, { name: "Tên mới", phoneNumber: "" });
+        expect(api.patch).toHaveBeenCalledWith(`/api/admin/restaurants/${RAW.id}`, { name: "Tên mới", phoneNumber: "" });
     });
 
-    it("deleteLocation gọi DELETE /api/admin/locations/{id}", async () => {
+    it("deleteLocation gọi DELETE /api/admin/restaurants/{id}", async () => {
         vi.mocked(api.delete).mockResolvedValue(ok(null));
 
         await deleteLocation(RAW.id);
 
-        expect(api.delete).toHaveBeenCalledWith(`/api/admin/locations/${RAW.id}`);
+        expect(api.delete).toHaveBeenCalledWith(`/api/admin/restaurants/${RAW.id}`);
     });
 });

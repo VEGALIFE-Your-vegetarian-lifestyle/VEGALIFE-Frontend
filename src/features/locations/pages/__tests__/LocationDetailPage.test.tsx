@@ -79,4 +79,30 @@ describe("LocationDetailPage", () => {
 
         expect(await screen.findByText("Location not found")).toBeInTheDocument();
     });
+
+    it("hiển thị danh sách món ăn khi API trả về field dishes", async () => {
+        const fake = await import("@/test/fakeLocationService");
+        vi.spyOn(fake, "getLocationById").mockResolvedValueOnce({
+            id: "loc-with-dishes",
+            name: "Nhà Hàng Có Món",
+            address: "10 Lê Lợi, Quận 1",
+            latitude: 10.77,
+            longitude: 106.7,
+            dishes: [
+                {
+                    id: "d-1",
+                    name: "Bún bò Huế chay",
+                    description: "Nước dùng nấu từ rau củ",
+                    imageUrl: null,
+                    cuisineType: "Vietnamese",
+                },
+            ],
+        });
+
+        renderDetail("loc-with-dishes");
+
+        expect(await screen.findByRole("heading", { name: "Popular Plant-Based Foods" })).toBeInTheDocument();
+        expect(screen.getByText("Bún bò Huế chay")).toBeInTheDocument();
+        expect(screen.getByText("Vietnamese")).toBeInTheDocument();
+    });
 });

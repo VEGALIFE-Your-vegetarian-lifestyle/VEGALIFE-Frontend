@@ -6,16 +6,13 @@ import {
     ArrowLeft,
     Banknote,
     Clock,
-    Coffee,
     ExternalLink,
     Globe,
     MapPin,
     Navigation,
     Phone,
     Share2,
-    ShoppingBasket,
     Star,
-    Store,
     Utensils,
     type LucideIcon,
 } from "lucide-react";
@@ -25,16 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PlaceMap } from "../components/PlaceMap";
 import { getNearbyPlaceDetail } from "../nearbyApi";
-import type { LocationType } from "../types";
 import { openDirections } from "../geo";
 import { cn } from "@/shared/utils/cn";
-
-const TYPE_ICONS: Record<LocationType, LucideIcon> = {
-    restaurant: Utensils,
-    cafe: Coffee,
-    grocery: ShoppingBasket,
-    market: Store,
-};
 
 const linkClass =
     "flex items-center gap-3 rounded-lg px-2 py-2 text-sm text-muted-foreground transition hover:bg-muted-bg hover:text-vegan-green";
@@ -78,7 +67,6 @@ export default function LocationDetailPage() {
         );
     }
 
-    const TypeIcon = TYPE_ICONS[place.placeType];
     // Cả tuần cùng một khung giờ thì gom thành một dòng "Hằng ngày".
     const sameEveryDay = place.hours.length > 1 && place.hours.every((item) => item.hours === place.hours[0].hours);
     const todayHours = place.hours.find((item) => item.today)?.hours ?? "";
@@ -131,11 +119,10 @@ export default function LocationDetailPage() {
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex items-start gap-5">
                         <span className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-vegan-green text-white shadow-md">
-                            <TypeIcon className="h-9 w-9" aria-hidden="true" />
+                            <Utensils className="h-9 w-9" aria-hidden="true" />
                         </span>
                         <div className="min-w-0">
-                            <Badge variant="lightgreen">{t(`filter.${place.placeType}`)}</Badge>
-                            <h1 className="mt-2 text-3xl font-extrabold text-dark">{place.name}</h1>
+                            <h1 className="text-3xl font-extrabold text-dark">{place.name}</h1>
                             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                                 {place.rating !== undefined && (
                                     <span className="flex items-center gap-1.5">
@@ -151,6 +138,11 @@ export default function LocationDetailPage() {
                                     {place.address}
                                 </span>
                             </div>
+                            {place.description && (
+                                <p className="mt-3 text-sm leading-relaxed text-dark/85 whitespace-pre-line">
+                                    {place.description}
+                                </p>
+                            )}
                             {chips.length > 0 && (
                                 <div className="mt-4 flex flex-wrap gap-2">
                                     {chips.map(({ icon: Icon, text, highlight }) => (
@@ -271,6 +263,49 @@ export default function LocationDetailPage() {
                     </Button>
                 </aside>
             </div>
+
+            {/* Danh sách món ăn (#195 GET /api/restaurants/{id} có field dishes) */}
+            {place.dishes && place.dishes.length > 0 && (
+                <section className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-sm">
+                    <div className="flex items-center gap-2">
+                        <Utensils className="h-5 w-5 text-vegan-green" aria-hidden="true" />
+                        <h2 className="text-xl font-bold text-dark">{t("detail.dishesTitle")}</h2>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{t("detail.dishesSubtitle")}</p>
+                    <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {place.dishes.map((dish) => (
+                            <div
+                                key={dish.id}
+                                className="flex flex-col overflow-hidden rounded-xl border border-border bg-surface transition hover:shadow-sm"
+                            >
+                                {dish.imageUrl && (
+                                    <img
+                                        src={dish.imageUrl}
+                                        alt={dish.name}
+                                        className="h-36 w-full object-cover"
+                                        loading="lazy"
+                                    />
+                                )}
+                                <div className="flex flex-1 flex-col p-4">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <h3 className="font-semibold text-dark">{dish.name}</h3>
+                                        {dish.cuisineType && (
+                                            <Badge variant="cream" size="sm">
+                                                {dish.cuisineType}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    {dish.description && (
+                                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                            {dish.description}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
     );
 }
