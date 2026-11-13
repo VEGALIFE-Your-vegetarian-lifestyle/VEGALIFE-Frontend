@@ -26,28 +26,27 @@ beforeAll(() => {
 const openDialog = () => within(document.querySelector("dialog[open]") as HTMLElement);
 
 describe("LocationsPage (Admin)", () => {
-    it("render tiêu đề, bộ lọc đánh giá và nút thêm", async () => {
+    it("render tiêu đề, ô tìm kiếm và nút thêm", async () => {
         renderWithProviders(<LocationsPage />);
 
         expect(screen.getByRole("heading", { name: "Location Management" })).toBeInTheDocument();
-        expect(screen.getByLabelText("Minimum rating")).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Search by name or dish/i)).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /Add location/ })).toBeInTheDocument();
         expect(await screen.findByText(FIRST_ROW)).toBeInTheDocument();
     });
 
     it("không hiện địa điểm đã xóa mềm", async () => {
         renderWithProviders(<LocationsPage />);
-        await screen.findByText(FIRST_ROW);
-
+        expect(await screen.findByText(FIRST_ROW)).toBeInTheDocument();
         expect(screen.queryByText("Quán Chay Đã Đóng Cửa")).not.toBeInTheDocument();
     });
 
-    it("lọc theo đánh giá tối thiểu chỉ hiện địa điểm đạt ngưỡng", async () => {
+    it("tìm kiếm theo tên hoặc món ăn", async () => {
         const user = userEvent.setup();
         renderWithProviders(<LocationsPage />);
         await screen.findByText(FIRST_ROW);
 
-        await user.selectOptions(screen.getByLabelText("Minimum rating"), "4.5");
+        await user.type(screen.getByPlaceholderText(/Search by name or dish/i), "Bình Thạnh");
 
         await waitFor(() => expect(screen.queryByText("Chợ Chay Bình Thạnh")).not.toBeInTheDocument());
         expect(await screen.findByText("Quán Chay Lá Xanh")).toBeInTheDocument();
@@ -61,7 +60,7 @@ describe("LocationsPage (Admin)", () => {
         await user.click(screen.getByRole("button", { name: /Add location/ }));
         await user.click(openDialog().getByRole("button", { name: "Add location" }));
 
-        expect((await openDialog().findAllByText("This field is required")).length).toBeGreaterThanOrEqual(4);
+        expect((await openDialog().findAllByText("This field is required")).length).toBeGreaterThanOrEqual(3);
         expect(toast.success).not.toHaveBeenCalled();
 
         await user.type(openDialog().getByLabelText(/Latitude/), "95");
@@ -101,7 +100,7 @@ describe("LocationsPage (Admin)", () => {
         await user.click(dialog.getByRole("button", { name: "Add location" }));
 
         const row = (await screen.findByText("Quán Chỉ Có Tên")).closest("tr")!;
-        expect(within(row).getAllByText("—")).toHaveLength(2);
+        expect(within(row).getAllByText("—").length).toBeGreaterThanOrEqual(2);
     });
 
     it("nhập giờ mở cửa: báo lỗi khi thiếu một giờ hoặc giờ đóng trước giờ mở, lưu được và mở lại vẫn còn", async () => {

@@ -34,6 +34,15 @@ export const LOCATION_FIXTURES: MockLocation[] = [
         rating: 4.5,
         priceLevel: 1,
         phoneNumber: "028 3822 0002",
+        dishes: [
+            {
+                id: "dish-01",
+                name: "Lẩu nấm chay",
+                description: "Nấu từ các loại nấm đông cô, nấm đùi gà",
+                imageUrl: null,
+                cuisineType: "Vietnamese",
+            },
+        ],
         createdAt: "2026-09-02T08:00:00Z",
         deletedAt: null,
     },

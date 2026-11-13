@@ -7,23 +7,26 @@ import {
     Compass,
     LayoutGrid,
     List,
+    LocateFixed,
     Map as MapIcon,
     MapPin,
     Navigation,
     Phone,
-    RefreshCw,
-    Sparkles,
+    Search,
     Star,
+    X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PlaceMap } from "../components/PlaceMap";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useGeolocation, formatDistance, openDirections, type Coordinates } from "../geo";
 import { MOCK_AREAS, type MockAreaKey } from "../mocks";
-import { getNearbyLocations } from "../api";
+import { getLocations, getNearbyLocations } from "../api";
 import type { LocationItem } from "../types";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import { cn } from "@/shared/utils/cn";
 
 type ViewMode = "split" | "list" | "map";
@@ -69,24 +72,26 @@ function PlaceCard({
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col">
-                <div className="flex flex-wrap items-center gap-2">
-                    {place.rating !== undefined && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Star className="h-3.5 w-3.5 fill-amber-soft text-amber-strong" aria-hidden="true" />
-                            <span className="font-bold text-dark">{place.rating.toFixed(1)}</span>
-                        </span>
-                    )}
-                    {place.priceLevel !== undefined && (
-                        <span
-                            className="text-xs font-semibold text-muted-foreground"
-                            aria-label={`${place.priceLevel}/4`}
-                        >
-                            {"$".repeat(place.priceLevel)}
-                        </span>
-                    )}
-                </div>
+                {(place.rating !== undefined || place.priceLevel !== undefined) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                        {place.rating !== undefined && (
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Star className="h-3.5 w-3.5 fill-amber-soft text-amber-strong" aria-hidden="true" />
+                                <span className="font-bold text-dark">{place.rating.toFixed(1)}</span>
+                            </span>
+                        )}
+                        {place.priceLevel !== undefined && (
+                            <span
+                                className="text-xs font-semibold text-muted-foreground"
+                                aria-label={`${place.priceLevel}/4`}
+                            >
+                                {"$".repeat(place.priceLevel)}
+                            </span>
+                        )}
+                    </div>
+                )}
 
-                <h3 className="mt-2 font-bold text-dark">{place.name}</h3>
+                <h3 className="mt-1 font-bold text-dark">{place.name}</h3>
                 <p className="flex items-center gap-1 text-sm text-muted-foreground">
                     <MapPin className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
                     {place.address}
@@ -126,15 +131,18 @@ function PlaceCard({
 }
 
 export default function NearbyPage() {
-    const { t } = useTranslation("nearby");
+    const { t } = useTranslation(["nearby", "common"]);
     const { t: tl } = useTranslation("location");
-    const navigate = useNavigate();
     const geo = useGeolocation();
     const [areaKey, setAreaKey] = useState<MockAreaKey>(MOCK_AREAS[0].key);
     const [useGps, setUseGps] = useState(false);
+    const [keyword, setKeyword] = useState("");
     const [view, setView] = useState<ViewMode>("split");
     const [sort, setSort] = useState("distance");
     const [selectedId, setSelectedId] = useState<string | null>(null);
+
+    const debouncedKeyword = useDebounce(keyword.trim(), 300);
+    const hasKeyword = debouncedKeyword.length > 0;
 
     // Điểm xuất phát: GPS nếu người dùng đã cho phép, ngược lại là khu vực đang chọn (BR-NEARBY-001).
     const area = MOCK_AREAS.find((item) => item.key === areaKey) ?? MOCK_AREAS[0];
@@ -142,14 +150,22 @@ export default function NearbyPage() {
     // Chỉ chỉ đường từ GPS thật; khu vực mock chỉ để lọc, nên để Google Maps tự lấy vị trí hiện tại của người dùng.
     const directionsOrigin = useGps && geo.coords ? geo.coords : undefined;
 
-    // Một request lấy hết trong bán kính, lọc client-side — đủ để có count cho từng pill.
-    const { data, isLoading, isError, refetch } = useQuery({
+    const nearbyQuery = useQuery({
         queryKey: ["nearby-locations", origin.lat, origin.lng, RADIUS_KM],
         queryFn: () => getNearbyLocations({ lat: origin.lat, lng: origin.lng, radius: RADIUS_KM * 1000 }),
+        enabled: !hasKeyword,
     });
 
-    // Bản sao trước khi sort — sort tại chỗ sẽ sửa luôn mảng trong cache của React Query.
-    const sorted = [...(data ?? [])].sort((a, b) =>
+    const searchQuery = useQuery({
+        queryKey: ["restaurants-search", debouncedKeyword],
+        queryFn: () => getLocations({ page: 1, size: 50, keyword: debouncedKeyword }),
+        enabled: hasKeyword,
+    });
+
+    const { isLoading, isError, refetch } = hasKeyword ? searchQuery : nearbyQuery;
+    const allPlaces = hasKeyword ? (searchQuery.data?.data ?? []) : (nearbyQuery.data ?? []);
+
+    const sorted = [...allPlaces].sort((a, b) =>
         sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) : (a.distance ?? 0) - (b.distance ?? 0),
     );
 
@@ -158,16 +174,14 @@ export default function NearbyPage() {
         geo.request();
     };
 
-    const notice =
+    const geoMessage =
         geo.status === "loading"
             ? tl("page.locating")
             : geo.status === "denied"
               ? tl("page.denied")
               : geo.status === "unsupported"
                 ? tl("page.unsupported")
-                : useGps && geo.coords
-                  ? t("locationNoticeGps", { radius: RADIUS_KM })
-                  : t("locationNoticeArea", { area: tl(`page.area.${area.key}`), radius: RADIUS_KM });
+                : null;
 
     const showList = view !== "map";
     const showMap = view !== "list";
@@ -183,98 +197,108 @@ export default function NearbyPage() {
                 <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
             </header>
 
-            <div
-                role="status"
-                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted-bg px-4 py-3 text-sm"
-            >
-                <span className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4 text-vegan-green" aria-hidden="true" />
-                    {notice}
-                </span>
-                <button
-                    type="button"
-                    onClick={requestGps}
-                    className="whitespace-nowrap text-xs font-semibold text-vegan-green hover:underline"
-                >
-                    {t("changeLocation")}
-                </button>
-            </div>
-
-            {/* Dải Recipe Finder */}
-            <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-lavender-hover bg-lavender p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-surface text-lavender-strong">
-                        <Sparkles className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                    <div>
-                        <h2 className="text-sm font-bold text-lavender-strong">{t("recipeFinder.title")}</h2>
-                        <p className="mt-0.5 text-sm text-muted-foreground">{t("recipeFinder.subtitle")}</p>
+            {/* Toolbar gọn: [dropdown location] [ô search] [nút location] + view/sort */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative w-40 sm:w-44">
+                        <MapPin
+                            className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                            aria-hidden="true"
+                        />
+                        <Select
+                            value={areaKey}
+                            onChange={(event) => {
+                                setAreaKey(event.target.value as MockAreaKey);
+                                setUseGps(false);
+                                setSelectedId(null);
+                            }}
+                            aria-label={tl("page.areaLabel")}
+                            className="h-10 pl-9 text-sm"
+                        >
+                            {MOCK_AREAS.map((item) => (
+                                <option key={item.key} value={item.key}>
+                                    {tl(`page.area.${item.key}`)}
+                                </option>
+                            ))}
+                        </Select>
                     </div>
-                </div>
-                <Button variant="soft" className="whitespace-nowrap" onClick={() => navigate("/ai-nutrition")}>
-                    {t("recipeFinder.cta")}
-                </Button>
-            </div>
-
-            {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-2">
-                <div className="relative flex-1 sm:min-w-64">
-                    <MapPin
-                        className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                        aria-hidden="true"
-                    />
-                    <Select
-                        value={areaKey}
-                        onChange={(event) => {
-                            setAreaKey(event.target.value as MockAreaKey);
-                            setUseGps(false);
-                            setSelectedId(null);
-                        }}
-                        aria-label={tl("page.areaLabel")}
-                        className="h-11 pl-9"
+                    <div className="w-56 sm:w-64">
+                        <Input
+                            leadingIcon={Search}
+                            value={keyword}
+                            onChange={(event) => setKeyword(event.target.value)}
+                            placeholder={tl("page.searchPlaceholder")}
+                            aria-label={tl("page.searchLabel")}
+                            className="h-10 text-sm"
+                            trailing={
+                                keyword ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setKeyword("")}
+                                        aria-label={t("common:clearFilter")}
+                                        className="rounded p-1 text-muted-foreground hover:text-dark"
+                                    >
+                                        <X className="h-3.5 w-3.5" aria-hidden="true" />
+                                    </button>
+                                ) : undefined
+                            }
+                        />
+                    </div>
+                    <Button
+                        type="button"
+                        variant={useGps && geo.coords ? "primary" : "outline"}
+                        size="sm"
+                        onClick={requestGps}
+                        disabled={geo.status === "loading"}
+                        title={t("changeLocation")}
+                        aria-label={t("changeLocation")}
+                        className="h-10 shrink-0 px-3"
                     >
-                        {MOCK_AREAS.map((item) => (
-                            <option key={item.key} value={item.key}>
-                                {tl(`page.area.${item.key}`)}
-                            </option>
+                        <LocateFixed className="h-4 w-4" aria-hidden="true" />
+                        <span className="hidden md:inline">{t("changeLocation")}</span>
+                    </Button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1 rounded-xl border border-border bg-surface p-0.5">
+                        {VIEW_MODES.map(({ key, labelKey, icon: Icon }) => (
+                            <button
+                                key={key}
+                                type="button"
+                                onClick={() => setView(key)}
+                                aria-pressed={view === key}
+                                title={t(labelKey)}
+                                aria-label={t(labelKey)}
+                                className={cn(
+                                    "flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition",
+                                    view === key
+                                        ? "bg-vegan-green text-white"
+                                        : "text-muted-foreground hover:text-vegan-green",
+                                )}
+                            >
+                                <Icon className="h-4 w-4" aria-hidden="true" />
+                                <span className="hidden sm:inline">{t(labelKey)}</span>
+                            </button>
                         ))}
+                    </div>
+                    <Select
+                        value={sort}
+                        onChange={(event) => setSort(event.target.value)}
+                        className="h-10 w-44 text-sm"
+                        aria-label={t("sortBy")}
+                    >
+                        <option value="distance">{t("sort.distance")}</option>
+                        <option value="rating">{t("sort.rating")}</option>
                     </Select>
                 </div>
-                <Button variant="outline" onClick={requestGps} disabled={geo.status === "loading"}>
-                    <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                    {t("gpsRefresh")}
-                </Button>
-                <div className="flex items-center gap-1 rounded-xl border border-border bg-surface p-0.5">
-                    {VIEW_MODES.map(({ key, labelKey, icon: Icon }) => (
-                        <button
-                            key={key}
-                            type="button"
-                            onClick={() => setView(key)}
-                            aria-pressed={view === key}
-                            title={t(labelKey)}
-                            aria-label={t(labelKey)}
-                            className={cn(
-                                "flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition",
-                                view === key
-                                    ? "bg-vegan-green text-white"
-                                    : "text-muted-foreground hover:text-vegan-green",
-                            )}
-                        >
-                            <Icon className="h-4 w-4" aria-hidden="true" />
-                            <span className="hidden sm:inline">{t(labelKey)}</span>
-                        </button>
-                    ))}
-                </div>
-                <Select
-                    value={sort}
-                    onChange={(event) => setSort(event.target.value)}
-                    className="w-52"
-                    aria-label={t("sortBy")}
-                >
-                    <option value="distance">{t("sort.distance")}</option>
-                    <option value="rating">{t("sort.rating")}</option>
-                </Select>
             </div>
+
+            {geoMessage && (
+                <p role="status" className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 text-vegan-green" aria-hidden="true" />
+                    {geoMessage}
+                </p>
+            )}
 
             {/* Nhãn sắp xếp cố định theo mockup */}
             <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
@@ -309,8 +333,12 @@ export default function NearbyPage() {
                                 <EmptyState
                                     icon={MapPin}
                                     title={t("empty.title")}
-                                    description={t("empty.description")}
-                                    action={<Button onClick={() => refetch()}>{t("retry")}</Button>}
+                                    description={hasKeyword ? t("common:emptySearch") : t("empty.description")}
+                                    action={
+                                        hasKeyword ? (
+                                            <Button onClick={() => setKeyword("")}>{t("common:clearFilter")}</Button>
+                                        ) : undefined
+                                    }
                                 />
                             </div>
                         ) : (

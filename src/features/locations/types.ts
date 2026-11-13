@@ -1,12 +1,18 @@
-// Bám API Restaurant của backend (backend đổi `/api/locations` → `/api/restaurants`).
-// Không còn `placeType`: response restaurant không có field này.
-
 /** Key = tên thứ trong tuần, giá trị = các khung giờ mở cửa trong ngày. */
 export type OpeningHours = Record<string, { open: string; close: string }[]>;
+
+export interface RestaurantDish {
+    id: string;
+    name: string;
+    description: string | null;
+    imageUrl: string | null;
+    cuisineType: string | null;
+}
 
 export interface LocationItem {
     id: string;
     name: string;
+    description?: string;
     address: string;
     latitude: number;
     longitude: number;
@@ -17,8 +23,12 @@ export interface LocationItem {
     rating?: number;
     /** 1 đến 4 (1 = rẻ) */
     priceLevel?: number;
-    /** Chỉ có ở `GET /api/locations/nearby`, tính bằng mét. */
+    /** Chỉ có ở `GET /api/restaurants/nearby`, tính bằng mét. */
     distance?: number;
+    /** Chỉ có ở `GET /api/restaurants/{id}` (#195). */
+    dishes?: RestaurantDish[];
+    /** ID các món ăn đã gắn (#194). */
+    dishIds?: string[];
     /** Chỉ có ở response của Admin. */
     createdAt?: string;
     updatedAt?: string;
@@ -30,6 +40,7 @@ export interface LocationItem {
  */
 export interface LocationPayload {
     name: string;
+    description?: string;
     address: string;
     latitude: number;
     longitude: number;
@@ -38,6 +49,7 @@ export interface LocationPayload {
     websiteUrl?: string;
     rating?: number;
     priceLevel?: number;
+    dishIds?: string[];
 }
 
 /** `GET /api/restaurants/nearby` — `radius` tính bằng mét. */
@@ -51,6 +63,7 @@ export interface NearbyParams {
 export interface LocationListParams {
     page: number;
     size: number;
+    keyword?: string;
     minRating?: number;
     maxPriceLevel?: number;
     openNow?: boolean;

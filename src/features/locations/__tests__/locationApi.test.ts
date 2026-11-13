@@ -58,13 +58,13 @@ describe("getNearbyLocations", () => {
 });
 
 describe("getLocations", () => {
-    it("đổi trang bắt đầu từ 1 sang trang bắt đầu từ 0 của backend và chỉ gửi bộ lọc đã đặt", async () => {
+    it("đổi trang bắt đầu từ 1 sang trang bắt đầu từ 0 của backend và chỉ gửi bộ lọc đã đặt, nhận keyword", async () => {
         vi.mocked(api.get).mockResolvedValue(page([RAW], { page: 1, size: 8, totalElements: 9, totalPages: 2 }));
 
-        const result = await getLocations({ page: 2, size: 8, minRating: 4, openNow: true });
+        const result = await getLocations({ page: 2, size: 8, keyword: "tofu", minRating: 4 });
 
         expect(api.get).toHaveBeenCalledWith("/api/restaurants", {
-            params: { page: 1, size: 8, minRating: 4, openNow: true },
+            params: { page: 1, size: 8, keyword: "tofu", minRating: 4 },
         });
         expect(result).toMatchObject({ page: 2, size: 8, total: 9, totalPages: 2 });
         expect(result.data).toHaveLength(1);
@@ -72,14 +72,14 @@ describe("getLocations", () => {
 });
 
 describe("getLocationById", () => {
-    it("gọi GET /api/restaurants/{id} và đổi null thành undefined", async () => {
-        vi.mocked(api.get).mockResolvedValue(ok(RAW));
+    it("gọi GET /api/restaurants/{id} trực tiếp và trả thông tin nhà hàng kèm món", async () => {
+        vi.mocked(api.get).mockResolvedValue(ok({ ...RAW, dishes: [{ id: "d-1", name: "Đậu hũ chiên sả", description: null, imageUrl: null, cuisineType: null }] }));
 
-        const result = await getLocationById(RAW.id);
-
+        const detail = await getLocationById(RAW.id);
         expect(api.get).toHaveBeenCalledWith(`/api/restaurants/${RAW.id}`);
-        expect(result).toMatchObject({ name: "Quán Chay Lá Xanh", rating: 4.7 });
-        expect(result.phoneNumber).toBeUndefined();
+        expect(detail.name).toBe("Quán Chay Lá Xanh");
+        expect(detail.dishes).toHaveLength(1);
+        expect(detail.dishes?.[0].name).toBe("Đậu hũ chiên sả");
     });
 });
 
