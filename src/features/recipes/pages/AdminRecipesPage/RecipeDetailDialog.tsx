@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { RejectionReason } from "@/components/common/RejectionReason";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { MODERATION_VARIANT } from "../../constants";
 import type { AdminRecipe, ModerationStatus } from "../../types";
@@ -139,6 +140,11 @@ export function RecipeDetailDialog({
                             <p className="text-sm text-muted-foreground">{recipe.description}</p>
                         </section>
                     )}
+
+                    {/* Lý do lần từ chối gần nhất — admin đọc lại để biết đã ghi gì với tác giả. */}
+                    <RejectionReason
+                        reason={recipe.moderationStatus === "REJECTED" ? recipe.rejectionReason : null}
+                    />
 
                     {/* Tên nguyên liệu chưa có unit/dinh dưỡng → vì sao recipe chưa có tổng
                         dinh dưỡng. Admin sửa ở màn quản lý ingredient, không sửa được ở đây. */}

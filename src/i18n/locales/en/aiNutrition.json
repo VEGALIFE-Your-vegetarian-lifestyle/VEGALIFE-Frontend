@@ -24,11 +24,18 @@
         "placeholder": "Ask about plant nutrition, ingredient swaps, calories, or recipes...",
         "send": "Send",
         "supported": "SUPPORTED:",
-        "supportedTags": ["Nutrition & Macros", "Ingredient Swaps", "BMI & Calories", "Recipe Guides"],
+        "supportedTags": [
+            "Nutrition & Macros",
+            "Ingredient Swaps",
+            "BMI & Calories",
+            "Recipe Guides"
+        ],
         "you": "You",
         "pendingReply": "Processing your query…",
         "error": "The assistant is currently unavailable. Please try again.",
         "retry": "Retry",
+        "timeoutTitle": "Still processing",
+        "timeoutHint": "The request took longer than usual. Your meal plan may already be created — check Meal Plan in a moment before sending again.",
         "historyTitle": "Conversations",
         "newChat": "New Chat",
         "emptyHistory": "No conversations yet.",
@@ -44,7 +51,9 @@
         "signInQuota": "Sign in to view request balance",
         "lockedTitle": "Sign in to chat with assistant",
         "lockedBody": "Each request is credited to your balance. Sign in to keep your conversation history and claim 5 free requests.",
-        "lockedAction": "Sign in to continue"
+        "lockedAction": "Sign in to continue",
+        "copy": "Copy",
+        "copied": "Copied"
     },
     "claimBanner": {
         "title": "You have 0 AI requests available",
@@ -80,7 +89,7 @@
     },
     "dishPicker": {
         "title": "Pick Dishes",
-        "subtitle": "Select dishes you want in your plan — assistant receives dish names and IDs.",
+        "subtitle": "Select dishes you want in your plan — the assistant receives their names.",
         "open": "Pick Dishes",
         "placeholder": "Search dish by name",
         "selected": "Selected {{n}}",

@@ -1,12 +1,5 @@
 {
     "directions": "Directions",
-    "type": {
-        "restaurant": "Restaurant",
-        "grocery": "Grocery",
-        "cafe": "Cafe",
-        "market": "Market"
-    },
-    "allTypes": "All types",
     "map": {
         "you": "Your location",
         "tilesFailed": "Could not load the map background. Places are still listed on the left; check your connection or ad blocker."
@@ -89,7 +82,6 @@
             "address": "Address",
             "latitude": "Latitude",
             "longitude": "Longitude",
-            "type": "Type",
             "phone": "Phone",
             "dishes": "Signature dishes",
             "dishesPlaceholder": "Search dishes to attach (try \"mushroom\", \"hotpot\"...)",
@@ -97,7 +89,6 @@
             "searchDishesPrompt": "Type dish name to search and attach",
             "suggestedDishes": "Suggested dishes:",
             "save": "Save changes",
-            "noType": "Select a type",
             "rating": "Rating (0-5)",
             "price": "Price level (1-4)",
             "website": "Website",
@@ -120,7 +111,9 @@
             "updated": "Location updated",
             "deleted": "Location deleted",
             "failed": "Action failed. Please try again."
-        }
+        },
+        "filterRating": "Minimum rating",
+        "allRatings": "All ratings"
     },
     "days": {
         "monday": "Monday",

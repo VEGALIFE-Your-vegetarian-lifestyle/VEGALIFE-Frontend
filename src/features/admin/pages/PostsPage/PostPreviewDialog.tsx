@@ -1,10 +1,11 @@
 import { Check, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PostStatusBadge } from "@/features/posts/components/PostStatusBadge";
+import { PostFlagBadge } from "@/features/posts/components/PostFlagBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { POST_FLAG_VARIANT, canPublish, canReject } from "@/features/posts/constants";
+import { canPublish, canReject } from "@/features/posts/constants";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import type { AdminPost } from "@/features/posts/types";
 
@@ -16,7 +17,7 @@ interface PostPreviewDialogProps {
     /** Đang gọi POST /api/admin/posts/{id}/approve hoặc /reject. */
     loading: boolean;
     onApprove: () => void;
-    /** Mở hộp thoại nhập lý do — chỉ hiện cho bài `processed`. */
+    /** Mở hộp thoại nhập lý do — chỉ hiện cho bài `processing` / `unpublished`. */
     onReject: () => void;
     onClose: () => void;
 }
@@ -37,11 +38,9 @@ export function PostPreviewDialog({
             {post && (
                 <div className="space-y-4">
                     <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                        <PostStatusBadge status={post.status} />
+                        <PostStatusBadge status={post.status} raw />
                         {post.flag && (
-                            <Badge variant={POST_FLAG_VARIANT[post.flag]} size="sm">
-                                {t(`common:postFlag.${post.flag}`)}
-                            </Badge>
+                            <PostFlagBadge status={post.status} flag={post.flag} flagDetail={post.flagDetail} />
                         )}
                         <span>{post.displayName}</span>
                         <span aria-hidden="true">·</span>

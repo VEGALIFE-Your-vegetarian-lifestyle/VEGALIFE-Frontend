@@ -1,23 +1,23 @@
 import type { TFunction } from "i18next";
-import {
-    MAX_DISH_REPEATS,
-    MAX_NOTES_LENGTH,
-    MIN_DISTINCT_DISHES,
-    MIN_SERVINGS,
-    dishUsage,
-    type MenuFormValues,
-} from "./schema";
+import { MAX_DISH_REPEATS, MAX_NOTES_LENGTH, MIN_DISTINCT_DISHES, dishUsage, type MenuFormValues } from "./schema";
+import { minStartDateISO } from "../week";
 
 /**
  * Luật BR-MENU-005 dạng quan hệ giữa các ô (đếm trên cả tuần), nên không dùng Yup —
  * Yup mô tả schema theo từng field, nhồi vào `.test()` gốc thì vẫn phải viết hàm đếm y hệt
  * mà mất khả năng gắn lỗi vào đúng ô.
  *
- * Key lỗi: `days.<i>` (ngày trống), `days.<i>.slots.<j>.servings` (số phần), `week` (cấp tuần).
+ * Key lỗi: `days.<i>` (ngày trống), `week` (cấp tuần), `startDate` (ngày bắt đầu).
  * Lỗi `week` ưu tiên luật lặp (cụ thể hơn) trước luật thiếu món.
  */
 export function validate(values: MenuFormValues, t: TFunction): Record<string, string> {
     const errors: Record<string, string> = {};
+
+    // Ngày bắt đầu phải **sau hôm nay** (từ mai trở đi) — hôm nay cũng không hợp lệ.
+    // Chặn ở đây để nút Lưu khoá trước khi gửi.
+    if (values.startDate < minStartDateISO()) {
+        errors.startDate = t("menu:create.errors.startInPast");
+    }
 
     if (values.notes.length > MAX_NOTES_LENGTH) {
         errors.notes = t("menu:create.errors.notesTooLong", { max: MAX_NOTES_LENGTH });
@@ -28,15 +28,6 @@ export function validate(values: MenuFormValues, t: TFunction): Record<string, s
         if (day.slots.every((slot) => slot.dish === null)) {
             errors[`days.${dayIndex}`] = t("menu:create.errors.dayEmpty");
         }
-
-        // Luật 4: servings nguyên ≥ 1 cho ô đã chọn món.
-        day.slots.forEach((slot, slotIndex) => {
-            if (slot.dish === null) return;
-            const servings = Number(slot.servings);
-            if (!Number.isInteger(servings) || servings < MIN_SERVINGS) {
-                errors[`days.${dayIndex}.slots.${slotIndex}.servings`] = t("menu:create.errors.servings");
-            }
-        });
     });
 
     // Luật 6 + 7.

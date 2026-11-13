@@ -9,6 +9,11 @@ export interface FormValues {
     /** Text thuần suy từ `content` — gửi lên ở field `content`. */
     rawContent: string;
     featuredImageUrl: string;
+    /**
+     * Id của media video đã upload xong (`POST /api/media/upload` → confirm).
+     * KHÔNG gửi trong `POST`/`PATCH /api/posts` — gắn sau bằng `POST /api/posts/{id}/media`.
+     */
+    videoMediaId: string;
     categoryIds: string[];
     /** Công thức gắn vào bài — `POST /api/posts/{id}/recipes`. */
     recipeIds: string[];

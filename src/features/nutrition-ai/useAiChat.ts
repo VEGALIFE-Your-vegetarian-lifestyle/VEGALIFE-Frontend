@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAiConversation, getAiConversations, sendAiMessage } from "./api";
+import { isTimeoutError } from "@/shared/utils/apiError";
 import { MAX_MESSAGE_LENGTH, type AiUsage } from "./types";
 
 export interface ChatMessage {
@@ -33,6 +34,7 @@ export function useAiChat(enabled = true) {
     const [usage, setUsage] = useState<AiUsage | null>(null);
     const [error, setError] = useState<unknown>(null);
     const [failedText, setFailedText] = useState<string | null>(null);
+    const [timedOut, setTimedOut] = useState(false);
 
     // `isPending` chỉ đổi sau re-render → Enter + click trong cùng một tick vẫn lọt.
     const sendingRef = useRef(false);
@@ -61,6 +63,7 @@ export function useAiChat(enabled = true) {
             sendingRef.current = true;
             setError(null);
             setFailedText(null);
+            setTimedOut(false);
             setPendingText(text);
 
             try {
@@ -77,6 +80,20 @@ export function useAiChat(enabled = true) {
                 void queryClient.invalidateQueries({ queryKey: ["subscription", "me"] });
                 return true;
             } catch (err) {
+                // Timeout = client tự cắt, KHÔNG phải server báo lỗi. Backend vẫn chạy tiếp và
+                // thường đã tạo xong thực đơn → đọc lại thay vì khẳng định thất bại (F5 mới thấy
+                // menu là triệu chứng của việc thiếu bước này).
+                if (isTimeoutError(err)) {
+                    setTimedOut(true);
+                    void queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
+                    void queryClient.invalidateQueries({ queryKey: CONVERSATIONS_KEY });
+                    void queryClient.invalidateQueries({ queryKey: ["subscription", "me"] });
+                    // Trả `true` để ChatPanel KHÔNG đẩy lại câu hỏi vào ô nhập — gửi lại lúc này
+                    // là cách tạo thực đơn thứ hai (BE không có idempotency key).
+                    // ponytail: hội thoại mới chưa biết id nên `activeId` vẫn null; sidebar vừa
+                    // invalidate sẽ có nó. Nâng lên idempotency key khi cần chặn trùng tận gốc.
+                    return true;
+                }
                 // Giữ câu hỏi để gửi lại; BR-CHATBOT-003: không bịa câu trả lời.
                 setFailedText(text);
                 setError(err);
@@ -102,6 +119,7 @@ export function useAiChat(enabled = true) {
         setLocal([]);
         setError(null);
         setFailedText(null);
+        setTimedOut(false);
     }, []);
 
     const newConversation = useCallback(() => {
@@ -111,6 +129,7 @@ export function useAiChat(enabled = true) {
         setLocal([]);
         setError(null);
         setFailedText(null);
+        setTimedOut(false);
     }, []);
 
     const retry = useCallback(() => {
@@ -139,6 +158,7 @@ export function useAiChat(enabled = true) {
         usage,
         error,
         failedText,
+        timedOut,
         send,
         retry,
         selectConversation,

@@ -7,6 +7,12 @@ import { MenuCard } from "../MenuCard";
 import type { MenuDetail } from "../../types";
 
 vi.mock("@/features/recipes/api", () => ({ getRecipe: vi.fn() }));
+vi.mock("../../api", () => ({
+    changeMenuStatus: vi.fn(),
+    deleteMenu: vi.fn().mockResolvedValue(undefined),
+    getMealPlans: vi.fn(),
+    createMenu: vi.fn(),
+}));
 
 const recommended = {
     id: "r1",
@@ -104,6 +110,19 @@ describe("MenuCard", () => {
         const { container } = renderWithProviders(<MenuCard menu={{ ...menu, status: "cancelled" }} />);
         expect(within(container).getAllByText("Breakfast")).toHaveLength(7);
         expect(container.querySelector(".opacity-55")).not.toBeNull();
+    });
+
+    it("nút Xoá xác nhận rồi gọi DELETE với đúng menuId — kể cả menu completed", async () => {
+        const user = userEvent.setup();
+        const { deleteMenu } = await import("../../api");
+        renderWithProviders(<MenuCard menu={{ ...menu, status: "completed" }} />);
+
+        await user.click(screen.getByRole("button", { name: "Delete" }));
+        // Dialog vừa mở → giờ có 2 nút cùng nhãn; nút xác nhận là nút cuối.
+        const buttons = screen.getAllByRole("button", { name: "Delete" });
+        await user.click(buttons[buttons.length - 1]);
+
+        expect(deleteMenu).toHaveBeenCalledWith("m1");
     });
 });
 

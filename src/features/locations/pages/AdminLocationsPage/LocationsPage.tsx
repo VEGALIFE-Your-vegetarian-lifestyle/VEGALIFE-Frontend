@@ -19,6 +19,7 @@ import { useDebounce } from "@/shared/hooks/useDebounce";
 import { LocationFormDialog } from "./LocationFormDialog";
 
 const PAGE_SIZE = 8;
+const RATING_FILTERS = ["", "3", "4", "4.5"] as const;
 
 export default function LocationsPage() {
     const { t } = useTranslation(["location", "common"]);

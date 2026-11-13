@@ -48,8 +48,8 @@ describe("LocationsPage (Admin)", () => {
 
         await user.type(screen.getByPlaceholderText(/Search by name or dish/i), "Bình Thạnh");
 
-        await waitFor(() => expect(screen.queryByText(FIRST_ROW)).not.toBeInTheDocument());
-        expect(await screen.findByText("Chợ Chay Bình Thạnh")).toBeInTheDocument();
+        await waitFor(() => expect(screen.queryByText("Chợ Chay Bình Thạnh")).not.toBeInTheDocument());
+        expect(await screen.findByText("Quán Chay Lá Xanh")).toBeInTheDocument();
     });
 
     it("form báo lỗi khi để trống và khi nhập vĩ độ ngoài khoảng", async () => {

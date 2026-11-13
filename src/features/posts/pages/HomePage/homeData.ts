@@ -10,8 +10,6 @@ import type { ApiResponse, PageResponse } from "@/shared/types/common";
  * thì xoá file này, gọi thẳng service của feature tương ứng.
  */
 
-export type HomePlaceType = "restaurant" | "grocery" | "cafe" | "market";
-
 export interface HomePlace {
     id: string;
     name: string;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { parseISODate } from "../week";
 
 interface WeekNavigatorProps {
-    /** YYYY-MM-DD — Thứ 2 của tuần đang xem. */
+    /** YYYY-MM-DD — ngày đầu của cửa sổ 7 ngày đang xem (thứ mấy cũng được). */
     from: string;
     to: string;
     onPrev: () => void;

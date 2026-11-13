@@ -1,0 +1,33 @@
+{
+    "title": "Đã lưu",
+    "subtitle": "{{posts}} bài viết · {{recipes}} công thức đã lưu. Chỉ đọc — không sửa được nội dung của người khác.",
+    "nav": "Đã lưu",
+    "tab": {
+        "posts": "Bài đã lưu",
+        "recipes": "Công thức đã lưu"
+    },
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "unsave": "Bỏ lưu",
+    "readPost": "Đọc bài",
+    "composeFromRecipe": "Viết bài từ công thức này",
+    "prepCook": "{{prep}} + {{cook}} phút",
+    "servings": "{{count}} phần",
+    "ingredients": "{{count}} nguyên liệu",
+    "nutritionMissing": "Dinh dưỡng chưa đủ",
+    "loginRequired": "Đăng nhập để lưu nội dung.",
+    "empty": {
+        "posts": {
+            "title": "Chưa lưu bài viết nào",
+            "description": "Bấm biểu tượng lưu trên một bài viết để xem lại ở đây."
+        },
+        "recipes": {
+            "title": "Chưa lưu công thức nào",
+            "description": "Bấm biểu tượng lưu trên một công thức để xem lại và viết bài từ đó."
+        }
+    },
+    "toast": {
+        "unsavedPost": "Đã bỏ lưu bài viết",
+        "unsavedRecipe": "Đã bỏ lưu công thức"
+    }
+}

@@ -1,6 +1,15 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { addDays, parseISODate, shiftWeek, startOfWeek, toISODate, weekDays } from "../week";
+import {
+    addDays,
+    clampStartDate,
+    minStartDateISO,
+    parseISODate,
+    startOfWeek,
+    toISODate,
+    todayISO,
+    weekDays,
+} from "../week";
 
 const day = (iso: string) => parseISODate(iso);
 
@@ -72,7 +81,7 @@ describe("addDays", () => {
 });
 
 describe("weekDays", () => {
-    it("7 ngày liên tiếp, bắt đầu từ Thứ 2", () => {
+    it("7 ngày liên tiếp từ ngày bắt đầu", () => {
         const days = weekDays(day("2026-10-05")).map(toISODate);
         expect(days).toEqual([
             "2026-10-05",
@@ -84,18 +93,25 @@ describe("weekDays", () => {
             "2026-10-11",
         ]);
     });
+
+    it("bắt đầu giữa tuần vẫn trả 7 ngày liền kề", () => {
+        expect(toISODate(weekDays(day("2026-10-08"))[6])).toBe("2026-10-14");
+    });
 });
 
-describe("shiftWeek", () => {
-    it("+1 qua ranh giới tháng", () => {
-        expect(toISODate(shiftWeek(day("2026-10-26"), 1))).toBe("2026-11-02");
+describe("clampStartDate / minStartDateISO", () => {
+    it("minStartDateISO là ngày mai, đúng định dạng YYYY-MM-DD", () => {
+        expect(minStartDateISO()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(minStartDateISO()).toBe(toISODate(addDays(new Date(), 1)));
     });
 
-    it("-1 qua ranh giới tháng", () => {
-        expect(toISODate(shiftWeek(day("2026-10-05"), -1))).toBe("2026-09-28");
+    it("ngày trong quá khứ và hôm nay đều bị kẹp về ngày mai", () => {
+        expect(clampStartDate("2020-01-01")).toBe(minStartDateISO());
+        expect(clampStartDate(todayISO())).toBe(minStartDateISO());
     });
 
-    it("0 giữ nguyên", () => {
-        expect(toISODate(shiftWeek(day("2026-10-05"), 0))).toBe("2026-10-05");
+    it("từ ngày mai trở đi giữ nguyên", () => {
+        expect(clampStartDate(minStartDateISO())).toBe(minStartDateISO());
+        expect(clampStartDate("2099-01-01")).toBe("2099-01-01");
     });
 });

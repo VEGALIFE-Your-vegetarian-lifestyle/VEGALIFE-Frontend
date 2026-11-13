@@ -9,7 +9,10 @@
         "instructions": "Các bước nấu",
         "instructionsHint": "Từng bước một, kèm mốc thời gian nấu",
         "details": "Khẩu phần & thời gian",
-        "detailsHint": "Chọn khẩu phần, thời gian sơ chế và mức độ công sức"
+        "detailsHint": "Chọn khẩu phần, thời gian sơ chế và mức độ công sức",
+        "composerTitle": "Tạo công thức mới",
+        "composerSubtitle": "Công thức sẽ ở trạng thái Chờ duyệt cho tới khi admin duyệt.",
+        "composerEyebrow": "Công thức"
     },
     "field": {
         "name": "Tên công thức",
@@ -98,10 +101,12 @@
             "ingredients_one": "{{count}} nguyên liệu",
             "ingredients_other": "{{count}} nguyên liệu",
             "nutrition": "{{kcal}} kcal · {{protein}} g đạm (cả công thức)",
-            "nutritionMissing": "Chưa có dữ liệu dinh dưỡng"
+            "nutritionMissing": "Chưa có dữ liệu dinh dưỡng",
+            "total": "Tổng {{count}} phút"
         },
         "action": {
-            "view": "Xem công thức"
+            "view": "Xem công thức",
+            "delete": "Xoá công thức"
         },
         "detail": {
             "dishPending": "Công thức đã được duyệt, nhưng tên món dùng chung vẫn đang chờ kiểm duyệt."
@@ -111,6 +116,13 @@
             "hint": "Công thức bạn tạo sẽ hiện ở đây kèm trạng thái kiểm duyệt.",
             "filtered": "Không có công thức khớp bộ lọc",
             "filteredHint": "Thử từ khoá, độ khó hoặc tab trạng thái khác."
+        },
+        "delete": {
+            "title": "Xoá công thức này?",
+            "body": "\"{{name}}\" sẽ biến mất khỏi danh sách công thức, bộ chọn công thức và mọi bài viết đang gắn nó. Không khôi phục được.",
+            "confirm": "Xoá công thức",
+            "hint": "Không có khôi phục — thao tác này là vĩnh viễn.",
+            "done": "Đã xoá công thức"
         }
     },
     "servings": {
@@ -218,5 +230,11 @@
         "fat": "Béo",
         "fiber": "Xơ",
         "wholeRecipe": "Tính cho cả công thức, không phải mỗi phần."
+    },
+    "discard": {
+        "title": "Bỏ công thức đang viết?",
+        "description": "Bạn đã nhập nội dung chưa gửi. Đóng bây giờ sẽ mất hết.",
+        "keep": "Tiếp tục viết",
+        "confirm": "Bỏ"
     }
 }

@@ -2,6 +2,8 @@ import { Outlet } from "react-router-dom";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { PostComposerDialog } from "@/features/posts/components/composer/PostComposerDialog";
+import { MealPlanComposerDialog } from "@/features/menus/components/MealPlanComposerDialog";
+import { RecipeComposerDialog } from "@/features/recipes/components/RecipeComposerDialog";
 
 export function Layout() {
     return (
@@ -11,8 +13,10 @@ export function Layout() {
                 <Outlet />
             </main>
             <Footer />
-            {/* Mount một lần cho cả app — mở/đóng qua `useUiStore().openComposer`. */}
+            {/* Mount một lần cho cả app — mở/đóng qua `useUiStore`. */}
             <PostComposerDialog />
+            <MealPlanComposerDialog />
+            <RecipeComposerDialog />
         </div>
     );
 }

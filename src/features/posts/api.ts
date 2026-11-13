@@ -20,8 +20,8 @@ import type {
 import { delay } from "@/shared/utils/delay";
 
 /**
- * POST /api/posts chỉ nhận { title, content, rawContent, featuredImageUrl } và luôn tạo ở status "created".
- * Đăng bài / gán category phải gọi PATCH /api/posts/{id} sau đó.
+ * POST /api/posts chỉ nhận { title, content, rawContent, featuredImageUrl } và luôn tạo ở status "drafted".
+ * Gửi duyệt / gán category phải gọi PATCH /api/posts/{id} sau đó.
  *
  * `content` là text thuần, `rawContent` là object JSON ProseMirror.
  */
@@ -50,6 +50,18 @@ export async function updatePost(id: string, request: UpdatePostRequest): Promis
  */
 export async function attachPostRecipes(id: string, recipeIds: string[]): Promise<PostListResponse> {
     const { data } = await api.post<ApiResponse<PostListResponse>>(`/api/posts/${id}/recipes`, { recipeIds });
+    return data.data;
+}
+
+/**
+ * POST /api/posts/{postId}/media — gán/thay **toàn bộ** media của bài (video, ảnh đính kèm).
+ * Mảng rỗng = bỏ hết. Media phải đã `confirm` xong (`status === "succeed"`) nếu không BE trả 400.
+ *
+ * `imageUrl` là async: `POST /api/posts` không nhận `mediaIds`, nên phải tạo/sửa bài trước
+ * rồi mới gọi hàm này.
+ */
+export async function attachPostMedia(id: string, mediaIds: string[]): Promise<PostListResponse> {
+    const { data } = await api.post<ApiResponse<PostListResponse>>(`/api/posts/${id}/media`, { mediaIds });
     return data.data;
 }
 
@@ -424,7 +436,7 @@ export interface AdminPostListParams {
     /** `q` lọc client-side — BE chưa có tham số tìm kiếm. */
     q?: string;
     status?: PostStatus;
-    /** Mặc định `all` — BE mặc định `NEEDS_REVIEW`, bỏ trống sẽ giấu hết bài đã duyệt. */
+    /** Mặc định `all` — khớp default mới của BE (V56). */
     flag?: PostFlag | "all";
     sort?: AdminPostSort;
     userId?: string;
@@ -489,62 +501,78 @@ export const getPosts = async ({
 export interface MyPostsCounts {
     all: number;
     published: number;
+    processing: number;
     draft: number;
     unpublished: number;
-    video: number;
+    /** Số bài có media đính kèm — backend bỏ `type`, giờ suy từ `mediaIds`. */
+    withMedia: number;
     views: number;
 }
 
-export type MyPostsPage = Paginated<PostListResponse> & { counts: MyPostsCounts };
+export type MyPostsPage = Paginated<PostListResponse>;
 
 export const getMyPosts = async ({
     page,
     size,
     q,
     status,
-}: ListParams<PostStatus>): Promise<MyPostsPage> => {
-    // GET /api/posts chỉ hỗ trợ page/size (trả mọi status, sort createdAt desc).
-    // ponytail: lọc q/status ở client trên tối đa 100 bài; khi backend thêm filter thì bỏ.
-    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts", {
+    categoryId,
+}: ListParams<PostStatus> & { categoryId?: string }): Promise<MyPostsPage> => {
+    // GET /api/posts/me (JWT) — bài của chính mình, mọi status, sort createdAt desc.
+    // `/api/posts` giờ là feed public nên KHÔNG dùng được ở đây (trả bài người khác → xoá 404).
+    // `status`/`categoryId` lọc ở server; backend **không có** `keyword` → `q` vẫn lọc client.
+    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts/me", {
+        params: {
+            page: Math.max(page - 1, 0),
+            size,
+            ...(status ? { status } : {}),
+            ...(categoryId ? { categoryId } : {}),
+        },
+    });
+
+    const keyword = q?.trim().toLowerCase() ?? "";
+    // ponytail: `q` chỉ lọc trong trang hiện tại (BE không có keyword cho route này). Bỏ khi BE thêm.
+    const items = data.data.content
+        .map(enrichListItem)
+        .filter((item) => keyword === "" || item.title.toLowerCase().includes(keyword));
+
+    return {
+        data: items,
+        total: data.data.totalElements,
+        page,
+        size: data.data.size,
+        totalPages: Math.max(1, data.data.totalPages),
+    };
+};
+
+/**
+ * Số đếm cho chip trạng thái + rail tài khoản — phải là **toàn tài khoản**, không phải trang
+ * đang xem, nên đọc một trang lớn rồi đếm tại chỗ.
+ * ponytail: trần 100 bài; backend chưa có endpoint count theo status.
+ */
+export const getMyPostsCounts = async (): Promise<MyPostsCounts> => {
+    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts/me", {
         params: { page: 0, size: 100 },
     });
 
-    const all = data.data.content.map(enrichListItem);
-
-    // Đếm trên danh sách đầy đủ, TRƯỚC khi lọc — dải số đầu trang phải cố định,
-    // không nhảy theo từ khoá/trang.
-    const counts: MyPostsCounts = {
-        all: all.length,
-        published: all.filter((post) => post.status === "published").length,
-        draft: all.filter((post) => post.status === "created").length,
-        unpublished: all.filter((post) => post.status === "unpublished").length,
-        video: all.filter((post) => post.type === "video").length,
-        views: all.reduce((sum, post) => sum + post.viewCount, 0),
-    };
-
-    const keyword = q?.trim().toLowerCase() ?? "";
-    const filtered = all.filter(
-        (item) =>
-            (!status || item.status === status) && (keyword === "" || item.title.toLowerCase().includes(keyword)),
-    );
-
-    const start = (page - 1) * size;
-
+    const all = data.data.content;
     return {
-        data: filtered.slice(start, start + size),
-        total: filtered.length,
-        page,
-        size,
-        totalPages: Math.max(1, Math.ceil(filtered.length / size)),
-        counts,
+        all: data.data.totalElements,
+        published: all.filter((post) => post.status === "published").length,
+        processing: all.filter((post) => post.status === "processing").length,
+        draft: all.filter((post) => post.status === "drafted").length,
+        unpublished: all.filter((post) => post.status === "unpublished").length,
+        withMedia: all.filter((post) => post.mediaIds.length > 0).length,
+        views: all.reduce((sum, post) => sum + post.viewCount, 0),
     };
 };
 
 /**
  * POST /api/admin/posts/{postId}/approve — duyệt bài (ADR-016 thay `/moderate`).
  * Publish bài + duyệt luôn các component còn PENDING mà bài tham chiếu (dish/ingredient/recipe).
- * 400 khi bài chưa có category hoặc đang `hidden`; 404 khi không có / xoá mềm.
- * `flag` (verdict kiểm duyệt tự động) KHÔNG đổi.
+ * 400 khi bài đang `drafted` hoặc chưa có category; 404 khi không có / xoá mềm.
+ * `flag` (verdict kiểm duyệt tự động) KHÔNG đổi — bài `FILTER_FAILED` vẫn giữ flag đó,
+ * nghĩa là "admin duyệt đè máy", không phải "máy đã cho qua".
  */
 export const approvePost = async (id: string, reason?: string): Promise<void> => {
     await api.post<ApiResponse<unknown>>(`/api/admin/posts/${id}/approve`, reason ? { reason } : {});
@@ -553,7 +581,8 @@ export const approvePost = async (id: string, reason?: string): Promise<void> =>
 /**
  * POST /api/admin/posts/{postId}/reject — từ chối bài.
  * Unpublish + từ chối các component **còn PENDING**; component đã duyệt giữ nguyên.
- * 400 khi bài đang `hidden`; 404 khi không có / xoá mềm.
+ * 400 khi bài đang `drafted`; 404 khi không có / xoá mềm. `flag`/`flagDetail` được giữ:
+ * cùng `rejectionReason` chúng tạo thành biên bản quyết định (máy thấy gì, người quyết gì).
  */
 export const rejectPost = async (id: string, reason?: string): Promise<void> => {
     await api.post<ApiResponse<unknown>>(`/api/admin/posts/${id}/reject`, reason ? { reason } : {});
@@ -654,6 +683,12 @@ export const deletePost = async (id: string): Promise<void> => {
 export interface GetFeedParams {
     page?: number;
     size?: number;
+    /** Khớp `title` hoặc `content` (nguyên cụm, không phân biệt hoa thường). Rỗng = bỏ lọc. */
+    keyword?: string;
+    /** Một category id — backend không nhận nhiều. */
+    categoryId?: string;
+    createdFrom?: string;
+    createdTo?: string;
 }
 
 /** `GET /api/posts/{id}/related` — `[{post, similarityScore}]`, xếp giảm dần. */
@@ -695,12 +730,30 @@ export async function setPostVote(id: string, voteType: "UPVOTE" | "DOWNVOTE"): 
 }
 
 /**
- * GET /api/posts/feed — public published posts, no JWT required.
+ * GET /api/posts — public feed (published posts, no JWT). Backend bỏ `/api/posts/feed`
+ * (trả 400 "Invalid value for parameter 'postId'"), gộp vào `/api/posts` (`size` ≤ 100).
  * Bọc qua `enrichListItem` để card có tác giả / thời lượng / rating như mockup.
+ *
+ * Filter **chỉ thu hẹp**: bỏ tham số nào thì tham số đó không lọc. Đừng gửi `""` cho enum/UUID
+ * (`400`), riêng `keyword` rỗng thì backend coi là "không lọc" — nhưng vẫn bỏ cho sạch cache key.
  */
-export async function getFeedPosts({ page = 0, size = 20 }: GetFeedParams = {}): Promise<PageResponse<PostListResponse>> {
-    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts/feed", {
-        params: { page, size },
+export async function getFeedPosts({
+    page = 0,
+    size = 20,
+    keyword,
+    categoryId,
+    createdFrom,
+    createdTo,
+}: GetFeedParams = {}): Promise<PageResponse<PostListResponse>> {
+    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts", {
+        params: {
+            page,
+            size,
+            ...(keyword ? { keyword } : {}),
+            ...(categoryId ? { categoryId } : {}),
+            ...(createdFrom ? { createdFrom } : {}),
+            ...(createdTo ? { createdTo } : {}),
+        },
     });
     return { ...data.data, content: data.data.content.map(enrichListItem) };
 }

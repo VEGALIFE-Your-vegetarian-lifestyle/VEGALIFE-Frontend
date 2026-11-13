@@ -10,7 +10,8 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { MenuCard } from "../components/MenuCard";
 import { WeekNavigator } from "../components/WeekNavigator";
 import { useMealPlans } from "../useMealPlans";
-import { addDays, parseISODate, shiftWeek, startOfWeek, toISODate } from "../week";
+import { addDays, parseISODate, toISODate } from "../week";
+import { useUiStore } from "@/shared/ui/uiStore";
 import type { MenuStatus } from "../types";
 
 /** Bộ lọc mặc định: chỉ menu đang chạy. Draft/cancelled phải chọn tay mới hiện. */
@@ -24,18 +25,19 @@ export default function MealPlanPage() {
     const { t } = useTranslation("menu");
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
+    const openMealPlanComposer = useUiStore((state) => state.openMealPlanComposer);
 
-    // Tuần đang xem nằm trên URL; giá trị hỏng (vd `?from=abc`) rơi về tuần hiện tại.
-    const monday = useMemo(() => {
+    // Cửa sổ 7 ngày bắt đầu từ `?from=` (thứ mấy cũng được); giá trị hỏng rơi về hôm nay.
+    const first = useMemo(() => {
         const requested = parseISODate(searchParams.get("from") ?? "");
-        return startOfWeek(Number.isNaN(requested.getTime()) ? new Date() : requested);
+        return Number.isNaN(requested.getTime()) ? new Date() : requested;
     }, [searchParams]);
 
     const statusParam = searchParams.get("status");
     const status: StatusFilter = isStatusFilter(statusParam) ? statusParam : "scheduled";
 
-    const from = toISODate(monday);
-    const to = toISODate(addDays(monday, 6));
+    const from = toISODate(first);
+    const to = toISODate(addDays(first, 6));
     const { data: menus, isLoading, isError, refetch } = useMealPlans({ from, to });
 
     /** Số lượng theo từng trạng thái — để pill hiện count mà không phải gọi thêm. */
@@ -67,11 +69,11 @@ export default function MealPlanPage() {
                     <WeekNavigator
                         from={from}
                         to={to}
-                        onPrev={() => goToWeek(shiftWeek(monday, -1))}
-                        onNext={() => goToWeek(shiftWeek(monday, 1))}
-                        onToday={() => goToWeek(startOfWeek(new Date()))}
+                        onPrev={() => goToWeek(addDays(first, -7))}
+                        onNext={() => goToWeek(addDays(first, 7))}
+                        onToday={() => goToWeek(new Date())}
                     />
-                    <Button className="max-sm:flex-1" onClick={() => navigate(`/meal-plan/create?from=${from}`)}>
+                    <Button className="max-sm:flex-1" onClick={() => openMealPlanComposer(from)}>
                         <Plus className="h-4 w-4" aria-hidden="true" />
                         {t("create.action")}
                     </Button>
@@ -106,7 +108,7 @@ export default function MealPlanPage() {
                         description={t("empty.description")}
                         action={
                             <div className="flex flex-wrap justify-center gap-2">
-                                <Button onClick={() => navigate(`/meal-plan/create?from=${from}`)}>
+                                <Button onClick={() => openMealPlanComposer(from)}>
                                     {t("empty.create")}
                                 </Button>
                                 <Button variant="outline" onClick={() => navigate("/ai-nutrition")}>

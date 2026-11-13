@@ -66,4 +66,6 @@ export interface LocationListParams {
     keyword?: string;
     minRating?: number;
     maxPriceLevel?: number;
+    openNow?: boolean;
+    keyword?: string;
 }

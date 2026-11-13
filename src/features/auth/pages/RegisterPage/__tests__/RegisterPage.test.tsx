@@ -32,7 +32,7 @@ describe("RegisterPage", () => {
         renderRegister();
 
         expect(screen.getByRole("heading", { name: "Create VEGALIFE account" })).toBeInTheDocument();
-        expect(screen.getByLabelText(/Username/)).toBeInTheDocument();
+        expect(screen.getByLabelText(/Display name/)).toBeInTheDocument();
         expect(screen.getByLabelText(/^Email/)).toBeInTheDocument();
         expect(screen.getByLabelText(/^Password/)).toBeInTheDocument();
         expect(screen.getByLabelText(/Confirm password/)).toBeInTheDocument();
@@ -44,32 +44,31 @@ describe("RegisterPage", () => {
 
         await user.click(screen.getByRole("button", { name: /Register/ }));
 
-        expect(await screen.findByText("Please enter a username")).toBeInTheDocument();
+        expect(await screen.findByText("Please enter a display name")).toBeInTheDocument();
         expect(screen.getByText("Please enter your email")).toBeInTheDocument();
         expect(screen.getByText("Please enter password")).toBeInTheDocument();
         expect(screen.getByText("Please confirm your password")).toBeInTheDocument();
     });
 
-    it("username có ký tự lạ bị từ chối", async () => {
+    it("tên hiển thị được phép có dấu cách và ký tự đặc biệt", async () => {
         const user = userEvent.setup();
         renderRegister();
 
-        await user.type(screen.getByLabelText(/Username/), "minh sao");
+        await user.type(screen.getByLabelText(/Display name/), "Minh Nguyễn");
         await user.click(screen.getByRole("button", { name: /Register/ }));
 
-        expect(
-            await screen.findByText("Username may only contain letters, numbers, dots and underscores"),
-        ).toBeInTheDocument();
+        expect(await screen.findByText("Please enter your email")).toBeInTheDocument();
+        expect(screen.queryByText(/Display name must be/)).not.toBeInTheDocument();
     });
 
-    it("username ngắn hơn 3 ký tự bị từ chối", async () => {
+    it("tên hiển thị ngắn hơn 2 ký tự bị từ chối", async () => {
         const user = userEvent.setup();
         renderRegister();
 
-        await user.type(screen.getByLabelText(/Username/), "ab");
+        await user.type(screen.getByLabelText(/Display name/), "a");
         await user.click(screen.getByRole("button", { name: /Register/ }));
 
-        expect(await screen.findByText("Username must be at least 3 characters")).toBeInTheDocument();
+        expect(await screen.findByText("Display name must be at least 2 characters")).toBeInTheDocument();
     });
 
     it("email sai định dạng bị từ chối", async () => {
@@ -137,7 +136,7 @@ describe("RegisterPage", () => {
         const user = userEvent.setup();
         renderRegister();
 
-        await user.type(screen.getByLabelText(/Username/), "minh_01");
+        await user.type(screen.getByLabelText(/Display name/), "Minh");
         await user.type(screen.getByLabelText(/^Email/), "minh@example.com");
         await user.type(screen.getByLabelText(/^Password/), VALID_PASSWORD);
         await user.type(screen.getByLabelText(/Confirm password/), VALID_PASSWORD);

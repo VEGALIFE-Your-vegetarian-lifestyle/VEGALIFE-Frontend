@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VEGALIFE — Dialog tạo công thức (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* Token lấy đúng từ src/index.css của project. */
+  :root {
+    --vegan-green: #12724a;
+    --vegan-green-hover: #0f6140;
+    --vegan-green-light: #e6f2ec;
+    --vegan-green-muted: #b0d3bd;
+    --vegan-green-subtle: #f2f9f5;
+    --amber-soft: #fef3c7;
+    --amber-strong: #b45309;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --dark: #0d1117;
+    --background: #f4f5f7;
+    --surface: #ffffff;
+    --muted-bg: #eaeef2;
+    --border: #e3e6ea;
+    --muted-foreground: #5c6675;
+    --radius-md: 10px;
+    --radius-lg: 12px;
+    --radius-xl: 14px;
+    --radius-2xl: 16px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--background);
+    color: var(--dark);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Khung trang demo ---------- */
+  .demo-bar {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    padding: 10px 16px;
+    background: #10161f; color: #cfd6de;
+    font-size: 12px;
+  }
+  .demo-bar b { color: #fff; font-weight: 700; }
+  .demo-bar .spacer { flex: 1; }
+  .demo-bar button {
+    font: inherit; font-weight: 600;
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid #2b3542; background: #1a222c; color: #dfe5ec;
+  }
+  .demo-bar button:hover { background: #253040; }
+  .demo-bar button[aria-pressed="true"] { background: var(--vegan-green); border-color: var(--vegan-green); color: #fff; }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 28px 20px 80px; }
+  .page h1 { font-size: 26px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .page .sub { color: var(--muted-foreground); font-size: 13.5px; margin: 0 0 22px; }
+  .launcher {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 42px; padding: 0 20px; border: 0; border-radius: 999px;
+    background: var(--vegan-green); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+    font-size: 14px;
+  }
+  .launcher:hover { background: var(--vegan-green-hover); }
+  .note {
+    margin-top: 22px; padding: 14px 16px; border-radius: var(--radius-lg);
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 13px; color: var(--muted-foreground); line-height: 1.6;
+  }
+  .note b { color: var(--dark); }
+
+  /* ---------- Overlay + Dialog ---------- */
+  .overlay {
+    position: fixed; inset: 0; z-index: 50;
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+    background: rgba(13, 17, 23, 0.45);
+    backdrop-filter: blur(2px);
+  }
+  .overlay.open { display: flex; }
+
+  .dialog {
+    width: min(1120px, 100%);
+    max-height: min(92vh, 900px);
+    display: flex; flex-direction: column;
+    background: var(--surface);
+    border-radius: var(--radius-2xl);
+    box-shadow: 0 24px 64px rgba(13, 17, 23, 0.28);
+    overflow: hidden;
+  }
+
+  .dialog__head {
+    flex: none;
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--vegan-green);
+  }
+  .eyebrow::before {
+    content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--vegan-green);
+  }
+  .dialog__head h2 { margin: 4px 0 0; font-size: 20px; letter-spacing: -0.01em; }
+  .dialog__head p { margin: 4px 0 0; font-size: 13px; color: var(--muted-foreground); }
+  .dialog__head .grow { flex: 1; min-width: 0; }
+  .x-btn {
+    flex: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--muted-foreground);
+    font-size: 16px; line-height: 1;
+  }
+  .x-btn:hover { background: var(--muted-bg); color: var(--dark); }
+
+  .dialog__body {
+    flex: 1; min-height: 0; overflow: auto;
+    display: grid; grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 22px; padding: 20px 22px;
+  }
+  @media (max-width: 960px) {
+    .dialog__body { grid-template-columns: minmax(0, 1fr); }
+    .aside { display: none; }
+  }
+
+  /* ---------- Khối form ---------- */
+  .card {
+    border: 1px solid var(--border); border-radius: var(--radius-xl);
+    background: var(--surface); margin-bottom: 14px; overflow: hidden;
+  }
+  .card__head {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
+  }
+  .step {
+    flex: none; display: grid; place-items: center;
+    width: 24px; height: 24px; border-radius: 7px;
+    background: var(--vegan-green-light); color: var(--vegan-green);
+    font-size: 11.5px; font-weight: 800;
+  }
+  .card__head h3 { margin: 0; font-size: 14.5px; font-weight: 700; }
+  .card__head .hint { margin: 2px 0 0; font-size: 12px; color: var(--muted-foreground); }
+  .card__head .aside { margin-left: auto; font-size: 11.5px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .card__body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field > label { font-size: 12.5px; font-weight: 600; }
+  .req { color: var(--danger); }
+  .field input, .field textarea, .field select {
+    font: inherit; font-size: 13.5px;
+    width: 100%; padding: 10px 12px;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--surface); color: var(--dark);
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none; border-color: var(--vegan-green); box-shadow: 0 0 0 3px rgba(18, 114, 74, 0.14);
+  }
+  .field textarea { resize: vertical; min-height: 78px; }
+  .helper { font-size: 11.5px; color: var(--muted-foreground); }
+  .err { font-size: 11.5px; color: var(--danger); font-weight: 600; display: none; }
+  .field.invalid input, .field.invalid textarea { border-color: var(--danger); }
+  .field.invalid .err { display: block; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 620px) { .row { grid-template-columns: 1fr; } }
+
+  /* Nguyên liệu / bước nấu */
+  .dyn-row { display: grid; grid-template-columns: 1fr 84px 84px 32px; gap: 8px; align-items: center; }
+  .dyn-row input { font-size: 13px; padding: 9px 10px; }
+  .rm {
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--muted-foreground);
+  }
+  .rm:hover { background: var(--danger-soft); color: var(--danger); border-color: #f6c8c8; }
+  .add-row {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 13px; border-radius: 999px; cursor: pointer;
+    border: 1px dashed var(--vegan-green-muted); background: var(--vegan-green-subtle);
+    color: var(--vegan-green); font: inherit; font-size: 12.5px; font-weight: 600;
+  }
+  .add-row:hover { background: var(--vegan-green-light); }
+
+  .steps-list { display: flex; flex-direction: column; gap: 10px; }
+  .step-item { display: grid; grid-template-columns: 26px 1fr 32px; gap: 9px; align-items: start; }
+  .step-num {
+    display: grid; place-items: center; width: 26px; height: 26px; margin-top: 6px;
+    border-radius: 999px; background: var(--vegan-green-light); color: var(--vegan-green);
+    font-size: 11.5px; font-weight: 800;
+  }
+  .step-item input { font-size: 13px; padding: 8px 10px; }
+  .step-item textarea { font-size: 13px; padding: 8px 10px; min-height: 58px; }
+  .step-item .rm { margin-top: 4px; }
+
+  /* Difficulty segmented */
+  .seg { display: flex; gap: 4px; }
+  .seg button {
+    flex: 1; height: 36px; border-radius: var(--radius-md); cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--muted-foreground); font: inherit; font-size: 12.5px; font-weight: 600;
+  }
+  .seg button[aria-pressed="true"] {
+    background: var(--vegan-green); border-color: var(--vegan-green); color: #fff;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .aside { position: sticky; top: 0; align-self: start; display: flex; flex-direction: column; gap: 14px; }
+
+  .preview-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;
+  }
+  .preview-head b { display: flex; align-items: center; gap: 7px; font-size: 13px; }
+  .preview-head .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--vegan-green); }
+  .preview-head .live { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600; color: var(--muted-foreground); }
+
+  .preview-card {
+    border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; background: var(--surface);
+  }
+  .preview-card .hero {
+    height: 96px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--vegan-green-light), var(--vegan-green-subtle) 55%, #eef1f4);
+  }
+  .preview-card .hero svg { width: 30px; height: 30px; color: var(--vegan-green-muted); }
+  .preview-card .body { padding: 12px 13px 14px; }
+  .preview-card .dish { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--vegan-green); }
+  .preview-card h4 { margin: 4px 0 0; font-size: 14px; line-height: 1.35; }
+  .preview-card .desc { margin: 5px 0 0; font-size: 11.5px; color: var(--muted-foreground); line-height: 1.5; }
+  .preview-card .meta {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; padding-top: 9px;
+    border-top: 1px solid var(--border); font-size: 11px; color: var(--muted-foreground);
+  }
+  .preview-card .placeholder { color: var(--muted-foreground); font-style: italic; }
+
+  .panel { border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--surface); padding: 15px; }
+  .panel h5 { margin: 0 0 10px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .bar { height: 6px; border-radius: 999px; background: var(--muted-bg); overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--vegan-green); border-radius: 999px; transition: width .25s ease; }
+
+  .check-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  .check-list li { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .check-list .mark {
+    flex: none; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 999px;
+    font-size: 10px; font-weight: 800;
+  }
+  .check-list li.done .mark { background: var(--vegan-green-light); color: var(--vegan-green); }
+  .check-list li.todo .mark { background: var(--muted-bg); color: var(--muted-foreground); }
+  .check-list li.todo .label { color: var(--muted-foreground); }
+  .check-list .value { margin-left: auto; font-size: 11px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+
+  .aside-actions { display: flex; flex-direction: column; gap: 8px; }
+  .btn {
+    height: 40px; border-radius: 999px; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  .btn--ghost { border: 1px solid var(--border); background: var(--surface); color: var(--dark); }
+  .btn--ghost:hover { background: var(--muted-bg); }
+  .btn--primary { border: 0; background: var(--vegan-green); color: #fff; }
+  .btn--primary:hover { background: var(--vegan-green-hover); }
+  .btn--primary:disabled { opacity: .45; cursor: not-allowed; }
+
+  .status {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 9px 11px; border-radius: var(--radius-md);
+    background: var(--amber-soft); color: var(--amber-strong);
+    font-size: 11.5px; font-weight: 600; line-height: 1.45;
+  }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <b>Mockup</b> — Dialog tạo công thức
+  <span class="spacer"></span>
+  <button type="button" data-state="empty">Trạng thái: Rỗng</button>
+  <button type="button" data-state="filled">Đang nhập</button>
+  <button type="button" data-state="errors">Có lỗi</button>
+</div>
+
+<div class="page">
+  <h1>Công thức của tôi</h1>
+  <p class="sub">Nút “Tạo công thức mới” mở dialog thay cho route <code>/recipes/create</code>.</p>
+  <button class="launcher" type="button" id="launch">＋ Tạo công thức mới</button>
+
+  <div class="note">
+    <b>Ghi chú thiết kế.</b> Dialog 2 cột: trái là 4 khối form (cuộn), phải là thẻ xem trước trực tiếp +
+    checklist độ hoàn thiện + 2 nút hành động. Đổi trạng thái ở thanh trên để xem rỗng / đang nhập / lỗi.
+    Bấm <b>Esc</b> hoặc nút ✕ để đóng — nếu đã nhập thì hiện hộp xác nhận bỏ.
+  </div>
+</div>
+
+<!-- ================= DIALOG ================= -->
+<div class="overlay" id="overlay" role="presentation">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+    <div class="dialog__head">
+      <div class="grow">
+        <span class="eyebrow">Công thức</span>
+        <h2 id="dlg-title">Tạo công thức mới</h2>
+        <p>Công thức của bạn sẽ ở trạng thái <b>Chờ duyệt</b> cho tới khi admin duyệt.</p>
+      </div>
+      <button class="x-btn" type="button" id="close" aria-label="Đóng">✕</button>
+    </div>
+
+    <div class="dialog__body">
+      <!-- ---------- CỘT TRÁI: FORM ---------- -->
+      <form id="form" novalidate>
+        <!-- 01 Tổng quan -->
+        <section class="card">
+          <div class="card__head">
+            <span class="step">01</span>
+            <div>
+              <h3>Tổng quan</h3>
+              <p class="hint">Tên công thức và món mà nó thuộc về.</p>
+            </div>
+            <span class="aside" id="name-count">0 / 120</span>
+          </div>
+          <div class="card__body">
+            <div class="field" id="f-name">
+              <label for="name">Tên công thức <span class="req">*</span></label>
+              <input id="name" name="name" placeholder="VD: Phở chay nước dùng nấm hương" />
+              <span class="err">Vui lòng nhập tên công thức.</span>
+            </div>
+            <div class="field" id="f-dish">
+              <label for="dish">Tên món <span class="req">*</span></label>
+              <input id="dish" name="dish" placeholder="Gõ để tìm món có sẵn…" />
+              <span class="helper">Chọn món có sẵn hoặc gõ tên mới — backend tự tạo nếu chưa có.</span>
+              <span class="err">Vui lòng chọn hoặc nhập tên món.</span>
+            </div>
+            <div class="field">
+              <label for="desc">Mô tả</label>
+              <textarea id="desc" name="desc" placeholder="Điều gì làm công thức này đáng thử?"></textarea>
+              <span class="helper">Ngắn gọn 2–3 câu. Hiện trên thẻ xem trước bên phải.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 02 Nguyên liệu -->
+        <section class="card">
+          <div class="card__head">
+            <span class="step">02</span>
+            <div>
+              <h3>Nguyên liệu</h3>
+              <p class="hint">Đơn vị chỉ nhận g, ml hoặc piece.</p>
+            </div>
+            <span class="aside" id="ing-count">0 dòng</span>
+          </div>
+          <div class="card__body">
+            <div id="ingredients" style="display:flex;flex-direction:column;gap:8px">
+              <div class="dyn-row">
+                <input placeholder="Tên nguyên liệu" aria-label="Tên nguyên liệu" />
+                <input placeholder="SL" type="number" min="0" step="any" aria-label="Số lượng" />
+                <select aria-label="Đơn vị"><option>g</option><option>ml</option><option>piece</option></select>
+                <button class="rm" type="button" aria-label="Xoá dòng">✕</button>
+              </div>
+            </div>
+            <button class="add-row" type="button" id="add-ing">＋ Thêm nguyên liệu</button>
+          </div>
+        </section>
+
+        <!-- 03 Bước nấu -->
+        <section class="card">
+          <div class="card__head">
+            <span class="step">03</span>
+            <div>
+              <h3>Bước nấu</h3>
+              <p class="hint">Mỗi bước một ô: tiêu đề ngắn và thân bước.</p>
+            </div>
+            <span class="aside" id="step-count">1 bước</span>
+          </div>
+          <div class="card__body">
+            <div class="steps-list" id="steps">
+              <div class="step-item">
+                <span class="step-num">1</span>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <input placeholder="Tiêu đề bước (VD: Rang gừng)" aria-label="Tiêu đề bước" />
+                  <textarea placeholder="Mô tả thao tác…" aria-label="Thân bước"></textarea>
+                </div>
+                <button class="rm" type="button" aria-label="Xoá bước">✕</button>
+              </div>
+            </div>
+            <button class="add-row" type="button" id="add-step">＋ Thêm bước</button>
+          </div>
+        </section>
+
+        <!-- 04 Khẩu phần & thời gian -->
+        <section class="card" style="margin-bottom:0">
+          <div class="card__head">
+            <span class="step">04</span>
+            <div>
+              <h3>Khẩu phần &amp; thời gian</h3>
+              <p class="hint">Dùng cho bộ lọc “≤ 30 phút” ở trang khám phá.</p>
+            </div>
+            <span class="aside" id="total-time">— phút</span>
+          </div>
+          <div class="card__body">
+            <div class="row">
+              <div class="field">
+                <label for="servings">Số phần</label>
+                <input id="servings" type="number" min="1" value="2" />
+              </div>
+              <div class="field">
+                <label for="prep">Sơ chế (phút)</label>
+                <input id="prep" type="number" min="0" placeholder="10" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="cook">Nấu (phút)</label>
+                <input id="cook" type="number" min="0" placeholder="20" />
+              </div>
+              <div class="field">
+                <label>Độ khó</label>
+                <div class="seg" role="group" aria-label="Độ khó">
+                  <button type="button" aria-pressed="false">Dễ</button>
+                  <button type="button" aria-pressed="true">Vừa</button>
+                  <button type="button" aria-pressed="false">Khó</button>
+                </div>
+              </div>
+            </div>
+            <div class="status">
+              <span aria-hidden="true">ⓘ</span>
+              <span>Dinh dưỡng do backend tính từ nguyên liệu — không nhập tay ở đây.</span>
+            </div>
+          </div>
+        </section>
+      </form>
+
+      <!-- ---------- CỘT PHẢI: PREVIEW + CHECKLIST + ACTIONS ---------- -->
+      <aside class="aside">
+        <div>
+          <div class="preview-head">
+            <b><span aria-hidden="true">🌿</span> Xem trước</b>
+            <span class="live"><span class="dot"></span> Đồng bộ trực tiếp</span>
+          </div>
+          <div class="preview-card">
+            <div class="hero">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path d="M6 3v8a3 3 0 0 0 3 3v7M9 3v8M12 3v8a3 3 0 0 1-3 3M18 3c-1.5 2-2 4-2 7s.5 3 2 3 2-1 2-3-.5-5-2-7z" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="body">
+              <p class="dish" id="pv-dish">Tên món</p>
+              <h4 id="pv-name"><span class="placeholder">Tên công thức</span></h4>
+              <p class="desc" id="pv-desc">Mô tả ngắn sẽ hiện ở đây khi bạn nhập.</p>
+              <div class="meta">
+                <span id="pv-time">— phút</span>
+                <span id="pv-servings">2 phần</span>
+                <span id="pv-difficulty">Vừa</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h5>
+            <span>Độ hoàn thiện</span>
+            <span style="color:var(--vegan-green);font-weight:800" id="pct">0%</span>
+          </h5>
+          <div class="bar"><i id="bar" style="width:0%"></i></div>
+          <ul class="check-list">
+            <li class="todo" data-check="name"><span class="mark">✓</span><span class="label">Tên công thức</span><span class="value" id="v-name">thiếu</span></li>
+            <li class="todo" data-check="dish"><span class="mark">✓</span><span class="label">Tên món</span><span class="value" id="v-dish">thiếu</span></li>
+            <li class="todo" data-check="ing"><span class="mark">✓</span><span class="label">Nguyên liệu</span><span class="value" id="v-ing">0</span></li>
+            <li class="todo" data-check="steps"><span class="mark">✓</span><span class="label">Bước nấu</span><span class="value" id="v-steps">0</span></li>
+            <li class="todo" data-check="time"><span class="mark">✓</span><span class="label">Thời gian</span><span class="value" id="v-time">thiếu</span></li>
+          </ul>
+        </div>
+
+        <div class="aside-actions">
+          <button class="btn btn--ghost" type="button" id="cancel">Huỷ</button>
+          <button class="btn btn--primary" type="submit" form="form" id="submit" disabled>Tạo công thức</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- Hộp xác nhận bỏ khi đã nhập -->
+<div class="overlay" id="discard" role="presentation" style="z-index:60">
+  <div class="dialog" style="width:min(420px,100%);max-height:none" role="alertdialog" aria-modal="true" aria-labelledby="discard-title">
+    <div class="dialog__head" style="border-bottom:0;padding-bottom:6px">
+      <div class="grow">
+        <h2 id="discard-title" style="font-size:17px;margin:0">Bỏ công thức đang viết?</h2>
+      </div>
+    </div>
+    <div style="padding:6px 22px 20px">
+      <p style="margin:0 0 16px;font-size:13px;color:var(--muted-foreground);line-height:1.6">
+        Bạn đã nhập nội dung chưa gửi. Đóng bây giờ sẽ mất hết.
+      </p>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn--ghost" type="button" id="keep" style="padding:0 18px">Tiếp tục viết</button>
+        <button class="btn" type="button" id="discard-ok" style="padding:0 18px;background:var(--danger);color:#fff">Bỏ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const overlay = $("overlay");
+  const discard = $("discard");
+
+  const fields = {
+    name: $("name"),
+    dish: $("dish"),
+    desc: $("desc"),
+    servings: $("servings"),
+    prep: $("prep"),
+    cook: $("cook"),
+  };
+
+  let dirty = false;
+  let forceErrors = false;
+
+  const markDirty = () => { dirty = true; };
+
+  /* ---------- Đóng / mở ---------- */
+  function open() {
+    overlay.classList.add("open");
+    fields.name.focus();
+  }
+  function requestClose() {
+    if (dirty) { discard.classList.add("open"); return; }
+    close();
+  }
+  function close() {
+    overlay.classList.remove("open");
+    discard.classList.remove("open");
+    dirty = false;
+    forceErrors = false;
+  }
+
+  $("launch").onclick = open;
+  $("close").onclick = requestClose;
+  $("cancel").onclick = requestClose;
+  $("keep").onclick = () => discard.classList.remove("open");
+  $("discard-ok").onclick = close;
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (discard.classList.contains("open")) { discard.classList.remove("open"); return; }
+    if (overlay.classList.contains("open")) requestClose();
+  });
+  overlay.addEventListener("click", (event) => { if (event.target === overlay) requestClose(); });
+
+  /* ---------- Đơn vị / dòng động ---------- */
+  function ingredientRows() { return [...$("ingredients").querySelectorAll(".dyn-row")]; }
+  function stepRows() { return [...$("steps").querySelectorAll(".step-item")]; }
+
+  $("add-ing").onclick = () => {
+    const row = document.createElement("div");
+    row.className = "dyn-row";
+    row.innerHTML = `
+      <input placeholder="Tên nguyên liệu" aria-label="Tên nguyên liệu" />
+      <input placeholder="SL" type="number" min="0" step="any" aria-label="Số lượng" />
+      <select aria-label="Đơn vị"><option>g</option><option>ml</option><option>piece</option></select>
+      <button class="rm" type="button" aria-label="Xoá dòng">✕</button>`;
+    $("ingredients").appendChild(row);
+    markDirty();
+    refresh();
+  };
+
+  $("add-step").onclick = () => {
+    const row = document.createElement("div");
+    row.className = "step-item";
+    row.innerHTML = `
+      <span class="step-num"></span>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <input placeholder="Tiêu đề bước" aria-label="Tiêu đề bước" />
+        <textarea placeholder="Mô tả thao tác…" aria-label="Thân bước"></textarea>
+      </div>
+      <button class="rm" type="button" aria-label="Xoá bước">✕</button>`;
+    $("steps").appendChild(row);
+    markDirty();
+    refresh();
+  };
+
+  document.addEventListener("click", (event) => {
+    const rm = event.target.closest(".rm");
+    if (!rm) return;
+    const isStep = rm.closest(".step-item");
+    if (isStep) {
+      if (stepRows().length === 1) return; // luôn giữ ít nhất 1 bước
+      isStep.remove();
+    } else {
+      const row = rm.closest(".dyn-row");
+      if (ingredientRows().length === 1) {
+        row.querySelectorAll("input").forEach((input) => (input.value = ""));
+      } else {
+        row.remove();
+      }
+    }
+    refresh();
+  });
+
+  /* ---------- Segmented difficulty ---------- */
+  document.querySelectorAll(".seg button").forEach((button) => {
+    button.onclick = () => {
+      document.querySelectorAll(".seg button").forEach((other) => other.setAttribute("aria-pressed", "false"));
+      button.setAttribute("aria-pressed", "true");
+      markDirty();
+      refresh();
+    };
+  });
+
+  /* ---------- Cập nhật preview + checklist ---------- */
+  function filledIngredients() {
+    return ingredientRows().filter((row) => row.querySelector("input").value.trim() !== "").length;
+  }
+  function filledSteps() {
+    return stepRows().filter((row) => {
+      const title = row.querySelector("input").value.trim();
+      const body = row.querySelector("textarea").value.trim();
+      return title !== "" || body !== "";
+    }).length;
+  }
+  function totalMinutes() {
+    const prep = Number(fields.prep.value || 0);
+    const cook = Number(fields.cook.value || 0);
+    return prep + cook > 0 ? prep + cook : 0;
+  }
+  function activeDifficulty() {
+    const active = document.querySelector('.seg button[aria-pressed="true"]');
+    return active ? active.textContent.trim() : "—";
+  }
+
+  function refresh() {
+    const name = fields.name.value.trim();
+    const dish = fields.dish.value.trim();
+    const desc = fields.desc.value.trim();
+    const ings = filledIngredients();
+    const steps = filledSteps();
+    const minutes = totalMinutes();
+    const servings = Number(fields.servings.value || 0);
+
+    $("name-count").textContent = `${fields.name.value.length} / 120`;
+
+    // Preview
+    $("pv-dish").textContent = dish || "Tên món";
+    $("pv-name").innerHTML = name
+      ? escapeHtml(name)
+      : '<span class="placeholder">Tên công thức</span>';
+    $("pv-desc").textContent = desc || "Mô tả ngắn sẽ hiện ở đây khi bạn nhập.";
+    $("pv-time").textContent = minutes ? `${minutes} phút` : "— phút";
+    $("pv-servings").textContent = servings ? `${servings} phần` : "— phần";
+    $("pv-difficulty").textContent = activeDifficulty();
+
+    // Checklist
+    const checks = {
+      name: { done: !!name, value: name ? "đã nhập" : "thiếu" },
+      dish: { done: !!dish, value: dish ? "đã nhập" : "thiếu" },
+      ing: { done: ings > 0, value: String(ings) },
+      steps: { done: steps > 0, value: String(steps) },
+      time: { done: minutes > 0, value: minutes ? `${minutes}m` : "thiếu" },
+    };
+    let doneCount = 0;
+    for (const [key, state] of Object.entries(checks)) {
+      const item = document.querySelector(`[data-check="${key}"]`);
+      item.classList.toggle("done", state.done);
+      item.classList.toggle("todo", !state.done);
+      $(`v-${key}`).textContent = state.value;
+      if (state.done) doneCount += 1;
+    }
+    const pct = Math.round((doneCount / 5) * 100);
+    $("pct").textContent = `${pct}%`;
+    $("bar").style.width = `${pct}%`;
+
+    $("ing-count").textContent = `${ings} dòng`;
+    $("step-count").textContent = `${steps} bước`;
+    $("total-time").textContent = minutes ? `${minutes} phút` : "— phút";
+
+    $("submit").disabled = !(name && dish && ings > 0 && steps > 0);
+
+    // Lỗi validate: chỉ hiện khi đã bấm gửi
+    $("f-name").classList.toggle("invalid", forceErrors && !name);
+    $("f-dish").classList.toggle("invalid", forceErrors && !dish);
+  }
+
+  const escapeHtml = (text) =>
+    text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+
+  /* ---------- Submit ---------- */
+  $("form").onsubmit = (event) => {
+    event.preventDefault();
+    forceErrors = !(fields.name.value.trim() && fields.dish.value.trim());
+    refresh();
+    if (forceErrors) return;
+    dirty = false;
+    close();
+  };
+
+  document.addEventListener("input", (event) => {
+    if (overlay.contains(event.target)) { markDirty(); refresh(); }
+  });
+  document.addEventListener("change", (event) => {
+    if (overlay.contains(event.target)) { markDirty(); refresh(); }
+  });
+
+  /* ---------- Thanh demo: nạp trạng thái ---------- */
+  document.querySelectorAll(".demo-bar button").forEach((button) => {
+    button.onclick = () => {
+      document.querySelectorAll(".demo-bar button").forEach((other) => other.setAttribute("aria-pressed", "false"));
+      button.setAttribute("aria-pressed", "true");
+      const state = button.dataset.state;
+      open();
+      forceErrors = state === "errors";
+      resetForm();
+
+      if (state === "filled" || state === "errors") {
+        fields.name.value = "Phở chay nước dùng nấm hương";
+        fields.dish.value = "Phở chay";
+        fields.desc.value = "Nước dùng ninh từ củ cải trắng, cà rốt và nấm hương khô — ngọt tự nhiên, không hạt nêm.";
+        fields.prep.value = "25";
+        fields.cook.value = "45";
+        const ingredientValues = [
+          ["Nấm hương khô", "30", "g"],
+          ["Củ cải trắng", "300", "g"],
+          ["Cà rốt", "200", "g"],
+          ["Bánh phở tươi", "400", "g"],
+        ];
+        ingredientValues.forEach(([name, amount, unit], index) => {
+          if (index > 0) $("add-ing").click();
+          const row = ingredientRows()[index];
+          row.querySelector("input").value = name;
+          row.querySelectorAll("input")[1].value = amount;
+          row.querySelector("select").value = unit;
+        });
+        const stepValues = [
+          ["Rang gừng", "Rang gừng và hành tím trên chảo khô tới khi thơm, đập dập."],
+          ["Ninh nước dùng", "Cho nấm, củ cải, cà rốt vào 2 lít nước, ninh 45 phút ở lửa nhỏ."],
+          ["Trụng bánh phở", "Trụng bánh phở trong nước sôi khoảng 10 giây rồi xếp ra bát."],
+        ];
+        stepValues.forEach(([title, body], index) => {
+          if (index > 0) $("add-step").click();
+          const row = stepRows()[index];
+          row.querySelector("input").value = title;
+          row.querySelector("textarea").value = body;
+        });
+      }
+
+      if (state === "errors") {
+        fields.name.value = "";
+        fields.dish.value = "";
+      }
+
+      refresh();
+    };
+  });
+
+  function resetForm() {
+    fields.name.value = "";
+    fields.dish.value = "";
+    fields.desc.value = "";
+    fields.prep.value = "";
+    fields.cook.value = "";
+    fields.servings.value = "2";
+    $("ingredients").innerHTML = `
+      <div class="dyn-row">
+        <input placeholder="Tên nguyên liệu" aria-label="Tên nguyên liệu" />
+        <input placeholder="SL" type="number" min="0" step="any" aria-label="Số lượng" />
+        <select aria-label="Đơn vị"><option>g</option><option>ml</option><option>piece</option></select>
+        <button class="rm" type="button" aria-label="Xoá dòng">✕</button>
+      </div>`;
+    $("steps").innerHTML = `
+      <div class="step-item">
+        <span class="step-num">1</span>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <input placeholder="Tiêu đề bước" aria-label="Tiêu đề bước" />
+          <textarea placeholder="Mô tả thao tác…" aria-label="Thân bước"></textarea>
+        </div>
+        <button class="rm" type="button" aria-label="Xoá bước">✕</button>
+      </div>`;
+    document.querySelectorAll(".seg button").forEach((button, index) => {
+      button.setAttribute("aria-pressed", index === 1 ? "true" : "false");
+    });
+  }
+
+  // Đánh số bước tự động sau mỗi thay đổi DOM.
+  const observer = new MutationObserver(() => {
+    stepRows().forEach((row, index) => { row.querySelector(".step-num").textContent = String(index + 1); });
+  });
+  observer.observe($("steps"), { childList: true, subtree: true });
+
+  open();
+  refresh();
+</script>
+</body>
+</html>

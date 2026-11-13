@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Salad, Search } from "lucide-react";
+import { Check, Salad, Search, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -331,11 +331,14 @@ export default function AdminRecipesPage() {
                                 <TableHead>{t("recipes.column.moderation")}</TableHead>
                                 <TableHead>{t("recipes.column.status")}</TableHead>
                                 <TableHead>{t("recipes.column.createdAt")}</TableHead>
+                                <TableHead className="whitespace-nowrap text-right">
+                                    {t("recipes.column.actions")}
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableSkeleton columns={9} />
+                                <TableSkeleton columns={10} />
                             ) : (
                                 recipes.map((recipe) => (
                                     <TableRow key={recipe.id}>
@@ -380,6 +383,43 @@ export default function AdminRecipesPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="whitespace-nowrap">{formatDateLocale(recipe.createdAt)}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end gap-2 whitespace-nowrap">
+                                                {/* Chỉ hàng đang chờ duyệt mới có 2 nút — đã duyệt/từ chối rồi thì
+                                                    mở dialog chi tiết, không hiện lại thao tác sai trạng thái. */}
+                                                {recipe.moderationStatus === "PENDING" && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            disabled={mutating}
+                                                            onClick={() => setConfirm(recipe)}
+                                                        >
+                                                            <Check className="h-4 w-4" aria-hidden="true" />
+                                                            {t("recipes.moderation.approve")}
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="warning"
+                                                            disabled={mutating}
+                                                            onClick={() => setRejecting(recipe)}
+                                                        >
+                                                            <XCircle className="h-4 w-4" aria-hidden="true" />
+                                                            {t("recipes.moderation.reject")}
+                                                        </Button>
+                                                    </>
+                                                )}
+                                                <Button
+                                                    size="iconSm"
+                                                    variant="destructive"
+                                                    aria-label={t("recipes.delete.action")}
+                                                    title={t("recipes.delete.action")}
+                                                    disabled={mutating || recipe.status !== "ACTIVE"}
+                                                    onClick={() => setDeleting(recipe)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
                                     </TableRow>
                                 ))
                             )}

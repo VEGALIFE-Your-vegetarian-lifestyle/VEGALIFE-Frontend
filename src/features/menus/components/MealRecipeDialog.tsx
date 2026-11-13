@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getRecipe } from "@/features/recipes/api";
 import { RecipeDetailDialog } from "@/features/recipes/components/RecipeDetailDialog";
+import { RecipeNutritionLine } from "@/features/recipes/components/RecipeNutritionLine";
 import type { Meal } from "../types";
 
 /**
@@ -91,6 +92,7 @@ export function MealRecipeDialog({ meal, onClose }: { meal: Meal | null; onClose
                             </div>
                         ))}
                     </dl>
+                    {summary && <RecipeNutritionLine recipe={summary} className="mt-4 flex text-sm" />}
                     <div className="mt-5 flex justify-end">
                         <Button variant="outline" onClick={onClose}>
                             {t("common:close")}

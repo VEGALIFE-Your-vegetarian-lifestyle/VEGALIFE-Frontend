@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/useAuth";
 import { useProfile } from "@/features/profile/useProfile";
-import { getMyPosts } from "@/features/posts/api";
+import { getMyPosts, getMyPostsCounts } from "@/features/posts/api";
+import { PostStatusBadge } from "@/features/posts/components/PostStatusBadge";
 import { getMyRecipes } from "@/features/recipes/api";
 import { MODERATION_VARIANT } from "@/features/recipes/constants";
 import { useMealPlans } from "@/features/menus/useMealPlans";
@@ -26,24 +27,25 @@ export default function AccountOverviewPage() {
     const { user } = useAuth();
     const language = useUiStore((state) => state.language);
     const openComposer = useUiStore((state) => state.openComposer);
+    const openMealPlanComposer = useUiStore((state) => state.openMealPlanComposer);
     const locale = language === "vi" ? "vi-VN" : "en-US";
 
     const { data: profile } = useProfile();
 
     const { data: postsPage, isLoading: postsLoading, isError: postsError } = useQuery({
-        queryKey: ["my-posts", "summary"],
+        queryKey: ["my-posts", 1, "", ""],
         queryFn: () => getMyPosts({ page: 1, size: 6 }),
     });
-    const { data: recipes = [] } = useQuery({ queryKey: ["my-recipes"], queryFn: getMyRecipes });
+    const { data: counts } = useQuery({ queryKey: ["my-posts", "counts"], queryFn: getMyPostsCounts });
+    const { data: recipes = [] } = useQuery({ queryKey: ["my-recipes"], queryFn: () => getMyRecipes() });
 
     const monday = useMemo(() => startOfWeek(new Date()), []);
     const from = toISODate(monday);
     const to = toISODate(addDays(monday, 6));
     const { data: menus = [] } = useMealPlans({ from, to });
 
-    const counts = postsPage?.counts;
     const pending = recipes.filter((recipe) => recipe.moderationStatus === "PENDING");
-    const drafts = (postsPage?.data ?? []).filter((post) => post.status === "created");
+    const drafts = (postsPage?.data ?? []).filter((post) => post.status === "drafted");
     const drafted = menus.filter((menu) => menu.status === "drafted");
 
     // 7 cột × 3 bữa; đánh dấu ô nào đã có món để vẽ lưới.
@@ -115,13 +117,14 @@ export default function AccountOverviewPage() {
                     </p>
                 </div>
                 <div className="flex flex-none gap-2 max-sm:w-full">
-                    <Link
-                        to="/meal-plan/create"
+                    <button
+                        type="button"
+                        onClick={() => openMealPlanComposer(from)}
                         className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-4 text-sm font-semibold text-dark transition-colors hover:border-vegan-green-muted hover:bg-accent max-sm:flex-1"
                     >
                         <CalendarDays className="h-4 w-4" aria-hidden="true" />
                         {t("account.createPlan")}
-                    </Link>
+                    </button>
                     <button
                         type="button"
                         onClick={() => openComposer()}
@@ -259,13 +262,11 @@ export default function AccountOverviewPage() {
                                                     {t("numViews")}: {post.viewCount.toLocaleString(locale)}
                                                 </span>
                                             </span>
-                                            <Badge variant={post.status === "published" ? "lightgreen" : "amber"} size="sm">
-                                                {t(post.status === "published" ? "statusPublished" : "statusDraft")}
-                                            </Badge>
+                                            <PostStatusBadge status={post.status} />
                                         </>
                                     );
 
-                                    return post.status === "created" ? (
+                                    return post.status === "drafted" ? (
                                         <button
                                             key={post.id}
                                             type="button"

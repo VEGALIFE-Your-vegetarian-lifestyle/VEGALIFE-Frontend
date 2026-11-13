@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Bookmark, Clock, Eye } from "lucide-react";
+import { ArrowRight, Clock, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
+import { SavePostButton } from "@/features/saved/components/SaveButton";
 import { cn } from "@/shared/utils/cn";
 import { FALLBACK_IMAGE, showFallbackImage, stripMarkdown } from "@/shared/utils/display";
 import { estimateReadMinutes, formatDateLocale } from "@/shared/utils/formatDate";
@@ -84,8 +85,8 @@ export function PostCard({ post, language, bookmark = false, className }: PostCa
 
                 <div className="flex items-center justify-between gap-2 pt-2">
                     {/* ponytail: BE không trả tác giả trong feed → ô này hiện category (thật).
-                        Mockup vẽ avatar + tên tác giả + nút bookmark; cần `GET /api/profile/{userId}`
-                        mới có, và chưa có API lưu bài nên bookmark chỉ là icon trang trí. */}
+                        Mockup vẽ avatar + tên tác giả; cần `GET /api/profile/{userId}` mới có.
+                        Nút bookmark giờ là thật (`SavePostButton`). */}
                     {categoryName ? (
                         <Badge variant="lightgreen" size="sm">
                             {categoryName}
@@ -97,9 +98,7 @@ export function PostCard({ post, language, bookmark = false, className }: PostCa
                     )}
 
                     {bookmark ? (
-                        <span className="text-muted-foreground transition-colors group-hover:text-vegan-green" aria-hidden="true">
-                            <Bookmark className="h-4 w-4" />
-                        </span>
+                        <SavePostButton postId={post.id} iconOnly />
                     ) : (
                         <Link
                             to={`/posts/${post.id}`}

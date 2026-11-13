@@ -67,6 +67,8 @@ export interface Recipe {
     /** Recipe mới tạo luôn `PENDING` (ADR-016); duyệt recipe không đổi dish. */
     moderationStatus: ModerationStatus;
     dishModerationStatus: ModerationStatus;
+    /** Lý do admin từ chối — chỉ có khi `moderationStatus === "REJECTED"`, ngoài ra `null`. */
+    rejectionReason: string | null;
     /**
      * Tổng dinh dưỡng **cả công thức** (V49/V50) — BE tính từ `Σ(amount × giá trị/đơn vị)`,
      * làm tròn 1 lần trên tổng. `nutritionResolved === false` thì cả 5 field đều `null`

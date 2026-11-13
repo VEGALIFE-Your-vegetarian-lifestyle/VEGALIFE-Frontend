@@ -4,11 +4,17 @@ import { toast } from "sonner";
 import { Film, ImagePlus, Loader2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { confirmUpload, createUploadGrant, uploadFileToProvider } from "@/shared/api/media";
+import type { Media } from "@/shared/types/media";
 import { cn } from "@/shared/utils/cn";
 
 interface ImageUploaderProps {
     value: string | null;
     onChange: (url: string | null) => void;
+    /**
+     * Bản ghi media đầy đủ sau khi confirm — cần cho video vì `attachPostMedia` đòi `mediaId`,
+     * mà `mediaId` không nằm trong `mediaUrl`. Không truyền thì chỉ có `onChange` như cũ.
+     */
+    onMediaChange?: (media: Media | null) => void;
     disabled?: boolean;
     /** `video` dùng cùng luồng upload 3 bước, chỉ khác định dạng và nhãn. */
     kind?: "image" | "video";
@@ -44,7 +50,14 @@ const LABELS = {
     },
 } as const;
 
-export function ImageUploader({ value, onChange, disabled, kind = "image", variant = "default" }: ImageUploaderProps) {
+export function ImageUploader({
+    value,
+    onChange,
+    onMediaChange,
+    disabled,
+    kind = "image",
+    variant = "default",
+}: ImageUploaderProps) {
     const { t } = useTranslation("admin");
     const [isUploading, setIsUploading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
@@ -78,6 +91,7 @@ export function ImageUploader({ value, onChange, disabled, kind = "image", varia
             const confirmed = await confirmUpload(grant.mediaId);
 
             if (confirmed.mediaUrl) {
+                onMediaChange?.(confirmed);
                 onChange(confirmed.mediaUrl);
             } else {
                 throw new Error("Media upload confirmation returned no URL");
@@ -107,6 +121,12 @@ export function ImageUploader({ value, onChange, disabled, kind = "image", varia
     };
 
     const pick = () => inputRef.current?.click();
+
+    /** Xoá khỏi form — báo cả URL lẫn media record để chỗ gọi bỏ được `mediaId`. */
+    const remove = () => {
+        onMediaChange?.(null);
+        onChange(null);
+    };
 
     return (
         <div className={cn(compact ? "" : "space-y-3")}>
@@ -145,7 +165,7 @@ export function ImageUploader({ value, onChange, disabled, kind = "image", varia
                         </button>
                         <button
                             type="button"
-                            onClick={() => onChange(null)}
+                            onClick={() => remove()}
                             disabled={disabled || isUploading}
                             className="absolute right-1 top-1 rounded-full bg-danger p-0.5 text-white shadow-sm disabled:opacity-50"
                             aria-label={t(label.remove)}
@@ -193,7 +213,7 @@ export function ImageUploader({ value, onChange, disabled, kind = "image", varia
                     )}
                     <button
                         type="button"
-                        onClick={() => onChange(null)}
+                        onClick={() => remove()}
                         disabled={disabled || isUploading}
                         className="absolute -right-2 -top-2 rounded-full bg-danger p-1 text-white shadow-sm disabled:opacity-50"
                         aria-label={t(label.remove)}

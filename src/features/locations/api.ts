@@ -84,6 +84,8 @@ export async function getLocations(params: LocationListParams): Promise<Paginate
             ...(keywordTrimmed ? { keyword: keywordTrimmed } : {}),
             ...(params.minRating !== undefined ? { minRating: params.minRating } : {}),
             ...(params.maxPriceLevel !== undefined ? { maxPriceLevel: params.maxPriceLevel } : {}),
+            ...(params.openNow !== undefined ? { openNow: params.openNow } : {}),
+            ...(params.keyword ? { keyword: params.keyword } : {}),
         },
     });
 

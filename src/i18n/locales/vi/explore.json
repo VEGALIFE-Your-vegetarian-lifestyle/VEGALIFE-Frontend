@@ -11,40 +11,9 @@
     "categoryTitle": "Danh mục",
     "resetFilters": "Xóa tất cả",
     "clearSearch": "Xóa từ khóa",
-    "resultsFor": "Kết quả cho",
     "items": "{{count}} biên niên",
     "filteredAcross": "được lọc từ cộng đồng thực vật",
     "showing": "Đang hiện {{shown}} / {{total}} biên niên",
-    "sortBy": "Sắp xếp:",
-    "sort": {
-        "popular": "Nhiều lượt xem",
-        "recent": "Mới nhất"
-    },
-    "tab": {
-        "all": "Tất cả",
-        "recipe": "Có công thức",
-        "blog": "Bài viết & Câu chuyện"
-    },
-    "format": {
-        "title": "Định dạng nội dung",
-        "all": "Mọi định dạng",
-        "recipe": "Kèm công thức",
-        "article": "Chỉ bài viết"
-    },
-    "reading": {
-        "title": "Thời gian đọc",
-        "any": "Mọi độ dài",
-        "quick": "Đọc nhanh (< 5 phút)",
-        "deep": "Chuyên sâu (> 10 phút)"
-    },
-    "recipe": {
-        "protein": "{{count}}g protein"
-    },
-    "cta": {
-        "title": "Bạn có câu chuyện thực vật?",
-        "body": "Chia sẻ thử nghiệm nấu nướng, thành quả lên men, hoặc nghiên cứu dinh dưỡng dựa trên bằng chứng của bạn.",
-        "action": "Tạo biên niên mới"
-    },
     "empty": {
         "title": "Không tìm thấy nội dung ăn chay phù hợp",
         "description": "Thử tìm với từ khóa rộng hơn như 'Rau chân vịt', 'Cà ri' hoặc 'Mì Ý'.",
@@ -54,7 +23,14 @@
         "comments": "Bình luận",
         "commentsWithCount_other": "{{count}} bình luận",
         "readFullPost": "Đọc bài đầy đủ",
-        "readMore": "Đọc tiếp"
+        "readMore": "Đọc tiếp",
+        "recipe": "Công thức"
     },
-    "error": "Không thể tải bài viết. Vui lòng thử lại sau."
+    "error": "Không thể tải bài viết. Vui lòng thử lại sau.",
+    "difficultyTitle": "Độ khó",
+    "timeTitle": "Tổng thời gian",
+    "timeAny": "Mọi thời lượng",
+    "timeOption": "{{count}} phút trở xuống",
+    "tabPosts": "Bài viết",
+    "tabRecipes": "Công thức"
 }

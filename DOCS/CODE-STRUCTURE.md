@@ -65,14 +65,15 @@ VEGALIFE-Frontend/
 │   │   ├── posts/               xem mục 3.6
 │   │   ├── profile/             xem mục 3.7
 │   │   ├── recipes/             xem mục 3.9
+│   │   ├── saved/               xem mục 3.12
 │   │   ├── subscription/        xem mục 3.11
 │   │   └── videos/              xem mục 3.8
 │   │
 │   ├── i18n/
-│   │   ├── index.ts             khởi tạo i18next, đăng ký 14 namespace
-│   │   └── locales/{en,vi}/     14 namespace mỗi thứ tiếng, key phải khớp nhau
+│   │   ├── index.ts             khởi tạo i18next, đăng ký 15 namespace
+│   │   └── locales/{en,vi}/     15 namespace mỗi thứ tiếng, key phải khớp nhau
 │   │       admin · aiNutrition · auth · common · explore · home ·
-│   │       location · menu · nearby · post · profile · recipe · subscription · validation
+│   │       location · menu · nearby · post · profile · recipe · saved · subscription · validation
 │   │
 │   ├── shared/                  hạ tầng dùng chung, KHÔNG import features/ hay components/
 │   │   ├── api/
@@ -219,13 +220,14 @@ Có `ponytail:` tại chỗ; gỡ khi backend bổ sung endpoint.
 | `mockEnrichment.ts` | điền field mock **cấp card** cho Home/Explore/MyPosts (`enrichListItem`, `getMockActivity`) — mock cấp detail đã xoá 2026-10-29 |
 | `mockAuthors.ts` | thẻ tác giả giả |
 | `components/PostCard.tsx` | card bài — dùng ở Home / PostDetail (Related) |
-| `components/PostStatusBadge.tsx` | badge trạng thái |
+| `components/PostStatusBadge.tsx` | badge trạng thái (`drafted/processing/published/unpublished`) |
+| `components/PostFlagBadge.tsx` | verdict kiểm duyệt + `flagDetail` (score/threshold, % giống) — admin only |
 | `components/CommentThread.tsx` | cây comment đệ quy — Explore dialog + Post Detail |
 | `components/CommentComposer.tsx` | form gửi comment gốc — Explore dialog + Post Detail |
 | `components/PostVoteButtons.tsx` | cặp nút vote ↑↓ + `GET/PUT /api/posts/{id}/votes` — Explore card + dialog |
 | `components/editor/` | `RichTextEditor.tsx`, `EditorToolbar.tsx`, `PostContent.tsx`, `editorContent.ts` |
 | `pages/HomePage/` | `HomePage.tsx` — MỘT file chứa cả trang lẫn các khối con (`HomeHero`, khối `SectionHeader` dùng chung, `HomeWeeklyBar`, `HomeDishes`, `HomeNearbyPicks`, `CommunityCard`) — và `homeData.ts` (shim gọi `/api/locations`, `/api/menus/details` vì `posts` không được import `locations`/`menus`) |
-| `pages/ExplorePage/` | `ExplorePage.tsx` (hero + search pill + feed + phân trang số) + `ExploreFilterPanel.tsx` (cột lọc Category / Content Format / Reading Time + CTA) + `FeedPostCard.tsx` (card có tác giả, block công thức đính kèm, vote, nút 💬) + `PostCommentsDialog.tsx` (bình luận trong dialog) + `__tests__/` |
+| `pages/ExplorePage/` | `ExplorePage.tsx` (hero + search pill + feed + phân trang số) + `ExploreFilterPanel.tsx` (cột lọc Category / Content Format + CTA) + `FeedPostCard.tsx` (card có tác giả, block công thức đính kèm, vote, nút 💬) + `PostCommentsDialog.tsx` (bình luận trong dialog) + `__tests__/` |
 | `pages/MyPostsPage/` | bài của tôi |
 | `pages/PostDetailPage/` | `PostDetailPage.tsx` + `CommentsSection.tsx` (tự lo query/mutation bình luận) + `__tests__/` |
 | `components/composer/` | Dialog soạn bài dùng chung create + edit (không còn route): `PostComposerDialog.tsx`, `PostPreviewCard.tsx`, `RecipePickerDialog.tsx`, `recipeMeta.ts`, `schema.ts`, `payload.ts`, `__tests__/` |
@@ -280,26 +282,27 @@ Có `ponytail:` tại chỗ; gỡ khi backend bổ sung endpoint.
 | File | Vai trò |
 |---|---|
 | `types.ts` | `MenuStatus`, `MealType`, `Dish`, `Meal`, `MenuDay`, `MenuDetail`, `MealPlanParams`, `CreateMenuRequest`, `MenuWriteResult`, `MENU_STATUS_VARIANT` |
-| `api.ts` | `getMealPlans({from,to})` — `GET /api/menus/details`; `createMenu` — `POST /api/menus`; `changeMenuStatus` — `POST /api/menus/{id}/status` |
+| `api.ts` | `getMealPlans({from,to})` — `GET /api/menus/details`; `createMenu` — `POST /api/menus`; `changeMenuStatus` — `POST /api/menus/{id}/status`; `deleteMenu` — `DELETE /api/menus/{id}` |
 | `useMealPlans.ts` | `useQuery` theo cửa sổ ngày |
-| `week.ts` | `toISODate`, `parseISODate`, `startOfWeek`, `addDays`, `weekDays`, `shiftWeek` — thuần `Date` local |
+| `week.ts` | `toISODate`, `parseISODate`, `startOfWeek`, `addDays`, `weekDays` — thuần `Date` local |
 | `components/MenuCard.tsx` | tiêu đề tuần + badge trạng thái + notes + lưới 7 ngày + `MenuActions` |
 | `components/MenuActions.tsx` | nút đổi trạng thái theo bảng chuyển BR-MENU-007; không render nút khi đã kết thúc |
 | `components/DayColumn.tsx` | một ngày: thứ, số ngày, danh sách bữa |
 | `components/MealRow.tsx` | một bữa: loại bữa, tên món, số phần, ảnh, cuisine |
 | `components/WeekNavigator.tsx` | ← tuần này → |
 | `pages/MealPlanPage.tsx` | route `/meal-plan` (cần đăng nhập) |
-| `pages/CreateMealPlanPage/CreateMealPlanPage.tsx` | route `/meal-plan/create` — form + mutation |
-| `pages/CreateMealPlanPage/schema.ts` | `MenuFormValues`, `emptyWeek`, `moveWeek`, `dishUsage`, `daysWithMeals`, `mostRepeatedDish` |
-| `pages/CreateMealPlanPage/validate.ts` | BR-MENU-005 → `Record<fieldPath, message>`; **không** Yup (luật là quan hệ giữa các ô) |
-| `pages/CreateMealPlanPage/payload.ts` | form → body `POST /api/menus` |
-| `pages/CreateMealPlanPage/DayEditor.tsx` | một ngày: 3 ô bữa cố định |
-| `pages/CreateMealPlanPage/DishSlotPicker.tsx` | một ô: tìm + chọn đúng một món từ `GET /api/dishes` |
-| `pages/CreateMealPlanPage/__tests__/schema.test.ts` | schema + validate + payload (21 case) |
-| `__tests__/week.test.ts` | logic tuần: parse local, `startOfWeek`, `addDays`, `shiftWeek` |
+| `components/MealPlanComposerDialog.tsx` | dialog tạo thực đơn (mount ở `Layout`, mở qua `uiStore.openMealPlanComposer`) — form + mutation + chép tuần trước |
+| `create/schema.ts` | `MenuFormValues`, `emptyWeek`, `moveWeek`, `dishUsage`, `daysWithMeals`, `mostRepeatedDish` |
+| `create/validate.ts` | BR-MENU-005 → `Record<fieldPath, message>`; **không** Yup (luật là quan hệ giữa các ô) |
+| `create/payload.ts` | form → body `POST /api/menus` |
+| `components/MealPlanMatrix.tsx` | ma trận 7 ngày × 3 bữa — surface xem + sửa duy nhất |
+| `components/DishAssignPopover.tsx` | popover gán 1 món cho nhiều ngày của một bữa, khoá theo `MAX_DISH_REPEATS` |
+| `create/__tests__/schema.test.ts` | schema + validate + payload + `setDishInDays` (24 case) |
+| `__tests__/week.test.ts` | logic tuần: parse local, `startOfWeek`, `addDays`, `weekDays` |
 
 Tự lập được menu (`POST /api/menus`, luôn `drafted`) và đổi trạng thái qua `MenuActions`.
-Sửa nội dung menu (`PATCH`) chưa làm. Tuần đang xem nằm trên URL (`?from=YYYY-MM-DD`, luôn là
+Sửa nội dung menu (`PATCH`) chưa làm. Cửa sổ đang xem nằm trên URL (`?from=YYYY-MM-DD`) — 7 ngày
+liền kề bắt đầu từ ngày đó, **thứ mấy cũng được** (backend chỉ kiểm 7 ngày liền kề, không kiểm
 Thứ 2). `POST`/`PATCH`/`status` trả shape **khác** `GET /api/menus/details` (thiếu `dish` đầy
 đủ) → sau khi ghi luôn invalidate `["meal-plans"]`.
 
@@ -315,6 +318,21 @@ Thứ 2). `POST`/`PATCH`/`status` trả shape **khác** `GET /api/menus/details`
 
 Namespace i18n riêng: `subscription`. IPN của VNPay là nguồn sự thật; trang kết quả chỉ
 hiển thị (poll `GET /api/payments/{paymentId}` tới khi hết `pending`).
+
+### 3.12 `features/saved/`
+
+| File | Vai trò |
+|---|---|
+| `api.ts` | 6 hàm: `getSavedPosts`/`getSavedRecipes` (phân trang server), `savePost`/`unsavePost`, `saveRecipe`/`unsaveRecipe`; `getSaved*Ids` quét 1 trang `ID_SCAN_SIZE = 100` để biết trạng thái nút Save |
+| `useSaved.ts` | `useSavePost(postId)` / `useSaveRecipe(recipe)` (optimistic toggle + rollback), `useAttachableRecipes()` (của mình + đã lưu, dedupe), `useRemoveSaved()` (bỏ lưu ở `/saved`) |
+| `types.ts` | `SavedPost`, `SavedRecipe` (= `Recipe`) |
+| `components/SaveButton.tsx` | `SavePostButton` (icon-only được), `SaveRecipeButton` (ẩn khi recipe của chính mình) |
+| `components/SavedCards.tsx` | `SavedPostCard`, `SavedRecipeRow`, `SavedSkeleton`, `SavedEmpty` |
+| `SavedPage.tsx` | route `/saved` — 2 tab Posts/Recipes (`?tab=`), phân trang server, mở `RecipeDetailDialog`, nút "Viết bài từ công thức này" → `openComposer(null, [recipeId])` |
+
+Không có endpoint "đã lưu hay chưa" → trạng thái nút Save lấy từ Set id của một trang 100
+mục (`ponytail:` ghi ở `api.ts`). `useAttachableRecipes` là chỗ duy nhất phải sửa nếu
+`POST /api/posts/{id}/recipes` từ chối recipe của người khác.
 
 ## 4. Hạ tầng test (`src/test/`)
 
@@ -350,7 +368,8 @@ Lỗi hiển thị: `getApiErrorMessage(error, t("..."))` — đọc `errors[]` 
   videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`,
   `GET /api/recipes/me`, `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus
   (`GET /api/menus/details`, `POST /api/menus`, `POST /api/menus/{id}/status`),
-  subscription + payment (`subscription` feature — 7 endpoint).
+  subscription + payment (`subscription` feature — 7 endpoint),
+  saved (`/api/saved/posts|recipes` × GET/POST/DELETE, `saved` feature).
 - **Còn mock**: `features/admin/dashboardApi.ts` (backend chưa có endpoint dashboard);
   `features/posts/{mockEnrichment,mockAuthors}.ts` (field hiển thị BE chưa trả).
 - `features/locations/mocks.ts` **không phải** mock API — chỉ là toạ độ tâm các quận

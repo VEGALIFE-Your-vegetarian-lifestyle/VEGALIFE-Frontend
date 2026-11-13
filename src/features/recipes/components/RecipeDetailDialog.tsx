@@ -1,8 +1,12 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { PenLine, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { RejectionReason } from "@/components/common/RejectionReason";
+import { SaveRecipeButton } from "@/features/saved/components/SaveButton";
+import { useUiStore } from "@/shared/ui/uiStore";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { MODERATION_VARIANT } from "../constants";
 import { nutritionTotals } from "../nutrition";
@@ -71,12 +75,16 @@ export function RecipeDetailDialog({
     recipe,
     language,
     onClose,
+    onDelete,
 }: {
     recipe: Recipe | null;
     language: string;
     onClose: () => void;
+    /** Chỉ trang của chủ công thức truyền vào — có thì footer hiện nút Xoá. */
+    onDelete?: () => void;
 }) {
-    const { t } = useTranslation(["recipe", "common"]);
+    const { t } = useTranslation(["recipe", "common", "saved"]);
+    const openComposer = useUiStore((state) => state.openComposer);
 
     // `instructions` là TEXT thuần do `joinSteps` gộp: mỗi bước một dòng, dạng
     // "tiêu đề — thân". Tách lại để hiện thành timeline; dòng không có dấu `—`
@@ -158,6 +166,12 @@ export function RecipeDetailDialog({
                         </p>
                     )}
 
+                    {/* Lý do admin từ chối — tác giả mở dialog cũng phải thấy, không chỉ trên card. */}
+                    <RejectionReason
+                        reason={recipe.moderationStatus === "REJECTED" ? recipe.rejectionReason : null}
+                        className="mx-6 mt-5"
+                    />
+
                     {/* Dải 4 thông số. Kẻ ô bằng `gap-px` trên nền `bg-border` để đường
                         phân cách tự đúng ở cả 2 cột (mobile) lẫn 4 cột (sm), khỏi tính border theo index. */}
                     <dl className="mt-5 grid grid-cols-2 gap-px border-y border-border bg-border sm:grid-cols-4">
@@ -222,13 +236,32 @@ export function RecipeDetailDialog({
                         </section>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 border-t border-border px-6 py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4">
                         <span className="text-xs text-muted-foreground">
                             {t("myRecipes.updated", { date: formatDateLocale(recipe.updatedAt, language) })}
                         </span>
-                        <Button variant="outline" onClick={onClose}>
-                            {t("common:close")}
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <SaveRecipeButton recipe={recipe} />
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    openComposer(null, [recipe.id]);
+                                    onClose();
+                                }}
+                            >
+                                <PenLine className="h-4 w-4" aria-hidden="true" />
+                                {t("saved:composeFromRecipe")}
+                            </Button>
+                            {onDelete && (
+                                <Button variant="outline" onClick={onDelete}>
+                                    <Trash2 className="h-4 w-4 text-danger" aria-hidden="true" />
+                                    {t("myRecipes.action.delete")}
+                                </Button>
+                            )}
+                            <Button variant="outline" onClick={onClose}>
+                                {t("common:close")}
+                            </Button>
+                        </div>
                     </div>
                 </>
             )}

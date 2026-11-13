@@ -12,7 +12,9 @@ import { PostContent } from "../../components/editor/PostContent";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useAuth } from "@/features/auth/useAuth";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
+import { SavePostButton } from "@/features/saved/components/SaveButton";
 import { getPostDetail, getRelatedPosts } from "../../api";
+import { getMedia } from "@/shared/api/media";
 import { useUiStore } from "@/shared/ui/uiStore";
 import { showFallbackImage } from "@/shared/utils/display";
 import { estimateReadMinutes, formatDateLocale } from "@/shared/utils/formatDate";
@@ -30,8 +32,9 @@ const RELATED_COUNT = 3;
  * Sidebar **không** `sticky`: khối bình luận cao tuỳ ý, dính sẽ khoá chân trang.
  *
  * Chỉ render field thật: `GET /api/posts/{id}` trả `title/content/contentJson/
- * featuredImageUrl/categoryIds/recipeIds/status/flag/viewCount/publishedAt/createdAt`
- * — **không có tác giả, rating, macro, nguyên liệu hay số bình luận**. Công thức lấy từ
+ * featuredImageUrl/categoryIds/recipeIds/status/rejectionReason/viewCount/publishedAt/createdAt`
+ * — **không có tác giả, rating, macro, nguyên liệu hay số bình luận**, và `flag`/`flagDetail`
+ * đã bị bỏ khỏi mọi response member (V58). Công thức lấy từ
  * `GET /api/recipes/{id}`, bài liên quan từ `GET /api/posts/{id}/related`
  * (xem `DOCS/MOCK-FIELDS.md` § Post Detail).
  */
@@ -47,6 +50,9 @@ export default function PostDetailPage() {
         queryKey: ["post-detail", id],
         queryFn: () => getPostDetail(id),
         enabled: id !== "",
+        // Filter kiểm duyệt chạy async: bài vừa gửi sẽ tự flip sang published/rejected.
+        // ponytail: 3s cố định; đổi sang backoff 3/5/10/30 nếu tải server thành vấn đề.
+        refetchInterval: (query) => (query.state.data?.status === "processing" ? 3000 : false),
     });
 
     const { data: relatedPosts } = useQuery({
@@ -143,15 +149,20 @@ export default function PostDetailPage() {
             <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
                 {/* ── Cột đọc ─────────────────────────────────────────── */}
                 <article className="min-w-0">
-                    {post.featuredImageUrl && (
-                        <div className="aspect-[16/9] overflow-hidden rounded-3xl bg-muted-bg shadow-sm">
-                            <img
-                                src={post.featuredImageUrl}
-                                onError={showFallbackImage()}
-                                alt={post.title}
-                                className="h-full w-full object-cover"
-                            />
-                        </div>
+                    {/* Video đính kèm đứng trước ảnh bìa — đó là nội dung chính của bài. */}
+                    {post.mediaIds.length > 0 ? (
+                        <PostVideo mediaId={post.mediaIds[0]} />
+                    ) : (
+                        post.featuredImageUrl && (
+                            <div className="aspect-[16/9] overflow-hidden rounded-3xl bg-muted-bg shadow-sm">
+                                <img
+                                    src={post.featuredImageUrl}
+                                    onError={showFallbackImage()}
+                                    alt={post.title}
+                                    className="h-full w-full object-cover"
+                                />
+                            </div>
+                        )
                     )}
 
                     <header className="mt-8">
@@ -198,6 +209,7 @@ export default function PostDetailPage() {
                                 <Link2 className="h-4 w-4" aria-hidden="true" />
                                 {t("share")}
                             </Button>
+                            {isAuthenticated && <SavePostButton postId={post.id} />}
                         </div>
                     </header>
 
@@ -278,5 +290,41 @@ export default function PostDetailPage() {
                 </section>
             )}
         </div>
+    );
+}
+
+/**
+ * Video đính kèm — `PostListResponse.mediaIds` chỉ trả **id**, nên phải gọi
+ * `GET /api/media/{id}` để lấy `mediaUrl`. Không có endpoint batch: một bài một video nên
+ * một request là đủ.
+ */
+function PostVideo({ mediaId }: { mediaId: string }) {
+    const { t } = useTranslation("post");
+    const { data: media, isLoading } = useQuery({
+        queryKey: ["media", mediaId],
+        queryFn: () => getMedia(mediaId),
+        staleTime: 5 * 60 * 1000,
+        retry: false,
+    });
+
+    if (isLoading) {
+        return <Skeleton className="aspect-video w-full rounded-3xl" />;
+    }
+
+    // Media lỗi / bị xoá mềm → không render gì thay vì làm hỏng cả trang.
+    if (!media?.mediaUrl) return null;
+
+    return (
+        <figure className="overflow-hidden rounded-3xl bg-black shadow-sm">
+            <video
+                src={media.mediaUrl}
+                poster={media.thumbnailUrl ?? undefined}
+                controls
+                preload="metadata"
+                playsInline
+                className="aspect-video w-full"
+                aria-label={t("videoPlayer")}
+            />
+        </figure>
     );
 }

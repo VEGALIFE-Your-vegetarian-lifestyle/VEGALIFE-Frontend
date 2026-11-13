@@ -76,11 +76,11 @@ export default function AiNutritionPage() {
     };
 
     /**
-     * Gửi kèm danh sách món đã chọn — AI cần tên món để lập plan, và user cần id
-     * để đối chiếu lại với menu đã lưu ở `/meal-plan`.
+     * Gửi kèm danh sách món đã chọn. AI chỉ đọc text nên tên món là đủ; `dishId` bỏ đi cho
+     * prompt gọn (đánh đổi: không còn map ngược kết quả chat sang `/meal-plan`).
      */
     const askWithDishes = (dishes: Dish[]) => {
-        const lines = dishes.map((dish) => `- ${dish.name} (dishId: ${dish.id})`).join("\n");
+        const lines = dishes.map((dish) => `- ${dish.name}`).join("\n");
         ask(t("dishPicker.prompt", { dishes: lines }));
     };
 

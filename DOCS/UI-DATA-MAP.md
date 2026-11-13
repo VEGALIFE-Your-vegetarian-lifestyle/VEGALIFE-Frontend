@@ -48,8 +48,10 @@ Ký hiệu: **[R]** field thật từ API · **[M]** mock/hardcode · **[D]** su
   `createdAt` / `planCode`; `AiSubscription.latestPayment`
 - `LoginResponse.role` / `status` (đang decode JWT thay vì đọc thẳng),
   `RegisterResponse.userId` / `username`
-- Post: `mediaIds`, `recipeIds`, `flag` (PostDetail đã render `featuredImageUrl`, `rawContent`,
-  `viewCount`, `publishedAt` từ 2026-10-29; `videoUrl` **không** nằm trong response — xem §4.0)
+- Post: `mediaIds`, `recipeIds` (PostDetail đã render `featuredImageUrl`, `rawContent`,
+  `viewCount`, `publishedAt` từ 2026-10-29; `videoUrl` **không** nằm trong response — xem §4.0).
+  `flag`/`flagDetail` **không còn ở member endpoint** (V58) — chỉ admin/list hiện,
+  member đọc `status` + `rejectionReason`
 - `Recipe`: 5 field dinh dưỡng `calories` / `proteinG` / `carbohydrateG` / `fatG` / `fiberG` —
   **không màn nào render** (4 ô macro trên thẻ MyRecipesPage đã bỏ 2026-10-30);
   `dishModerationStatus` hiện ở dialog chi tiết khi recipe đã duyệt mà tên món còn `PENDING`
@@ -86,7 +88,7 @@ Card dùng lại: `PostCard` (`posts/components/PostCard.tsx`) ở Home / Explor
 | Page | Endpoint | Field render |
 |---|---|---|
 | MealPlan `/meal-plan` | `GET /api/menus/details?from&to` | id, startDate, endDate, status, notes, createdAt, updatedAt, days[].date, meals[]{mealType, servings, dish{id, name, description, imageUrl, cuisineType}} |
-| CreateMealPlan `/meal-plan/create` | `GET /api/dishes` (size 100, không phân trang) + `POST /api/menus` | Dish: id, name, description, imageUrl, cuisineType, createdAt |
+| CreateMealPlan (dialog) | `GET /api/dishes` (size 100, không phân trang) + `POST /api/menus` | Dish: id, name, description, imageUrl, cuisineType, createdAt |
 
 `MenuCard` dựng đủ 21 ô (7 ngày × 3 bữa) và tính 4 thống kê tuần client-side (số bữa/21,
 món khác nhau, ngày có bữa, tổng khẩu phần) — không thêm request. Không có field bịa.
@@ -99,7 +101,8 @@ của tuần (`dish.name`, `dish.description`, `dish.imageUrl`, `dish.cuisineTyp
 hiện thông tin món chứ không hiện công thức; món nào cũng bấm được.
 
 Lưới 7 ngày do client dựng từ `startDate` (`week.ts`); BE chỉ trả `days` có bữa. Nút đổi
-trạng thái: `POST /api/menus/{id}/status` (transition table ở `MenuActions.tsx`). Sau khi
+trạng thái: `POST /api/menus/{id}/status` (transition table ở `MenuActions.tsx`). Nút Xoá:
+`DELETE /api/menus/{id}` — hiện cho mọi trạng thái, xác nhận qua `ConfirmDialog`. Sau khi
 ghi luôn `invalidateQueries(["meal-plans"])` — response POST/status **thiếu `dish` đầy đủ**.
 
 ### 3.4 Subscription / thanh toán
@@ -129,6 +132,7 @@ chưa từng mua gói — cả hai đọc qua optional chaining; thiếu `usage`
 |---|---|---|
 | CreateRecipe `/recipes/create` | `GET /api/ingredients` (size 8), `GET /api/dishes` (size 8) + `POST /api/recipes` | ghi: name, dishName, description, instructions, servings, difficulty, prepTimeMinutes, cookTimeMinutes, ingredients[], calories, proteinG, carbohydrateG, fatG, fiberG · hiển thị thêm: `user.username` (authStore) |
 | MyRecipes `/recipes` | `GET /api/recipes/me` (mảng phẳng) | thẻ: name, dishName, description, servings, difficulty, prepTimeMinutes, cookTimeMinutes, ingredients[], moderationStatus, updatedAt (dialog chi tiết thêm dishModerationStatus + instructions) — lọc/tìm/sort/phân trang **client-side**; `null` → `—` |
+| Saved `/saved` | `GET /api/saved/posts`, `GET /api/saved/recipes` (phân trang server) + `DELETE .../{id}` khi bỏ lưu | SavedPost: displayName, avatarUrl, title, content (cắt excerpt), featuredImageUrl, publishedAt/createdAt · SavedRecipe = `Recipe` đầy đủ (tên món, độ khó, prep/cook, servings, nguyên liệu). Nút Save trên feed/Post Detail/RecipeDetailDialog dựa vào `GET /api/saved/*` quét 1 trang 100 id |
 | AdminRecipes `/admin/recipes` | `GET /api/admin/recipes`, `POST .../approve\|reject`, `POST /api/admin/dishes/{id}/approve` | AdminRecipe: name, description, servings, difficulty, prepTimeMinutes, cookTimeMinutes, instructions, ingredients, status, moderationStatus, score, dishModerationStatus, username, email, categoryIds, createdAt |
 
 `instructions` là `TEXT` thuần (không rich text) — form nhập **mỗi bước một ô**, `joinSteps()`
@@ -166,13 +170,15 @@ gộp thành `"tiêu đề — thân"` mỗi bước một dòng trước khi g�
 ## 4. Cảnh báo khi sửa UI
 
 0. 🔴 **`PostListResponse` live không còn `type` / `videoUrl`** (kiểm tra 2026-10-29, cả feed
-   và `GET /api/posts/{id}`): keys thật = `id, title, content, rawContent, featuredImageUrl,
-   categoryIds, mediaIds, recipeIds, status, flag, viewCount, publishedAt, createdAt`.
+   và `GET /api/posts/{id}`), và **từ V58 cũng không còn `flag`/`flagDetail`** (chỉ admin endpoint
+   trả). Keys thật = `id, title, content, rawContent, featuredImageUrl,
+   categoryIds, mediaIds, recipeIds, status, rejectionReason, viewCount, publishedAt, createdAt`.
    FE vẫn khai `type`/`videoUrl` trong `posts/types.ts` và dùng ở PostCard / Explore / MyPosts /
    ProfilePage ("videos" count) → mọi bài bị coi là blog, tab Videos rỗng.
    PostDetail **đã bỏ** cả hai field (2026-10-29) — không còn nhánh `<video>` lẫn badge "Video".
-1. 🔴 `POST /api/admin/posts/{id}/moderate` backend đã xoá — PostsPage + PostPreviewDialog
-   vẫn gọi. **Đừng đánh bóng nút duyệt bài admin** trước khi chốt hướng thay thế.
+1. `POST /api/admin/posts/{id}/moderate` backend đã xoá — PostsPage/PostPreviewDialog đã chuyển
+   sang `approve` / `reject` (ADR-016). `PATCH /api/posts/{id}/visibility` cũng đã xoá (V56);
+   FE không có UI ẩn/hiện bài.
 2. `getUsers` gửi `page` verbatim (mọi service khác tự trừ 1) — sai là lệch trang.
 3. `getMyPosts` / `getVideos` / `exportCategoriesCsv` đều kéo `size=100` rồi lọc/cắt ở
    client — đừng vẽ UI phân trang giả trên đó.

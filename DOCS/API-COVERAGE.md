@@ -24,7 +24,7 @@ theo nguyên liệu) + các thay đổi sau `e8db8a4`
 
 | # | Chỗ vỡ | FE đang làm | Backend live |
 |---|---|---|---|
-| 1 | **Đăng ký** | [RegisterPage.tsx:111](src/features/auth/pages/RegisterPage/RegisterPage.tsx#L111) gửi `username` | `RegisterRequest` chỉ nhận `displayName` (2–100, không unique). Curl thử: gửi `username` → 400 `data.displayName = "Display name is required"` |
+| 1 | ~~**Đăng ký**~~ ✅ đã sửa 2026-11-06 | `RegisterRequest` dùng `displayName` | `RegisterRequest` nhận `displayName` (2–100, không unique) |
 | 2 | **Tên tác giả bình luận** | [CommentThread.tsx:21](src/features/posts/components/CommentThread.tsx#L21) đọc `comment.username` | `CommentThreadResponse` trả `displayName` (curl xác nhận) → mọi bình luận hiện nhãn "đã xoá" |
 | 3 | **Gói AI** | `AiPlan.monthlyRequestLimit`, `AiSubscription{tier,currentPlan,...}` | `AvailablePlanResponse` = `code,name,description,requestQuota,price{amount,currency}`; `GET /api/subscriptions/me` = `{remainingUsage}` — không có `tier`/`currentPlan`/`renewalDate` |
 | 4 | **Mua gói** | `checkPurchaseEligibility` → `POST /api/payments/checkout` | Cả hai path **không có trong spec live**. Thay bằng `POST /api/subscriptions/acquire {planCode}` → `{action: CLAIMED\|CHECKOUT_CREATED, remainingUsage, paymentId?, paymentUrl?, ...}` |
@@ -58,18 +58,23 @@ Reject → unpublish + reject các component **còn PENDING**. Cả hai **không
 `ModeratePostRequest` xoá khỏi [types.ts](src/features/posts/types.ts).
 
 Hệ quả UI: **nút "Ngừng đăng" biến mất**. `canUnpublish` → `canReject`, trả `true` cho bài
-`processed` **và** `unpublished` ([constants.ts:21-27](src/features/posts/constants.ts#L21-L27)) —
-bài đã bị từ chối vẫn mở được `RejectPostDialog` để admin ghi lý do mới. Bài đã
-`published` giờ chỉ còn nút Xoá — ADR-016 không để lại endpoint admin nào bỏ bài xuống;
-`PATCH /api/posts/{id}/visibility` là ẩn hẳn (chủ bài phải tự đăng lại), việc khác.
+`processing` **và** `unpublished` ([constants.ts](src/features/posts/constants.ts)) —
+bài đã bị từ chối vẫn mở được `RejectPostDialog` để admin ghi lý do mới. `canPublish` chỉ
+`true` cho `processing`/`unpublished`: bài `drafted` BE trả 400. Bài đã `published` giờ chỉ
+còn nút Xoá — ADR-016 không để lại endpoint admin nào bỏ bài xuống; chủ bài tự rút bằng
+`PATCH /api/posts/{id}` `{publish: false}` (→ `drafted`).
 
 Lý do từ chối hiện **chỉ** nằm trong `RejectPostDialog` (bắt buộc, ≤1000 ký tự) và gửi lên
-qua body `{reason}`. Không lưu/không hiển thị lại ở phía user — `AdminPost` và `PostStatus`
-chưa có field reason để đọc về.
+qua body `{reason}`; tác giả đọc lại qua `rejectionReason` khi `status === "unpublished"`.
 
-Kèm theo: `hidden` **vẫn còn** trong state machine backend (`PostListRequest.status` nhận
-`created|processed|published|unpublished|hidden`, `PATCH /api/posts/{id}/visibility` vẫn sống).
-Doc cũ ghi "đã bỏ" là sai — FE bỏ UI, backend chưa bỏ.
+Kèm theo, từ **V56/V57/V58** (xem `DOCS/frontend-api-changes-post-status-flag.md`):
+`hidden` **đã bị xoá khỏi backend**; state machine còn `drafted|processing|published|unpublished`.
+`flag` đổi vocab thành `FILTER_PASSED|FILTER_FAILED|SIMILAR_CONTENT|FILTER_SKIPPED|null`, sống
+sót qua publish/approve/reject, và **chỉ trả ở admin endpoint** — `PostListResponse` của member
+không còn `flag`/`flagDetail`. `flagDetail` là object `{kind, outcome?, score?, threshold?,
+postId?, similarity?, cause?}`. `publish: true` chỉ **gửi duyệt** (bài về `processing`), filter
+chạy async mới flip `published`.
+`PATCH /api/posts/{id}/visibility` **đã bị xoá** → 404.
 
 ## Tổng quan
 
@@ -117,14 +122,14 @@ Doc cũ ghi "đã bỏ" là sai — FE bỏ UI, backend chưa bỏ.
 | My Recipes | `/recipes` | ⚠️ `GET /api/recipes/me` (lọc/sort/phân trang client-side) — 5 tổng dinh dưỡng mới, chưa render |
 | Admin Recipes | `/admin/recipes` | ✅ đủ CRUD: list + detail + `PATCH` + `DELETE` (mềm, một chiều) + approve/reject + điền nguyên liệu thiếu khi duyệt |
 | Admin Ingredients | `/admin/ingredients` | ✅ 5/7 endpoint: list + create + `PATCH` + `DELETE` (mềm). **Cố ý bỏ** approve/reject |
-| Meal Plan | `/meal-plan` | ✅ `GET /api/menus/details` + `POST .../status` |
+| Meal Plan | `/meal-plan` | ✅ `GET /api/menus/details` + `POST .../status` + `DELETE .../{id}` |
 | Create Meal Plan | `/meal-plan/create` | ✅ `POST /api/menus` + `GET /api/dishes` (chọn món) |
 | Subscription | `/subscription` | 🔴 `GET /api/subscriptions` OK, `me/history` đổi shape, `cancel`/`checkout` không còn |
 | Payment Result | `/payment/result/:paymentId` | 🔴 `GET /api/payments/{paymentId}` không trả `plan` |
 
 ---
 
-## 1. Register — 🔴 vỡ tên field
+## 1. Register — ✅ đã sửa 2026-11-06
 
 | Endpoint | Hàm | UI |
 |---|---|---|
@@ -132,21 +137,16 @@ Doc cũ ghi "đã bỏ" là sai — FE bỏ UI, backend chưa bỏ.
 | POST /api/auth/verify-email | `verifyEmail` | VerifyEmailPage |
 | POST /api/auth/resend-email | `resendVerifyEmail` | VerifyEmailPage |
 
-🔴 **`RegisterRequest` live chỉ có `displayName`, `email`, `password`, `confirmPassword`.**
-`username` không còn (ADR-019: email là identity duy nhất; `displayName` chỉ là nhãn, **không
-unique**). Curl 2026-11-06 với body `{username:"abc", email:"not-an-email", password:"x",
-confirmPassword:"x"}` → 400 `data: {password, email, displayName: "Display name is required"}`
-— tức `username` bị bỏ qua hoàn toàn và `displayName` bị báo thiếu.
+`RegisterRequest` live = `{displayName, email, password, confirmPassword}`. `username` không còn
+(ADR-019: email là identity duy nhất; `displayName` chỉ là nhãn, **không unique**, 2–100 ký tự,
+không ràng buộc bộ ký tự).
 
-Hệ quả: [RegisterPage.tsx:36-41](src/features/auth/pages/RegisterPage/RegisterPage.tsx#L36-L41)
-validate `username` 3–50 ký tự chỉ `[a-zA-Z0-9_.]`, nhưng gửi lên thì BE không nhận.
-[RegisterPage.tsx:82](src/features/auth/pages/RegisterPage/RegisterPage.tsx#L82) map
-`data.displayName` → `User.username` (đúng, response vẫn là `displayName`).
-[RegisterRequest](src/shared/types/user.ts#L50) và
-[authApi.test.ts:68](src/features/auth/__tests__/authApi.test.ts#L68) cũng đang dùng `username`.
+Form, `RegisterRequest` và test đã đổi sang `displayName`; `errors.username*` của 2 locale đổi
+thành `errors.displayName*`; nhãn i18n `register.usernameLabel` → "Display name / Tên hiển thị".
 
-Sửa: đổi field form + `RegisterRequest` sang `displayName` (2–100, không ràng buộc ký tự),
-xoá `errors.username*` khỏi 2 locale, đổi nhãn i18n `register.usernameLabel` → "Display name".
+Thêm: `getApiErrorMessage` đọc được map field của Spring validate (400 trả
+`data: {field: "message"}`), trước đó chỉ đọc `errors[]`/`message` nên hiện câu chung
+"Validation failed" thay vì lý do thật.
 
 `verify-email` và `resend-email` vẫn đúng: `{email, otp}` / `{email}`.
 
@@ -236,7 +236,7 @@ height/weight). FE **có map** vào `UserProfile.bmi` nhưng `ProfilePage` vẫn
 số đổi ngay khi gõ (`ponytail:` tại [ProfilePage.tsx:113](src/features/profile/ProfilePage.tsx#L113)) —
 server `bmi` dùng cho trang profile công khai (chưa dựng) và ai cần số do server chốt.
 
-ProfilePage stats (`published`/`videos`/`saved`/`contributions`) suy từ `GET /api/posts` 100 bài gần nhất; `saved` luôn 0 vì chưa có API favorites.
+ProfilePage stats (`published`/`videos`/`saved`/`contributions`) suy từ `GET /api/posts` 100 bài gần nhất; `saved` dùng `GET /api/saved/posts` (`totalElements`) nếu nối.
 
 ## 5. Admin users — ✅ đủ
 
@@ -281,12 +281,12 @@ admin list là chấp nhận được — `name` lọc ở server, không cần 
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
-| GET /api/admin/posts | ✅ `getPosts` | PostsPage. BE có `status`/`flag`/`userId`/`categoryId`/`createdFrom`/`createdTo`/`sort` — **nhưng swagger chỉ hiện `page`/`size`**, xem ⚠️ dưới. **Luôn gửi `flag=all`** — BE mặc định `NEEDS_REVIEW` |
-| GET /api/admin/posts/{id} | ❌ | `AdminPostDetailResponse` = `id, title, content, status, flag, contentScore, **recipes[]**, **names[]**, userId, displayName, email`. Mỗi phần tử `ComponentSummary` = `{id, type, name, moderationStatus, score}`. Duyệt theo từng tên |
-| POST /api/admin/posts/{id}/approve | ✅ `approvePost` | `{reason?}` ≤1000. Trả **`AdminPostDetailResponse`** (không phải void). 400 nếu bài chưa có category hoặc đang `hidden`; 404 nếu không có / xoá mềm. **Duyệt luôn các component PENDING** mà bài tham chiếu |
-| POST /api/admin/posts/{id}/reject | ✅ `rejectPost` | `{reason?}` ≤1000. Trả `AdminPostDetailResponse`. 400 nếu đang `hidden`; 404. **Chỉ từ chối các component còn `PENDING`** |
+| GET /api/admin/posts | ✅ `getPosts` | PostsPage. BE có `status`/`flag`/`userId`/`categoryId`/`createdFrom`/`createdTo`/`sort` — **nhưng swagger chỉ hiện `page`/`size`**, xem ⚠️ dưới. `flag` mặc định **`all`** (V56). Dòng trả kèm `flagDetail` |
+| GET /api/admin/posts/{id} | ❌ | `AdminPostDetailResponse` = `id, title, content, status, flag, flagDetail, contentScore, **recipes[]**, **names[]**, userId, displayName, email`. Mỗi phần tử `ComponentSummary` = `{id, type, name, moderationStatus, score}`. Duyệt theo từng tên |
+| POST /api/admin/posts/{id}/approve | ✅ `approvePost` | `{reason?}` ≤1000. Trả **`AdminPostDetailResponse`** (không phải void). 400 nếu bài `drafted` hoặc chưa có category; 404 nếu không có / xoá mềm. **Duyệt luôn các component PENDING**; **`flag` giữ nguyên** (admin duyệt đè máy) |
+| POST /api/admin/posts/{id}/reject | ✅ `rejectPost` | `{reason?}` ≤1000. Trả `AdminPostDetailResponse`. 400 nếu bài `drafted`; 404. **Chỉ từ chối các component còn `PENDING`**; `flag`/`flagDetail` giữ nguyên |
 | ~~POST /api/admin/posts/{id}/moderate~~ | 🟢 **đã xoá khỏi backend** | `moderatePost` đã xoá khỏi `features/posts/api.ts`. Xem mục đầu file |
-| PATCH /api/posts/{id}/visibility | ❌ (FE bỏ, backend còn) | `{hidden: boolean}`. Ẩn → `hidden` + xoá `publishedAt`; bỏ ẩn → về `created` (draft riêng tư, chủ bài phải tự đăng lại). Ghi `moderation_log` HIDE_POST/UNHIDE_POST |
+| ~~PATCH /api/posts/{id}/visibility~~ | 🟢 **đã xoá khỏi backend (V56)** → 404 | Thay bằng: admin `POST /api/admin/posts/{id}/reject`; tác giả `PATCH /api/posts/{id}` `{publish: false}` (→ `drafted`) |
 | DELETE /api/posts/{id} | ✅ `deletePost` | |
 
 → `q` (tìm kiếm) lọc **trong trang hiện tại** — BE chưa có tham số search cho `/api/admin/posts`.
@@ -418,7 +418,7 @@ chối luôn các tên nó tham chiếu (chỉ các tên còn `PENDING`).
 | GET `/api/dishes/{dishId}/ingredients/suggestions` | `List<{ingredientId,name,required}>` — chỉ đọc, member không ghi |
 | GET `/api/dishes/suggestions` | `DishSuggestionRequest`: `name, cuisineType, difficulty, maxPrepTime, maxCookTime, maxTotalTime, **minCalories/maxCalories/minProtein/maxProtein/minCarbohydrate/maxCarbohydrate/minFat/maxFat/minFiber/maxFiber**, page, size, recipesPerDish` → `DishSuggestionResponse{id,name,description,imageUrl,cuisineType,recommendedRecipes[]}`, mỗi recipe là `RecipeSummaryResponse` (§19b) |
 
-## 10c. Weekly menu — ✅ đọc + tạo + đổi trạng thái
+## 10c. Weekly menu — ✅ đọc + tạo + đổi trạng thái + xoá
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
@@ -427,6 +427,7 @@ chối luôn các tên nó tham chiếu (chỉ các tên còn `PENDING`).
 | POST /api/menus | ✅ `createMenu` | `{startDate, notes?, days[]}` — luôn tạo `drafted`. `MenuValidator` chặn cả tuần nếu sai BR-MENU-005 |
 | PATCH /api/menus/{menuId} | ❌ | `{days?, notes?}` — sửa menu `drafted`/`scheduled` (giai đoạn B2) |
 | POST /api/menus/{menuId}/status | ✅ `changeMenuStatus` | `{status}` — `drafted → scheduled\|cancelled`, `scheduled → cancelled\|completed` |
+| DELETE /api/menus/{menuId} | ✅ `deleteMenu` | Xoá hẳn menu; `data` là chuỗi thông báo. Nút Xoá ở `MenuActions` hiện cho **mọi** trạng thái (2026-11-12) |
 
 Route `/meal-plan` (cần đăng nhập) và `/meal-plan/create`. Luôn gửi `from`/`to` tường minh —
 bỏ trống thì backend lấy tuần hiện tại theo **giờ UTC**, lệch ngày với người dùng múi giờ dương.
@@ -438,8 +439,9 @@ lặp theo `days`. Endpoint không lọc được `status`; `menuId` của user 
 có `dishId`/`dishName`. `GET /api/menus/details` trả `MenuMealPlanResponse` với `dish` đầy đủ.
 Sau khi ghi phải `invalidateQueries(["meal-plans"])`, đừng render từ response.
 
-**BR-MENU-005** (validate ở `CreateMealPlanPage/validate.ts` trước khi gửi): đúng 7 ngày liên
-tiếp; 1–3 bữa/ngày; ≤1 bữa mỗi `mealType`/ngày; `servings` nguyên ≥ 1; `dishId` tồn tại và
+**BR-MENU-005** (validate ở `menus/create/validate.ts` trước khi gửi): đúng 7 ngày liên
+tiếp `startDate..startDate+6` — **`startDate` thứ mấy cũng được**, backend không kiểm Thứ 2;
+1–3 bữa/ngày; ≤1 bữa mỗi `mealType`/ngày; `servings` nguyên ≥ 1; `dishId` tồn tại và
 chưa xoá mềm; một món **≤ 3 lần**; **≥ 5 món khác nhau**.
 
 **BR-MENU-007**: `drafted` không bao giờ là đích; no-op cũng 409. Schedule trùng tuần menu
@@ -518,8 +520,33 @@ Nhãn trạng thái dùng `PostStatusBadge` (i18n `common:postStatus.*`).
 **Post Detail còn gọi thêm** (2026-11-02): `GET /api/recipes/{recipeId}` (§19, `AttachedRecipes`
 — render `post.recipeIds`, cần JWT). Bình luận nằm ở sidebar phải, dưới thẻ meta.
 
-## 16. Search — ❌ chưa làm
+## 15b. Saved content — ✅ đủ 6 endpoint
 
+`src/features/saved/` — route `/saved` trong rail tài khoản (`AccountLayout`).
+
+| Endpoint | Hàm | UI |
+|---|---|---|
+| GET /api/saved/posts?page&size | `getSavedPosts` | SavedPage tab Posts (phân trang **server**) |
+| GET /api/saved/recipes?page&size | `getSavedRecipes` | SavedPage tab Recipes, `useAttachableRecipes` |
+| POST /api/saved/posts/{postId} | `savePost` | `SavePostButton` — card feed, Post Detail |
+| DELETE /api/saved/posts/{postId} | `unsavePost` | `SavePostButton`, SavedPage |
+| POST /api/saved/recipes/{recipeId} | `saveRecipe` | `SaveRecipeButton` — RecipeDetailDialog |
+| DELETE /api/saved/recipes/{recipeId} | `unsaveRecipe` | `SaveRecipeButton`, SavedPage |
+
+**Không có endpoint "đã lưu hay chưa"** → `useSaved.ts` tải một trang 100 mục mỗi danh sách
+(`ID_SCAN_SIZE`) rồi cache thành Set id; nút Save đọc Set đó. Vượt 100 mục phải xin backend
+trả cờ `saved` trên từng item, hoặc `GET /api/saved/{type}/{id}/exists`.
+
+`GET /api/saved/posts` trả `displayName`/`avatarUrl`/`userId` (tác giả thật) và **không** có
+`type`/`videoUrl`; `GET /api/saved/recipes` trả đủ shape `Recipe` (ingredients + dinh dưỡng)
+→ `RecipeDetailDialog` dựng trực tiếp từ response, không gọi thêm `GET /api/recipes/{id}`.
+
+**Recipe đã lưu gắn được vào bài mới**: `useAttachableRecipes` gộp `GET /api/recipes/me` +
+`GET /api/saved/recipes` (dedupe theo id), nên `RecipePickerDialog` và chip công thức trong
+`PostComposerDialog` đều thấy chúng. `openComposer(null, [recipeId])` mở composer với công thức
+gắn sẵn — nút "Viết bài từ công thức này" ở SavedPage và RecipeDetailDialog.
+
+## 16. Search — ❌ chưa làm
 | Endpoint | Ghi chú |
 |---|---|
 | GET /api/search | `SearchRequest` live = `q, type(POST\|VIDEO\|RECIPE), categoryId, dateFrom, dateTo, page, size` → `PageResponse<SearchResultItem>`, item = `{type, id, title, snippet, categoryIds, createdAt}` |
@@ -537,8 +564,9 @@ Search trên Navbar hiện điều hướng sang `/explore?q=`, lọc client-sid
 
 🟢 **`PostListResponse` live đã có `userId`, `displayName`, `avatarUrl`** (curl
 `/api/posts/feed` 2026-11-06: `["id","userId","displayName","avatarUrl","title","content",
-"rawContent","featuredImageUrl","categoryIds","mediaIds","recipeIds","status","flag",
-"viewCount","publishedAt","createdAt"]`). Tức **`mockAuthors.ts` bơm tác giả giả đã hết cần
+"rawContent","featuredImageUrl","categoryIds","mediaIds","recipeIds","status","rejectionReason",
+"viewCount","publishedAt","createdAt"]`; `flag`/`flagDetail` đã bị bỏ khỏi response member
+ở V58). Tức **`mockAuthors.ts` bơm tác giả giả đã hết cần
 thiết** — card có thể đọc `post.displayName`/`post.avatarUrl` thật. `PostListResponse` type
 ([types.ts:149](src/features/posts/types.ts#L149)) chưa khai `userId`/`displayName`/`avatarUrl`
 và vẫn có `type`/`videoUrl` (BE **không** trả — đã verify cả hai vắng mặt).
@@ -546,7 +574,7 @@ và vẫn có `type`/`videoUrl` (BE **không** trả — đã verify cả hai v�
 
 MyPostsPage: draft (`created`) **xoá được** — `DELETE /api/posts/{id}` chỉ kiểm chủ bài + `deletedAt IS NULL`, không xét `status` (backend `PostService.deletePost`). Sửa draft cũng **mở được**: `GET /api/posts/{id}` trả mọi status (BR-POST-011, `findDetailById` chỉ lọc `deletedAt`) và `PATCH /api/posts/{id}` nhận owner với mọi status (`findManageablePost`). Chỉ "ngừng đăng" (`unpublishPost`) mới cần `status === "published"`.
 
-MyPostsPage tabs My Videos / Saved Recipes / My Activity → `unsupported` (chờ API).
+MyPostsPage tabs My Videos / Saved Recipes / My Activity → My Videos + My Activity `unsupported`; Saved Recipes đã có route riêng `/saved`.
 
 ## 18. My videos — ❌ chưa làm
 

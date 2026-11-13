@@ -11,6 +11,9 @@ const ok = <T,>(data: T) => ({ data: { success: true, message: "ok", data } });
 
 beforeEach(() => vi.resetAllMocks());
 
+/** Lượt AI có thể chạy 40–90s; mặc định 30s của `api` cắt ngang giữa lúc backend tạo menu. */
+const AI_TIMEOUT = { timeout: 90_000 };
+
 describe("sendAiMessage", () => {
     it("POST /api/ai/messages và trả thẳng `data`, bỏ conversationId khi tạo hội thoại mới", async () => {
         const payload = { conversationId: "c1", reply: "Chào bạn", usage: { remainingUsage: 4 } };
@@ -18,7 +21,7 @@ describe("sendAiMessage", () => {
 
         const result = await sendAiMessage({ message: "Xin chào" });
 
-        expect(api.post).toHaveBeenCalledWith("/api/ai/messages", { message: "Xin chào" });
+        expect(api.post).toHaveBeenCalledWith("/api/ai/messages", { message: "Xin chào" }, AI_TIMEOUT);
         expect(result).toEqual(payload);
     });
 
@@ -28,7 +31,11 @@ describe("sendAiMessage", () => {
 
         await sendAiMessage({ conversationId: "c1", message: "Tiếp" });
 
-        expect(api.post).toHaveBeenCalledWith("/api/ai/messages", { conversationId: "c1", message: "Tiếp" });
+        expect(api.post).toHaveBeenCalledWith(
+            "/api/ai/messages",
+            { conversationId: "c1", message: "Tiếp" },
+            AI_TIMEOUT,
+        );
     });
 });
 
