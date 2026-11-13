@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createTestQueryClient } from "@/test/renderWithProviders";
 import { useAiChat } from "@/features/nutrition-ai/useAiChat";
@@ -22,7 +22,7 @@ beforeEach(() => {
     vi.mocked(sendAiMessage).mockResolvedValue({
         conversationId: "c1",
         reply: "Chào",
-        usage: { used: 1, limit: 20 },
+        usage: { remainingUsage: 19, used: 1, limit: 20 },
     });
 });
 
@@ -50,15 +50,69 @@ describe("useAiChat", () => {
         expect(getAiConversation).not.toHaveBeenCalled();
     });
 
-    it("chặn câu dài quá 4000 ký tự mà không gọi API", async () => {
+    it("chọn hội thoại thì đặt lại local và nạp tin nhắn từ server", async () => {
+        vi.mocked(getAiConversation).mockResolvedValue({
+            id: "c1",
+            title: "Cũ",
+            updatedAt: "2026-10-22T10:00:00Z",
+            messages: [{ role: "user", content: "Hỏi cũ", createdAt: "2026-10-22T10:00:00Z" }],
+        });
+
+        const { result } = renderHook(() => useAiChat(), { wrapper });
+
+        act(() => {
+            result.current.selectConversation("c1");
+        });
+
+        await waitFor(() => {
+            expect(result.current.messages).toEqual([
+                { id: "h-0", role: "user", text: "Hỏi cũ", createdAt: "2026-10-22T10:00:00Z" },
+            ]);
+        });
+    });
+
+    it("timeout: báo timedOut, KHÔNG báo error, KHÔNG giữ câu để retry", async () => {
+        // Axios huỷ sau `timeout` → không có `response`, code ECONNABORTED.
+        vi.mocked(sendAiMessage).mockRejectedValue(
+            Object.assign(new Error("timeout of 90000ms exceeded"), {
+                code: "ECONNABORTED",
+                isAxiosError: true,
+            }),
+        );
+
+        const { result } = renderHook(() => useAiChat(), { wrapper });
+
+        let ok = false;
+        await act(async () => {
+            ok = await result.current.send("Tạo thực đơn tuần này");
+        });
+
+        expect(result.current.timedOut).toBe(true);
+        expect(result.current.error).toBeNull();
+        // Không có `failedText` = ChatPanel không hiện nút Retry → không tạo menu thứ hai.
+        expect(result.current.failedText).toBeNull();
+        // `true` = ChatPanel không đẩy lại câu hỏi vào ô nhập.
+        expect(ok).toBe(true);
+    });
+
+    it("server trả lỗi thật (có response) thì vẫn báo error + giữ câu để retry", async () => {
+        vi.mocked(sendAiMessage).mockRejectedValue(
+            Object.assign(new Error("Request failed"), {
+                code: "ERR_BAD_RESPONSE",
+                response: { status: 502, data: { message: "AI provider call failed" } },
+            }),
+        );
+
         const { result } = renderHook(() => useAiChat(), { wrapper });
 
         let ok = true;
         await act(async () => {
-            ok = await result.current.send("a".repeat(4001));
+            ok = await result.current.send("Tạo thực đơn tuần này");
         });
 
+        expect(result.current.timedOut).toBe(false);
+        expect(result.current.error).toBeTruthy();
+        expect(result.current.failedText).toBe("Tạo thực đơn tuần này");
         expect(ok).toBe(false);
-        expect(sendAiMessage).not.toHaveBeenCalled();
     });
 });

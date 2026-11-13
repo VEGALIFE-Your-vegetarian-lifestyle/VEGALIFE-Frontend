@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { MAX_INGREDIENTS } from "./schema";
 import { AutocompleteField } from "./AutocompleteField";
 import { searchIngredients } from "../../api";
-import type { Ingredient, RecipeIngredientInput } from "../../types";
+import { UNITS, type Ingredient, type RecipeIngredientInput } from "../../types";
 
 type IngredientError = { name?: string; amount?: string; unit?: string };
 type IngredientTouched = { name?: boolean; amount?: boolean; unit?: boolean };
@@ -18,12 +18,14 @@ interface IngredientEditorProps {
     duplicates: number[];
     onChange: (index: number, field: keyof RecipeIngredientInput, value: string) => void;
     onBlur: (index: number, field: keyof RecipeIngredientInput) => void;
+    /** Member chọn một gợi ý = nguyên liệu đã tồn tại → khoá ô unit, điền đơn vị đã lưu. */
+    onSelectExisting: (index: number, unit: string | null) => void;
     onAdd: () => void;
     onRemove: (index: number) => void;
 }
 
-// Gợi ý đơn vị hay dùng — API không có enum nên vẫn gõ tự do được.
-const UNIT_SUGGESTIONS = ["g", "kg", "ml", "l", "tbsp", "tsp", "cup", "piece", "clove", "pinch"];
+// Chỉ 3 mã backend nhận cho nguyên liệu mới; `kg`/`tbsp`/`cup`… → 400.
+const UNIT_SUGGESTIONS = UNITS;
 
 const UNIT_LIST_ID = "recipe-unit-suggestions";
 
@@ -37,6 +39,7 @@ export function IngredientEditor({
     duplicates,
     onChange,
     onBlur,
+    onSelectExisting,
     onAdd,
     onRemove,
 }: IngredientEditorProps) {
@@ -91,6 +94,7 @@ export function IngredientEditor({
                                         id={`ingredient-name-${index}`}
                                         value={item.name}
                                         onChange={(value) => onChange(index, "name", value)}
+                                        onSelect={(item) => onSelectExisting(index, item.unit)}
                                         onBlur={() => onBlur(index, "name")}
                                         placeholder={t("placeholder.ingredientName")}
                                         invalid={showNameError}
@@ -132,19 +136,31 @@ export function IngredientEditor({
                                 <label htmlFor={`ingredient-unit-${index}`} className="sr-only">
                                     {t("field.unit")}
                                 </label>
-                                {/* Input + datalist chứ không phải Select: `unit` là chuỗi tự do ≤30 ký tự.
-                                    ChevronsUpDown chỉ để trông giống ô chọn của mockup, không giới hạn giá trị. */}
-                                <Input
-                                    id={`ingredient-unit-${index}`}
-                                    list={UNIT_LIST_ID}
-                                    value={item.unit}
-                                    trailing={
-                                        <ChevronsUpDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                                    }
-                                    aria-invalid={Boolean(unitError)}
-                                    onChange={(event) => onChange(index, "unit", event.target.value)}
-                                    onBlur={() => onBlur(index, "unit")}
-                                />
+                                {/* Nguyên liệu đã có sẵn: BE bỏ qua `unit` đã gửi và đọc amount theo
+                                    đơn vị lưu sẵn, nên ô gõ được sẽ là nói dối member → hiện text tĩnh.
+                                    Đơn vị lấy từ `GET /api/ingredients`; `null` = admin chưa điền. */}
+                                {item.existing ? (
+                                    <div className="flex h-9 items-center rounded-lg border border-dashed border-border px-3 text-sm text-muted-foreground">
+                                        {item.unit || t("ingredient.existingUnit")}
+                                    </div>
+                                ) : (
+                                    <Input
+                                        id={`ingredient-unit-${index}`}
+                                        list={UNIT_LIST_ID}
+                                        value={item.unit}
+                                        trailing={
+                                            <ChevronsUpDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                                        }
+                                        aria-invalid={Boolean(unitError)}
+                                        onChange={(event) => onChange(index, "unit", event.target.value)}
+                                        onBlur={() => onBlur(index, "unit")}
+                                    />
+                                )}
+                                {item.existing && (
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        {t("ingredient.existingUnitHint")}
+                                    </p>
+                                )}
                                 {unitError && (
                                     <p role="alert" className="mt-1 text-sm text-destructive">
                                         {unitError}

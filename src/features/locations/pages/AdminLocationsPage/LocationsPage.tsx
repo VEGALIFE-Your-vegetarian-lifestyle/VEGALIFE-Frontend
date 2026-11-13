@@ -2,10 +2,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MapPin, Pencil, Plus, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { MapPin, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { createLocation, deleteLocation, getLocations, updateLocation } from "../../api";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
@@ -14,30 +13,42 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Pagination } from "@/components/common/Pagination";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
-import { LOCATION_TYPES, type LocationItem, type LocationPayload, type LocationType } from "../../types";
+import { type LocationItem, type LocationPayload } from "../../types";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import { LocationFormDialog } from "./LocationFormDialog";
 
 const PAGE_SIZE = 8;
+const RATING_FILTERS = ["", "3", "4", "4.5"] as const;
 
 export default function LocationsPage() {
     const { t } = useTranslation(["location", "common"]);
     const queryClient = useQueryClient();
-    const [placeType, setPlaceType] = useState<LocationType | "">("");
+    const [keyword, setKeyword] = useState("");
     const [page, setPage] = useState(1);
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<LocationItem | null>(null);
     const [deleting, setDeleting] = useState<LocationItem | null>(null);
 
+    const debouncedKeyword = useDebounce(keyword.trim(), 300);
+
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ["admin-locations", page, placeType],
-        queryFn: () => getLocations({ page, size: PAGE_SIZE, placeType: placeType || undefined }),
+        queryKey: ["admin-locations", page, debouncedKeyword],
+        queryFn: () =>
+            getLocations({
+                page,
+                size: PAGE_SIZE,
+                keyword: debouncedKeyword || undefined,
+            }),
     });
 
     // Xóa mềm xong thì Nearby cũng phải bỏ địa điểm đó, nên làm mới cả hai query.
     const invalidate = () => {
         queryClient.invalidateQueries({ queryKey: ["admin-locations"] });
         queryClient.invalidateQueries({ queryKey: ["nearby-locations"] });
+        queryClient.invalidateQueries({ queryKey: ["restaurants-search"] });
+        queryClient.invalidateQueries({ queryKey: ["nearby-place"] });
+        queryClient.removeQueries({ queryKey: ["restaurant-detail-form"] });
     };
     const onError = (error: unknown) => {
         toast.error(getApiErrorMessage(error, t("admin.toast.failed")));
@@ -83,11 +94,6 @@ export default function LocationsPage() {
         setFormOpen(true);
     };
 
-    const handleTypeChange = (value: LocationType | "") => {
-        setPlaceType(value);
-        setPage(1);
-    };
-
     const locations = data?.data ?? [];
     const totalPages = data?.totalPages ?? 1;
     const total = data?.total ?? 0;
@@ -106,21 +112,18 @@ export default function LocationsPage() {
                 }
             />
 
-            <div className="mb-4 flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-end">
-                <div className="flex flex-col gap-2 sm:flex-row">
-                    <Select
-                        aria-label={t("page.typeLabel")}
-                        value={placeType}
-                        onChange={(event) => handleTypeChange(event.target.value as LocationType | "")}
-                        className="w-full sm:w-48"
-                    >
-                        <option value="">{t("allTypes")}</option>
-                        {LOCATION_TYPES.map((type) => (
-                            <option key={type} value={type}>
-                                {t(`type.${type}`)}
-                            </option>
-                        ))}
-                    </Select>
+            <div className="mb-4 flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div className="relative w-full sm:w-80">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                        value={keyword}
+                        onChange={(event) => {
+                            setKeyword(event.target.value);
+                            setPage(1);
+                        }}
+                        placeholder={t("admin.searchPlaceholder")}
+                        className="pl-9"
+                    />
                 </div>
             </div>
 
@@ -133,7 +136,6 @@ export default function LocationsPage() {
                             <TableRow className="hover:bg-transparent">
                                 <TableHead>{t("admin.columns.name")}</TableHead>
                                 <TableHead>{t("admin.columns.address")}</TableHead>
-                                <TableHead>{t("admin.columns.type")}</TableHead>
                                 <TableHead>{t("admin.columns.rating")}</TableHead>
                                 <TableHead>{t("admin.columns.price")}</TableHead>
                                 <TableHead className="text-right">{t("admin.columns.actions")}</TableHead>
@@ -141,19 +143,12 @@ export default function LocationsPage() {
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableSkeleton columns={6} />
+                                <TableSkeleton columns={5} />
                             ) : (
                                 locations.map((location) => (
                                     <TableRow key={location.id}>
                                         <TableCell className="font-semibold">{location.name}</TableCell>
                                         <TableCell className="max-w-xs text-muted-foreground">{location.address}</TableCell>
-                                        <TableCell>
-                                            {location.placeType ? (
-                                                <Badge variant="lightgreen">{t(`type.${location.placeType}`)}</Badge>
-                                            ) : (
-                                                "—"
-                                            )}
-                                        </TableCell>
                                         <TableCell>{location.rating ?? "—"}</TableCell>
                                         <TableCell>{location.priceLevel ? "$".repeat(location.priceLevel) : "—"}</TableCell>
                                         <TableCell>
@@ -178,14 +173,12 @@ export default function LocationsPage() {
                         <EmptyState
                             icon={MapPin}
                             title={t("admin.empty.title")}
-                            description={placeType ? t("common:emptySearch") : t("admin.empty.description")}
+                            description={keyword ? t("common:emptySearch") : t("admin.empty.description")}
                             action={
-                                placeType ? (
+                                keyword ? (
                                     <Button
                                         variant="outline"
-                                        onClick={() => {
-                                            handleTypeChange("");
-                                        }}
+                                        onClick={() => setKeyword("")}
                                     >
                                         {t("common:clearFilter")}
                                     </Button>

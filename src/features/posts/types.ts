@@ -1,14 +1,23 @@
 import type { JSONContent } from "@tiptap/react";
 
-// Post status machine — SRS 5.2. `flagged` đã bỏ ở ADR-011: bài filter fail
-// thành status=unpublished + flag REJECTED/NEEDS_REVIEW. `hidden` bỏ theo yêu cầu:
-// chỉ còn published (hiện) / unpublished (không hiện).
-export type PostStatus = "created" | "processed" | "published" | "unpublished";
+// Post status machine — ADR-023. `status` trả lời "công khai thấy được không?";
+// `flag` trả lời "verdict cuối là gì?". Filter fail KHÔNG đẩy bài sang unpublished —
+// chỉ admin từ chối mới tới đó. `hidden` đã bỏ khỏi backend (V56).
+export type PostStatus = "drafted" | "processing" | "published" | "unpublished";
 
-export type PostType = "blog" | "video";
+/** Verdict cuối của lần kiểm duyệt tự động gần nhất — chỉ có ở admin endpoint. */
+export type PostFlag = "FILTER_PASSED" | "FILTER_FAILED" | "SIMILAR_CONTENT" | "FILTER_SKIPPED";
 
-/** Trạng thái kiểm duyệt tự động — `GET /api/admin/posts`. */
-export type PostFlag = "PENDING" | "PASSED" | "REJECTED" | "NEEDS_REVIEW";
+/** Bằng chứng verdict — field nào không thuộc `kind` đó thì VẮNG MẶT (không phải null). */
+export type FlagDetail = {
+    kind: PostFlag;
+    outcome?: "FAIL" | "UNCERTAIN"; // FILTER_FAILED
+    score?: number; // FILTER_PASSED / FILTER_FAILED, 0–1
+    threshold?: number; // FILTER_PASSED / FILTER_FAILED / SIMILAR_CONTENT, 0–1
+    postId?: string; // SIMILAR_CONTENT
+    similarity?: number; // SIMILAR_CONTENT, 0–1
+    cause?: "DISABLED" | "SWEPT" | "UNAVAILABLE"; // FILTER_SKIPPED
+};
 
 /** Một dòng trong bảng kiểm duyệt — `GET /api/admin/posts`. */
 export interface AdminPost {
@@ -21,6 +30,10 @@ export interface AdminPost {
     mediaIds: string[];
     status: PostStatus;
     flag: PostFlag | null;
+    /** Bằng chứng của `flag` — `null` khi chưa có verdict. */
+    flagDetail?: FlagDetail | null;
+    /** Chỉ có sau khi admin từ chối (`status === "unpublished"`). */
+    rejectionReason?: string | null;
     viewCount: number;
     publishedAt: string | null;
     createdAt: string;
@@ -70,6 +83,14 @@ export interface CreateCommentRequest {
     parentId?: string | null;
 }
 
+export interface UpdateCommentRequest {
+    content: string;
+}
+
+export interface ReportCommentRequest {
+    reason?: string;
+}
+
 /**
  * `GET /api/posts/{postId}/comments` — một mục trong cây bình luận.
  * Chỉ comment gốc bị phân trang; `replies[]` là cả cây con, không phân trang.
@@ -78,7 +99,13 @@ export interface PostCommentThread {
     id: string;
     /** null khi đã xoá mềm. */
     userId: string | null;
+    /** ID của comment cha nếu là câu trả lời (reply). */
+    parentId?: string | null;
+    /** Tên người dùng đang được trả lời. */
+    replyToUsername?: string | null;
     username: string | null;
+    /** Tên hiển thị người bình luận — BE trả `displayName`. */
+    displayName?: string | null;
     avatarUrl: string | null;
     /** Đã xoá mềm thì BE trả đúng chuỗi `"[deleted]"`, các field tác giả null. */
     content: string;
@@ -123,7 +150,6 @@ export interface CreatePostResponse {
     rawContent?: JSONContent | null;
     featuredImageUrl: string | null;
     status: PostStatus;
-    flag: string | null;
     viewCount: number;
     publishedAt: string | null;
     createdAt: string;
@@ -135,13 +161,9 @@ export interface UpdatePostRequest {
     /** Text thuần. */
     content?: string;
     featuredImageUrl?: string;
-    videoUrl?: string;
-    mediaId?: string;
     categoryIds?: string[];
-    /** true = đăng (cần ≥1 category active), false = về draft. */
+    /** true = gửi duyệt (→ `processing`, filter chạy async); false = rút về `drafted`. */
     publish?: boolean;
-    /** Bất biến — chỉ nhận giá trị hiện tại của bài. */
-    type?: PostType;
     /** JSON ProseMirror (object) — gửi kèm khi sửa nội dung. */
     rawContent?: JSONContent;
 }
@@ -149,7 +171,6 @@ export interface UpdatePostRequest {
 export interface PostListResponse {
     id: string;
     title: string;
-    type: PostType;
     /** Text thuần — hiển thị card / trích đoạn / ước lượng thời gian đọc. */
     content: string;
     /** JSON ProseMirror (object) — BE trả về để render lại. */
@@ -157,13 +178,14 @@ export interface PostListResponse {
     /** JSON ProseMirror đã parse từ `rawContent` — xem `getPostDetail` trong `./api.ts`. */
     contentJson?: JSONContent | null;
     featuredImageUrl: string | null;
-    videoUrl: string | null;
     categoryIds: string[];
+    /** Media đính kèm (video/ảnh) — id thôi, lấy URL qua `GET /api/media/{id}`. */
     mediaIds: string[];
     /** Công thức gắn vào bài — ghi qua `POST /api/posts/{id}/recipes`. */
     recipeIds: string[];
     status: PostStatus;
-    flag: string | null;
+    /** Lý do admin từ chối — chỉ có khi `status === "unpublished"`. */
+    rejectionReason?: string | null;
     viewCount: number;
     publishedAt: string | null;
     createdAt: string;

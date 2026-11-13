@@ -1,12 +1,5 @@
 {
     "directions": "Chỉ đường",
-    "type": {
-        "restaurant": "Nhà hàng",
-        "grocery": "Cửa hàng",
-        "cafe": "Quán cà phê",
-        "market": "Chợ"
-    },
-    "allTypes": "Tất cả loại",
     "map": {
         "you": "Vị trí của bạn",
         "tilesFailed": "Không tải được nền bản đồ. Danh sách địa điểm vẫn hiển thị bên cạnh; hãy kiểm tra kết nối mạng hoặc tiện ích chặn quảng cáo."
@@ -63,9 +56,11 @@
         "title": "Quản lý địa điểm",
         "description": "Thêm, sửa và xóa các địa điểm chay hiển thị trên bản đồ gần đây.",
         "create": "Thêm địa điểm",
+        "searchPlaceholder": "Tìm theo tên hoặc món ăn...",
         "columns": {
             "name": "Tên",
             "address": "Địa chỉ",
+            "dishes": "Món ăn",
             "type": "Loại",
             "actions": "Thao tác",
             "rating": "Đánh giá",
@@ -83,13 +78,17 @@
             "createTitle": "Thêm địa điểm",
             "editTitle": "Chỉnh sửa địa điểm",
             "name": "Tên",
+            "description": "Mô tả quán",
             "address": "Địa chỉ",
             "latitude": "Vĩ độ",
             "longitude": "Kinh độ",
-            "type": "Loại",
             "phone": "Số điện thoại",
+            "dishes": "Món ăn đặc trưng",
+            "dishesPlaceholder": "Tìm món ăn để gắn vào quán (gõ \"nấm\", \"lẩu\"...)",
+            "noDishesFound": "Không tìm thấy món ăn phù hợp với \"{{query}}\"",
+            "searchDishesPrompt": "Gõ tên món để tìm kiếm và gắn vào quán",
+            "suggestedDishes": "Gợi ý món ăn:",
             "save": "Lưu thay đổi",
-            "noType": "Chọn loại",
             "rating": "Đánh giá (0-5)",
             "price": "Mức giá (1-4)",
             "website": "Website",
@@ -112,7 +111,9 @@
             "updated": "Đã cập nhật địa điểm",
             "deleted": "Đã xóa địa điểm",
             "failed": "Thao tác thất bại. Vui lòng thử lại."
-        }
+        },
+        "filterRating": "Lọc theo đánh giá",
+        "allRatings": "Mọi đánh giá"
     },
     "days": {
         "monday": "Thứ Hai",

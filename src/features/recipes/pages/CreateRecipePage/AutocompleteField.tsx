@@ -9,6 +9,8 @@ interface AutocompleteFieldProps<T> {
     id: string;
     value: string;
     onChange: (value: string) => void;
+    /** Gọi khi chọn một gợi ý (không gọi khi gõ tự do) — phân biệt "có sẵn" vs "tên mới". */
+    onSelect?: (item: T) => void;
     onBlur?: () => void;
     placeholder?: string;
     invalid?: boolean;
@@ -29,6 +31,7 @@ export function AutocompleteField<T>({
     id,
     value,
     onChange,
+    onSelect,
     onBlur,
     placeholder,
     invalid,
@@ -55,7 +58,10 @@ export function AutocompleteField<T>({
     const showList = isFocused && enabled;
 
     const select = (item: T) => {
+        // `onChange` trước, `onSelect` sau: handler của ô tên reset cờ "đã có sẵn"
+        // mỗi lần giá trị đổi, nên phải set lại sau khi tên đã ghi.
         onChange(getLabel(item));
+        onSelect?.(item);
         // Đóng dropdown sau khi chọn; gõ tiếp sẽ mở lại (xem onChange bên dưới).
         setIsFocused(false);
         setActiveIndex(-1);

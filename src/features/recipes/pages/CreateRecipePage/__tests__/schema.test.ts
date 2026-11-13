@@ -15,7 +15,7 @@ function makeValues(overrides: Partial<RecipeFormValues> = {}): RecipeFormValues
         description: "",
         steps: [{ title: "Nấu nước", body: "Nấu nước, cho rau vào." }],
         servings: "2",
-        ingredients: [{ name: "Cà chua", amount: "2", unit: "quả" }],
+        ingredients: [{ name: "Cà chua", amount: "2", unit: "piece" }],
         ...overrides,
     };
 }
@@ -54,6 +54,19 @@ describe("buildRecipeSchema", () => {
         ).resolves.toBeTruthy();
     });
 
+    // Hồi quy: `Yup.object()` rỗng không fill khoá thiếu, nên bước thiếu `title`/`body`
+    // từng làm `visibleSteps`/`joinSteps` nổ `TypeError: … reading 'trim'` thay vì báo lỗi form.
+    it("bước thiếu hẳn một khoá không ném TypeError", async () => {
+        const bodyOnly = [{ body: "Nấu nước" }] as never;
+        const titleOnly = [{ title: "Nấu nước" }] as never;
+
+        // Thiếu tiêu đề vẫn là bước hợp lệ; thiếu thân thì phải **bị từ chối**, không nổ.
+        await expect(schema().validate(makeValues({ steps: bodyOnly }))).resolves.toBeTruthy();
+        await expect(schema().validate(makeValues({ steps: titleOnly }))).rejects.toBeTruthy();
+        expect(() => joinSteps(bodyOnly)).not.toThrow();
+        expect(joinSteps(bodyOnly)).toBe("Nấu nước");
+    });
+
     it("servings = 0 bị từ chối", async () => {
         await expect(schema().validate(makeValues({ servings: "0" }))).rejects.toBeTruthy();
     });
@@ -64,8 +77,8 @@ describe("buildRecipeSchema", () => {
 
     it("hai nguyên liệu trùng tên khác hoa thường bị đánh dấu trùng", () => {
         const ingredients = [
-            { name: "Cà chua", amount: "2", unit: "quả" },
-            { name: "  cà CHUA ", amount: "1", unit: "quả" },
+            { name: "Cà chua", amount: "2", unit: "piece" },
+            { name: "  cà CHUA ", amount: "1", unit: "piece" },
             { name: "Muối", amount: "1", unit: "g" },
         ];
 
@@ -75,7 +88,7 @@ describe("buildRecipeSchema", () => {
 
     it("tên khác nhau thì không bị đánh dấu trùng", () => {
         const ingredients = [
-            { name: "Cà chua", amount: "2", unit: "quả" },
+            { name: "Cà chua", amount: "2", unit: "piece" },
             { name: "Muối", amount: "1", unit: "g" },
         ];
 
@@ -104,16 +117,26 @@ describe("buildRecipeSchema", () => {
         await expect(schema().validate(makeValues({ prepTimeMinutes: "abc" }))).rejects.toBeTruthy();
     });
 
-    it("5 field dinh dưỡng để trống hoặc là số ≥ 0 đều được chấp nhận", async () => {
-        await expect(schema().validate(makeValues({ calories: "", proteinG: "" }))).resolves.toBeTruthy();
+    it("unit rỗng được chấp nhận (nguyên liệu đã tồn tại)", async () => {
         await expect(
-            schema().validate(makeValues({ calories: "380", proteinG: "0", carbohydrateG: "12.5", fatG: "9", fiberG: "4.2" })),
+            schema().validate(makeValues({ ingredients: [{ name: "Đậu hũ", amount: "2", unit: "" }] })),
         ).resolves.toBeTruthy();
     });
 
-    it("dinh dưỡng nhập số âm hoặc chữ bị từ chối", async () => {
-        await expect(schema().validate(makeValues({ calories: "-5" }))).rejects.toBeTruthy();
-        await expect(schema().validate(makeValues({ proteinG: "abc" }))).rejects.toBeTruthy();
+    it("unit thuộc g / ml / piece (kể cả hoa) được chấp nhận", async () => {
+        for (const unit of ["g", "ml", "piece", "G", " ML ", "Piece"]) {
+            await expect(
+                schema().validate(makeValues({ ingredients: [{ name: "Cà chua", amount: "2", unit }] })),
+            ).resolves.toBeTruthy();
+        }
+    });
+
+    it("unit ngoài 3 mã BE nhận bị từ chối", async () => {
+        for (const unit of ["kg", "tbsp", "cup", "quả"]) {
+            await expect(
+                schema().validate(makeValues({ ingredients: [{ name: "Cà chua", amount: "2", unit }] })),
+            ).rejects.toBeTruthy();
+        }
     });
 });
 
@@ -144,12 +167,12 @@ describe("joinSteps / buildRecipePayload", () => {
         const payload = buildRecipePayload(
             makeValues({
                 name: "  Canh chua chay  ",
-                ingredients: [{ name: " Cà chua ", amount: " 2.5 ", unit: " quả " }],
+                ingredients: [{ name: " Cà chua ", amount: " 2.5 ", unit: " PIECE " }],
             }),
         );
 
         expect(payload.name).toBe("Canh chua chay");
-        expect(payload.ingredients[0]).toEqual({ name: "Cà chua", amount: 2.5, unit: "quả" });
+        expect(payload.ingredients[0]).toEqual({ name: "Cà chua", amount: 2.5, unit: "piece" });
     });
 
     it("bỏ field rỗng thay vì gửi chuỗi rỗng", () => {
@@ -179,18 +202,29 @@ describe("joinSteps / buildRecipePayload", () => {
         expect(payload.difficulty).toBe("EASY");
     });
 
-    it("dinh dưỡng rỗng thì không gửi, có giá trị thì gửi dạng number", () => {
-        const empty = buildRecipePayload(makeValues({ calories: "", proteinG: "  " }));
-        expect(empty).not.toHaveProperty("calories");
-        expect(empty).not.toHaveProperty("proteinG");
+    it("không gửi dinh dưỡng lên BE — BE tự tính từ nguyên liệu", () => {
+        const payload = buildRecipePayload(makeValues());
+        expect(payload).not.toHaveProperty("calories");
+        expect(payload).not.toHaveProperty("proteinG");
+        expect(payload).not.toHaveProperty("carbohydrateG");
+        expect(payload).not.toHaveProperty("fatG");
+        expect(payload).not.toHaveProperty("fiberG");
+    });
 
-        const filled = buildRecipePayload(
-            makeValues({ calories: "380", proteinG: "22", carbohydrateG: "40", fatG: "12", fiberG: "6" }),
+    it("nguyên liệu mới có unit thì gửi (lowercase), không có thì bỏ khoá", () => {
+        const withUnit = buildRecipePayload(
+            makeValues({ ingredients: [{ name: "Cà chua", amount: "2", unit: " PIECE " }] }),
         );
-        expect(filled.calories).toBe(380);
-        expect(filled.proteinG).toBe(22);
-        expect(filled.carbohydrateG).toBe(40);
-        expect(filled.fatG).toBe(12);
-        expect(filled.fiberG).toBe(6);
+        expect(withUnit.ingredients[0]).toEqual({ name: "Cà chua", amount: 2, unit: "piece" });
+
+        const without = buildRecipePayload(makeValues({ ingredients: [{ name: "Muối", amount: "1", unit: "" }] }));
+        expect(without.ingredients[0]).not.toHaveProperty("unit");
+    });
+
+    it("nguyên liệu đã có sẵn không gửi unit dù ô có giá trị", () => {
+        const payload = buildRecipePayload(
+            makeValues({ ingredients: [{ name: "Đậu hũ", amount: "2", unit: "g", existing: true }] }),
+        );
+        expect(payload.ingredients[0]).not.toHaveProperty("unit");
     });
 });

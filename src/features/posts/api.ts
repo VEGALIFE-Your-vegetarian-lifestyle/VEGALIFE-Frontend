@@ -13,13 +13,15 @@ import type {
     PostFlag,
     PostListResponse,
     PostStatus,
+    ReportCommentRequest,
+    UpdateCommentRequest,
     UpdatePostRequest,
 } from "./types";
 import { delay } from "@/shared/utils/delay";
 
 /**
- * POST /api/posts chỉ nhận { title, content, rawContent, featuredImageUrl } và luôn tạo ở status "created".
- * Đăng bài / gán category phải gọi PATCH /api/posts/{id} sau đó.
+ * POST /api/posts chỉ nhận { title, content, rawContent, featuredImageUrl } và luôn tạo ở status "drafted".
+ * Gửi duyệt / gán category phải gọi PATCH /api/posts/{id} sau đó.
  *
  * `content` là text thuần, `rawContent` là object JSON ProseMirror.
  */
@@ -52,6 +54,18 @@ export async function attachPostRecipes(id: string, recipeIds: string[]): Promis
 }
 
 /**
+ * POST /api/posts/{postId}/media — gán/thay **toàn bộ** media của bài (video, ảnh đính kèm).
+ * Mảng rỗng = bỏ hết. Media phải đã `confirm` xong (`status === "succeed"`) nếu không BE trả 400.
+ *
+ * `imageUrl` là async: `POST /api/posts` không nhận `mediaIds`, nên phải tạo/sửa bài trước
+ * rồi mới gọi hàm này.
+ */
+export async function attachPostMedia(id: string, mediaIds: string[]): Promise<PostListResponse> {
+    const { data } = await api.post<ApiResponse<PostListResponse>>(`/api/posts/${id}/media`, { mediaIds });
+    return data.data;
+}
+
+/**
  * GET /api/posts/{postId} — chi tiết bài đã published (yêu cầu JWT).
  * BE trả đúng shape của feed; chỉ `rawContent` cần parse sang JSON ProseMirror.
  */
@@ -68,6 +82,302 @@ export interface CommentListParams {
     size?: number;
 }
 
+function normalizeComment(item: any, parentId?: string | null, parentAuthor?: string | null): PostCommentThread {
+    const displayName = item?.displayName ?? item?.username ?? null;
+    const pid = item?.parentId ?? parentId ?? null;
+    return {
+        id: item?.id ?? "",
+        userId: item?.userId ?? null,
+        parentId: pid,
+        replyToUsername: item?.replyToUsername ?? parentAuthor ?? null,
+        username: displayName,
+        displayName,
+        avatarUrl: item?.avatarUrl ?? null,
+        content: item?.content ?? "",
+        edited: Boolean(item?.edited),
+        deleted: Boolean(item?.deleted),
+        createdAt: item?.createdAt ?? "",
+        updatedAt: item?.updatedAt ?? "",
+        replies: Array.isArray(item?.replies)
+            ? item.replies.map((r: any) => normalizeComment(r, item?.id, displayName))
+            : [],
+    };
+}
+
+const LOCAL_COMMENTS_PREFIX = "vegalife_local_comments_";
+
+export function insertCommentIntoTree(
+    threads: PostCommentThread[],
+    newComment: PostCommentThread,
+    parentId?: string | null,
+): PostCommentThread[] {
+    const pid = parentId || newComment.parentId;
+    if (!pid) {
+        if (threads.some((c) => c.id === newComment.id)) return threads;
+        return [newComment, ...threads];
+    }
+    let inserted = false;
+    const updated = threads.map((c) => {
+        if (c.id === pid) {
+            inserted = true;
+            if (c.replies?.some((r) => r.id === newComment.id)) return c;
+            return { ...c, replies: [...(c.replies ?? []), newComment] };
+        }
+        if (c.replies && c.replies.length > 0) {
+            const nested = insertCommentIntoTree(c.replies, newComment, pid);
+            if (nested !== c.replies) inserted = true;
+            return { ...c, replies: nested };
+        }
+        return c;
+    });
+
+    if (!inserted) {
+        if (threads.some((c) => c.id === newComment.id)) return threads;
+        return [...threads, newComment];
+    }
+    return updated;
+}
+
+export function organizeCommentTree(threads: PostCommentThread[]): PostCommentThread[] {
+    const allItems: PostCommentThread[] = [];
+    function collect(list: PostCommentThread[]) {
+        for (const item of list) {
+            allItems.push({ ...item, replies: [] });
+            if (item.replies && item.replies.length > 0) {
+                collect(item.replies);
+            }
+        }
+    }
+    collect(threads);
+
+    const map = new Map<string, PostCommentThread>();
+    const roots: PostCommentThread[] = [];
+    for (const item of allItems) {
+        map.set(item.id, item);
+    }
+
+    for (const item of allItems) {
+        if (item.parentId && map.has(item.parentId)) {
+            const parent = map.get(item.parentId)!;
+            if (!parent.replies.some((r) => r.id === item.id)) {
+                parent.replies.push(item);
+            }
+        } else {
+            roots.push(item);
+        }
+    }
+    return roots;
+}
+
+/**
+ * Đếm tổng số bình luận **chưa bị xoá** bao gồm cả bình luận gốc và các câu trả lời.
+ * Comment đã `deleted: true` không được tính vào tổng.
+ */
+export function countAllComments(threads: PostCommentThread[]): number {
+    let count = 0;
+    for (const item of threads) {
+        if (!item.deleted) count += 1;
+        if (item.replies && item.replies.length > 0) {
+            count += countAllComments(item.replies);
+        }
+    }
+    return count;
+}
+
+/**
+ * Xoá comment khỏi localStorage khi người dùng xoá thành công trên backend.
+ * Nếu comment có replies, đánh dấu `deleted: true` thay vì xoá hẳn (giữ cấu trúc cây cho replies).
+ * Nếu comment không có replies, xoá hẳn khỏi cây.
+ */
+export function removeLocalComment(postId: string, commentId: string): void {
+    try {
+        if (typeof window === "undefined" || !window.localStorage) return;
+        const existing = getLocalComments(postId);
+        if (existing.length === 0) return;
+
+        function processTree(list: PostCommentThread[]): PostCommentThread[] {
+            return list
+                .map((c) => {
+                    const nextReplies = c.replies && c.replies.length > 0 ? processTree(c.replies) : [];
+                    if (c.id === commentId) {
+                        // Có replies → đánh dấu deleted, giữ cấu trúc cây cho replies
+                        if (nextReplies.length > 0) {
+                            return {
+                                ...c,
+                                deleted: true,
+                                content: "[deleted]",
+                                userId: null,
+                                username: null,
+                                displayName: null,
+                                avatarUrl: null,
+                                replies: nextReplies,
+                            };
+                        }
+                        // Không có replies → xoá hẳn
+                        return null;
+                    }
+                    if (c.deleted && nextReplies.length === 0) {
+                        return null;
+                    }
+                    return {
+                        ...c,
+                        replies: nextReplies,
+                    };
+                })
+                .filter((c): c is PostCommentThread => c !== null);
+        }
+
+        const updated = processTree(existing);
+        if (updated.length === 0) {
+            localStorage.removeItem(`${LOCAL_COMMENTS_PREFIX}${postId}`);
+        } else {
+            localStorage.setItem(`${LOCAL_COMMENTS_PREFIX}${postId}`, JSON.stringify(updated));
+        }
+    } catch {
+        // ignore storage errors
+    }
+}
+
+export function getLocalComments(postId: string): PostCommentThread[] {
+    try {
+        if (typeof window === "undefined" || !window.localStorage) return [];
+        const raw = localStorage.getItem(`${LOCAL_COMMENTS_PREFIX}${postId}`);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? organizeCommentTree(parsed) : [];
+    } catch {
+        return [];
+    }
+}
+
+export function saveLocalComment(
+    postId: string,
+    comment: PostCommentThread,
+    parentId?: string | null,
+    replyToUsername?: string | null,
+): void {
+    try {
+        if (typeof window === "undefined" || !window.localStorage) return;
+        const target: PostCommentThread = {
+            ...comment,
+            parentId: parentId || comment.parentId || null,
+            replyToUsername: replyToUsername || comment.replyToUsername || null,
+        };
+        const existing = getLocalComments(postId);
+        function remove(list: PostCommentThread[]): PostCommentThread[] {
+            return list
+                .filter((c) => c.id !== target.id)
+                .map((c) => ({
+                    ...c,
+                    replies: c.replies ? remove(c.replies) : [],
+                }));
+        }
+        const cleaned = remove(existing);
+        const updated = insertCommentIntoTree(cleaned, target, target.parentId);
+        localStorage.setItem(`${LOCAL_COMMENTS_PREFIX}${postId}`, JSON.stringify(updated));
+    } catch {
+        // ignore storage errors
+    }
+}
+
+/**
+ * Cập nhật nội dung comment trong localStorage để đảm bảo reload trang không bị hoàn tác.
+ */
+export function updateLocalComment(
+    postId: string,
+    commentId: string,
+    newContent: string,
+): void {
+    try {
+        if (typeof window === "undefined" || !window.localStorage) return;
+        const existing = getLocalComments(postId);
+        if (existing.length === 0) return;
+
+        function updateTree(list: PostCommentThread[]): PostCommentThread[] {
+            return list.map((c) => {
+                const nextReplies = c.replies && c.replies.length > 0 ? updateTree(c.replies) : [];
+                if (c.id === commentId) {
+                    return {
+                        ...c,
+                        content: newContent,
+                        edited: true,
+                        updatedAt: new Date().toISOString(),
+                        replies: nextReplies,
+                    };
+                }
+                return {
+                    ...c,
+                    replies: nextReplies,
+                };
+            });
+        }
+
+        const updated = updateTree(existing);
+        localStorage.setItem(`${LOCAL_COMMENTS_PREFIX}${postId}`, JSON.stringify(updated));
+    } catch {
+        // ignore storage errors
+    }
+}
+
+function mergeComments(server: PostCommentThread[], local: PostCommentThread[]): PostCommentThread[] {
+    if (!local || local.length === 0) return server;
+
+    // Thu thập tất cả comment có trong local để tra cứu nhanh khi server chưa cập nhật
+    const localMap = new Map<string, PostCommentThread>();
+    function mapLocal(list: PostCommentThread[]) {
+        for (const item of list) {
+            localMap.set(item.id, item);
+            if (item.replies && item.replies.length > 0) {
+                mapLocal(item.replies);
+            }
+        }
+    }
+    mapLocal(local);
+
+    // Thu thập tất cả ID có trên server (kể cả đã xoá mềm) và đồng bộ nội dung nếu local đã sửa
+    const serverIds = new Set<string>();
+    function patchServerTree(list: PostCommentThread[]): PostCommentThread[] {
+        return list.map((item) => {
+            serverIds.add(item.id);
+            const nextReplies = item.replies && item.replies.length > 0 ? patchServerTree(item.replies) : [];
+            const localVer = localMap.get(item.id);
+            if (localVer && localVer.edited && localVer.content !== item.content) {
+                return {
+                    ...item,
+                    content: localVer.content,
+                    edited: true,
+                    replies: nextReplies,
+                };
+            }
+            return {
+                ...item,
+                replies: nextReplies,
+            };
+        });
+    }
+    const patchedServer = patchServerTree(server);
+
+    // Chỉ merge local comments mà server CHƯA biết (chưa có id trên server)
+    let merged = [...patchedServer];
+    function collectAll(list: PostCommentThread[]): PostCommentThread[] {
+        const result: PostCommentThread[] = [];
+        for (const item of list) {
+            if (!serverIds.has(item.id)) {
+                result.push(item);
+            }
+            if (item.replies && item.replies.length > 0) {
+                result.push(...collectAll(item.replies));
+            }
+        }
+        return result;
+    }
+    const extraLocal = collectAll(local);
+    for (const loc of extraLocal) {
+        merged = insertCommentIntoTree(merged, loc, loc.parentId);
+    }
+    return organizeCommentTree(merged);
+}
+
 /**
  * GET /api/posts/{postId}/comments — public, không cần JWT.
  * Phân trang ở comment gốc; mỗi comment mang theo **cả cây reply** (không phân trang).
@@ -78,10 +388,40 @@ export async function getPostComments(
     postId: string,
     { page = 0, size = 20 }: CommentListParams = {},
 ): Promise<PageResponse<PostCommentThread>> {
-    const { data } = await api.get<ApiResponse<PageResponse<PostCommentThread>>>(`/api/posts/${postId}/comments`, {
-        params: { page, size },
-    });
-    return data.data;
+    try {
+        const { data } = await api.get<ApiResponse<PageResponse<PostCommentThread>>>(`/api/posts/${postId}/comments`, {
+            params: { page, size },
+        });
+        const pageData = data.data;
+        const normalized = (pageData?.content ?? []).map((item) => normalizeComment(item));
+        const local = getLocalComments(postId);
+        const merged = mergeComments(normalized, local);
+
+        const allActiveCount = countAllComments(merged);
+        const isSinglePage = (pageData?.totalPages ?? 1) <= 1;
+        const totalElements = isSinglePage
+            ? allActiveCount
+            : Math.max(Number(pageData?.totalElements ?? 0), allActiveCount);
+
+        return {
+            ...pageData,
+            content: merged,
+            totalElements,
+        };
+    } catch {
+        // Fallback an toàn nếu backend bị sự cố 500 hoặc mất mạng:
+        // Trả về danh sách local (hoặc mảng rỗng nếu chưa có/đã xoá hết) thay vì làm sập UI
+        const local = getLocalComments(postId);
+        return {
+            content: local,
+            page,
+            size,
+            totalElements: countAllComments(local),
+            totalPages: 1,
+            first: true,
+            last: true,
+        };
+    }
 }
 
 /** Hoạt động cộng đồng — ponytail: backend chưa có endpoint activity. */
@@ -96,7 +436,7 @@ export interface AdminPostListParams {
     /** `q` lọc client-side — BE chưa có tham số tìm kiếm. */
     q?: string;
     status?: PostStatus;
-    /** Mặc định `all` — BE mặc định `NEEDS_REVIEW`, bỏ trống sẽ giấu hết bài đã duyệt. */
+    /** Mặc định `all` — khớp default mới của BE (V56). */
     flag?: PostFlag | "all";
     sort?: AdminPostSort;
     userId?: string;
@@ -161,62 +501,78 @@ export const getPosts = async ({
 export interface MyPostsCounts {
     all: number;
     published: number;
+    processing: number;
     draft: number;
     unpublished: number;
-    video: number;
+    /** Số bài có media đính kèm — backend bỏ `type`, giờ suy từ `mediaIds`. */
+    withMedia: number;
     views: number;
 }
 
-export type MyPostsPage = Paginated<PostListResponse> & { counts: MyPostsCounts };
+export type MyPostsPage = Paginated<PostListResponse>;
 
 export const getMyPosts = async ({
     page,
     size,
     q,
     status,
-}: ListParams<PostStatus>): Promise<MyPostsPage> => {
-    // GET /api/posts chỉ hỗ trợ page/size (trả mọi status, sort createdAt desc).
-    // ponytail: lọc q/status ở client trên tối đa 100 bài; khi backend thêm filter thì bỏ.
-    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts", {
+    categoryId,
+}: ListParams<PostStatus> & { categoryId?: string }): Promise<MyPostsPage> => {
+    // GET /api/posts/me (JWT) — bài của chính mình, mọi status, sort createdAt desc.
+    // `/api/posts` giờ là feed public nên KHÔNG dùng được ở đây (trả bài người khác → xoá 404).
+    // `status`/`categoryId` lọc ở server; backend **không có** `keyword` → `q` vẫn lọc client.
+    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts/me", {
+        params: {
+            page: Math.max(page - 1, 0),
+            size,
+            ...(status ? { status } : {}),
+            ...(categoryId ? { categoryId } : {}),
+        },
+    });
+
+    const keyword = q?.trim().toLowerCase() ?? "";
+    // ponytail: `q` chỉ lọc trong trang hiện tại (BE không có keyword cho route này). Bỏ khi BE thêm.
+    const items = data.data.content
+        .map(enrichListItem)
+        .filter((item) => keyword === "" || item.title.toLowerCase().includes(keyword));
+
+    return {
+        data: items,
+        total: data.data.totalElements,
+        page,
+        size: data.data.size,
+        totalPages: Math.max(1, data.data.totalPages),
+    };
+};
+
+/**
+ * Số đếm cho chip trạng thái + rail tài khoản — phải là **toàn tài khoản**, không phải trang
+ * đang xem, nên đọc một trang lớn rồi đếm tại chỗ.
+ * ponytail: trần 100 bài; backend chưa có endpoint count theo status.
+ */
+export const getMyPostsCounts = async (): Promise<MyPostsCounts> => {
+    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts/me", {
         params: { page: 0, size: 100 },
     });
 
-    const all = data.data.content.map(enrichListItem);
-
-    // Đếm trên danh sách đầy đủ, TRƯỚC khi lọc — dải số đầu trang phải cố định,
-    // không nhảy theo từ khoá/trang.
-    const counts: MyPostsCounts = {
-        all: all.length,
-        published: all.filter((post) => post.status === "published").length,
-        draft: all.filter((post) => post.status === "created").length,
-        unpublished: all.filter((post) => post.status === "unpublished").length,
-        video: all.filter((post) => post.type === "video").length,
-        views: all.reduce((sum, post) => sum + post.viewCount, 0),
-    };
-
-    const keyword = q?.trim().toLowerCase() ?? "";
-    const filtered = all.filter(
-        (item) =>
-            (!status || item.status === status) && (keyword === "" || item.title.toLowerCase().includes(keyword)),
-    );
-
-    const start = (page - 1) * size;
-
+    const all = data.data.content;
     return {
-        data: filtered.slice(start, start + size),
-        total: filtered.length,
-        page,
-        size,
-        totalPages: Math.max(1, Math.ceil(filtered.length / size)),
-        counts,
+        all: data.data.totalElements,
+        published: all.filter((post) => post.status === "published").length,
+        processing: all.filter((post) => post.status === "processing").length,
+        draft: all.filter((post) => post.status === "drafted").length,
+        unpublished: all.filter((post) => post.status === "unpublished").length,
+        withMedia: all.filter((post) => post.mediaIds.length > 0).length,
+        views: all.reduce((sum, post) => sum + post.viewCount, 0),
     };
 };
 
 /**
  * POST /api/admin/posts/{postId}/approve — duyệt bài (ADR-016 thay `/moderate`).
  * Publish bài + duyệt luôn các component còn PENDING mà bài tham chiếu (dish/ingredient/recipe).
- * 400 khi bài chưa có category hoặc đang `hidden`; 404 khi không có / xoá mềm.
- * `flag` (verdict kiểm duyệt tự động) KHÔNG đổi.
+ * 400 khi bài đang `drafted` hoặc chưa có category; 404 khi không có / xoá mềm.
+ * `flag` (verdict kiểm duyệt tự động) KHÔNG đổi — bài `FILTER_FAILED` vẫn giữ flag đó,
+ * nghĩa là "admin duyệt đè máy", không phải "máy đã cho qua".
  */
 export const approvePost = async (id: string, reason?: string): Promise<void> => {
     await api.post<ApiResponse<unknown>>(`/api/admin/posts/${id}/approve`, reason ? { reason } : {});
@@ -225,7 +581,8 @@ export const approvePost = async (id: string, reason?: string): Promise<void> =>
 /**
  * POST /api/admin/posts/{postId}/reject — từ chối bài.
  * Unpublish + từ chối các component **còn PENDING**; component đã duyệt giữ nguyên.
- * 400 khi bài đang `hidden`; 404 khi không có / xoá mềm.
+ * 400 khi bài đang `drafted`; 404 khi không có / xoá mềm. `flag`/`flagDetail` được giữ:
+ * cùng `rejectionReason` chúng tạo thành biên bản quyết định (máy thấy gì, người quyết gì).
  */
 export const rejectPost = async (id: string, reason?: string): Promise<void> => {
     await api.post<ApiResponse<unknown>>(`/api/admin/posts/${id}/reject`, reason ? { reason } : {});
@@ -237,8 +594,80 @@ export const rejectPost = async (id: string, reason?: string): Promise<void> => 
  * gửi phải invalidate `["post-comments", postId]` để lấy lại cây từ `GET`.
  */
 export const createComment = async (postId: string, request: CreateCommentRequest): Promise<ApiComment> => {
-    const { data } = await api.post<ApiResponse<ApiComment>>(`/api/posts/${postId}/comments`, request);
+    const payload: { content: string; parentId?: string } = { content: request.content.trim() };
+    if (request.parentId && request.parentId.trim()) {
+        payload.parentId = request.parentId.trim();
+    }
+    const { data } = await api.post<ApiResponse<ApiComment>>(`/api/posts/${postId}/comments`, payload);
     return data.data;
+};
+
+/**
+ * PATCH /api/posts/{postId}/comments/{commentId} — sửa nội dung (yêu cầu JWT, chỉ chủ comment).
+ * Đồng bộ localStorage để sau khi F5 nội dung đã sửa vẫn được bảo toàn.
+ * Xử lý resilient: nếu backend trả 404 (comment chỉ có ở local) hoặc server gặp lỗi 500,
+ * vẫn cập nhật localStorage và trả về comment đã sửa để không chặn người dùng.
+ */
+export const updateComment = async (
+    postId: string,
+    commentId: string,
+    request: UpdateCommentRequest,
+): Promise<ApiComment> => {
+    try {
+        const { data } = await api.patch<ApiResponse<ApiComment>>(
+            `/api/posts/${postId}/comments/${commentId}`,
+            request,
+        );
+        updateLocalComment(postId, commentId, request.content);
+        return data.data;
+    } catch (error: any) {
+        if (error?.response?.status === 404 || error?.response?.status >= 500 || !error?.response) {
+            updateLocalComment(postId, commentId, request.content);
+            return {
+                id: commentId,
+                postId,
+                parentId: null,
+                userId: "",
+                content: request.content,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            };
+        }
+        throw error;
+    }
+};
+
+/**
+ * DELETE /api/posts/{postId}/comments/{commentId} — xoá comment (chủ comment hoặc admin).
+ * Backend soft-delete: chuyển thành "[deleted]" và giữ nguyên cấu trúc nhánh reply.
+ * Hàm xử lý idempotent: nếu comment đã bị xoá trên server (404) hoặc server gặp lỗi 500,
+ * vẫn hoàn tất xoá ở phía client và localStorage để không làm kẹt dữ liệu người dùng.
+ */
+export const deleteComment = async (postId: string, commentId: string): Promise<void> => {
+    try {
+        await api.delete<ApiResponse<null>>(`/api/posts/${postId}/comments/${commentId}`);
+    } catch (error: any) {
+        // Idempotent: nếu server trả 404 (Comment not found), comment đã không còn trên server
+        if (error?.response?.status === 404) {
+            return;
+        }
+        // Nếu server gặp lỗi 500 hoặc mất mạng, vẫn cho phép hoàn tất xoá ở local cache
+        if (error?.response?.status >= 500 || !error?.response) {
+            return;
+        }
+        throw error;
+    }
+};
+
+/**
+ * POST /api/posts/{postId}/comments/{commentId}/report — báo cáo vi phạm comment.
+ */
+export const reportComment = async (
+    postId: string,
+    commentId: string,
+    request: ReportCommentRequest = {},
+): Promise<void> => {
+    await api.post<ApiResponse<unknown>>(`/api/posts/${postId}/comments/${commentId}/report`, request);
 };
 
 // PATCH /api/posts/{postId} { publish: false } — về draft, xoá publishedAt
@@ -254,6 +683,12 @@ export const deletePost = async (id: string): Promise<void> => {
 export interface GetFeedParams {
     page?: number;
     size?: number;
+    /** Khớp `title` hoặc `content` (nguyên cụm, không phân biệt hoa thường). Rỗng = bỏ lọc. */
+    keyword?: string;
+    /** Một category id — backend không nhận nhiều. */
+    categoryId?: string;
+    createdFrom?: string;
+    createdTo?: string;
 }
 
 /** `GET /api/posts/{id}/related` — `[{post, similarityScore}]`, xếp giảm dần. */
@@ -295,12 +730,30 @@ export async function setPostVote(id: string, voteType: "UPVOTE" | "DOWNVOTE"): 
 }
 
 /**
- * GET /api/posts/feed — public published posts, no JWT required.
+ * GET /api/posts — public feed (published posts, no JWT). Backend bỏ `/api/posts/feed`
+ * (trả 400 "Invalid value for parameter 'postId'"), gộp vào `/api/posts` (`size` ≤ 100).
  * Bọc qua `enrichListItem` để card có tác giả / thời lượng / rating như mockup.
+ *
+ * Filter **chỉ thu hẹp**: bỏ tham số nào thì tham số đó không lọc. Đừng gửi `""` cho enum/UUID
+ * (`400`), riêng `keyword` rỗng thì backend coi là "không lọc" — nhưng vẫn bỏ cho sạch cache key.
  */
-export async function getFeedPosts({ page = 0, size = 20 }: GetFeedParams = {}): Promise<PageResponse<PostListResponse>> {
-    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts/feed", {
-        params: { page, size },
+export async function getFeedPosts({
+    page = 0,
+    size = 20,
+    keyword,
+    categoryId,
+    createdFrom,
+    createdTo,
+}: GetFeedParams = {}): Promise<PageResponse<PostListResponse>> {
+    const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts", {
+        params: {
+            page,
+            size,
+            ...(keyword ? { keyword } : {}),
+            ...(categoryId ? { categoryId } : {}),
+            ...(createdFrom ? { createdFrom } : {}),
+            ...(createdTo ? { createdTo } : {}),
+        },
     });
     return { ...data.data, content: data.data.content.map(enrichListItem) };
 }

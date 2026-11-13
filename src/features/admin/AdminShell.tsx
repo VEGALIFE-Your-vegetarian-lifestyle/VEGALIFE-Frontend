@@ -1,9 +1,12 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { ChefHat, FileText, LayoutDashboard, Leaf, LogOut, MapPin, Menu, MessageSquare, Tags, UserCircle, Users, Video } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Apple, ChefHat, FileText, LayoutDashboard, Leaf, LogOut, MapPin, Menu, MessageSquare, Tags, UserCircle, Users, Video } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/shared/utils/cn";
 import { useAuth, useLogout } from "@/features/auth/useAuth";
+import { countAdminIngredients } from "@/features/recipes/adminApi";
 import { useUiStore } from "@/shared/ui/uiStore";
 import { LanguageSwitcher } from "@/app/layout/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
@@ -13,9 +16,10 @@ const navItems = [
     { to: "/admin/users", labelKey: "users", icon: Users, ready: true },
     { to: "/admin/posts", labelKey: "posts", icon: FileText, ready: true },
     { to: "/admin/videos", labelKey: "videos", icon: Video, ready: true },
-    { to: "/admin/comments", labelKey: "comments", icon: MessageSquare, ready: false },
+    { to: "/admin/comments", labelKey: "comments", icon: MessageSquare, ready: true },
     { to: "/admin/categories", labelKey: "categories", icon: Tags, ready: true },
     { to: "/admin/recipes", labelKey: "recipes", icon: ChefHat, ready: true },
+    { to: "/admin/ingredients", labelKey: "ingredients", icon: Apple, ready: true },
     { to: "/admin/locations", labelKey: "locations", icon: MapPin, ready: true },
     { to: "/admin/profile", labelKey: "profile", icon: UserCircle, ready: true },
 ];
@@ -26,34 +30,42 @@ export function AdminShell() {
     const { user, profile } = useAuth();
     const handleLogout = useLogout();
 
+    // Nguyên liệu member gõ lúc tạo recipe vào hàng đợi PENDING — badge là cách duy nhất
+    // admin biết mà không phải mở từng recipe. Lấy 1 row chỉ để đọc `totalElements`.
+    const { data: pendingIngredients } = useQuery({
+        queryKey: ["admin-ingredients-pending-count"],
+        queryFn: () => countAdminIngredients("PENDING"),
+        staleTime: 60_000,
+    });
+
     return (
         <div className="min-h-screen bg-background">
             {/* Top header */}
-            <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-4 shadow-sm">
+            <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between bg-chrome px-4 text-white">
                 <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" aria-label={t("dashboard.nav.toggleSidebar")} onClick={toggleSidebar}>
+                    <Button variant="onBrandGhost" size="icon" aria-label={t("dashboard.nav.toggleSidebar")} onClick={toggleSidebar}>
                         <Menu className="h-5 w-5" />
                     </Button>
-                    <div className="flex items-center gap-2 text-dark">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-vegan-green-light">
-                            <Leaf className="h-5 w-5 text-vegan-green" aria-hidden="true" />
+                    <div className="flex items-center gap-2 text-white">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/15">
+                            <Leaf className="h-5 w-5 text-white" aria-hidden="true" />
                         </div>
                         <span className="text-lg font-bold tracking-tight">VEGALIFE</span>
-                        <span className="hidden rounded-full bg-vegan-green-light px-2 py-0.5 text-xs font-semibold text-vegan-green sm:inline">
+                        <span className="hidden rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold text-white sm:inline">
                             {t("dashboard.adminLabel")}
                         </span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <LanguageSwitcher />
-                    <span className="hidden text-sm text-muted-foreground sm:block">{t("dashboard.adminLabel")}</span>
+                    <LanguageSwitcher onBrand />
+                    <span className="hidden text-sm text-white/70 sm:block">{t("dashboard.adminLabel")}</span>
                     <Button
-                        variant="ghost"
+                        variant="onBrandGhost"
                         size="icon"
                         aria-label={t("common:logout")}
                         onClick={() => void handleLogout(t("common:logoutSuccess"))}
                     >
-                        <LogOut className="h-5 w-5 text-muted-foreground" />
+                        <LogOut className="h-5 w-5 text-white/80" />
                     </Button>
                     <Link to="/admin/profile" aria-label={t("dashboard.nav.profile")} className="rounded-full transition hover:opacity-80">
                         <Avatar name={user?.username} src={profile?.avatarUrl} size="md" />
@@ -93,7 +105,12 @@ export function AdminShell() {
                                             }
                                         >
                                             <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                                            <span className={cn(sidebarCollapsed && "lg:hidden")}>{label}</span>
+                                            <span className={cn("flex-1", sidebarCollapsed && "lg:hidden")}>{label}</span>
+                                            {to === "/admin/ingredients" && !!pendingIngredients && pendingIngredients > 0 && (
+                                                <Badge variant="amber" size="sm" className={cn(sidebarCollapsed && "lg:hidden")}>
+                                                    {pendingIngredients}
+                                                </Badge>
+                                            )}
                                         </NavLink>
                                     ) : (
                                         <span

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Check, FileText, Search, Trash2, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PostStatusBadge } from "@/features/posts/components/PostStatusBadge";
+import { PostFlagBadge } from "@/features/posts/components/PostFlagBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Pagination } from "@/components/common/Pagination";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
-import { canPublish, canReject, POST_FLAG_VARIANT } from "@/features/posts/constants";
+import { canPublish, canReject } from "@/features/posts/constants";
 import type { AdminPost, PostStatus } from "@/features/posts/types";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
@@ -27,8 +28,8 @@ import { RejectPostDialog } from "./RejectPostDialog";
 
 const PAGE_SIZE = 8;
 
-/** Thứ tự hiện trong dropdown lọc — khớp state machine SRS 5.2 (bỏ `flagged`/`hidden`). */
-const POST_STATUSES: PostStatus[] = ["created", "processed", "published", "unpublished"];
+/** Thứ tự hiện trong dropdown lọc — bốn giá trị còn sống sau V56 (`hidden` đã bỏ). */
+const POST_STATUSES: PostStatus[] = ["drafted", "processing", "published", "unpublished"];
 
 interface ModerateVars {
     id: string;
@@ -126,7 +127,7 @@ export default function PostsPage() {
                     <option value="">{t("posts.list.allStatuses")}</option>
                     {POST_STATUSES.map((value) => (
                         <option key={value} value={value}>
-                            {t(`common:postStatus.${value}`)}
+                            {value}
                         </option>
                     ))}
                 </Select>
@@ -145,7 +146,9 @@ export default function PostsPage() {
                                 <TableHead>{t("posts.list.column.moderation")}</TableHead>
                                 <TableHead>{t("posts.list.column.views")}</TableHead>
                                 <TableHead>{t("posts.list.column.createdAt")}</TableHead>
-                                <TableHead className="text-right">{t("posts.list.column.actions")}</TableHead>
+                                <TableHead className="whitespace-nowrap text-right">
+                                    {t("posts.list.column.actions")}
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -171,21 +174,19 @@ export default function PostsPage() {
                                         </TableCell>
                                         <TableCell>{post.displayName}</TableCell>
                                         <TableCell>
-                                            <PostStatusBadge status={post.status} />
+                                            <PostStatusBadge status={post.status} raw />
                                         </TableCell>
                                         <TableCell>
-                                            {post.flag ? (
-                                                <Badge variant={POST_FLAG_VARIANT[post.flag]} size="sm">
-                                                    {t(`common:postFlag.${post.flag}`)}
-                                                </Badge>
-                                            ) : (
-                                                <span className="text-muted-foreground">—</span>
-                                            )}
+                                            <PostFlagBadge
+                                                status={post.status}
+                                                flag={post.flag}
+                                                flagDetail={post.flagDetail}
+                                            />
                                         </TableCell>
                                         <TableCell>{post.viewCount.toLocaleString("vi-VN")}</TableCell>
                                         <TableCell className="whitespace-nowrap">{formatDateLocale(post.createdAt)}</TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center justify-end gap-2">
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                                                 {canPublish(post.status) && (
                                                     <Button
                                                         size="sm"
@@ -205,7 +206,7 @@ export default function PostsPage() {
                                                 {canReject(post.status) && (
                                                     <Button
                                                         size="sm"
-                                                        variant="outline"
+                                                        variant="warning"
                                                         disabled={moderateMutation.isPending}
                                                         onClick={() => setReject(post)}
                                                     >
@@ -213,9 +214,14 @@ export default function PostsPage() {
                                                         {t("posts.list.action.reject")}
                                                     </Button>
                                                 )}
-                                                <Button size="sm" variant="destructive" className="ml-2" onClick={() => setConfirm(post)}>
+                                                <Button
+                                                    size="iconSm"
+                                                    variant="destructive"
+                                                    aria-label={t("posts.list.action.delete")}
+                                                    title={t("posts.list.action.delete")}
+                                                    onClick={() => setConfirm(post)}
+                                                >
                                                     <Trash2 className="h-4 w-4" />
-                                                    {t("posts.list.action.delete")}
                                                 </Button>
                                             </div>
                                         </TableCell>

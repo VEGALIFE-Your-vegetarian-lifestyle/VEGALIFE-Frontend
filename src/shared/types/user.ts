@@ -47,8 +47,9 @@ export interface LoginResponse {
     expiresIn: number;
 }
 
+/** ADR-019: email là identity duy nhất, `displayName` chỉ là nhãn — không unique. */
 export interface RegisterRequest {
-    username: string;
+    displayName: string;
     email: string;
     password: string;
     confirmPassword: string;

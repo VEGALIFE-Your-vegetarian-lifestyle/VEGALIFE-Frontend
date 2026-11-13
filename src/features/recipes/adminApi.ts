@@ -1,6 +1,14 @@
 import { api } from "@/shared/api/client";
 import type { ApiResponse, PageResponse, Paginated } from "@/shared/types/common";
-import type { AdminRecipe, ModerationStatus, RecipeSort } from "./types";
+import type {
+    AdminIngredient,
+    AdminIngredientCreateRequest,
+    AdminIngredientUpdateRequest,
+    AdminRecipe,
+    AdminRecipeUpdateRequest,
+    ModerationStatus,
+    RecipeSort,
+} from "./types";
 
 export interface AdminRecipeListParams {
     /** 1-based như mọi trang admin khác; hàm này tự trừ 1 khi gửi lên wire. */
@@ -52,8 +60,36 @@ export async function getAdminRecipes(params: AdminRecipeListParams): Promise<Pa
     };
 }
 
-// ponytail: chưa có endpoint sửa / xoá / khôi phục recipe trong UI. Thêm khi cần.
-// (Backend đã có PATCH/DELETE — xem `DOCS/API-COVERAGE.md` §10.)
+// ponytail: chưa có endpoint khôi phục recipe — DELETE là một chiều (spec live). Nút xoá
+// trong UI phải cảnh báo rõ. Mở lại khi backend thêm `/restore`.
+
+/**
+ * GET /api/admin/recipes/{id} — cùng shape row trong list.
+ * UI không gọi: row list đã đủ field dialog render, gọi thêm là 1 request thừa.
+ * Giữ ở đây để khỏi viết lại khi cần làm trang chi tiết riêng.
+ */
+export async function getAdminRecipe(id: string): Promise<AdminRecipe> {
+    const { data } = await api.get<ApiResponse<AdminRecipe>>(`/api/admin/recipes/${id}`);
+    return data.data;
+}
+
+/**
+ * PATCH /api/admin/recipes/{id} — sửa **7 field văn bản/số**.
+ * Không sửa được ingredients, dish hay dinh dưỡng. Key bỏ trống = giữ nguyên.
+ * Trả row đã cập nhật → dùng để ghi đè cache, không cần refetch list.
+ */
+export async function updateAdminRecipe(id: string, request: AdminRecipeUpdateRequest): Promise<AdminRecipe> {
+    const { data } = await api.patch<ApiResponse<AdminRecipe>>(`/api/admin/recipes/${id}`, request);
+    return data.data;
+}
+
+/**
+ * DELETE /api/admin/recipes/{id} — **xoá mềm**, không có endpoint khôi phục.
+ * Row vẫn nằm trong `GET /api/admin/recipes` với `status: "DELETED"`.
+ */
+export async function deleteAdminRecipe(id: string): Promise<void> {
+    await api.delete(`/api/admin/recipes/${id}`);
+}
 
 /**
  * POST /api/admin/recipes/{id}/approve — duyệt **chỉ recipe**.
@@ -75,6 +111,80 @@ export async function rejectRecipe(id: string, reason?: string): Promise<AdminRe
         reason ? { reason } : {},
     );
     return data.data;
+}
+
+export interface AdminIngredientListParams {
+    /** 1-based; hàm này tự trừ 1 khi gửi lên wire. */
+    page: number;
+    size: number;
+    /** Backend lọc substring theo tên — trang này dùng thật, không lọc client-side. */
+    name?: string;
+    /** Bỏ trống = cả 3 trạng thái. `PENDING` là hàng đợi cần điền dinh dưỡng. */
+    moderationStatus?: ModerationStatus;
+}
+
+/**
+ * GET /api/admin/ingredients — phân trang thật, có `name` + `moderationStatus`.
+ *
+ * ponytail: không gửi `sort` — spec live chỉ khai `sort: string`, không có whitelist để
+ * đối chiếu nên gửi bừa dễ 400. Thứ tự hiện theo mặc định Spring. Thêm `sort` khi có
+ * danh sách giá trị hợp lệ.
+ */
+export async function getAdminIngredients(
+    params: AdminIngredientListParams,
+): Promise<Paginated<AdminIngredient>> {
+    const queryParams = new URLSearchParams();
+    queryParams.set("page", String(Math.max(params.page - 1, 0)));
+    queryParams.set("size", String(params.size));
+    if (params.name) queryParams.set("name", params.name);
+    if (params.moderationStatus) queryParams.set("moderationStatus", params.moderationStatus);
+
+    const response = await api.get<ApiResponse<PageResponse<AdminIngredient>>>(
+        `/api/admin/ingredients?${queryParams.toString()}`,
+    );
+    const page = response.data.data;
+
+    return {
+        data: page.content,
+        total: Number(page.totalElements),
+        page: page.page + 1,
+        size: page.size,
+        totalPages: page.totalPages,
+    };
+}
+
+/** Số nguyên liệu một trạng thái — badge sidebar chỉ cần `total`, lấy 1 row là đủ. */
+export async function countAdminIngredients(moderationStatus: ModerationStatus): Promise<number> {
+    const response = await api.get<ApiResponse<PageResponse<AdminIngredient>>>(
+        `/api/admin/ingredients?page=0&size=1&moderationStatus=${moderationStatus}`,
+    );
+    return Number(response.data.data.totalElements);
+}
+
+/**
+ * POST /api/admin/ingredients — tạo nguyên liệu **mới**.
+ * Trùng tên (kể cả tên đã xoá mềm) → 400: tên không được giải phóng.
+ * Muốn điền dinh dưỡng cho nguyên liệu `PENDING` do member gõ thì PATCH, không phải POST.
+ */
+export async function createAdminIngredient(
+    request: AdminIngredientCreateRequest,
+): Promise<AdminIngredient> {
+    const { data } = await api.post<ApiResponse<AdminIngredient>>("/api/admin/ingredients", request);
+    return data.data;
+}
+
+/** PATCH /api/admin/ingredients/{id} — vắng khoá = giữ nguyên. */
+export async function updateAdminIngredient(
+    id: string,
+    request: AdminIngredientUpdateRequest,
+): Promise<AdminIngredient> {
+    const { data } = await api.patch<ApiResponse<AdminIngredient>>(`/api/admin/ingredients/${id}`, request);
+    return data.data;
+}
+
+/** DELETE /api/admin/ingredients/{id} — **xoá mềm**, tên không được giải phóng, không có restore. */
+export async function deleteAdminIngredient(id: string): Promise<void> {
+    await api.delete(`/api/admin/ingredients/${id}`);
 }
 
 /**

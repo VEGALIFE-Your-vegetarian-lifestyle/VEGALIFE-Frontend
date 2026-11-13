@@ -8,13 +8,14 @@ import { ProtectedRoute } from "@/app/guards/ProtectedRoute";
 import { PublicRoute } from "@/app/guards/PublicRoute";
 import CategoriesPage from "@/features/categories/CategoriesPage";
 import PostsPage from "@/features/admin/pages/PostsPage/PostsPage";
+import AdminCommentsPage from "@/features/admin/pages/AdminCommentsPage/AdminCommentsPage";
 import UsersPage from "@/features/admin/pages/UsersPage/UsersPage";
 import VideosPage from "@/features/videos/VideosPage";
 import AdminDashboardPage from "@/features/admin/pages/AdminDashboardPage/AdminDashboardPage";
 import AiNutritionPage from "@/features/nutrition-ai/AiNutritionPage";
-import CreateRecipePage from "@/features/recipes/pages/CreateRecipePage/CreateRecipePage";
 import MyRecipesPage from "@/features/recipes/pages/MyRecipesPage/MyRecipesPage";
 import AdminRecipesPage from "@/features/recipes/pages/AdminRecipesPage/AdminRecipesPage";
+import AdminIngredientsPage from "@/features/recipes/pages/AdminIngredientsPage/AdminIngredientsPage";
 import ExplorePage from "@/features/posts/pages/ExplorePage/ExplorePage";
 import LocationsPage from "@/features/locations/pages/AdminLocationsPage/LocationsPage";
 import LocationDetailPage from "@/features/locations/pages/LocationDetailPage";
@@ -25,13 +26,13 @@ import RegisterPage from "@/features/auth/pages/RegisterPage/RegisterPage";
 import VerifyEmailPage from "@/features/auth/pages/VerifyEmailPage/VerifyEmailPage";
 import HomePage from "@/features/posts/pages/HomePage/HomePage";
 import MyPostsPage from "@/features/posts/pages/MyPostsPage/MyPostsPage";
+import SavedPage from "@/features/saved/SavedPage";
 import NotFoundPage from "@/app/NotFoundPage";
 import PostDetailPage from "@/features/posts/pages/PostDetailPage/PostDetailPage";
 import ProfilePage from "@/features/profile/ProfilePage";
 import PaymentResultPage from "@/features/subscription/pages/PaymentResultPage/PaymentResultPage";
 import SubscriptionPage from "@/features/subscription/pages/SubscriptionPage/SubscriptionPage";
 import MealPlanPage from "@/features/menus/pages/MealPlanPage";
-import CreateMealPlanPage from "@/features/menus/pages/CreateMealPlanPage/CreateMealPlanPage";
 
 export default function AppRoutes() {
     return (
@@ -59,22 +60,6 @@ export default function AppRoutes() {
                     }
                 />
                 <Route path="/posts/:id" element={<PostDetailPage />} />
-                <Route
-                    path="/recipes/create"
-                    element={
-                        <ProtectedRoute>
-                            <CreateRecipePage />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/meal-plan/create"
-                    element={
-                        <ProtectedRoute>
-                            <CreateMealPlanPage />
-                        </ProtectedRoute>
-                    }
-                />
 
                 {/* Khung tài khoản — rail dùng chung, nội dung đổi theo route con. */}
                 <Route
@@ -87,6 +72,7 @@ export default function AppRoutes() {
                     <Route path="/account" element={<AccountOverviewPage />} />
                     <Route path="/my-posts" element={<MyPostsPage />} />
                     <Route path="/recipes" element={<MyRecipesPage />} />
+                    <Route path="/saved" element={<SavedPage />} />
                     <Route path="/meal-plan" element={<MealPlanPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     {/* Khách chưa đăng nhập vẫn dùng `/subscription` (ngoài shell); đã đăng nhập thì ở lại trong rail. */}
@@ -139,8 +125,10 @@ export default function AppRoutes() {
                 <Route path="dashboard" element={<AdminDashboardPage />} />
                 <Route path="posts" element={<PostsPage />} />
                 <Route path="videos" element={<VideosPage />} />
+                <Route path="comments" element={<AdminCommentsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="recipes" element={<AdminRecipesPage />} />
+                <Route path="ingredients" element={<AdminIngredientsPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="locations" element={<LocationsPage />} />
                 <Route path="profile" element={<ProfilePage />} />

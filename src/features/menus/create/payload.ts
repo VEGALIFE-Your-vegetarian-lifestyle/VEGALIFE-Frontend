@@ -1,11 +1,16 @@
-import type { CreateMenuRequest } from "../../types";
+import type { CreateMenuRequest } from "../types";
 import type { MenuFormValues } from "./schema";
 
 /**
  * Form → body `POST /api/menus`.
  * Ô trống bị loại khỏi `meals`; ngày vẫn luôn đủ 7 phần tử (backend đòi đúng 7 ngày liên
  * tiếp), nhưng `validate` đã chặn ngày rỗng nên mỗi ngày trên thực tế có ≥ 1 bữa.
+ *
+ * `servings` luôn gửi `1`: thực đơn là của cá nhân, form không hỏi số phần. Backend vẫn
+ * bắt buộc field này (BR-MENU-005) nên không bỏ được khỏi payload.
  */
+export const DEFAULT_SERVINGS = 1;
+
 export function buildCreateMenuPayload(values: MenuFormValues): CreateMenuRequest {
     const notes = values.notes.trim();
     return {
@@ -18,7 +23,7 @@ export function buildCreateMenuPayload(values: MenuFormValues): CreateMenuReques
                 .map((slot) => ({
                     mealType: slot.mealType,
                     dishId: slot.dish!.id,
-                    servings: Number(slot.servings),
+                    servings: DEFAULT_SERVINGS,
                 })),
         })),
     };

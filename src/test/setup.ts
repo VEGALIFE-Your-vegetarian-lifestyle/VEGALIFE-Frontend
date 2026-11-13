@@ -14,21 +14,29 @@ api.defaults.adapter = "fetch";
 
 const hasDom = typeof document !== "undefined";
 
+// Nạp động nhưng KHÔNG `await` ở top level: Vitest 5 không đăng ký được hook khai báo
+// sau một top-level await ("failed to find the current suite"). Hook chờ promise bên trong.
+const domReady = hasDom
+    ? Promise.all([
+          import("@testing-library/jest-dom/vitest"),
+          import("@testing-library/react"),
+          import("@/i18n"),
+      ])
+    : null;
+
 // Phần dưới chỉ dùng được khi có DOM. Test service khai báo
 // `// @vitest-environment node` nên phải nạp động, không import tĩnh.
 if (hasDom) {
-    await import("@testing-library/jest-dom/vitest");
-    const [{ cleanup }, { default: i18n }] = await Promise.all([
-        import("@testing-library/react"),
-        import("@/i18n"),
-    ]);
-
     // Ghim ngôn ngữ để assertion không phụ thuộc LanguageDetector / máy chạy test.
     beforeEach(async () => {
+        const [, , { default: i18n }] = await domReady!;
         await i18n.changeLanguage("en");
     });
 
-    afterEach(cleanup);
+    afterEach(async () => {
+        const [, { cleanup }] = await domReady!;
+        cleanup();
+    });
 }
 
 afterEach(() => {

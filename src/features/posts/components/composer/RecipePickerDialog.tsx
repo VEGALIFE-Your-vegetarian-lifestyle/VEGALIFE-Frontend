@@ -1,11 +1,9 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Loader2, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2, Search } from "lucide-react";import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { getMyRecipes } from "@/features/recipes/api";
+import { useAttachableRecipes } from "@/features/saved/useSaved";
 import { recipeCardMeta, recipeMatches } from "./recipeMeta";
 
 interface RecipePickerDialogProps {
@@ -17,25 +15,20 @@ interface RecipePickerDialogProps {
 }
 
 /**
- * Chọn công thức để gắn vào bài. `GET /api/recipes/me` trả mảng phẳng nên lọc
- * hoàn toàn ở client — không cần phân trang/debounce như `DishSlotPicker`.
+ * Chọn công thức để gắn vào bài — **của mình + công thức đã lưu của người khác**
+ * (`useAttachableRecipes`). Mọi nguồn đều trả mảng phẳng nên lọc hoàn toàn ở client.
  */
 export function RecipePickerDialog({ open, onClose, selected, onConfirm }: RecipePickerDialogProps) {
     const { t } = useTranslation("admin");
     const [keyword, setKeyword] = useState("");
     const [picked, setPicked] = useState<string[]>(selected);
 
-    const { data, isLoading } = useQuery({
-        queryKey: ["my-recipes"],
-        queryFn: getMyRecipes,
-        enabled: open,
-        staleTime: 60_000,
-    });
+    const { items, isLoading } = useAttachableRecipes(open);
 
     // Recipe bị từ chối thì không gắn được vào bài.
     const available = useMemo(
-        () => (data ?? []).filter((recipe) => recipe.moderationStatus !== "REJECTED"),
-        [data],
+        () => items.filter((recipe) => recipe.moderationStatus !== "REJECTED"),
+        [items],
     );
     const visible = useMemo(
         () => available.filter((recipe) => recipeMatches(recipe, keyword)),

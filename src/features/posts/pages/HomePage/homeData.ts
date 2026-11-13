@@ -10,21 +10,19 @@ import type { ApiResponse, PageResponse } from "@/shared/types/common";
  * thì xoá file này, gọi thẳng service của feature tương ứng.
  */
 
-export type HomePlaceType = "restaurant" | "grocery" | "cafe" | "market";
-
 export interface HomePlace {
     id: string;
     name: string;
     address: string;
-    placeType: HomePlaceType;
+    placeType?: HomePlaceType;
     rating: number | null;
     /** 1–4, 1 = rẻ. */
     priceLevel?: number;
 }
 
-/** `GET /api/locations` — BE xếp sẵn theo rating giảm dần, cần JWT. */
+/** `GET /api/restaurants` — BE xếp sẵn theo rating giảm dần, cần JWT (#194 đổi từ /api/locations). */
 export async function getTopRatedPlaces(size = 4): Promise<HomePlace[]> {
-    const { data } = await api.get<ApiResponse<PageResponse<HomePlace>>>("/api/locations", {
+    const { data } = await api.get<ApiResponse<PageResponse<HomePlace>>>("/api/restaurants", {
         params: { page: 0, size },
     });
     return data.data.content;

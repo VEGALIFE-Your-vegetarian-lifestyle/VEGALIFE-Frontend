@@ -35,7 +35,8 @@
             "categories": "Danh mục",
             "locations": "Địa điểm",
             "recipes": "Công thức",
-            "profile": "Hồ sơ"
+            "profile": "Hồ sơ",
+            "ingredients": "Nguyên liệu"
         },
         "guide": {
             "retire": "Danh mục đang dùng chỉ có thể ngừng sử dụng, không xóa hẳn.",
@@ -141,11 +142,14 @@
             "videoRemove": "Xóa video",
             "videoDropzoneTitle": "Kéo thả file video vào đây",
             "videoDropzoneHint": "MP4 hoặc WebM, tối đa 100MB.",
-            "videoSourceRequired": "Vui lòng tải file video lên"
+            "videoSourceRequired": "Vui lòng tải file video lên",
+            "coverLabel": "Ảnh bìa",
+            "videoLabel": "Video đính kèm"
         },
         "toast": {
             "created": "Đã tạo bài viết",
             "updated": "Đã cập nhật bài viết",
+            "submitted": "Đã gửi bài, đang chờ duyệt",
             "failed": "Tạo bài viết thất bại. Vui lòng thử lại.",
             "approved": "Đã duyệt bài viết",
             "rejected": "Đã từ chối bài viết",
@@ -176,8 +180,12 @@
             "action": {
                 "approve": "Duyệt",
                 "reject": "Từ chối",
-                "unpublish": "Ngừng đăng",
                 "delete": "Xóa"
+            },
+            "overFilter": "Duyệt dù máy chặn",
+            "flagDetail": {
+                "score": "{{score}} / {{threshold}}",
+                "similarity": "{{percent}}% giống bài"
             },
             "confirm": {
                 "deleteTitle": "Xóa bài viết?",
@@ -324,7 +332,8 @@
             "difficulty": "Độ khó",
             "moderation": "Duyệt",
             "status": "Trạng thái",
-            "createdAt": "Ngày tạo"
+            "createdAt": "Ngày tạo",
+            "actions": "Thao tác"
         },
         "status": {
             "ACTIVE": "Đang dùng",
@@ -342,8 +351,6 @@
             "reject": "Từ chối",
             "approveTitle": "Duyệt recipe này?",
             "approveBody": "\"{{name}}\" sẽ hiện trong tìm kiếm và gợi ý món.",
-            "rejectTitle": "Từ chối recipe này?",
-            "rejectBody": "\"{{name}}\" sẽ tiếp tục bị ẩn. Tên này không thể dùng lại sau đó.",
             "approved": "Đã duyệt recipe",
             "rejected": "Đã từ chối recipe",
             "approveDish": "Duyệt tên món",
@@ -357,13 +364,50 @@
             "instructions": "Các bước nấu",
             "prepTime": "Thời gian sơ chế",
             "updatedAt": "Cập nhật",
-            "email": "Email"
+            "email": "Email",
+            "missingIngredients": "{{count}} nguyên liệu chưa có đơn vị/dinh dưỡng: {{names}}. Recipe sẽ không có tổng dinh dưỡng cho tới khi admin cập nhật chúng."
         },
         "empty": {
             "title": "Không có công thức nào",
             "filtered": "Không có công thức nào khớp bộ lọc hiện tại.",
             "all": "Hệ thống chưa có công thức nào.",
             "reload": "Tải lại"
+        },
+        "edit": {
+            "action": "Sửa",
+            "title": "Sửa công thức",
+            "subtitle": "Chỉ sửa được thông tin mô tả của “{{name}}”.",
+            "dishLocked": "Tên món dùng chung không sửa được ở đây.",
+            "ingredientsLocked": "Nguyên liệu và định lượng không sửa được qua API admin — member phải xoá và tạo lại công thức.",
+            "difficultyKeep": "Giữ nguyên",
+            "submit": "Lưu thay đổi",
+            "saving": "Đang lưu…",
+            "updated": "Đã cập nhật công thức"
+        },
+        "reject": {
+            "title": "Từ chối công thức",
+            "recipeLabel": "Công thức: {{name}}",
+            "reasonLabel": "Lý do từ chối",
+            "reasonPlaceholder": "Nhập lý do từ chối công thức này",
+            "reasonHelper": "Lý do được lưu vào nhật ký kiểm duyệt.",
+            "reasonRequired": "Vui lòng nhập lý do từ chối",
+            "reasonMax": "Lý do tối đa 1000 ký tự",
+            "submit": "Từ chối công thức",
+            "cancel": "Huỷ",
+            "warning": "Từ chối là vĩnh viễn — tên công thức không thể dùng lại."
+        },
+        "delete": {
+            "action": "Xoá",
+            "title": "Xoá công thức?",
+            "body": "“{{name}}” sẽ bị xoá mềm và vẫn hiện trong danh sách với nhãn Đã xoá. Không có chức năng khôi phục.",
+            "confirm": "Xoá công thức",
+            "deleted": "Đã xoá công thức"
+        },
+        "approve": {
+            "noMissing": "Công thức này đã đủ dữ liệu nguyên liệu — duyệt?",
+            "missingIntro": "{{count}} nguyên liệu còn thiếu đơn vị hoặc dinh dưỡng. Điền ngay để công thức có tổng dinh dưỡng, hoặc để trống mà điền sau.",
+            "skip": "Bỏ qua (điền sau)",
+            "helper": "Đơn vị và đủ 5 giá trị dinh dưỡng phải nhập cùng nhau. Nhập thiếu sẽ bị backend từ chối."
         }
     },
     "users": {
@@ -414,6 +458,131 @@
             "suspendFailed": "Khóa tài khoản thất bại. Vui lòng thử lại.",
             "restored": "Đã mở khóa tài khoản",
             "restoreFailed": "Mở khóa tài khoản thất bại. Vui lòng thử lại."
+        }
+    },
+    "ingredients": {
+        "title": "Quản lý nguyên liệu",
+        "description": "Tên nguyên liệu dùng chung. Tổng cộng {{count}} nguyên liệu.",
+        "searchPlaceholder": "Tìm nguyên liệu theo tên",
+        "filterUnit": "Lọc theo đơn vị",
+        "filterUnitAll": "Mọi đơn vị",
+        "filterUnitNone": "Chưa có đơn vị",
+        "create": "Thêm nguyên liệu",
+        "column": {
+            "name": "Nguyên liệu",
+            "unit": "Đơn vị",
+            "actions": "Thao tác"
+        },
+        "unit": {
+            "G": "Gram (G)",
+            "ML": "Mililit (ML)",
+            "PIECE": "Cái/chiếc (PIECE)"
+        },
+        "nutrition": {
+            "calories": "Calo",
+            "proteinG": "Đạm (g)",
+            "carbohydrateG": "Tinh bột (g)",
+            "fatG": "Béo (g)",
+            "fiberG": "Xơ (g)",
+            "perUnit": "Trên một đơn vị"
+        },
+        "action": {
+            "edit": "Sửa",
+            "delete": "Xoá"
+        },
+        "form": {
+            "nameLabel": "Tên",
+            "namePlaceholder": "vd: đậu hũ",
+            "unitLabel": "Đơn vị",
+            "unitNone": "Chưa có đơn vị",
+            "unitHelper": "Cả 5 giá trị dinh dưỡng bên dưới tính trên MỘT đơn vị này.",
+            "nutritionLegend": "Dinh dưỡng trên một đơn vị",
+            "nutritionHelper": "Điền đủ cả 5 hoặc để trống hết — nhập thiếu sẽ bị từ chối.",
+            "createTitle": "Thêm nguyên liệu",
+            "create": "Tạo nguyên liệu",
+            "editTitle": "Sửa nguyên liệu",
+            "editSubtitle": "Cập nhật đơn vị và dinh dưỡng của “{{name}}”. Mọi công thức dùng nguyên liệu này được tính lại ngay.",
+            "submit": "Lưu thay đổi",
+            "error": {
+                "partialNutrition": "Điền đủ 5 giá trị dinh dưỡng hoặc để trống hết.",
+                "unitRequired": "Có dinh dưỡng thì phải có đơn vị.",
+                "invalidNumber": "Giá trị dinh dưỡng phải là số lớn hơn hoặc bằng 0."
+            }
+        },
+        "delete": {
+            "title": "Xoá nguyên liệu?",
+            "body": "“{{name}}” sẽ bị xoá mềm. Tên KHÔNG được giải phóng — member không dùng lại được, và không có khôi phục.",
+            "confirm": "Xoá nguyên liệu"
+        },
+        "toast": {
+            "created": "Đã tạo nguyên liệu",
+            "updated": "Đã cập nhật nguyên liệu",
+            "deleted": "Đã xoá nguyên liệu",
+            "failed": "Thao tác thất bại. Vui lòng thử lại."
+        },
+        "empty": {
+            "title": "Không có nguyên liệu",
+            "filtered": "Không nguyên liệu nào khớp bộ lọc.",
+            "all": "Chưa có nguyên liệu nào.",
+            "reload": "Tải lại"
+        }
+    },
+    "comments": {
+        "title": "Quản lý bình luận",
+        "description": "Xem, tìm kiếm và kiểm duyệt bình luận của độc giả trên nền tảng.",
+        "deletedAuthor": "[đã xoá]",
+        "status": {
+            "active": "Đang hiện",
+            "removed": "Đã gỡ"
+        },
+        "sort": {
+            "newest": "Mới nhất",
+            "updated": "Cập nhật gần đây"
+        },
+        "badge": {
+            "reply": "Trả lời",
+            "reports": "{{count}} báo cáo"
+        },
+        "action": {
+            "moderate": "Gỡ bình luận",
+            "moderated": "Đã xử lý"
+        },
+        "list": {
+            "searchPlaceholder": "Tìm theo nội dung, tác giả hoặc ID",
+            "searchLabel": "Tìm bình luận",
+            "filterStatusLabel": "Lọc trạng thái",
+            "allStatuses": "Tất cả trạng thái",
+            "sortLabel": "Sắp xếp",
+            "column": {
+                "author": "Tác giả",
+                "content": "Nội dung bình luận",
+                "post": "Bài viết",
+                "status": "Trạng thái",
+                "createdAt": "Ngày gửi",
+                "actions": "Thao tác"
+            }
+        },
+        "empty": {
+            "title": "Không có bình luận nào",
+            "filtered": "Không có bình luận nào khớp với bộ lọc hiện tại.",
+            "all": "Chưa có bình luận nào trong hệ thống.",
+            "clearFilters": "Xoá bộ lọc"
+        },
+        "moderate": {
+            "title": "Kiểm duyệt / Gỡ bình luận",
+            "description": "Bình luận của {{author}}: \"{{snippet}}\" sẽ bị gỡ bỏ khỏi nền tảng.",
+            "reasonLabel": "Lý do gỡ bỏ",
+            "reasonPlaceholder": "Nhập lý do kiểm duyệt (spam, từ ngữ thô tục, vi phạm quy chuẩn...)",
+            "reasonHelper": "Lý do bắt buộc và sẽ được lưu vào nhật ký kiểm duyệt (tối đa 1000 ký tự).",
+            "reasonRequired": "Vui lòng nhập lý do kiểm duyệt",
+            "reasonMax": "Lý do tối đa 1000 ký tự",
+            "cancel": "Hủy",
+            "submit": "Xác nhận gỡ"
+        },
+        "toast": {
+            "moderatedSuccess": "Đã gỡ bình luận vi phạm",
+            "moderateFailed": "Kiểm duyệt bình luận thất bại. Vui lòng thử lại.",
+            "loadFailed": "Không thể tải danh sách bình luận."
         }
     }
 }

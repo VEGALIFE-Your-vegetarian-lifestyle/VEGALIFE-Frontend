@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Salad, Search } from "lucide-react";
+import { Check, Salad, Search, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,13 @@ import { useListParams } from "@/shared/hooks/useListParams";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
-import { approveDish, approveRecipe, getAdminRecipes, rejectRecipe } from "../../adminApi";
+import { approveDish, approveRecipe, deleteAdminRecipe, getAdminRecipes, rejectRecipe, updateAdminIngredient, updateAdminRecipe } from "../../adminApi";
 import { MODERATION_VARIANT } from "../../constants";
-import type { AdminRecipe, Difficulty, ModerationStatus, RecipeSort, RecipeStatus } from "../../types";
+import type { AdminIngredientUpdateRequest, AdminRecipe, AdminRecipeUpdateRequest, Difficulty, ModerationStatus, RecipeSort, RecipeStatus } from "../../types";
 import { RecipeDetailDialog } from "./RecipeDetailDialog";
+import { ApproveRecipeDialog } from "./ApproveRecipeDialog";
+import { EditRecipeDialog } from "./EditRecipeDialog";
+import { RejectRecipeDialog } from "./RejectRecipeDialog";
 
 const PAGE_SIZE = 10;
 
@@ -63,8 +66,14 @@ export default function AdminRecipesPage() {
     const [from, setFrom] = useState("");
     const [to, setTo] = useState("");
     const [detail, setDetail] = useState<AdminRecipe | null>(null);
-    /** Đang mở hộp thoại xác nhận cho recipe này — `null` = đóng. */
-    const [confirm, setConfirm] = useState<{ recipe: AdminRecipe; action: "approve" | "reject" } | null>(null);
+    /** Recipe đang sửa — mở `EditRecipeDialog`, `null` = đóng. */
+    const [editing, setEditing] = useState<AdminRecipe | null>(null);
+    /** Recipe đang mở dialog từ chối (nhập lý do) — tách khỏi `detail` để huỷ không đóng luôn. */
+    const [rejecting, setRejecting] = useState<AdminRecipe | null>(null);
+    /** Đang mở hộp thoại xác nhận xoá — `null` = đóng. */
+    const [deleting, setDeleting] = useState<AdminRecipe | null>(null);
+    /** Đang mở dialog duyệt (điền nguyên liệu thiếu rồi duyệt) — `null` = đóng. */
+    const [confirm, setConfirm] = useState<AdminRecipe | null>(null);
 
     // Recipe chỉ trả `categoryIds` — tra tên qua danh mục public, thiếu thì hiện UUID.
     const categoryNames = useCategoryNames();
@@ -101,22 +110,67 @@ export default function AdminRecipesPage() {
         toast.error(getApiErrorMessage(error, t("recipes.moderation.actionFailed")));
     };
 
+    /**
+     * Duyệt recipe: PATCH từng nguyên liệu thiếu (unit + 5 dinh dưỡng) **rồi mới** approve.
+     * Hai lời gọi không chung transaction ở BE → PATCH nào lỗi thì dừng, recipe không được
+     * duyệt, admin thấy lỗi và bấm lại (các PATCH đã xong là idempotent).
+     */
     const approveMutation = useMutation({
-        mutationFn: (recipe: AdminRecipe) => approveRecipe(recipe.id),
+        mutationFn: async ({
+            recipe,
+            patches,
+        }: {
+            recipe: AdminRecipe;
+            patches: { ingredientId: string; payload: AdminIngredientUpdateRequest }[];
+        }) => {
+            for (const patch of patches) {
+                await updateAdminIngredient(patch.ingredientId, patch.payload);
+            }
+            return approveRecipe(recipe.id);
+        },
         onSuccess: () => {
             toast.success(t("recipes.moderation.approved"));
             setConfirm(null);
+            setDetail(null);
+            invalidate();
+            void queryClient.invalidateQueries({ queryKey: ["admin-ingredients"] });
+            void queryClient.invalidateQueries({ queryKey: ["admin-ingredients-pending-count"] });
+        },
+        onError,
+    });
+
+    // `reason` bắt buộc ở dialog (backend optional) — lý do lưu vào `moderation_log`.
+    const rejectMutation = useMutation({
+        mutationFn: ({ recipe, reason }: { recipe: AdminRecipe; reason: string }) =>
+            rejectRecipe(recipe.id, reason),
+        onSuccess: () => {
+            toast.success(t("recipes.moderation.rejected"));
+            setRejecting(null);
             setDetail(null);
             invalidate();
         },
         onError,
     });
 
-    const rejectMutation = useMutation({
-        mutationFn: (recipe: AdminRecipe) => rejectRecipe(recipe.id),
+    // Trả row đã cập nhật → đóng dialog sửa, đóng chi tiết (dữ liệu cũ), rồi refresh list.
+    const updateMutation = useMutation({
+        mutationFn: ({ recipe, patch }: { recipe: AdminRecipe; patch: AdminRecipeUpdateRequest }) =>
+            updateAdminRecipe(recipe.id, patch),
         onSuccess: () => {
-            toast.success(t("recipes.moderation.rejected"));
-            setConfirm(null);
+            toast.success(t("recipes.edit.updated"));
+            setEditing(null);
+            setDetail(null);
+            invalidate();
+        },
+        onError,
+    });
+
+    // Xoá mềm, không có endpoint khôi phục → row vẫn nằm trong list với `status: DELETED`.
+    const deleteMutation = useMutation({
+        mutationFn: (recipe: AdminRecipe) => deleteAdminRecipe(recipe.id),
+        onSuccess: () => {
+            toast.success(t("recipes.delete.deleted"));
+            setDeleting(null);
             setDetail(null);
             invalidate();
         },
@@ -135,7 +189,12 @@ export default function AdminRecipesPage() {
         onError,
     });
 
-    const mutating = approveMutation.isPending || rejectMutation.isPending || approveDishMutation.isPending;
+    const mutating =
+        approveMutation.isPending ||
+        rejectMutation.isPending ||
+        approveDishMutation.isPending ||
+        updateMutation.isPending ||
+        deleteMutation.isPending;
 
     // Không gọi lại API khi gõ tìm kiếm — backend chưa có tham số tên (xem `adminApi.ts`).
     const recipes = useMemo(() => {
@@ -272,11 +331,14 @@ export default function AdminRecipesPage() {
                                 <TableHead>{t("recipes.column.moderation")}</TableHead>
                                 <TableHead>{t("recipes.column.status")}</TableHead>
                                 <TableHead>{t("recipes.column.createdAt")}</TableHead>
+                                <TableHead className="whitespace-nowrap text-right">
+                                    {t("recipes.column.actions")}
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableSkeleton columns={9} />
+                                <TableSkeleton columns={10} />
                             ) : (
                                 recipes.map((recipe) => (
                                     <TableRow key={recipe.id}>
@@ -321,6 +383,43 @@ export default function AdminRecipesPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="whitespace-nowrap">{formatDateLocale(recipe.createdAt)}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end gap-2 whitespace-nowrap">
+                                                {/* Chỉ hàng đang chờ duyệt mới có 2 nút — đã duyệt/từ chối rồi thì
+                                                    mở dialog chi tiết, không hiện lại thao tác sai trạng thái. */}
+                                                {recipe.moderationStatus === "PENDING" && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            disabled={mutating}
+                                                            onClick={() => setConfirm(recipe)}
+                                                        >
+                                                            <Check className="h-4 w-4" aria-hidden="true" />
+                                                            {t("recipes.moderation.approve")}
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="warning"
+                                                            disabled={mutating}
+                                                            onClick={() => setRejecting(recipe)}
+                                                        >
+                                                            <XCircle className="h-4 w-4" aria-hidden="true" />
+                                                            {t("recipes.moderation.reject")}
+                                                        </Button>
+                                                    </>
+                                                )}
+                                                <Button
+                                                    size="iconSm"
+                                                    variant="destructive"
+                                                    aria-label={t("recipes.delete.action")}
+                                                    title={t("recipes.delete.action")}
+                                                    disabled={mutating || recipe.status !== "ACTIVE"}
+                                                    onClick={() => setDeleting(recipe)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
                                     </TableRow>
                                 ))
                             )}
@@ -348,31 +447,47 @@ export default function AdminRecipesPage() {
                 recipe={detail}
                 categoryNames={categoryNames}
                 loading={mutating}
-                onApprove={(recipe) => setConfirm({ recipe, action: "approve" })}
-                onReject={(recipe) => setConfirm({ recipe, action: "reject" })}
+                onApprove={(recipe) => setConfirm(recipe)}
+                onReject={(recipe) => setRejecting(recipe)}
                 onApproveDish={(recipe) => approveDishMutation.mutate(recipe)}
+                onEdit={(recipe) => setEditing(recipe)}
+                onDelete={(recipe) => setDeleting(recipe)}
                 onClose={() => setDetail(null)}
             />
 
-            <ConfirmDialog
-                open={confirm?.action === "approve"}
-                title={t("recipes.moderation.approveTitle")}
-                description={t("recipes.moderation.approveBody", { name: confirm?.recipe.name ?? "" })}
-                confirmLabel={t("recipes.moderation.approve")}
-                loading={mutating}
-                onConfirm={() => confirm && approveMutation.mutate(confirm.recipe)}
+            <EditRecipeDialog
+                recipe={editing}
+                loading={updateMutation.isPending}
+                onSubmit={(patch) => editing && updateMutation.mutate({ recipe: editing, patch })}
+                onClose={() => setEditing(null)}
+            />
+
+            <RejectRecipeDialog
+                recipe={rejecting}
+                loading={rejectMutation.isPending}
+                onSubmit={(reason) => rejecting && rejectMutation.mutate({ recipe: rejecting, reason })}
+                onClose={() => setRejecting(null)}
+            />
+
+            <ApproveRecipeDialog
+                recipe={confirm}
+                loading={approveMutation.isPending}
+                onSubmit={(patches) =>
+                    confirm && approveMutation.mutate({ recipe: confirm, patches })
+                }
                 onClose={() => setConfirm(null)}
             />
 
+            {/* Xoá mềm + không khôi phục được → nói thẳng hậu quả trong ConfirmDialog. */}
             <ConfirmDialog
-                open={confirm?.action === "reject"}
-                title={t("recipes.moderation.rejectTitle")}
-                description={t("recipes.moderation.rejectBody", { name: confirm?.recipe.name ?? "" })}
-                confirmLabel={t("recipes.moderation.reject")}
+                open={deleting !== null}
+                title={t("recipes.delete.title")}
+                description={t("recipes.delete.body", { name: deleting?.name ?? "" })}
+                confirmLabel={t("recipes.delete.confirm")}
                 destructive
-                loading={mutating}
-                onConfirm={() => confirm && rejectMutation.mutate(confirm.recipe)}
-                onClose={() => setConfirm(null)}
+                loading={deleteMutation.isPending}
+                onConfirm={() => deleting && deleteMutation.mutate(deleting)}
+                onClose={() => setDeleting(null)}
             />
         </div>
     );

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import {
     Activity,
     AlertCircle,
@@ -20,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/features/auth/useAuth";
 import type { AiChat } from "./useAiChat";
 import { MAX_MESSAGE_LENGTH } from "./types";
+import { CopyMessageButton, MarkdownMessage } from "./MarkdownMessage";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 
@@ -46,10 +48,12 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
     const [draft, setDraft] = useState("");
     const logRef = useRef<HTMLDivElement>(null);
 
-    const quickPrompts = t("quickPrompts", { returnObjects: true }) as unknown as string[];
+        const quickPrompts = Array.isArray(t("quickPrompts", { returnObjects: true })) ? (t("quickPrompts", { returnObjects: true }) as unknown as string[]) : [];
 
     useEffect(() => {
-        logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+        if (typeof logRef.current?.scrollTo === "function") {
+            logRef.current.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+        }
     }, [chat.messages.length, chat.pendingText, chat.error]);
 
     const ask = (text: string) => void chat.send(text);
@@ -67,7 +71,6 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
 
     const errorText = chat.error ? getApiErrorMessage(chat.error, t("chat.error")) : null;
     const isQuotaError = (chat.error as { response?: { status?: number } } | null)?.response?.status === 429;
-    const quotaResetDate = chat.usage?.windowEnd ?? chat.usage?.periodEnd;
     const showGreeting = chat.messages.length === 0 && !chat.historyLoading;
 
     // Khách: chat bị khoá, chỉ còn lời mời đăng nhập. Không gọi API nào nên
@@ -200,9 +203,15 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
                             </span>
                             <div className="max-w-2xl rounded-2xl rounded-tl-sm bg-muted-bg p-4">
                                 <p className="text-sm font-semibold text-dark">{t("chat.assistantName")}</p>
-                                <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
-                                    {message.text}
-                                </p>
+                                <div className="mt-1">
+                                    <MarkdownMessage text={message.text} />
+                                </div>
+                                <div className="mt-1.5 flex items-center justify-between gap-2">
+                                    <CopyMessageButton text={message.text} />
+                                    <span className="text-[10px] text-muted-foreground">
+                                        {formatDateLocale(message.createdAt)}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     ),
@@ -224,15 +233,41 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
                     </p>
                 )}
 
+                {/* Timeout: backend vẫn chạy tiếp nên KHÔNG hiện như lỗi — chỉ báo đang đối soát. */}
+                {chat.timedOut && (
+                    <div className="flex flex-wrap items-start gap-2 rounded-xl border border-border bg-muted-bg p-3 text-sm text-muted-foreground">
+                        <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                        <div className="flex-1">
+                            <p className="font-semibold text-dark">{t("chat.timeoutTitle")}</p>
+                            <p className="mt-1 text-xs">{t("chat.timeoutHint")}</p>
+                        </div>
+                        <Button variant="outline" size="xs" onClick={chat.newConversation}>
+                            {t("chat.newChat")}
+                        </Button>
+                    </div>
+                )}
+
                 {errorText && (
                     <div className="flex flex-wrap items-start gap-2 rounded-xl border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
                         <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                        <p className="flex-1">
-                            {isQuotaError && quotaResetDate
-                                ? t("chat.quotaExhausted", { date: formatDateLocale(quotaResetDate) })
-                                : errorText}
-                        </p>
-                        {chat.failedText && (
+                        <div className="flex-1">
+                            {isQuotaError ? (
+                                <div>
+                                    <p className="font-semibold">{t("chat.quotaExhaustedTitle")}</p>
+                                    <p className="mt-1 text-xs text-danger/90">{t("chat.quotaExhaustedHint")}</p>
+                                    <div className="mt-2.5 flex items-center gap-2">
+                                        <Link to="/account/subscription">
+                                            <Button variant="outline" size="xs" className="border-danger/40 text-danger hover:bg-danger/10">
+                                                {t("chat.goToSubscription")}
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p>{errorText}</p>
+                            )}
+                        </div>
+                        {chat.failedText && !isQuotaError && (
                             <Button variant="outline" size="xs" onClick={chat.retry}>
                                 {t("chat.retry")}
                             </Button>

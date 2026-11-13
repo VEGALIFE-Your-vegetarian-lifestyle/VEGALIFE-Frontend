@@ -1,11 +1,7 @@
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { SlidersHorizontal, Sparkles } from "lucide-react";
-import { useAuth } from "@/features/auth/useAuth";
-import { useUiStore } from "@/shared/ui/uiStore";
-
-export type FormatFilter = "all" | "recipe" | "article";
-export type ReadingFilter = "any" | "quick" | "deep";
+import { SlidersHorizontal } from "lucide-react";
+import { cn } from "@/shared/utils/cn";
+import type { Difficulty } from "@/features/recipes/types";
 
 /** Chỉ cần id + tên — `GET /api/categories` trả `BackendCategory`, không có `deletedAt`. */
 export interface FilterCategory {
@@ -13,65 +9,87 @@ export interface FilterCategory {
     name: string;
 }
 
-/** Số đếm cho từng nhóm lọc — tính sẵn ở `ExplorePage` (đã áp từ khoá). */
-export interface FilterStats {
-    byCategory: Map<string, number>;
-    recipe: number;
-    article: number;
-    quick: number;
-    deep: number;
-}
+/** Ngưỡng "thời gian tối đa" của công thức (phút). `""` = không lọc. */
+export type MaxTimeFilter = "" | "15" | "30" | "60";
 
 interface ExploreFilterPanelProps {
+    /** Tab đang xem — quyết định nhóm lọc nào hiện, vì mỗi endpoint nhận tham số khác nhau. */
+    tab: "posts" | "recipes";
+    onTabChange: (tab: "posts" | "recipes") => void;
     categories: FilterCategory[];
-    stats: FilterStats;
-    selectedCats: string[];
+    /** Backend nhận đúng một `categoryId` — `""` = không lọc. */
+    selectedCat: string;
     onToggleCategory: (id: string) => void;
-    format: FormatFilter;
-    onFormatChange: (value: FormatFilter) => void;
-    reading: ReadingFilter;
-    onReadingChange: (value: ReadingFilter) => void;
+    difficulties: Difficulty[];
+    difficulty: Difficulty | "";
+    onDifficultyChange: (value: Difficulty | "") => void;
+    maxTimes: MaxTimeFilter[];
+    maxTime: MaxTimeFilter;
+    onMaxTimeChange: (value: MaxTimeFilter) => void;
     onReset: () => void;
     canReset: boolean;
 }
 
 /**
- * Panel lọc cột trái — bám `stich_design/screen_explore`, nhưng chỉ giữ nhóm suy được
- * từ field BE thật trả: `categoryIds`, `recipeIds`, `content`.
- * Nhóm "Topic & Dietary Focus" + "Author Role" của mockup đã bỏ vì không có field nào.
+ * Panel lọc cột trái — đổi nội dung theo tab, vì mỗi endpoint chỉ nhận đúng bộ tham số của nó:
+ *
+ * - Tab Bài viết: `GET /api/posts?categoryId=` — không có độ khó/thời gian.
+ * - Tab Công thức: `GET /api/recipes?difficulty=&maxTotalTimeMinutes=` — không có category.
+ *
+ * Đã bỏ so với mockup: "Content Format" (backend không có tham số), số đếm từng category
+ * (server không trả count theo nhóm), "Topic & Dietary Focus" + "Author Role" (không có field).
  */
 export function ExploreFilterPanel({
+    tab,
+    onTabChange,
     categories,
-    stats,
-    selectedCats,
+    selectedCat,
     onToggleCategory,
-    format,
-    onFormatChange,
-    reading,
-    onReadingChange,
+    difficulties,
+    difficulty,
+    onDifficultyChange,
+    maxTimes,
+    maxTime,
+    onMaxTimeChange,
     onReset,
     canReset,
 }: ExploreFilterPanelProps) {
-    const { t } = useTranslation("explore");
-    const openComposer = useUiStore((state) => state.openComposer);
-    const { isAuthenticated } = useAuth();
-    const navigate = useNavigate();
+    const { t } = useTranslation(["explore", "recipe"]);
 
-    const formats: { key: FormatFilter; label: string; count: number }[] = [
-        { key: "all", label: t("format.all"), count: stats.recipe + stats.article },
-        { key: "recipe", label: t("format.recipe"), count: stats.recipe },
-        { key: "article", label: t("format.article"), count: stats.article },
-    ];
-
-    const readings: { key: ReadingFilter; label: string; count: number }[] = [
-        { key: "any", label: t("reading.any"), count: stats.quick + stats.deep },
-        { key: "quick", label: t("reading.quick"), count: stats.quick },
-        { key: "deep", label: t("reading.deep"), count: stats.deep },
+    const tabs = [
+        { key: "posts" as const, label: t("tabPosts") },
+        { key: "recipes" as const, label: t("tabRecipes") },
     ];
 
     return (
-        <div className="space-y-5">
-            <div className="space-y-6 rounded-2xl bg-card p-5 shadow-sm">
+        <div className="overflow-hidden rounded-2xl bg-card shadow-sm">
+            {/* Tab gạch chân: chỉ chữ, không đếm — mỗi lần đổi tab là một request, đếm tab kia
+                sẽ tốn thêm một request nữa mà không đáng. Số kết quả nằm ở dòng trên feed. */}
+            <div role="tablist" className="flex border-b border-border">
+                {tabs.map((item) => {
+                    const active = tab === item.key;
+                    return (
+                        <button
+                            key={item.key}
+                            type="button"
+                            role="tab"
+                            aria-selected={active}
+                            onClick={() => onTabChange(item.key)}
+                            className={cn(
+                                "relative flex-1 px-4 pb-3 pt-4 text-sm font-bold transition-colors",
+                                "after:absolute after:inset-x-4 after:bottom-0 after:h-[2.5px] after:rounded-full after:transition-colors",
+                                active
+                                    ? "text-vegan-green after:bg-vegan-green"
+                                    : "text-muted-foreground after:bg-transparent hover:text-dark",
+                            )}
+                        >
+                            {item.label}
+                        </button>
+                    );
+                })}
+            </div>
+
+            <div className="p-5">
                 <div className="flex items-center justify-between gap-2 border-b border-border pb-3">
                     <span className="flex items-center gap-2 text-sm font-bold text-dark">
                         <SlidersHorizontal className="h-4 w-4 text-vegan-green" aria-hidden="true" />
@@ -87,90 +105,73 @@ export function ExploreFilterPanel({
                     </button>
                 </div>
 
-                <fieldset className="space-y-2.5">
-                    <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t("categoryTitle")}
-                    </legend>
-                    {categories.map((category) => {
-                        const checked = selectedCats.includes(category.id);
-                        return (
-                            <label key={category.id} className="group flex cursor-pointer items-center gap-2.5 text-sm">
-                                <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    onChange={() => onToggleCategory(category.id)}
-                                    className="h-4 w-4 shrink-0 accent-vegan-green"
-                                />
-                                <span className="flex-1 truncate text-dark transition-colors group-hover:text-vegan-green">
-                                    {category.name}
-                                </span>
-                                <span className="text-xs tabular-nums text-muted-foreground">
-                                    {stats.byCategory.get(category.id) ?? 0}
-                                </span>
-                            </label>
-                        );
-                    })}
-                </fieldset>
+                <div className="pt-4">
+                {tab === "posts" ? (
+                    <fieldset className="space-y-2.5">
+                        <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            {t("categoryTitle")}
+                        </legend>
+                        {categories.map((category) => {
+                            const checked = selectedCat === category.id;
+                            return (
+                                <label key={category.id} className="group flex cursor-pointer items-center gap-2.5 text-sm">
+                                    <input
+                                        type="radio"
+                                        name="explore-category"
+                                        checked={checked}
+                                        onChange={() => onToggleCategory(category.id)}
+                                        className="h-4 w-4 shrink-0 accent-vegan-green"
+                                    />
+                                    <span className="flex-1 truncate text-dark transition-colors group-hover:text-vegan-green">
+                                        {category.name}
+                                    </span>
+                                </label>
+                            );
+                        })}
+                    </fieldset>
+                ) : (
+                    <>
+                        <fieldset className="space-y-2.5">
+                            <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                {t("difficultyTitle")}
+                            </legend>
+                            {difficulties.map((value) => (
+                                <label key={value} className="group flex cursor-pointer items-center gap-2.5 text-sm">
+                                    <input
+                                        type="radio"
+                                        name="explore-difficulty"
+                                        checked={difficulty === value}
+                                        onChange={() => onDifficultyChange(difficulty === value ? "" : value)}
+                                        className="h-4 w-4 shrink-0 accent-vegan-green"
+                                    />
+                                    <span className="flex-1 text-dark transition-colors group-hover:text-vegan-green">
+                                        {t(`recipe:difficulty.${value}`)}
+                                    </span>
+                                </label>
+                            ))}
+                        </fieldset>
 
-                <fieldset className="space-y-2.5 border-t border-border pt-4">
-                    <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t("format.title")}
-                    </legend>
-                    {formats.map((item) => (
-                        <label key={item.key} className="group flex cursor-pointer items-center gap-2.5 text-sm">
-                            <input
-                                type="radio"
-                                name="content-format"
-                                checked={format === item.key}
-                                onChange={() => onFormatChange(item.key)}
-                                className="h-4 w-4 shrink-0 accent-vegan-green"
-                            />
-                            <span className="flex-1 text-dark transition-colors group-hover:text-vegan-green">
-                                {item.label}
-                            </span>
-                            <span className="text-xs tabular-nums text-muted-foreground">{item.count}</span>
-                        </label>
-                    ))}
-                </fieldset>
-
-                <fieldset className="space-y-2.5 border-t border-border pt-4">
-                    <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t("reading.title")}
-                    </legend>
-                    {readings.map((item) => (
-                        <label key={item.key} className="group flex cursor-pointer items-center gap-2.5 text-sm">
-                            <input
-                                type="radio"
-                                name="reading-time"
-                                checked={reading === item.key}
-                                onChange={() => onReadingChange(item.key)}
-                                className="h-4 w-4 shrink-0 accent-vegan-green"
-                            />
-                            <span className="flex-1 text-dark transition-colors group-hover:text-vegan-green">
-                                {item.label}
-                            </span>
-                            <span className="text-xs tabular-nums text-muted-foreground">{item.count}</span>
-                        </label>
-                    ))}
-                </fieldset>
-            </div>
-
-            <div className="relative overflow-hidden rounded-2xl bg-card p-5 shadow-sm">
-                <div className="relative z-10 space-y-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-vegan-green text-white shadow-sm">
-                        <Sparkles className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                    <div>
-                        <h2 className="text-base font-bold text-dark">{t("cta.title")}</h2>
-                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t("cta.body")}</p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => (isAuthenticated ? openComposer() : navigate("/login"))}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-vegan-green px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-vegan-green-hover"
-                    >
-                        {t("cta.action")}
-                    </button>
+                        <fieldset className="mt-4 space-y-2.5 border-t border-border pt-4">
+                            <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                {t("timeTitle")}
+                            </legend>
+                            {maxTimes.map((value) => (
+                                <label key={value || "all"} className="group flex cursor-pointer items-center gap-2.5 text-sm">
+                                    <input
+                                        type="radio"
+                                        name="explore-time"
+                                        checked={maxTime === value}
+                                        onChange={() => onMaxTimeChange(maxTime === value ? "" : value)}
+                                        className="h-4 w-4 shrink-0 accent-vegan-green"
+                                    />
+                                    <span className="flex-1 text-dark transition-colors group-hover:text-vegan-green">
+                                        {value ? t("timeOption", { count: Number(value) }) : t("timeAny")}
+                                    </span>
+                                </label>
+                            ))}
+                        </fieldset>
+                    </>
+                )}
                 </div>
             </div>
         </div>

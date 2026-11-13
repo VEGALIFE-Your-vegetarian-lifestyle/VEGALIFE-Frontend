@@ -1,16 +1,41 @@
 # API Coverage — VEGALIFE Frontend
 
-Đối chiếu backend đang chạy (`https://vegalife-backend.onrender.com/v3/api-docs`, 109 operation)
+Đối chiếu backend đang chạy (`https://vegalife-backend.onrender.com/v3/api-docs`, **112 operation**)
 với code trong `src/features/`, `src/app/routes.tsx`.
 
-Cập nhật: 2026-11-02 · branch `update/ui-ux` · backend `dev` @ `e8db8a4`
+Cập nhật: 2026-11-06 · branch `fix/admin-post` · backend `dev` @ `991a7ef` (V49/V50 — dinh dưỡng
+theo nguyên liệu) + các thay đổi sau `e8db8a4`
 
-> **Nguồn lần này**: bảng spec mới của team backend (2026-11-02). Bảng đó bị cắt ở §12b
-> `PATCH /api/admin/plans/{planId}` → **§1–§12 của file này đã đối chiếu lại**, các mục còn
-> lại (comment public, vote, feed, search, my posts, recipe public, nearby, AI, subscription,
-> dashboard — §13–§27) giữ nguyên kết quả lần trước.
+> **Nguồn lần này**: fetch thẳng `/v3/api-docs` sống, không dùng bảng spec của team. Mọi số
+> operation, shape request/response và tên field dưới đây đọc từ đó; chỗ nào chỉ suy luận sẽ
+> ghi rõ "chưa verify".
+
+> **So với lần trước**: +4 operation (`/api/subscriptions/acquire`, `GET /api/dishes/{dishId}`,
+> `GET /api/dishes/{dishId}/ingredients/suggestions`, `GET /api/dishes/suggestions`),
+> −3 operation FE đang gọi mà spec **không còn** (`/api/payments/checkout`,
+> `/api/subscriptions/me/cancel`, `/api/subscriptions/me/purchase/eligibility`),
+> và admin dish/ingredient CRUD đã lên live đủ 13 endpoint.
 
 > Endpoint nào đã có test tự động: xem `DOCS/TEST-COVERAGE.md`.
+
+## 🔴 Đang vỡ so với backend live (2026-11-06)
+
+Đọc từ `/v3/api-docs` sống. Sửa theo thứ tự này; 1–3 là user thường thấy ngay.
+
+| # | Chỗ vỡ | FE đang làm | Backend live |
+|---|---|---|---|
+| 1 | ~~**Đăng ký**~~ ✅ đã sửa 2026-11-06 | `RegisterRequest` dùng `displayName` | `RegisterRequest` nhận `displayName` (2–100, không unique) |
+| 2 | **Tên tác giả bình luận** | [CommentThread.tsx:21](src/features/posts/components/CommentThread.tsx#L21) đọc `comment.username` | `CommentThreadResponse` trả `displayName` (curl xác nhận) → mọi bình luận hiện nhãn "đã xoá" |
+| 3 | **Gói AI** | `AiPlan.monthlyRequestLimit`, `AiSubscription{tier,currentPlan,...}` | `AvailablePlanResponse` = `code,name,description,requestQuota,price{amount,currency}`; `GET /api/subscriptions/me` = `{remainingUsage}` — không có `tier`/`currentPlan`/`renewalDate` |
+| 4 | **Mua gói** | `checkPurchaseEligibility` → `POST /api/payments/checkout` | Cả hai path **không có trong spec live**. Thay bằng `POST /api/subscriptions/acquire {planCode}` → `{action: CLAIMED\|CHECKOUT_CREATED, remainingUsage, paymentId?, paymentUrl?, ...}` |
+| 5 | **Huỷ gói** | `POST /api/subscriptions/me/cancel` | Không có trong spec live |
+| 6 | **Lịch sử mua** | `SubscriptionHistoryItem{startedAt,renewalDate,cancelledAt}` | `SubscriptionHistoryResponse` = `planCode,planName,source(PURCHASE\|CLAIM),grantedAt,paymentId,amount,currency,status,createdAt` |
+| 7 | **Chi tiết thanh toán** | `PaymentDetail.plan.name` ở [PaymentResultPage.tsx:44](src/features/subscription/pages/PaymentResultPage/PaymentResultPage.tsx#L44) | `PaymentStatusResponse` = `paymentId,status,amount,currency,createdAt,paidAt` — **không có `plan`** → crash khi mở trang kết quả |
+| 8 | **Lịch sử thanh toán** | `PaymentItem{plan,subscription}` | `PaymentHistoryItemResponse` = `id,amount,currency,status,provider,txnRef,paidAt,createdAt,userId` — không có `plan`/`subscription` |
+
+Ba path 1–3 và 6–8 cùng gốc: team BE đổi shape subscription/payment từ lúc làm `a5fe977`.
+`checkout`/`cancel`/`eligibility` trả 401 kể cả khi path không tồn tại (security config chặn
+mọi path lạ), nên **đừng dùng curl để kết luận path còn sống** — chỉ tin `/v3/api-docs`.
 
 ## 🟢 Đã sửa: `POST /api/admin/posts/{id}/moderate` → `approve` / `reject`
 
@@ -32,41 +57,50 @@ Reject → unpublish + reject các component **còn PENDING**. Cả hai **không
 `PostsPage` + `PostPreviewDialog` + `RejectPostDialog` đã đổi; `ModerationAction` /
 `ModeratePostRequest` xoá khỏi [types.ts](src/features/posts/types.ts).
 
-Hệ quả UI: **nút "Ngừng đăng" biến mất**. `canUnpublish` → `canReject`, chỉ trả `true` cho
-bài `processed` ([constants.ts:17-23](src/features/posts/constants.ts#L17-L23)). Bài đã
-`published` giờ chỉ còn nút Xoá — ADR-016 không để lại endpoint admin nào bỏ bài xuống;
-`PATCH /api/posts/{id}/visibility` là ẩn hẳn (chủ bài phải tự đăng lại), việc khác.
+Hệ quả UI: **nút "Ngừng đăng" biến mất**. `canUnpublish` → `canReject`, trả `true` cho bài
+`processing` **và** `unpublished` ([constants.ts](src/features/posts/constants.ts)) —
+bài đã bị từ chối vẫn mở được `RejectPostDialog` để admin ghi lý do mới. `canPublish` chỉ
+`true` cho `processing`/`unpublished`: bài `drafted` BE trả 400. Bài đã `published` giờ chỉ
+còn nút Xoá — ADR-016 không để lại endpoint admin nào bỏ bài xuống; chủ bài tự rút bằng
+`PATCH /api/posts/{id}` `{publish: false}` (→ `drafted`).
 
-Kèm theo: `hidden` **vẫn còn** trong state machine backend (`PostListRequest.status` nhận
-`created|processed|published|unpublished|hidden`, `PATCH /api/posts/{id}/visibility` vẫn sống).
-Doc cũ ghi "đã bỏ" là sai — FE bỏ UI, backend chưa bỏ.
+Lý do từ chối hiện **chỉ** nằm trong `RejectPostDialog` (bắt buộc, ≤1000 ký tự) và gửi lên
+qua body `{reason}`; tác giả đọc lại qua `rejectionReason` khi `status === "unpublished"`.
+
+Kèm theo, từ **V56/V57/V58** (xem `DOCS/frontend-api-changes-post-status-flag.md`):
+`hidden` **đã bị xoá khỏi backend**; state machine còn `drafted|processing|published|unpublished`.
+`flag` đổi vocab thành `FILTER_PASSED|FILTER_FAILED|SIMILAR_CONTENT|FILTER_SKIPPED|null`, sống
+sót qua publish/approve/reject, và **chỉ trả ở admin endpoint** — `PostListResponse` của member
+không còn `flag`/`flagDetail`. `flagDetail` là object `{kind, outcome?, score?, threshold?,
+postId?, similarity?, cause?}`. `publish: true` chỉ **gửi duyệt** (bài về `processing`), filter
+chạy async mới flip `published`.
+`PATCH /api/posts/{id}/visibility` **đã bị xoá** → 404.
 
 ## Tổng quan
 
 | Trạng thái | Số endpoint |
 |---|---|
-| ✅ Đã gọi API thật | 61 |
-| ❌ Chưa làm (backend đã có) | 46 |
+| ✅ Đã gọi API thật | 60 |
+| ❌ Chưa làm (backend đã có) | 50 |
 | — Backend-only, FE không gọi | 2 (`/api/payments/vnpay/ipn` GET+POST) |
 
-> 109 operation từ OpenAPI live. 61 + 46 + 2 = 109. Endpoint FE gọi mà backend **không có**: 0
-> (sau khi chuyển `/moderate` → `/approve` + `/reject`).
+> **112 operation** từ `/v3/api-docs` live (2026-11-06). 60 + 50 + 2 = 112.
 >
-> **+4 ngày 2026-11-02**: `GET /api/posts/{id}/related` + `GET /api/recipes/{id}` (Post Detail),
-> `GET`+`PUT /api/posts/{id}/votes` (card Explore — §13).
+> **Endpoint FE đang gọi mà spec live KHÔNG có (3)**: `POST /api/payments/checkout`,
+> `POST /api/subscriptions/me/cancel`, `POST /api/subscriptions/me/purchase/eligibility`.
+> Đây là chỗ vỡ #4/#5 ở mục đầu file.
+>
+> **+4 operation so với 2026-11-02**: `POST /api/subscriptions/acquire`,
+> `GET /api/dishes/{dishId}`, `GET /api/dishes/{dishId}/ingredients/suggestions`,
+> `GET /api/dishes/suggestions`. Cùng đợt, **13 endpoint admin dish/ingredient** lên live
+> (§10b giờ đã đủ để dựng).
 >
 > `getMedia` (`GET /api/media/{id}`) tính ✅ nhưng chưa nơi nào gọi — xem mục cuối file.
->
-> **Spec 2026-11-02 không đổi số nào**: không endpoint mới, không endpoint nào chết thêm.
-> Nó bổ sung chi tiết (thứ tự resolve của Google login, shape `components[]`, lỗi từng
-> endpoint) và làm lộ 1 chỗ FE gửi tham số backend không mô tả — xem ⚠️ ở §10.
 
 > **Cập nhật 2026-10-30**: §24/25 (subscription + payment) trước đây đánh ❌ toàn bộ — sai,
 > `src/features/subscription/` đã dựng xong và wired vào `/subscription` +
-> `/payment/result/:paymentId` (commit `a5fe977`). Đã sửa lại; 7 endpoint chuyển ❌ → ✅.
-> §12 sửa lại: `GET /api/admin/comments` **có** nhận `status`/`userId`/`postId`/`sort`.
-> §10 sửa lại: `GET/PATCH/DELETE /api/admin/recipes/{id}` **backend đã có** — trước ghi
-> "không cần"/để trống, dễ đọc thành "backend không có".
+> `/payment/result/:paymentId` (commit `a5fe977`). Nhưng từ đó **shape response đã đổi** —
+> `plan`/`subscription`/`tier`/`currentPlan`/`renewalDate` không còn trong response; xem mục 🔴.
 
 ## Màn hình đã dựng lại theo UI mới
 
@@ -80,27 +114,41 @@ Doc cũ ghi "đã bỏ" là sai — FE bỏ UI, backend chưa bỏ.
 | My Posts | `/my-posts` | ✅ `GET /api/posts` + unpublish/delete |
 | Admin Posts | `/admin/posts` | ✅ `GET /api/admin/posts` + `approve`/`reject`/`delete` |
 | Profile | `/profile` | ✅ `GET/PUT /api/profile` (gồm 5 field dietary) + `GET /api/posts` (stats) |
-| Login / Register | `/login`, `/register` | ✅ auth (kể cả Google OAuth) |
+| Login / Register | `/login`, `/register` | 🔴 auth — RegisterPage gửi `username`, BE nhận `displayName` |
 | Nearby | `/nearby` | ✅ `GET /api/locations/nearby` |
 | Location Detail | `/nearby/:id` | ✅ `GET /api/locations` (lọc theo id ở client) |
-| AI Nutrition | `/ai-nutrition` | ✅ `POST /api/ai/messages` + lịch sử hội thoại + `GET /api/subscriptions/me` |
-| Create Recipe | `/recipes/create` | ✅ `POST /api/recipes` + `GET /api/dishes`, `GET /api/ingredients` |
-| My Recipes | `/recipes` | ✅ `GET /api/recipes/me` (lọc/sort/phân trang client-side) |
-| Admin Recipes | `/admin/recipes` | ✅ `GET /api/admin/recipes` + approve/reject |
-| Meal Plan | `/meal-plan` | ✅ `GET /api/menus/details` + `POST .../status` |
+| AI Nutrition | `/ai-nutrition` | ⚠️ `POST /api/ai/messages` + lịch sử hội thoại; `GET /api/subscriptions/me` chỉ trả `remainingUsage` |
+| Create Recipe | `/recipes/create` | ⚠️ `POST /api/recipes` + `GET /api/dishes`, `GET /api/ingredients` — xem §19 |
+| My Recipes | `/recipes` | ⚠️ `GET /api/recipes/me` (lọc/sort/phân trang client-side) — 5 tổng dinh dưỡng mới, chưa render |
+| Admin Recipes | `/admin/recipes` | ✅ đủ CRUD: list + detail + `PATCH` + `DELETE` (mềm, một chiều) + approve/reject + điền nguyên liệu thiếu khi duyệt |
+| Admin Ingredients | `/admin/ingredients` | ✅ 5/7 endpoint: list + create + `PATCH` + `DELETE` (mềm). **Cố ý bỏ** approve/reject |
+| Meal Plan | `/meal-plan` | ✅ `GET /api/menus/details` + `POST .../status` + `DELETE .../{id}` |
 | Create Meal Plan | `/meal-plan/create` | ✅ `POST /api/menus` + `GET /api/dishes` (chọn món) |
-| Subscription | `/subscription` | ✅ `GET /api/subscriptions` + `me/history` + `POST me/cancel` + `POST payments/checkout` + `GET /api/payments` |
-| Payment Result | `/payment/result/:paymentId` | ✅ `GET /api/payments/{paymentId}` (poll 3s khi `pending`) |
+| Subscription | `/subscription` | 🔴 `GET /api/subscriptions` OK, `me/history` đổi shape, `cancel`/`checkout` không còn |
+| Payment Result | `/payment/result/:paymentId` | 🔴 `GET /api/payments/{paymentId}` không trả `plan` |
 
 ---
 
-## 1. Register — ✅ đủ
+## 1. Register — ✅ đã sửa 2026-11-06
 
 | Endpoint | Hàm | UI |
 |---|---|---|
 | POST /api/auth/register | `features/auth/api` `register` | RegisterPage |
 | POST /api/auth/verify-email | `verifyEmail` | VerifyEmailPage |
 | POST /api/auth/resend-email | `resendVerifyEmail` | VerifyEmailPage |
+
+`RegisterRequest` live = `{displayName, email, password, confirmPassword}`. `username` không còn
+(ADR-019: email là identity duy nhất; `displayName` chỉ là nhãn, **không unique**, 2–100 ký tự,
+không ràng buộc bộ ký tự).
+
+Form, `RegisterRequest` và test đã đổi sang `displayName`; `errors.username*` của 2 locale đổi
+thành `errors.displayName*`; nhãn i18n `register.usernameLabel` → "Display name / Tên hiển thị".
+
+Thêm: `getApiErrorMessage` đọc được map field của Spring validate (400 trả
+`data: {field: "message"}`), trước đó chỉ đọc `errors[]`/`message` nên hiện câu chung
+"Validation failed" thay vì lý do thật.
+
+`verify-email` và `resend-email` vẫn đúng: `{email, otp}` / `{email}`.
 
 ## 2. Login — ✅ đủ
 
@@ -111,12 +159,15 @@ Doc cũ ghi "đã bỏ" là sai — FE bỏ UI, backend chưa bỏ.
 | POST /api/auth/logout | `logout` | retry sau refresh khi 401 |
 | POST /api/auth/google | ✅ `loginWithGoogle` | GIS code client (`useGoogleLogin`) trên LoginPage + RegisterPage |
 
+`LoginRequest` live = `{identifier, password}`, cả hai `minLength: 1` — đúng như FE gửi.
+`identifier` là **email** (ADR-019); tên `identifier` chỉ để tương thích, `displayName` không
+đăng nhập được.
 
 Chi tiết ADR-017 (spec 2026-11-02): BE tự đổi `code` → `id_token`, verify RS256 qua JWKS
 Google (`aud = GOOGLE_CLIENT_ID`, `iss`, `exp`, `email_verified`), không session, không thêm
 dependency. Thứ tự resolve: (1) có `user_identity(GOOGLE, sub)` → vào đúng user đó, không
 tra email; (2) email khớp tài khoản đã verify + activated → auto-link; (3) chưa có → tạo tài
-khoản mới (`emailVerified=true`, `activated`, `password_hash=null`, không gửi OTP, username
+khoản mới (`emailVerified=true`, `activated`, `password_hash=null`, không gửi OTP, `displayName`
 sinh từ email); (4) còn lại → từ chối.
 
 **Bẫy FE**: `redirect_uri` lúc xin code phải khớp env `GOOGLE_REDIRECT_URI` từng ký tự
@@ -158,19 +209,22 @@ Spec 2026-11-02 (3 bước, đúng như `ForgotPasswordPage` đang làm):
 | GET /api/profile/{userId} | ❌ | **Public (permitAll)**, trả cả `email`; 404 khi user không tồn tại. Cần cho trang profile công khai |
 | PUT /api/profile | ✅ `updateProfile` | map camelCase; nhận cả 5 field dietary |
 
-Response đọc được (`UserProfile` trong `src/shared/types/user.ts`):
-`id, userId, username, email, heightCm, weightKg, bmi, age, gender, description, avatarUrl, updatedAt`
-+ 5 field dietary.
+Response đọc được (`ProfileResponse` live, 2026-11-06):
+`userId, displayName, email, heightCm, weightKg, age, gender, description, avatarUrl,
+preferences, dislikes, allergies, restrictions, healthGoal, bmi, updatedAt`.
 
-⚠️ **Spec 2026-11-02 tự mâu thuẫn chỗ `bmi`**: response schema của `PUT /api/profile` **có**
-`bmi`, nhưng note viết "Không nhận và không trả bmi — server tự tính lại từ
-heightCm/weightKg". File này ghi schema làm chuẩn (`bmi` có mặt) — FE map vào
-`UserProfile.bmi` nên cả hai chiều đều không vỡ. `PUT` còn chốt: **≥ 1 field bắt buộc**
-(một field dietary cũng tính), 400 `At least one profile field must be provided` khi body rỗng.
+⚠️ **Không có `id` và không có `username`.** `toUserProfile` ([api.ts:32](src/features/profile/api.ts#L32))
+vẫn đọc `raw.id` → luôn ra `""`; `UserProfile.id` là field chết, xoá được. `username` đã
+đổi thành `displayName` (khớp type hiện tại).
+
+⚠️ **`bmi`**: schema `ProfileResponse` của cả `GET` lẫn `PUT` **có** `bmi` (server tính
+`weightKg/(heightCm/100)^2`, 1 số lẻ HALF_UP, null khi thiếu). `PUT` **không nhận** `bmi`.
+FE map vào `UserProfile.bmi` nhưng `ProfilePage` vẫn tự tính ở client để số đổi ngay khi gõ
+(`ponytail:` tại [ProfilePage.tsx:113](src/features/profile/ProfilePage.tsx#L113)).
 
 **Ghi được** chỉ 11 field (`PROFILE_FIELDS` trong `api.ts`): height/weight/age/gender/description/
-avatarUrl + 5 field dietary. `username`, `email`, `bmi` là **chỉ-đọc** — backend trả trong
-response nhưng không nhận khi ghi.
+avatarUrl + 5 field dietary. `displayName`, `email`, `bmi` là **chỉ-đọc** — backend trả trong
+response nhưng không nhận khi ghi. `UpdateProfileRequest` live đúng 11 field này.
 
 `PUT /api/profile` merge từng field: vắng mặt = giữ nguyên, `[]` = xoá sạch. Nhờ vậy
 `ProfilePage` gộp cả 11 field vào **một** form, một nút Save, gửi đủ 11 field mỗi lần
@@ -182,7 +236,7 @@ height/weight). FE **có map** vào `UserProfile.bmi` nhưng `ProfilePage` vẫn
 số đổi ngay khi gõ (`ponytail:` tại [ProfilePage.tsx:113](src/features/profile/ProfilePage.tsx#L113)) —
 server `bmi` dùng cho trang profile công khai (chưa dựng) và ai cần số do server chốt.
 
-ProfilePage stats (`published`/`videos`/`saved`/`contributions`) suy từ `GET /api/posts` 100 bài gần nhất; `saved` luôn 0 vì chưa có API favorites.
+ProfilePage stats (`published`/`videos`/`saved`/`contributions`) suy từ `GET /api/posts` 100 bài gần nhất; `saved` dùng `GET /api/saved/posts` (`totalElements`) nếu nối.
 
 ## 5. Admin users — ✅ đủ
 
@@ -223,30 +277,30 @@ Spec 2026-11-02 chốt lại tham số: `page=0`, `size=20` (≤100), `sort=name
 Đây là lý do `getCategories` ([api.ts:51](src/features/categories/api.ts#L51)) dùng tạm nó cho
 admin list là chấp nhận được — `name` lọc ở server, không cần lọc client.
 
-## 8. Post moderation (Admin) — 🔴 vỡ 1, thiếu 3
+## 8. Post moderation (Admin) — ✅ đủ theo backend
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
-| GET /api/admin/posts | ✅ `getPosts` | PostsPage. Hỗ trợ `status`, `flag`, `userId`, `categoryId`, `createdFrom/To`, `sort`. **Luôn gửi `flag=all`** — BE mặc định `NEEDS_REVIEW` |
-| GET /api/admin/posts/{id} | ❌ | Trả `contentScore` + `components[]` (`{id, type: RECIPE\|DISH\|INGREDIENT, name, moderationStatus, score}`) để duyệt theo từng tên |
-| POST /api/admin/posts/{id}/approve | ✅ `approvePost` | `{reason?}`. 400 nếu bài chưa có category hoặc đang `hidden`; 404 nếu không có / xoá mềm. **Duyệt luôn các component PENDING** mà bài tham chiếu |
-| POST /api/admin/posts/{id}/reject | ✅ `rejectPost` | `{reason?}`. 400 nếu đang `hidden`; 404. **Chỉ từ chối các component còn `PENDING`** |
-| ~~POST /api/admin/posts/{id}/moderate~~ | 🟢 **đã chuyển sang 2 endpoint trên** | `moderatePost` đã xoá khỏi `features/posts/api.ts`. Xem mục đầu file |
-| PATCH /api/posts/{id}/visibility | ❌ (FE bỏ, backend còn) | `{hidden: boolean}`. Ẩn → `hidden` + xoá `publishedAt`; bỏ ẩn → về `created` (draft riêng tư, chủ bài phải tự đăng lại). 400 `Post is not hidden` khi bỏ ẩn bài không hidden. Ghi `moderation_log` HIDE_POST/UNHIDE_POST |
+| GET /api/admin/posts | ✅ `getPosts` | PostsPage. BE có `status`/`flag`/`userId`/`categoryId`/`createdFrom`/`createdTo`/`sort` — **nhưng swagger chỉ hiện `page`/`size`**, xem ⚠️ dưới. `flag` mặc định **`all`** (V56). Dòng trả kèm `flagDetail` |
+| GET /api/admin/posts/{id} | ❌ | `AdminPostDetailResponse` = `id, title, content, status, flag, flagDetail, contentScore, **recipes[]**, **names[]**, userId, displayName, email`. Mỗi phần tử `ComponentSummary` = `{id, type, name, moderationStatus, score}`. Duyệt theo từng tên |
+| POST /api/admin/posts/{id}/approve | ✅ `approvePost` | `{reason?}` ≤1000. Trả **`AdminPostDetailResponse`** (không phải void). 400 nếu bài `drafted` hoặc chưa có category; 404 nếu không có / xoá mềm. **Duyệt luôn các component PENDING**; **`flag` giữ nguyên** (admin duyệt đè máy) |
+| POST /api/admin/posts/{id}/reject | ✅ `rejectPost` | `{reason?}` ≤1000. Trả `AdminPostDetailResponse`. 400 nếu bài `drafted`; 404. **Chỉ từ chối các component còn `PENDING`**; `flag`/`flagDetail` giữ nguyên |
+| ~~POST /api/admin/posts/{id}/moderate~~ | 🟢 **đã xoá khỏi backend** | `moderatePost` đã xoá khỏi `features/posts/api.ts`. Xem mục đầu file |
+| ~~PATCH /api/posts/{id}/visibility~~ | 🟢 **đã xoá khỏi backend (V56)** → 404 | Thay bằng: admin `POST /api/admin/posts/{id}/reject`; tác giả `PATCH /api/posts/{id}` `{publish: false}` (→ `drafted`) |
 | DELETE /api/posts/{id} | ✅ `deletePost` | |
 
 → `q` (tìm kiếm) lọc **trong trang hiện tại** — BE chưa có tham số search cho `/api/admin/posts`.
 
-⚠️ **Bẫy OpenAPI**: `/api/admin/posts` và `/api/posts` cùng tham chiếu schema tên
-`PostListRequest` (hai class khác package trùng tên). Bản sinh ra trong `/v3/api-docs` chỉ
-còn `page`/`size`. Bộ lọc thật nằm ở
-`dto/request/admin/PostListRequest.java` — đọc source, đừng tin swagger.
+⚠️ **Bẫy OpenAPI (vẫn còn 2026-11-06)**: `/api/admin/posts` và `/api/posts` cùng tham chiếu
+schema `PostListRequest` (hai class khác package trùng tên). Bản trong `/v3/api-docs` chỉ có
+`page`/`size`, nhưng lỗi 400 của endpoint liệt kê rõ `status`/`flag`/`createdFrom`/`createdTo`
+— bộ lọc thật nằm ở `dto/request/admin/PostListRequest.java`. Đọc source, đừng tin swagger.
 
 ## 9. Video moderation (Admin) — ✅ đủ
 
 | Endpoint | Hàm | UI |
 |---|---|---|
-| GET /api/admin/videos | `getVideos` | VideosPage. BE có `sort`/`userId`/`createdFrom`/`createdTo`, UI chưa dùng. Row có thêm `posts[{id, title, status}]` |
+| GET /api/admin/videos | `getVideos` | VideosPage. `VideoListRequest` live = `page,size,sort,status,userId,createdFrom,createdTo` (khớp doc cũ). Row có `posts[{id,title,status}]` |
 | DELETE /api/media/{mediaId} | `deleteVideo` | VideosPage |
 
 `q` lọc client-side trên tối đa 100 row (`ponytail:` ở [videos/api.ts:41](src/features/videos/api.ts#L41)).
@@ -256,62 +310,124 @@ Spec 2026-11-02 bổ sung: `sort` whitelist là `createdAt|updatedAt|durationSec
 BE tối đa 100). Chỉ MIME video được liệt kê (`image/*` bị bỏ); **mọi** upload state
 (`uploading`/`failed`) đều hiện, để admin thấy upload bỏ dở. `durationSeconds`/`fileSizeBytes`/
 `mimeType`/`width`/`height`/`externalId` **chỉ có ở đây**, không có ở response của upload grant.
+`status` pattern live = `^(uploading|succeed|failed)$`.
 
-## 10. Recipe moderation (Admin) — ✅ đọc + duyệt/từ chối
+## 10. Recipe moderation + admin CRUD — ✅ đủ
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
-| GET /api/admin/recipes | ✅ `getAdminRecipes` | AdminRecipesPage. **⚠️ spec 2026-11-02 không liệt kê param `moderationStatus`** (chỉ `page`/`size`/`sort`/`userId`/`categoryId`/`createdFrom`/`createdTo`) — FE vẫn gửi. Verify trước khi tin bộ lọc `PENDING` |
-| GET /api/admin/recipes/{id} | ❌ | **Backend đã có**, và là nơi duy nhất spec mô tả `moderationStatus`/`score`/`dishModerationStatus` + `ingredients[].moderationStatus`. FE cố ý không gọi — row list (spec cũ) đủ field dialog render. **Nếu bộ lọc `moderationStatus` ở list thật sự bị bỏ, phải gọi endpoint này** |
-| PATCH /api/admin/recipes/{id} | ❌ | **Backend đã có.** `name`/`description`/`instructions`/`prepTimeMinutes`/`cookTimeMinutes`/`servings`/`difficulty` — UI không có màn sửa. 400 khi name/instructions blank hoặc `difficulty` lạ; 404 khi không có / xoá mềm |
-| DELETE /api/admin/recipes/{id} | ❌ | **Backend đã có** — UI không có nút xoá |
-| POST /api/admin/recipes/{id}/approve | ✅ `approveRecipe` | `{reason?}`, idempotent. **Chỉ đổi recipe** — không đổi dish/ingredient của nó |
-| POST /api/admin/recipes/{id}/reject | ✅ `rejectRecipe` | `{reason?}`, idempotent. Không xoá gì; tên bị chặn tạo lại |
+| GET /api/admin/recipes | ✅ `getAdminRecipes` | 🟢 `moderationStatus` có trong `RecipeListRequest` lẫn row. ⚠️ Không có tham số tìm theo tên → `q` lọc client-side |
+| GET /api/admin/recipes/{id} | ✅ `getAdminRecipe` | Đã nối nhưng **UI không gọi** — row list đủ field, gọi thêm là request thừa |
+| PATCH /api/admin/recipes/{id} | ✅ `updateAdminRecipe` | Chỉ 7 field: `name,description,instructions,prepTimeMinutes,cookTimeMinutes,servings,difficulty`. **Không** sửa được ingredients/dish/dinh dưỡng. 400 khi name/instructions rỗng hoặc `difficulty` lạ; 404 khi xoá mềm |
+| DELETE /api/admin/recipes/{id} | ✅ `deleteAdminRecipe` | **Xoá mềm, một chiều** — spec live **không có** endpoint khôi phục. Row vẫn hiện với `status: DELETED`. ConfirmDialog nói rõ |
+| POST /api/admin/recipes/{id}/approve | ✅ `approveRecipe` | `{reason?}`, idempotent. **Chỉ đổi recipe** — không đổi dish/ingredient |
+| POST /api/admin/recipes/{id}/reject | ✅ `rejectRecipe` | `{reason?}` → dialog `RejectRecipeDialog` nhập lý do (bắt buộc ở UI, lưu `moderation_log`). Không xoá gì; tên bị chặn tạo lại |
 
 Route `/admin/recipes`. Phân trang thật ở server (`page`/`size`/`sort` + lọc `userId`,
 `categoryId`, `moderationStatus`, `createdFrom`, `createdTo`). Backend trả **cả** recipe đã
 xoá mềm với `status: "DELETED"` và **không** có tham số lọc theo status hay tìm theo tên —
 `q` lọc client-side trên trang hiện tại (xem `ponytail:` trong `features/recipes/adminApi.ts`).
 
-UI: cột "Duyệt" + `<Select>` lọc 4 lựa chọn (Pending/Approved/Rejected/All). Nút Duyệt/Từ
-chối nằm trong dialog chi tiết (admin phải đọc nội dung trước), xác nhận qua `ConfirmDialog`.
-Lý do chưa nhập được → `moderation_log.reason` luôn `null` cho recipe.
+UI: cột "Duyệt" + `<Select>` lọc 4 lựa chọn (Pending/Approved/Rejected/All). Mọi thao tác ghi
+(Duyệt/Từ chối/Sửa/Xoá) nằm trong dialog chi tiết — admin phải đọc nội dung trước. Duyệt qua
+`ApproveRecipeDialog`; từ chối qua `RejectRecipeDialog` (**bắt buộc nhập lý do** — backend
+optional nhưng lý do mới vào được `moderation_log.reason`); xoá qua `ConfirmDialog` nói rõ là
+một chiều; sửa qua `EditRecipeDialog` (chỉ 7 field, không đụng ingredients).
+
+`ApproveRecipeDialog` là nơi nối **duyệt recipe ⇄ curate nguyên liệu**: recipe còn
+`missingRequiredIngredients` thì dialog liệt kê từng tên để admin nhập `unit` + 5 giá trị dinh
+dưỡng (để trống = bỏ qua, điền sau ở `/admin/ingredients`). Bấm duyệt → `PATCH` từng nguyên
+liệu **rồi mới** `POST approve`. Hai lời gọi không chung transaction ở BE nên `PATCH` nào lỗi
+thì dừng, recipe không được duyệt; các `PATCH` đã xong là idempotent nên bấm lại an toàn.
+
+Dialog chi tiết còn hiện `missingRequiredIngredients` — tên nguyên liệu chưa có unit/dinh
+dưỡng, tức lý do recipe chưa có tổng dinh dưỡng. Admin sửa ở màn ingredient (§10b), không sửa
+được qua API recipe.
 
 Duyệt recipe **không** làm dish/ingredient của nó hiện ra — xem §10b.
 
-⚠️ **Cần verify**: spec 2026-11-02 bỏ `moderationStatus` khỏi cả query **và** row của
-`GET /api/admin/recipes` (chỉ `GET /{recipeId}` mới có field này). Nếu đúng, `<Select>` lọc
-Pending/Approved/Rejected ở `AdminRecipesPage` phải chuyển sang lọc client-side hoặc gọi
-`GET /api/admin/recipes/{id}` — bộ lọc server hiện tại sẽ chết lặng (trả về mọi trạng thái).
+⚠️ **Đã verify 2026-11-06**: `moderationStatus` **có** ở cả query lẫn row của
+`GET /api/admin/recipes` (spec live). `<Select>` Pending/Approved/Rejected ở
+`AdminRecipesPage` chạy thật, không phải lọc chết.
 
-## 10b. Dish & Ingredient management (Admin) — ❌ chưa làm
+⚠️ **`DELETE` không có đường lùi**: spec live chỉ có `/api/admin/users/{userId}/restore`,
+không có restore cho recipe. Đừng thêm nút "khôi phục".
 
-Cùng một khuôn cho hai resource (`/api/admin/dishes`, `/api/admin/ingredients`):
+## 10b. Dish & Ingredient management (Admin) — 🟡 ingredient đã nối, dish chưa làm
+
+Cùng một khuôn cho hai resource (`/api/admin/dishes`, `/api/admin/ingredients`), **lên live
+đầy đủ 2026-11-06**:
 
 | Endpoint | Ghi chú |
 |---|---|
-| GET `/api/admin/{dishes\|ingredients}` | `page`/`size`/`sort`/`name`/`moderationStatus` |
-| GET `/{id}` | |
-| POST `/` | Tạo tay → `moderationStatus: APPROVED` ngay |
-| PATCH `/{id}` | Dish: 400 blank name hoặc rename row đã REJECTED; 409 tên trùng row khác |
-| DELETE `/{id}` | |
-| POST `/{id}/approve` | `{reason?}` |
-| POST `/{id}/reject` | `{reason?}` — reject **vĩnh viễn** với member, không tạo lại được tên đó |
+| GET `/api/admin/{dishes\|ingredients}` | Query thật là `AdminComponentListRequest` = `page,size,sort,name,**moderationStatus**` (spec live 2026-11-06 — khác `IngredientListRequest` chỉ có `name`). Đã verify: `moderationStatus` **có** |
+| GET `/{id}` | `AdminDishResponse` / `AdminIngredientResponse` |
+| POST `/` | Tạo tay → `moderationStatus: APPROVED` ngay. 400 nếu tên từng bị reject (BR-DISH-001), 409 nếu trùng tên |
+| PATCH `/{id}` | Partial. Dish: `name,description,imageUrl,cuisineType`; Ingredient: `name,unit,calories,proteinG,carbohydrateG,fatG,fiberG`. 400 blank name hoặc rename row đã REJECTED; 404; 409 tên trùng row khác |
+| DELETE `/{id}` | Soft delete. Tên **không** được giải phóng |
+| POST `/{id}/approve` | `{reason?}` → trả `AdminDishResponse`/`AdminIngredientResponse`. **FE cố ý không nối** cho ingredient (xem dưới) |
+| POST `/{id}/reject` | `{reason?}` — reject **vĩnh viễn** với member, không tạo lại được tên đó. **FE cố ý không nối** cho ingredient |
 
-Dish có thêm `description`/`imageUrl`/`cuisineType`. Ingredient chỉ có `name`.
+**Ingredient — route `/admin/ingredients`, đã nối 5/7 endpoint** (`features/recipes/adminApi.ts`):
+
+| Endpoint | Hàm | UI |
+|---|---|---|
+| GET `/api/admin/ingredients` | ✅ `getAdminIngredients` | Page danh sách: `page`/`size`/`name`. **Không** lọc `moderationStatus`, **không** hiện cột Duyệt |
+| POST | ✅ `createAdminIngredient` | `IngredientFormDialog` — tạo tay, `APPROVED` ngay |
+| PATCH | ✅ `updateAdminIngredient` | Cùng dialog; **chỉ gửi field đã đổi**; cũng dùng trong `ApproveRecipeDialog` để điền nguyên liệu thiếu |
+| DELETE | ✅ `deleteAdminIngredient` | `ConfirmDialog` nói rõ tên không được giải phóng, không restore |
+| GET `/{id}` | ❌ | Row list đủ field, gọi thêm là request thừa |
+| POST `/{id}/approve` \| `/reject` | ❌ **cố ý bỏ** | Chủ dự án yêu cầu không đưa 2 endpoint này lên UI. Hệ quả: `moderationStatus` của ingredient không đổi được từ FE — trang chỉ để xem/sửa `unit` + dinh dưỡng, không có cột duyệt, không có filter trạng thái. `moderationStatus` vẫn còn trong `AdminIngredient` type vì response trả về |
+
+**Không có `POST` để "tạo nguyên liệu mới lúc duyệt recipe"**: tên nguyên liệu member gõ đã
+được BE tạo sẵn ở `PENDING` (`unit: null`, không dinh dưỡng) ngay khi `POST /api/recipes` chạy.
+Gọi `POST /api/admin/ingredients` cho đúng tên đó sẽ **400/409 trùng tên** — và tên **không**
+được giải phóng khi xoá mềm. Đường đúng là `PATCH` để điền `unit` + đủ 5 giá trị; đó là việc
+`ApproveRecipeDialog` làm trước khi gọi `approveRecipe`.
+
+**Thông báo cho admin**: BE không có API notification. Badge `PENDING` cạnh mục "Nguyên liệu"
+ở `AdminShell` gọi `countAdminIngredients("PENDING")` (`GET ...?page=0&size=1` rồi đọc
+`totalElements`, `staleTime` 60s), cộng warn banner `missingRequiredIngredients` trong
+`RecipeDetailDialog`.
+
+Shape response:
+- `AdminDishResponse` = `id, name, description, imageUrl, cuisineType, moderationStatus, suggestedIngredients[], createdAt, updatedAt`
+- `AdminIngredientResponse` = `id, name, moderationStatus, **unit, calories, proteinG, carbohydrateG, fatG, fiberG, nutritionResolved**, createdAt, updatedAt` — 6 field nutrition là **mới từ V49/V50** (§19b). `unit` là `G|ML|PIECE|null`
+- `AdminDishCreateRequest` = `name, description, imageUrl, cuisineType`
+- `AdminIngredientCreateRequest` = `name` (bắt buộc, ≤100), `unit` (≤30), 5 giá trị dinh dưỡng — (**không** `pieceGrams` — đã bỏ). Gửi 1–4 giá trị → 400; có dinh dưỡng mà không có `unit` → 400
+
+**Dish — vẫn chưa có trang.** 4 endpoint `/api/admin/dishes` chưa nối. Duyệt tên món đi
+đường tắt: `approveDish()` từ dialog chi tiết recipe.
+
+**Dish ⇄ ingredient (curation, 4 endpoint riêng, chưa nối)**:
+
+| Endpoint | Ghi chú |
+|---|---|
+| GET `/api/admin/dishes/{dishId}/ingredients` | `List<AdminDishIngredientResponse>` = `ingredientId,name,moderationStatus,required,createdAt,updatedAt` |
+| POST `/api/admin/dishes/{dishId}/ingredients` | `{ingredientName, required?}` → 201; **200** nếu entry từng bị gỡ và được phục hồi. 400 tên blank/>100, hoặc nguyên liệu đang `REJECTED`; 404 dish |
+| PATCH `.../ingredients/{ingredientId}` | `{required}` bắt buộc (không gửi = 400) |
+| DELETE `.../ingredients/{ingredientId}` | idempotent — gỡ 2 lần vẫn 200 |
 
 Tên do member tạo qua `POST /api/recipes` bắt đầu ở `PENDING`. Duyệt/từ chối bài sẽ duyệt/từ
 chối luôn các tên nó tham chiếu (chỉ các tên còn `PENDING`).
 
-## 10c. Weekly menu — ✅ đọc + tạo + đổi trạng thái
+**Đọc phía member (mới)**:
+| Endpoint | Ghi chú |
+|---|---|
+| GET `/api/dishes/{dishId}` | `DishResponse` = `id,name,description,imageUrl,cuisineType` (không có `createdAt`, khác `GET /api/dishes`) |
+| GET `/api/dishes/{dishId}/ingredients/suggestions` | `List<{ingredientId,name,required}>` — chỉ đọc, member không ghi |
+| GET `/api/dishes/suggestions` | `DishSuggestionRequest`: `name, cuisineType, difficulty, maxPrepTime, maxCookTime, maxTotalTime, **minCalories/maxCalories/minProtein/maxProtein/minCarbohydrate/maxCarbohydrate/minFat/maxFat/minFiber/maxFiber**, page, size, recipesPerDish` → `DishSuggestionResponse{id,name,description,imageUrl,cuisineType,recommendedRecipes[]}`, mỗi recipe là `RecipeSummaryResponse` (§19b) |
+
+## 10c. Weekly menu — ✅ đọc + tạo + đổi trạng thái + xoá
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
-| GET /api/menus/details | ✅ `getMealPlans` | MealPlanPage. Trả **mảng phẳng**, không phân trang |
+| GET /api/menus/details | ✅ `getMealPlans` | MealPlanPage. Trả **mảng phẳng**, không phân trang. Mỗi meal có thêm `recommendedRecipes[]` (bản deploy trả, spec live chưa khai) — dialog món ở `/meal-plan` gọi `GET /api/recipes/{id}` theo id đầu tiên |
 | GET /api/menus | ❌ | Danh sách rút gọn, phân trang + lọc `status`. `page` **0-based** |
 | POST /api/menus | ✅ `createMenu` | `{startDate, notes?, days[]}` — luôn tạo `drafted`. `MenuValidator` chặn cả tuần nếu sai BR-MENU-005 |
 | PATCH /api/menus/{menuId} | ❌ | `{days?, notes?}` — sửa menu `drafted`/`scheduled` (giai đoạn B2) |
 | POST /api/menus/{menuId}/status | ✅ `changeMenuStatus` | `{status}` — `drafted → scheduled\|cancelled`, `scheduled → cancelled\|completed` |
+| DELETE /api/menus/{menuId} | ✅ `deleteMenu` | Xoá hẳn menu; `data` là chuỗi thông báo. Nút Xoá ở `MenuActions` hiện cho **mọi** trạng thái (2026-11-12) |
 
 Route `/meal-plan` (cần đăng nhập) và `/meal-plan/create`. Luôn gửi `from`/`to` tường minh —
 bỏ trống thì backend lấy tuần hiện tại theo **giờ UTC**, lệch ngày với người dùng múi giờ dương.
@@ -323,8 +439,9 @@ lặp theo `days`. Endpoint không lọc được `status`; `menuId` của user 
 có `dishId`/`dishName`. `GET /api/menus/details` trả `MenuMealPlanResponse` với `dish` đầy đủ.
 Sau khi ghi phải `invalidateQueries(["meal-plans"])`, đừng render từ response.
 
-**BR-MENU-005** (validate ở `CreateMealPlanPage/validate.ts` trước khi gửi): đúng 7 ngày liên
-tiếp; 1–3 bữa/ngày; ≤1 bữa mỗi `mealType`/ngày; `servings` nguyên ≥ 1; `dishId` tồn tại và
+**BR-MENU-005** (validate ở `menus/create/validate.ts` trước khi gửi): đúng 7 ngày liên
+tiếp `startDate..startDate+6` — **`startDate` thứ mấy cũng được**, backend không kiểm Thứ 2;
+1–3 bữa/ngày; ≤1 bữa mỗi `mealType`/ngày; `servings` nguyên ≥ 1; `dishId` tồn tại và
 chưa xoá mềm; một món **≤ 3 lần**; **≥ 5 món khác nhau**.
 
 **BR-MENU-007**: `drafted` không bao giờ là đích; no-op cũng 409. Schedule trùng tuần menu
@@ -334,37 +451,44 @@ owner qua endpoint trên (hoặc chatbot AI gọi cùng endpoint đó).
 `GET /api/dishes` (dùng cho picker) chỉ trả món `moderation_status = APPROVED`; món member tạo
 chưa duyệt không chọn được.
 
-## 11. Comment — ✅ đọc + tạo
+## 11. Comment — ✅ đọc + tạo + trả lời + sửa + xoá + báo cáo
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
-| GET /api/posts/{postId}/comments | ✅ `getPostComments` | **public**, `page` (0-based, default 0) / `size` (default 20, 1–100). Spring page của comment **gốc**, mỗi phần tử mang sẵn cả cây `replies[]` (không phân trang riêng). Item: `id, userId, username, avatarUrl, content, edited, deleted, createdAt, updatedAt, replies[]`; xoá mềm → `content: "[deleted]"` + author null, reply vẫn nằm trong cây. Sort `createdAt ASC` |
+<<<<<<< HEAD
+| GET /api/posts/{postId}/comments | ✅ `getPostComments` | **public**, `page` (0-based, default 0) / `size` (default 20, 1–100). Spring page của comment **gốc**, mỗi phần tử mang sẵn cả cây `replies[]` (không phân trang riêng). Item live (`CommentThreadResponse`): `id, userId, **displayName**, avatarUrl, content, edited, deleted, createdAt, updatedAt, replies[]`; xoá mềm → `content: "[deleted]"` + author null, reply vẫn nằm trong cây. Sort `createdAt ASC` |
 | POST /api/posts/{postId}/comments | ✅ `createComment` | PostDetailPage — form chỉ hiện khi đăng nhập, `parentId` luôn `null` (UI chưa mở reply) |
 | PATCH /api/posts/{postId}/comments/{commentId} | ❌ | `{content}` — chủ comment |
 | DELETE /api/posts/{postId}/comments/{commentId} | ❌ | chủ comment hoặc admin |
 | POST /api/posts/{postId}/comments/{commentId}/report | ❌ | |
+=======
+| GET /api/posts/{postId}/comments | ✅ `getPostComments` | **public**, `page` (0-based, default 0) / `size` (default 20, 1–100). Spring page của comment **gốc**, mỗi phần tử mang sẵn cả cây `replies[]` (không phân trang riêng). Item: `id, userId, username, avatarUrl, content, edited, deleted, createdAt, updatedAt, replies[]`; xoá mềm → `content: "[deleted]"` + author null, reply vẫn nằm trong cây. Sort `createdAt ASC` |
+| POST /api/posts/{postId}/comments | ✅ `createComment` | Gửi comment gốc (`parentId: null`) hoặc reply lồng (`parentId: UUID`) — form chỉ hiện khi đăng nhập |
+| PATCH /api/posts/{postId}/comments/{commentId} | ✅ `updateComment` | `{content}` — sửa nội dung trực tiếp, chỉ chủ comment |
+| DELETE /api/posts/{postId}/comments/{commentId} | ✅ `deleteComment` | Xoá comment (chủ comment hoặc admin) kèm xác nhận |
+| POST /api/posts/{postId}/comments/{commentId}/report | ✅ `reportComment` | `{reason}` — báo cáo vi phạm bình luận |
+>>>>>>> dev
 
-`CommentsSection` phân trang 20 root/trang; `POST` trả `CommentResponse` (thiếu `username`/`replies`)
-nên sau khi gửi phải `invalidateQueries(["post-comments", postId])` để đọc lại từ GET —
-đừng render thẳng từ response.
+🔴 **`username` → `displayName`**: `CommentThreadResponse` live trả `displayName` (curl
+2026-11-06 xác nhận `{"displayName":"Haha1122", ...}`) — **không có `username`**.
+[CommentThread.tsx:21](src/features/posts/components/CommentThread.tsx#L21) đọc
+`comment.username` → luôn `undefined` → mọi comment hiện nhãn "đã xoá".
+`PostCommentThread` ([types.ts:78-95](src/features/posts/types.ts#L78-L95)) phải đổi
+`username: string | null` → `displayName: string | null`. `ApiComment` (shape của `POST`)
+live = `id, postId, parentId, userId, content, edited, createdAt, updatedAt` — khớp type hiện tại.
 
-## 12. Comment moderation (Admin) — ❌ chưa làm
+`CommentsSection` phân trang 20 root/trang; `POST` trả `CommentResponse` (thiếu
+`displayName`/`replies`) nên sau khi gửi phải `invalidateQueries(["post-comments", postId])
+để đọc lại từ GET — đừng render thẳng từ response.
+
+## 12. Comment moderation (Admin) — ✅ hoàn thành
 
 | Endpoint | Ghi chú |
 |---|---|
-| GET /api/admin/comments | Nhận `page`/`size` **+ `status`** (`active`\|`removed`) **+ `userId` + `postId` + `sort`**. Row có `status` + `reportCount` |
+| GET /api/admin/comments | ⚠️ `CommentListRequest` live = **`page,size`** thôi — swagger lại ẩn `status`/`userId`/`postId`/`sort` (cùng bệnh với `PostListRequest`). Row `CommentListResponse` = `id, postId, parentId, userId, **displayName**, content, status, reportCount, createdAt, updatedAt` |
 | POST /api/admin/comments/{commentId}/moderate | `{reason}` bắt buộc, ≤1000 ký tự. Soft-delete, reply giữ `parentId` |
 
-Spec 2026-11-02 xác nhận lại: `sort` whitelist chỉ `createdAt|updatedAt`; có thêm
-`createdFrom`/`createdTo`; **không có value `all`** — bỏ trống param để lấy cả hai trạng thái;
-`parentId` trả thô, BE không resolve thread. Moderated comment là soft-delete: `deletedAt` set,
-reply giữ `parentId` (khớp `DELETE /api/posts/{postId}/comments/{commentId}`).
-404 khi comment không tồn tại **hoặc đã soft-delete**. Mỗi lần moderate ghi `moderation_log`
-(actor, `MODERATE_COMMENT`, `COMMENT`, targetId, reason).
-
-Route `/admin/comments` chưa dựng — mục sidebar còn `ready: false`
-([AdminShell.tsx:16](src/features/admin/AdminShell.tsx#L16)). Backend đã đủ để dựng ngay:
-lọc theo `status`/`userId`/`postId` chạy ở server, không cần lọc client.
+Route `/admin/comments` đã hoàn thành và bật trên sidebar (`ready: true`). Có bộ lọc trạng thái, sắp xếp, tìm kiếm client-side theo từ khoá, và dialog kiểm duyệt nhập lý do ghi vào audit log.
 
 ## 13. Vote — ✅ đọc + bấm trên card Explore
 
@@ -374,7 +498,8 @@ lọc theo `status`/`userId`/`postId` chạy ở server, không cần lọc clie
 | PUT /api/posts/{postId}/votes | ✅ | `setPostVote` — `{voteType: "UPVOTE"\|"DOWNVOTE"}`, **cần JWT**. Gửi lại cùng `voteType` để bỏ vote (BE toggle) |
 
 UI vote **chỉ có trên card Explore** (2026-11-02); Post Detail cố ý không có — mockup chốt
-không vẽ thanh vote ở trang chi tiết.
+không vẽ thanh vote ở trang chi tiết. Đã tích hợp **Optimistic Update** (cập nhật giao diện 0ms
+khi bấm vote/toggle và rollback tự động nếu lỗi mạng) cùng bộ unit test đầy đủ ở PostVoteButtons.test.tsx.
 
 ## 14. Home feeds — ✅ đủ
 
@@ -395,11 +520,36 @@ Nhãn trạng thái dùng `PostStatusBadge` (i18n `common:postStatus.*`).
 **Post Detail còn gọi thêm** (2026-11-02): `GET /api/recipes/{recipeId}` (§19, `AttachedRecipes`
 — render `post.recipeIds`, cần JWT). Bình luận nằm ở sidebar phải, dưới thẻ meta.
 
-## 16. Search — ❌ chưa làm
+## 15b. Saved content — ✅ đủ 6 endpoint
 
+`src/features/saved/` — route `/saved` trong rail tài khoản (`AccountLayout`).
+
+| Endpoint | Hàm | UI |
+|---|---|---|
+| GET /api/saved/posts?page&size | `getSavedPosts` | SavedPage tab Posts (phân trang **server**) |
+| GET /api/saved/recipes?page&size | `getSavedRecipes` | SavedPage tab Recipes, `useAttachableRecipes` |
+| POST /api/saved/posts/{postId} | `savePost` | `SavePostButton` — card feed, Post Detail |
+| DELETE /api/saved/posts/{postId} | `unsavePost` | `SavePostButton`, SavedPage |
+| POST /api/saved/recipes/{recipeId} | `saveRecipe` | `SaveRecipeButton` — RecipeDetailDialog |
+| DELETE /api/saved/recipes/{recipeId} | `unsaveRecipe` | `SaveRecipeButton`, SavedPage |
+
+**Không có endpoint "đã lưu hay chưa"** → `useSaved.ts` tải một trang 100 mục mỗi danh sách
+(`ID_SCAN_SIZE`) rồi cache thành Set id; nút Save đọc Set đó. Vượt 100 mục phải xin backend
+trả cờ `saved` trên từng item, hoặc `GET /api/saved/{type}/{id}/exists`.
+
+`GET /api/saved/posts` trả `displayName`/`avatarUrl`/`userId` (tác giả thật) và **không** có
+`type`/`videoUrl`; `GET /api/saved/recipes` trả đủ shape `Recipe` (ingredients + dinh dưỡng)
+→ `RecipeDetailDialog` dựng trực tiếp từ response, không gọi thêm `GET /api/recipes/{id}`.
+
+**Recipe đã lưu gắn được vào bài mới**: `useAttachableRecipes` gộp `GET /api/recipes/me` +
+`GET /api/saved/recipes` (dedupe theo id), nên `RecipePickerDialog` và chip công thức trong
+`PostComposerDialog` đều thấy chúng. `openComposer(null, [recipeId])` mở composer với công thức
+gắn sẵn — nút "Viết bài từ công thức này" ở SavedPage và RecipeDetailDialog.
+
+## 16. Search — ❌ chưa làm
 | Endpoint | Ghi chú |
 |---|---|
-| GET /api/search | `q`, `type=post\|video\|recipe`, `categoryId`, `dateFrom`, `dateTo`, `page`, `size` → `[{type, id, title, snippet, categoryIds, createdAt}]` |
+| GET /api/search | `SearchRequest` live = `q, type(POST\|VIDEO\|RECIPE), categoryId, dateFrom, dateTo, page, size` → `PageResponse<SearchResultItem>`, item = `{type, id, title, snippet, categoryIds, createdAt}` |
 
 Search trên Navbar hiện điều hướng sang `/explore?q=`, lọc client-side 60 bài feed.
 
@@ -412,31 +562,57 @@ Search trên Navbar hiện điều hướng sang `/explore?q=`, lọc client-sid
 | PATCH /api/posts/{id} `{publish}` | ✅ `unpublishPost` | MyPostsPage. `publishPost` không dùng — hệ thống tự publish |
 | DELETE /api/posts/{postId} | ✅ `deletePost` | MyPostsPage, Admin PostsPage |
 
+🟢 **`PostListResponse` live đã có `userId`, `displayName`, `avatarUrl`** (curl
+`/api/posts/feed` 2026-11-06: `["id","userId","displayName","avatarUrl","title","content",
+"rawContent","featuredImageUrl","categoryIds","mediaIds","recipeIds","status","rejectionReason",
+"viewCount","publishedAt","createdAt"]`; `flag`/`flagDetail` đã bị bỏ khỏi response member
+ở V58). Tức **`mockAuthors.ts` bơm tác giả giả đã hết cần
+thiết** — card có thể đọc `post.displayName`/`post.avatarUrl` thật. `PostListResponse` type
+([types.ts:149](src/features/posts/types.ts#L149)) chưa khai `userId`/`displayName`/`avatarUrl`
+và vẫn có `type`/`videoUrl` (BE **không** trả — đã verify cả hai vắng mặt).
+`enrichListItem` vẫn gọi `getAuthorCard(post.id)` → đang ghi đè tên thật bằng tên bịa.
+
 MyPostsPage: draft (`created`) **xoá được** — `DELETE /api/posts/{id}` chỉ kiểm chủ bài + `deletedAt IS NULL`, không xét `status` (backend `PostService.deletePost`). Sửa draft cũng **mở được**: `GET /api/posts/{id}` trả mọi status (BR-POST-011, `findDetailById` chỉ lọc `deletedAt`) và `PATCH /api/posts/{id}` nhận owner với mọi status (`findManageablePost`). Chỉ "ngừng đăng" (`unpublishPost`) mới cần `status === "published"`.
 
-MyPostsPage tabs My Videos / Saved Recipes / My Activity → `unsupported` (chờ API).
+MyPostsPage tabs My Videos / Saved Recipes / My Activity → My Videos + My Activity `unsupported`; Saved Recipes đã có route riêng `/saved`.
 
 ## 18. My videos — ❌ chưa làm
 
 Không có endpoint riêng; dùng `GET /api/admin/videos?userId=` (ADMIN) hoặc chờ backend mở cho user.
 
-## 19. Recipe — ✅ tạo + danh sách của mình + gợi ý
+## 19. Recipe — 🔴 vỡ shape dinh dưỡng (V49/V50)
 
 | Endpoint | Trạng thái | UI |
 |---|---|---|
-| POST /api/recipes | ✅ `createRecipe` | CreateRecipePage |
+| POST /api/recipes | 🔴 `createRecipe` | CreateRecipePage — **không còn nhận 5 field dinh dưỡng** |
 | GET /api/dishes | ✅ `searchDishes` | gợi ý tên món (CreateRecipePage, DishPicker) |
-| GET /api/ingredients | ✅ `searchIngredients` | gợi ý tên nguyên liệu trong form |
-| GET /api/recipes/me | ✅ `getMyRecipes` | MyRecipesPage — **mảng phẳng**, không phân trang/lọc → client tự lọc |
-| GET /api/recipes/{recipeId} | ✅ `getRecipe` | **Dùng ở Post Detail** (`AttachedRecipes`, 2026-11-02) để render `post.recipeIds`. MyRecipesPage vẫn cố ý không gọi — row trong list đủ field cho dialog |
-| GET /api/dishes/{dishId} | ❌ | |
-| GET /api/dishes/suggestions | ❌ | Gợi ý theo cuisine/difficulty/thời gian/calo/protein + `recipesPerDish` |
+| GET /api/ingredients | ✅ `searchIngredients` | gợi ý tên nguyên liệu trong form — **có `unit`** (`G\|ML\|PIECE\|null`), form hiện đơn vị đã lưu ở ô read-only khi chọn nguyên liệu có sẵn |
+| GET /api/recipes/me | ⚠️ `getMyRecipes` | MyRecipesPage — **mảng phẳng**, không phân trang/lọc → client tự lọc. Trả thêm 5 tổng + `nutritionResolved` |
+| GET /api/recipes/{recipeId} | ✅ `getRecipe` | **Post Detail** (`AttachedRecipes`) + **dialog món ở `/meal-plan`** (`MealRecipeDialog`, gọi theo `recommendedRecipes[].id`). Owner-only — recipe người khác là **404**; dialog rơi về card tóm tắt dựng từ response tuần |
+| GET /api/dishes/{dishId} | ❌ | `DishResponse` = `id,name,description,imageUrl,cuisineType` (không có `createdAt`) |
+| GET /api/dishes/suggestions | ❌ | Không chỉ cuisine/difficulty/thời gian — **có 10 filter dinh dưỡng** (`min/max` × calories/protein/carb/fat/fiber) + `recipesPerDish` |
 
-`POST /api/recipes` nhận thêm 5 field dinh dưỡng optional: `calories`, `proteinG`,
-`carbohydrateG`, `fatG`, `fiberG` (number ≥ 0). **UI đã bỏ ô nhập** (2026-10-30, mockup không có);
-`schema.ts`/`payload.ts` vẫn validate + gửi được — payload bỏ field rỗng nên mặc định không gửi gì.
-Cả 5 có mặt trong `RecipeResponse` — **chưa màn nào render** (thẻ MyRecipesPage đã bỏ 4 ô macro
-2026-10-30, mockup không có).
+### 19b. V49/V50 — dinh dưỡng tính từ nguyên liệu (BE `991a7ef`)
+
+Nguồn chi tiết: `DOCS/frontend-api-changes-ingredient-nutrition.md` + plan ở
+`DOCS/PLAN-INGREDIENT-NUTRITION.md`. Tóm tắt phần ảnh hưởng shape:
+
+| # | Thay đổi | FE hiện tại |
+|---|---|---|
+| 1 | `POST /api/recipes` **bỏ** `calories/proteinG/carbohydrateG/fatG/fiberG` | `CreateRecipeRequest` + `payload.ts` vẫn gửi — BE **bỏ qua**, không lưu. Phải xoá |
+| 2 | Line `unit` **optional**, normalize về `G`/`ML`/`PIECE` | `RecipeIngredientInput.unit: string` (bắt buộc), schema `.required()`, `UNIT_SUGGESTIONS` = `kg/l/tbsp/tsp/cup/clove/pinch` → **`tbsp`/`kg` cho nguyên liệu MỚI trả 400** |
+| 3 | `unit` **bị bỏ qua** cho nguyên liệu đã tồn tại | FE không biết điều này; member gõ `2 quả` cho `đậu hũ` (lưu `G`) → thành `2 g` |
+| 4 | Recipe reads thêm 5 tổng + `nutritionResolved` | `Recipe` type **chưa có** `nutritionResolved`; 5 field tồn tại nhưng **không màn nào render** |
+| 5 | `RecipeIngredientResponse.unit` có thể **`null`** | `RecipeIngredient.unit: string` → dialog admin có thể in `"200 null"` |
+| 6 | `AdminRecipeListResponse` **không** có tổng dinh dưỡng | `AdminRecipe extends Omit<Recipe,"dishName">` → type hứa field BE không gửi |
+
+`RecipeResponse` live (đủ): `id, userId, dishId, dishName, dishModerationStatus,
+moderationStatus, name, description, instructions, prepTimeMinutes, cookTimeMinutes, servings,
+difficulty, ingredients, missingRequiredIngredients, **calories, proteinG, carbohydrateG, fatG,
+fiberG, nutritionResolved**, createdAt, updatedAt`.
+
+`0.00` là câu trả lời thật (nước = 0 kcal); `null` = "catalogue chưa định giá được công thức".
+**Không** quy `null` → `0`. Tổng là **cả công thức**, không phải per-serving.
 
 Chưa có trang danh sách/chi tiết recipe công khai (recipe của **người khác**) — `/recipes`
 chỉ hiện công thức của chính mình. Chưa gán recipe vào bài:
@@ -486,33 +662,40 @@ Bản đồ: react-leaflet (`features/locations/components/PlaceMap.tsx`).
 
 `useAiChat` giữ state chat; khách chưa đăng nhập bị chặn ở ô nhập (mọi endpoint cần JWT).
 
-## 24. AI Subscription — ✅ đã làm (UI `/subscription`)
+## 24. AI Subscription — 🔴 shape đã đổi
 
 | Endpoint | Trạng thái | Hàm |
 |---|---|---|
-| GET /api/subscriptions | ✅ | `getPlans` — public, plain array theo `sort_order` |
-| GET /api/subscriptions/me | ✅ | `getMySubscription` (`nutrition-ai/subscriptionApi`) |
-| GET /api/subscriptions/me/history | ✅ | `getSubscriptionHistory` — `{planCode, planName, status, startedAt, renewalDate, cancelledAt, createdAt}[]` |
-| POST /api/subscriptions/me/cancel | ✅ | `cancelSubscription` — huỷ ngay, gọi lần 2 → 409 |
-| POST /api/subscriptions/me/purchase/eligibility | ✅ | `checkPurchaseEligibility` — 200 nếu được mua, 400/409 kèm lý do |
+| GET /api/subscriptions | ✅ | `getPlans` — public, plain array. Row live = `AvailablePlanResponse{code,name,description,requestQuota,price{amount,currency}}` — **`monthlyRequestLimit` không tồn tại**, tên đúng là `requestQuota` |
+| GET /api/subscriptions/me | 🔴 | `getMySubscription` — response live = `{remainingUsage}` **duy nhất**. Không có `tier`/`status`/`renewalDate`/`usage`/`currentPlan`/`latestPayment` |
+| GET /api/subscriptions/me/history | 🔴 | `getSubscriptionHistory` — row live = `{planCode, planName, source(PURCHASE\|CLAIM), grantedAt, paymentId, amount, currency, status, createdAt}`. Không có `startedAt`/`renewalDate`/`cancelledAt` |
+| POST /api/subscriptions/acquire | ❌ | **Endpoint mới thay `checkout` + `cancel`**. Body `{planCode}` (bắt buộc, minLength 1) → `{planCode, action: CLAIMED\|CHECKOUT_CREATED, remainingUsage, paymentId?, txnRef?, paymentUrl?, amount?, currency?, status?}` |
+| ~~POST /api/subscriptions/me/cancel~~ | ❌ **không còn trong spec** | `cancelSubscription` gọi path chết |
+| ~~POST /api/subscriptions/me/purchase/eligibility~~ | ❌ **không còn trong spec** | `checkPurchaseEligibility` gọi path chết |
 
-## 25. Payment (VNPay) — ✅ đã làm (UI `/subscription` + `/payment/result/:paymentId`)
+`action` quyết định UI: `CLAIMED` = gói FREE đã nhận, không đi thanh toán;
+`CHECKOUT_CREATED` = có `paymentUrl` để redirect VNPay.
+
+## 25. Payment (VNPay) — 🔴 shape đã đổi
 
 | Endpoint | Trạng thái | Hàm |
 |---|---|---|
-| POST /api/payments/checkout | ✅ | `createCheckout` → `{paymentId, txnRef, planCode, amount, currency, status, paymentUrl}` |
-| GET /api/payments | ✅ | `getPayments` — lịch sử của chính mình, mới nhất trước |
-| GET /api/payments/{paymentId} | ✅ | `getPayment` — `PaymentResultPage` poll 3s khi còn `pending` |
+| ~~POST /api/payments/checkout~~ | ❌ **không còn trong spec** | `createCheckout` gọi path chết — dùng `POST /api/subscriptions/acquire` |
+| GET /api/payments | ⚠️ | `getPayments` — row live `PaymentHistoryItemResponse` = `{id, amount, currency, status, provider, txnRef, paidAt, createdAt, userId}` — **không có `plan`/`subscription`** |
+| GET /api/payments/{paymentId} | 🔴 | `getPayment` — live `PaymentStatusResponse` = `{paymentId, status, amount, currency, createdAt, paidAt}` — **không có `plan`** → [PaymentResultPage.tsx:44](src/features/subscription/pages/PaymentResultPage/PaymentResultPage.tsx#L44) `plan.name` crash |
 | GET/POST /api/payments/vnpay/ipn | — | backend-only, FE không gọi. IPN là nguồn sự thật, redirect chỉ để hiển thị |
+
+Muốn hiện plan name ở trang kết quả: hoặc `GET /api/subscriptions/me/history?page=0` tìm theo
+`paymentId`, hoặc bỏ hẳn dòng plan (khuyến nghị — response không cam kết có).
 
 ## 26. Admin payments / plans / settings — ❌ chưa làm
 
 | Endpoint | Ghi chú |
 |---|---|
-| GET /api/admin/payments | `page`/`size`/`userId`/`status=pending\|succeeded\|failed\|refunded`/`createdFrom`/`createdTo`. Row có `userId`, `subscription{id,status,startedAt,renewalDate}`, `plan{code,name,monthlyRequestLimit,price{amount,currency}}` (cả hai `null` được). Pure ledger read, không gọi gateway, sort `createdAt desc` |
-| GET /api/admin/plans | Trả mảng, không phân trang. `{id, code, name, monthlyRequestLimit, priceAmount, priceCurrency, active, sortOrder, createdAt, updatedAt}` |
-| POST /api/admin/plans | `code` bất biến sau khi tạo, tự uppercase; 409 nếu trùng (so case-insensitive) |
-| PATCH /api/admin/plans/{planId} | 400 khi không gửi field nào; 404 plan không tồn tại; 409 khi tắt `active` của plan FREE |
+| GET /api/admin/payments | `AdminPaymentListRequest` = `page,size,userId,status,createdFrom,createdTo`. Row = `PaymentHistoryItemResponse{id,amount,currency,status,provider,txnRef,paidAt,createdAt,userId}` — 🟢 **live KHÔNG có `subscription`/`plan`** (khác doc cũ mô tả). Pure ledger read, sort `createdAt desc` |
+| GET /api/admin/plans | Trả mảng. Row live `AdminPlanResponse` = `{id, code, name, description, **requestQuota**, priceAmount, priceCurrency, active, sortOrder, createdAt, updatedAt}` |
+| POST /api/admin/plans | `AdminPlanCreateRequest` = `code,name,description,requestQuota,priceAmount,priceCurrency,active,sortOrder`. `code` bất biến, tự uppercase; 409 nếu trùng |
+| PATCH /api/admin/plans/{planId} | 400 khi không gửi field nào; 404; 409 khi tắt `active` của plan FREE |
 | DELETE /api/admin/plans/{planId} | Thực chất là deactivate. 409 với FREE |
 | GET /api/admin/settings | Trả nhóm `{category, items[{key, value, updatedAt}]}` |
 | PATCH /api/admin/settings | `{settings}` — mỗi thay đổi ghi `moderation_log` |
@@ -524,9 +707,9 @@ fallback mặc định của BR-SUBS-003.
 
 | Endpoint | Trạng thái |
 |---|---|
-| GET /api/admin/dashboard | ❌ **backend đã có**. `?range`/`from`/`to` → `{range, users{total,newInRange,activeInRange}, content{totalPosts,newPosts,totalRecipes,newRecipes,totalComments,newComments}, engagement{votesInRange,commentsInRange}, moderationQueue{pendingPosts,pendingRecipes,reportedComments}}` |
+| GET /api/admin/dashboard | ❌ **backend đã có** (verify live 2026-11-06). Response `DashboardResponse` = `{range{type,from,to}, users{total,newInRange,activeInRange}, content{totalPosts,newPosts,totalRecipes,newRecipes,totalComments,newComments}, engagement{votesInRange,commentsInRange}, moderationQueue{pendingPosts,pendingRecipes,reportedComments}}` |
 
-`features/admin/dashboardApi.ts` vẫn trả số giả — **xoá được ngay**.
+`features/admin/dashboardApi.ts` vẫn trả số giả — **xoá được ngay**, shape khớp 1:1.
 
 ---
 
@@ -534,24 +717,27 @@ fallback mặc định của BR-SUBS-003.
 
 1. ~~🔴 **Sửa `moderatePost` → `approvePost`/`rejectPost`**~~ — ✅ xong 2026-11-02.
    Nút "Ngừng đăng" đã bỏ khỏi `/admin/posts` (không còn endpoint admin để bỏ bài đã publish).
-2. **Dashboard thật** — `GET /api/admin/dashboard` đã có, bỏ mock `dashboardApi.ts`.
-3. **Comment** — ✅ GET đã gọi (2026-10-29). Còn: mở UI trả lời (`parentId`), sửa/xoá comment.
-4. **Upload video thật** — thay ô nhập tay `videoUrl` bằng grant → upload → confirm →
+2. 🔴 **Đăng ký** — `username` → `displayName` (§1). Chặn đứng mọi user mới.
+3. 🔴 **Bình luận** — `username` → `displayName` (§11). Mọi bình luận đang hiện "đã xoá".
+4. 🔴 **Subscription + payment** — đổi sang `POST /api/subscriptions/acquire`; sửa
+   `getSubscriptionHistory`/`getPayment`/`getPayments`; bỏ `plan` khỏi trang kết quả (§24/25).
+   `cancel`/`eligibility`/`checkout` phải xoá hoặc chờ BE trả lại.
+5. 🔴 **Recipe V49/V50** — xoá 5 field dinh dưỡng khỏi schema/payload; `unit` optional +
+   giới hạn `g/ml/piece`; render 5 tổng + `nutritionResolved` (§19b). Plan chi tiết:
+   `DOCS/PLAN-INGREDIENT-NUTRITION.md`.
+6. **Dashboard thật** — `GET /api/admin/dashboard` đã có, bỏ mock `dashboardApi.ts`.
+7. **Bỏ `mockAuthors`** — `PostListResponse` đã trả `userId`/`displayName`/`avatarUrl` (§17).
+8. **Comment** — còn: mở UI trả lời (`parentId`), sửa/xoá comment.
+9. **Upload video thật** — thay ô nhập tay `videoUrl` bằng grant → upload → confirm →
    `POST /api/posts/{id}/media`.
-5. **Trang profile công khai** — `GET /api/profile/{userId}` + `GET /api/users/{userId}/posts`.
-6. **Recipe công khai** — còn `GET /api/recipes/{id}` (BE đã có, dùng khi cần trang chi tiết riêng).
-7. **Sửa nội dung menu** — `PATCH /api/menus/{menuId}` (giai đoạn B2; tạo + đổi status đã xong).
-8. **Admin moderation mới** — `GET /api/admin/posts/{id}` (component list), quản lý
-   dish/ingredient (§10b), comment moderation. (Recipe approve/reject đã xong.)
-9. **Vote + Search** — `PUT/GET /api/posts/{id}/votes`, `GET /api/search`.
-10. ~~**Subscription + Payment**~~ — ✅ xong: history/cancel/eligibility + checkout VNPay
-    (`/subscription`, `/payment/result/:paymentId`). Còn §26 (admin payments/plans/settings) chưa làm.
-11. **Google OAuth** — `POST /api/auth/google` đã có ở backend.
-12. **Xác nhận tham số FE gửi mà spec 2026-11-02 không mô tả** — `moderationStatus` ở
-    `GET /api/admin/recipes` (§10). Query của spec chỉ có `page`/`size`/`sort`/`userId`/
-    `categoryId`/`createdFrom`/`createdTo`, và row cũng không có `moderationStatus` — nếu
-    đúng vậy thì `<Select>` Pending/Approved/Rejected ở `AdminRecipesPage` **chết lặng**
-    (trả về mọi trạng thái, không báo lỗi). Verify trước, đây là chỗ nặng nhất.
+10. **Trang profile công khai** — `GET /api/profile/{userId}` + `GET /api/users/{userId}/posts`.
+11. **Sửa nội dung menu** — `PATCH /api/menus/{menuId}` (giai đoạn B2; tạo + đổi status đã xong).
+12. **Admin moderation mới** — `GET /api/admin/posts/{id}` (component list), quản lý
+    dish/ingredient (§10b — backend đã đủ 13 endpoint), comment moderation.
+13. **Vote + Search** — `PUT/GET /api/posts/{id}/votes` (đã xong), `GET /api/search`.
+14. **Google OAuth** — `POST /api/auth/google` đã có ở backend và FE đã gọi.
+
+---
 
 ## Hàm có nhưng chưa nơi nào gọi
 
@@ -564,7 +750,7 @@ fallback mặc định của BR-SUBS-003.
 | File | Dùng bởi | Thay bằng |
 |---|---|---|
 | `src/features/admin/dashboardApi.ts` | `AdminDashboardPage` | `GET /api/admin/dashboard` |
-| `src/features/posts/mockAuthors.ts` | `features/posts/api.ts` | `GET /api/profile/{userId}` |
-| `src/features/posts/mockEnrichment.ts` | `features/posts/api.ts` (`enrichListItem`, `getMockActivity` — cấp card; `getMockComments`/`enrichDetail` đã xoá 2026-10-29) | `GET /api/posts/{id}/related`, `/votes` |
+| `src/features/posts/mockAuthors.ts` | `features/posts/api.ts` | 🟢 **`displayName`/`avatarUrl`/`userId` của `PostListResponse`** — không cần `GET /api/profile/{userId}` nữa |
+| `src/features/posts/mockEnrichment.ts` | `features/posts/api.ts` (`enrichListItem`, `getMockActivity` — cấp card) | `GET /api/posts/{id}/related`, `/votes`. Phần tác giả xoá được ngay |
 | `src/features/categories/mocks.ts` | `features/admin/dashboardApi.ts` | xoá cùng dashboard mock |
 | `src/shared/utils/delay.ts` | `features/admin/dashboardApi.ts`, `src/test/fakeLocationService.ts` | — |

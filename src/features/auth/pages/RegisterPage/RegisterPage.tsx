@@ -18,8 +18,8 @@ import { decodeJwt } from "@/shared/utils/jwt";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import type { RegisterRequest, UserRole } from "@/shared/types/user";
 
-const MIN_USERNAME = 3;
-const MAX_USERNAME = 50;
+const MIN_DISPLAY_NAME = 2;
+const MAX_DISPLAY_NAME = 100;
 const MAX_EMAIL = 100;
 const MIN_PASSWORD = 8;
 
@@ -33,12 +33,11 @@ export default function RegisterPage() {
     const registerSchema = useMemo(
         () =>
             Yup.object({
-                username: Yup.string()
+                displayName: Yup.string()
                     .trim()
-                    .required(t("errors.usernameRequired"))
-                    .min(MIN_USERNAME, t("errors.usernameMin"))
-                    .max(MAX_USERNAME, t("errors.usernameMax"))
-                    .matches(/^[a-zA-Z0-9_.]+$/, t("errors.usernameFormat")),
+                    .required(t("errors.displayNameRequired"))
+                    .min(MIN_DISPLAY_NAME, t("errors.displayNameMin"))
+                    .max(MAX_DISPLAY_NAME, t("errors.displayNameMax")),
                 email: Yup.string()
                     .trim()
                     .required(t("errors.emailRequired"))
@@ -108,7 +107,7 @@ export default function RegisterPage() {
     });
 
     const formik = useFormik<RegisterRequest>({
-        initialValues: { username: "", email: "", password: "", confirmPassword: "" },
+        initialValues: { displayName: "", email: "", password: "", confirmPassword: "" },
         validationSchema: registerSchema,
         onSubmit: async (values, { setSubmitting }) => {
             try {
@@ -139,20 +138,20 @@ export default function RegisterPage() {
 
             <form onSubmit={formik.handleSubmit} noValidate className="space-y-5">
                 <FormField
-                    label={t("register.usernameLabel")}
-                    htmlFor="username"
+                    label={t("register.displayNameLabel")}
+                    htmlFor="displayName"
                     required
-                    error={formik.touched.username ? formik.errors.username : undefined}
+                    error={formik.touched.displayName ? formik.errors.displayName : undefined}
                 >
                     <Input
-                        id="username"
-                        name="username"
+                        id="displayName"
+                        name="displayName"
                         type="text"
-                        placeholder={t("register.usernamePlaceholder")}
-                        value={formik.values.username}
+                        placeholder={t("register.displayNamePlaceholder")}
+                        value={formik.values.displayName}
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
-                        aria-invalid={formik.touched.username && !!formik.errors.username}
+                        aria-invalid={formik.touched.displayName && !!formik.errors.displayName}
                     />
                 </FormField>
 

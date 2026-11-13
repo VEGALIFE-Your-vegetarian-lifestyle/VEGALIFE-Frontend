@@ -21,11 +21,12 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PostStatusBadge } from "../../components/PostStatusBadge";
 import { useListParams } from "@/shared/hooks/useListParams";
-import { deletePost, getMyPosts } from "../../api";
+import { deletePost, getMyPosts, getMyPostsCounts } from "../../api";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Pagination } from "@/components/common/Pagination";
+import { RejectionReason } from "@/components/common/RejectionReason";
 import { useUiStore } from "@/shared/ui/uiStore";
 import { estimateReadMinutes, formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
@@ -38,7 +39,8 @@ const PAGE_SIZE = 8;
 const STATUS_FILTERS: { value: PostStatus | ""; labelKey: string; countKey: keyof MyPostsCounts }[] = [
     { value: "", labelKey: "statusAll", countKey: "all" },
     { value: "published", labelKey: "statusPublished", countKey: "published" },
-    { value: "created", labelKey: "statusDraft", countKey: "draft" },
+    { value: "processing", labelKey: "statusPending", countKey: "processing" },
+    { value: "drafted", labelKey: "statusDraft", countKey: "draft" },
     { value: "unpublished", labelKey: "statusUnpublished", countKey: "unpublished" },
 ];
 
@@ -58,9 +60,17 @@ export default function MyPostsPage() {
         placeholderData: keepPreviousData,
     });
 
+    // Số trên chip + rail tài khoản = toàn tài khoản, không đổi theo trang/lọc.
+    const { data: counts } = useQuery({
+        queryKey: ["my-posts", "counts"],
+        queryFn: getMyPostsCounts,
+        // Bài vừa gửi tự flip status sau vài giây nên phải poll bảng đếm, không phải danh sách.
+        // ponytail: bài kẹt `processing` (FILTER_SKIPPED chờ admin) khiến poll chạy mãi tới khi
+        // rời trang; React Query tự tạm dừng khi tab ẩn. Thêm backoff nếu thành vấn đề tải.
+        refetchInterval: (query) => ((query.state.data?.processing ?? 0) > 0 ? 3000 : false),
+    });
+
     const posts = useMemo(() => data?.data ?? [], [data]);
-    // Đếm toàn tài khoản — tính trong `getMyPosts` TRƯỚC khi lọc, nên đổi trang/lọc không nhảy số.
-    const counts = data?.counts;
 
     const invalidate = () => queryClient.invalidateQueries({ queryKey: ["my-posts"] });
 
@@ -209,7 +219,7 @@ interface PostManageRowProps {
 /** Hàng ngang: thumbnail 104px · tiêu đề 1 dòng · trích đoạn 1 dòng · meta + hành động. */
 function PostManageRow({ post, language, disabled, onEdit, onDelete }: PostManageRowProps) {
     const { t } = useTranslation(["profile", "home"]);
-    const isVideo = post.type === "video";
+    const isVideo = post.mediaIds.length > 0;
     const locale = language === "vi" ? "vi-VN" : "en-US";
 
     // `GET`/`PATCH /api/posts/{id}` nhận mọi status (BR-POST-011) nên draft sửa được.
@@ -241,7 +251,7 @@ function PostManageRow({ post, language, disabled, onEdit, onDelete }: PostManag
                         <Badge variant={isVideo ? "cream" : "lightgreen"} size="sm">
                             {isVideo ? t("home:card.video") : t("home:card.recipe")}
                         </Badge>
-                        {post.status === "created" ? (
+                        {post.status === "drafted" ? (
                             <Badge variant="amber" size="sm">{t("draftVisible")}</Badge>
                         ) : (
                             <PostStatusBadge status={post.status} />
@@ -249,10 +259,8 @@ function PostManageRow({ post, language, disabled, onEdit, onDelete }: PostManag
                     </div>
                 </div>
 
-                {post.flag === "NEEDS_REVIEW" && (
-                    <Badge variant="info" size="sm" className="mt-1.5 self-start">
-                        {t("underReview")}
-                    </Badge>
+                {post.status === "unpublished" && (
+                    <RejectionReason reason={post.rejectionReason} className="mt-1.5" />
                 )}
 
                 <p className="mt-1 line-clamp-1 text-[12.5px] text-muted-foreground">{post.content}</p>

@@ -1,10 +1,10 @@
 import * as Yup from "yup";
 import type { TFunction } from "i18next";
 import type { Difficulty, RecipeIngredientInput } from "../../types";
+import { UNITS } from "../../types";
 
 export const MAX_NAME_LENGTH = 255;
 export const MAX_INGREDIENT_NAME_LENGTH = 100;
-export const MAX_UNIT_LENGTH = 30;
 export const MAX_INGREDIENTS = 50;
 
 export const DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
@@ -36,12 +36,6 @@ export interface RecipeFormValues {
     difficulty: Difficulty | "";
     steps: RecipeStep[];
     ingredients: RecipeIngredientInput[];
-    /** 5 field dinh dưỡng optional — chỉ gửi khi có giá trị. */
-    calories: string;
-    proteinG: string;
-    carbohydrateG: string;
-    fatG: string;
-    fiberG: string;
 }
 
 export function emptyIngredient(): RecipeIngredientInput {
@@ -52,9 +46,19 @@ export function emptyStep(): RecipeStep {
     return { title: "", body: "" };
 }
 
-/** Bỏ các ô bước còn trống hoàn toàn (người dùng bấm "Thêm bước" rồi thôi). */
+/**
+ * Bỏ các ô bước còn trống hoàn toàn (người dùng bấm "Thêm bước" rồi thôi).
+ * Trả bản **đã chuẩn hoá**: `Yup.object()` rỗng không fill khoá thiếu, nên một bước
+ * `{ title: undefined }` (hoặc không phải object) sẽ làm mọi chỗ đọc `.trim()` nổ.
+ */
 export function visibleSteps(steps: RecipeStep[]): RecipeStep[] {
-    return steps.filter((step) => step.title.trim() !== "" || step.body.trim() !== "");
+    if (!Array.isArray(steps)) return [];
+    return steps
+        .map((step) => ({
+            title: typeof step?.title === "string" ? step.title : "",
+            body: typeof step?.body === "string" ? step.body : "",
+        }))
+        .filter((step) => step.title.trim() !== "" || step.body.trim() !== "");
 }
 
 export function initialRecipeValues(): RecipeFormValues {
@@ -69,21 +73,8 @@ export function initialRecipeValues(): RecipeFormValues {
         difficulty: "",
         steps: [emptyStep()],
         ingredients: [emptyIngredient()],
-        calories: "",
-        proteinG: "",
-        carbohydrateG: "",
-        fatG: "",
-        fiberG: "",
     };
 }
-
-/** Số thực ≥ 0 hoặc rỗng. Khớp 5 field dinh dưỡng + số phần, khác `optionalMinutes` (số nguyên). */
-const optionalDecimal = (t: TFunction) =>
-    Yup.string().test("decimal", t("recipe:errors.numberInvalid"), (value) => {
-        if (!value || value.trim() === "") return true;
-        const trimmed = value.trim();
-        return /^\d+(\.\d+)?$/.test(trimmed) && Number(trimmed) >= 0;
-    });
 
 /** Chuẩn hoá để so trùng — khớp cách backend trim+lowercase tên nguyên liệu. */
 function normalizeName(name: string): string {
@@ -130,8 +121,12 @@ const ingredientSchema = (t: TFunction) =>
             }),
         unit: Yup.string()
             .trim()
-            .required(t("validation:required"))
-            .max(MAX_UNIT_LENGTH, t("validation:maxLength", { count: MAX_UNIT_LENGTH })),
+            // Bỏ trống được: nguyên liệu đã tồn tại thì BE bỏ qua `unit`, amount đọc theo
+            // đơn vị lưu sẵn. Khác rỗng thì phải là 1 trong 3 mã BE nhận, nếu không → 400.
+            .test("unit", t("recipe:errors.unitInvalid"), (value) => {
+                if (!value || value.trim() === "") return true;
+                return (UNITS as readonly string[]).includes(value.trim().toLowerCase());
+            }),
     });
 
 /**
@@ -141,10 +136,12 @@ const ingredientSchema = (t: TFunction) =>
  */
 const stepSchema = (t: TFunction) =>
     Yup.object().test("stepBody", t("recipe:errors.stepBodyRequired"), (step) => {
-        const row = step as RecipeStep | undefined;
+        const row = step as Partial<Record<keyof RecipeStep, unknown>> | undefined;
         if (!row) return true;
-        if (row.title.trim() === "" && row.body.trim() === "") return true;
-        return row.body.trim() !== "";
+        const title = typeof row.title === "string" ? row.title.trim() : "";
+        const body = typeof row.body === "string" ? row.body.trim() : "";
+        if (title === "" && body === "") return true;
+        return body !== "";
     });
 
 export function buildRecipeSchema(t: TFunction) {
@@ -178,10 +175,5 @@ export function buildRecipeSchema(t: TFunction) {
             .of(ingredientSchema(t))
             .min(1, t("recipe:errors.ingredientsMin"))
             .max(MAX_INGREDIENTS, t("recipe:errors.ingredientsMax")),
-        calories: optionalDecimal(t),
-        proteinG: optionalDecimal(t),
-        carbohydrateG: optionalDecimal(t),
-        fatG: optionalDecimal(t),
-        fiberG: optionalDecimal(t),
     });
 }

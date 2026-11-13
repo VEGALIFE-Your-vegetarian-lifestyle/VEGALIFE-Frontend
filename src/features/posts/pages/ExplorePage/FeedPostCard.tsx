@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
 import { PostVoteButtons } from "@/features/posts/components/PostVoteButtons";
+import { SavePostButton } from "@/features/saved/components/SaveButton";
 import { getRecipe } from "@/features/recipes/api";
+import { RecipeNutritionLine } from "@/features/recipes/components/RecipeNutritionLine";
 import { FALLBACK_IMAGE, showFallbackImage, stripMarkdown } from "@/shared/utils/display";
 import { estimateReadMinutes, formatDateLocale } from "@/shared/utils/formatDate";
 import { cn } from "@/shared/utils/cn";
@@ -133,9 +135,11 @@ export function FeedPostCard({ post, onOpenComments, featured = false }: FeedPos
 
                 {isRecipe && <AttachedRecipeBlock recipeId={post.recipeIds[0]} postId={post.id} />}
 
-                {/* Thanh hành động — vote + số bình luận + đọc tiếp. */}
+                {/* Thanh hành động — vote + lưu + số bình luận + đọc tiếp. */}
                 <div className="flex items-center gap-1 border-t border-border pt-3">
                     <PostVoteButtons postId={post.id} />
+
+                    <SavePostButton postId={post.id} iconOnly />
 
                     <button
                         type="button"
@@ -210,14 +214,8 @@ function AttachedRecipeBlock({ recipeId, postId }: { recipeId: string; postId: s
                         <Users className="h-3.5 w-3.5" aria-hidden="true" />
                         {t("post:recipes.servings", { count: recipe.servings })}
                     </span>
-                    {recipe.proteinG != null && (
-                        <span className="flex items-center gap-1">
-                            <Flame className="h-3.5 w-3.5" aria-hidden="true" />
-                            {t("explore:recipe.protein", { count: recipe.proteinG })}
-                        </span>
-                    )}
-                </div>
-            </div>
+                    <RecipeNutritionLine recipe={recipe} className="flex" />
+                </div>            </div>
             <Link
                 to={`/posts/${postId}`}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-surface px-4 py-2 text-sm font-semibold text-vegan-green shadow-sm transition-colors hover:bg-vegan-green hover:text-white"

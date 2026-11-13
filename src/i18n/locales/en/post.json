@@ -22,15 +22,37 @@
         "placeholder": "Share your own variation or tip...",
         "submit": "Post Comment",
         "loginToComment": "Sign in to join the conversation",
-        "posted": "Comment posted"
+        "posted": "Comment posted",
+        "reply": "Reply",
+        "replyTo": "Replying to",
+        "replyPlaceholder": "Reply to @{{username}}...",
+        "replySubmit": "Post Reply",
+        "replyPosted": "Reply posted",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "edit": "Edit comment",
+        "editedSuccess": "Comment updated",
+        "delete": "Delete",
+        "deletedSuccess": "Comment deleted",
+        "deleteConfirmTitle": "Delete Comment?",
+        "deleteConfirmMessage": "This comment will be deleted and displayed as [deleted]. Nested replies will be preserved.",
+        "report": "Report comment",
+        "reportTitle": "Report Comment",
+        "reportDescription": "Report this comment to platform moderators if it violates community guidelines.",
+        "reportReasonLabel": "Report reason (optional)",
+        "reportReasonPlaceholder": "Describe why this comment violates guidelines...",
+        "reportSubmit": "Submit Report",
+        "reportSuccess": "Comment reported successfully",
+        "loadError": "Unable to load comments due to server error (500).",
+        "serverSyncNotice": "Server encountered an error loading older comments (500). Your comments are safely saved and displayed."
     },
     "relatedEyebrow": "Keep Exploring",
     "relatedTitle": "Related Plant-Based Inspirations",
     "relatedSubtitle": "More community recipes and stories you might enjoy",
     "relatedViewAll": "View all articles",
     "votes": {
-        "like": "Helpful",
-        "dislike": "Not helpful",
+        "like": "Like",
+        "dislike": "Dislike",
         "loginRequired": "Sign in to vote on this post"
     },
     "sidebar": {
@@ -49,5 +71,6 @@
         "ingredients": "{{list}}{{count}} ingredients",
         "browseMine": "See all my recipes",
         "viewRecipe": "View Recipe"
-    }
+    },
+    "videoPlayer": "Post video"
 }

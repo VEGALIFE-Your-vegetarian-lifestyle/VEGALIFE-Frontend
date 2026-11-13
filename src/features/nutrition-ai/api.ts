@@ -9,7 +9,11 @@ import type {
 
 /** POST /api/ai/messages — `conversationId` bỏ trống thì backend tạo hội thoại mới. */
 export async function sendAiMessage(request: AiSendMessageRequest): Promise<AiSendMessageResponse> {
-    const { data } = await api.post<ApiResponse<AiSendMessageResponse>>("/api/ai/messages", request);
+    const { data } = await api.post<ApiResponse<AiSendMessageResponse>>("/api/ai/messages", request, {
+        // Lượt gọi tool (tìm món → tạo thực đơn) mất 40–90s; mặc định 30s của `api` cắt ngang
+        // trong khi backend vẫn tạo xong menu. Chỉ nới cho endpoint này.
+        timeout: 90_000,
+    });
     return data.data;
 }
 

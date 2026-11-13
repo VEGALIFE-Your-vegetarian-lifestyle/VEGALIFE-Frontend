@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mockup A — Tạo thực đơn tuần (khai báo nhanh + lưới)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+    :root {
+        --vegan-green: #12724a;
+        --vegan-green-hover: #0f6140;
+        --vegan-green-light: #e6f2ec;
+        --vegan-green-muted: #b0d3bd;
+        --vegan-green-subtle: #f2f9f5;
+        --vegan-green-bright: #4caf50;
+        --amber-strong: #b45309;
+        --amber-soft: #fef3c7;
+        --lavender-strong: #2a5f9e;
+        --danger: #dc2626;
+        --danger-soft: #fef2f2;
+        --dark: #0d1117;
+        --background: #f4f5f7;
+        --surface: #fff;
+        --muted-bg: #eaeef2;
+        --muted-foreground: #5c6675;
+        --border: #e3e6ea;
+        --radius-md: 10px;
+        --radius-lg: 12px;
+        --radius-xl: 14px;
+        --radius-2xl: 16px;
+        --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --font-display: "Fraunces", Georgia, serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; border-color: var(--border); }
+    body {
+        margin: 0; background: var(--background); color: var(--dark);
+        font-family: var(--font-sans); font-size: 15px; line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+    h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: -.018em; margin: 0; font-size: 28px; line-height: 1.2; text-wrap: balance; }
+    button { font: inherit; cursor: pointer; }
+    .page { max-width: 1152px; margin: 0 auto; padding: 32px 24px 64px; }
+    .breadcrumb { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted-foreground); margin-bottom: 8px; }
+    .breadcrumb b { color: var(--dark); font-weight: 600; }
+    .head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+    .head p { margin: 6px 0 0; font-size: 13px; color: var(--muted-foreground); }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: var(--radius-lg); border: 1px solid transparent; font-size: 14px; font-weight: 600; }
+    .btn-primary { background: var(--vegan-green); color: #fff; }
+    .btn-primary:hover { background: var(--vegan-green-hover); }
+    .btn-primary:disabled { background: var(--muted-bg); color: #98a1ac; cursor: not-allowed; }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--dark); }
+    .btn-outline:hover { background: var(--muted-bg); }
+    .btn-ghost { background: transparent; color: var(--muted-foreground); }
+    .btn-ghost:hover { background: var(--muted-bg); color: var(--dark); }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; border-radius: var(--radius-md); }
+    .btn svg { width: 16px; height: 16px; }
+
+    .layout { display: grid; gap: 24px; }
+    @media (min-width: 1024px) { .layout { grid-template-columns: minmax(0, 1fr) 320px; } }
+    .stack { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+    .card { background: var(--surface); border-radius: var(--radius-2xl); box-shadow: 0 0 0 1px var(--border); overflow: hidden; }
+    .card-head { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .card-head .sub { font-size: 12px; font-weight: 500; color: var(--muted-foreground); margin-left: auto; }
+    .card-body { padding: 20px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; font-weight: 600; }
+    .field .help { font-size: 12px; color: var(--muted-foreground); }
+    input[type="date"], input[type="text"], textarea {
+        width: 100%; border: 1px solid var(--border); border-radius: var(--radius-lg);
+        background: var(--surface); padding: 9px 12px; font: inherit; font-size: 14px; color: var(--dark);
+        outline: none;
+    }
+    input:focus, textarea:focus { border-color: var(--vegan-green); box-shadow: 0 0 0 3px rgba(18,114,74,.12); }
+    textarea { resize: vertical; min-height: 80px; }
+    .counter { font-size: 12px; color: var(--muted-foreground); text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* ---------------- Khai báo nhanh ---------------- */
+    .quick { display: flex; flex-direction: column; gap: 8px; }
+    .qrow {
+        display: grid; grid-template-columns: minmax(140px, 1.6fr) 116px repeat(7, 32px) 44px 30px;
+        gap: 6px; align-items: center; padding: 8px;
+        border: 1px solid var(--border); border-radius: var(--radius-xl); background: #fbfcfd;
+    }
+    @media (max-width: 860px) {
+        .qrow { grid-template-columns: minmax(0, 1fr) 108px 30px; }
+        .qrow .days { grid-column: 1 / -1; justify-content: flex-start; }
+        .qrow .used { grid-column: 2; grid-row: 2; justify-self: end; }
+    }
+    .qrow.off { background: var(--surface); border-style: dashed; }
+    .qrow input[type="text"] { height: 36px; padding: 0 10px; font-size: 13.5px; font-weight: 600; }
+    .qmeal {
+        height: 36px; border: 1px solid var(--border); border-radius: var(--radius-md);
+        background: var(--surface); font-size: 13px; font-weight: 600; color: var(--dark); padding: 0 8px; outline: none;
+    }
+    .qmeal:focus { border-color: var(--vegan-green); }
+    .days { display: flex; gap: 4px; }
+    .dbtn {
+        width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--border);
+        background: var(--surface); font-size: 10.5px; font-weight: 800; color: #98a1ac;
+        display: grid; place-items: center; padding: 0; transition: background .12s, color .12s, border-color .12s;
+    }
+    .dbtn:hover:not(:disabled) { border-color: var(--vegan-green-muted); color: var(--vegan-green); }
+    .dbtn.on { background: var(--vegan-green); border-color: var(--vegan-green); color: #fff; }
+    .dbtn.on:hover:not(:disabled) { background: var(--vegan-green-hover); }
+    .dbtn:disabled { opacity: .35; cursor: not-allowed; }
+    .dbtn.today { box-shadow: inset 0 -2px 0 var(--vegan-green-bright); }
+    .used { font-size: 11px; font-weight: 700; color: var(--muted-foreground); font-variant-numeric: tabular-nums; text-align: right; }
+    .used.over { color: var(--danger); }
+    .rowx { border: 0; background: transparent; border-radius: 8px; width: 30px; height: 30px; display: grid; place-items: center; color: #9aa3ad; padding: 0; }
+    .rowx:hover { background: var(--muted-bg); color: var(--danger); }
+    .rowx svg { width: 14px; height: 14px; }
+    .rowmsg { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 11.5px; padding: 0 2px 2px; }
+    .rowmsg .warn { color: var(--amber-strong); }
+    .rowmsg .undo { border: 0; background: transparent; color: var(--vegan-green); font-size: 11.5px; font-weight: 700; text-decoration: underline; padding: 0; }
+    .quick-empty { border: 1px dashed var(--border); border-radius: var(--radius-xl); padding: 18px; text-align: center; font-size: 13px; color: var(--muted-foreground); }
+    .quick-foot { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    .quick-foot .note { font-size: 11.5px; color: var(--muted-foreground); }
+
+    /* ---------------- Ma trận ---------------- */
+    .week-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--vegan-green-subtle); }
+    .week-toolbar .count { font-size: 12.5px; color: var(--muted-foreground); margin-right: auto; }
+    .week-toolbar .count b { color: var(--dark); font-variant-numeric: tabular-nums; }
+
+    .matrix-wrap { overflow-x: auto; padding: 16px 20px 8px; }
+    .matrix { display: grid; grid-template-columns: 64px repeat(7, minmax(96px, 1fr)); gap: 6px; min-width: 760px; }
+    .day-head { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 0 8px; }
+    .day-head .dow { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+    .day-head .dnum { font-size: 12px; font-weight: 600; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+    .day-head.today .dow, .day-head.today .dnum { color: var(--vegan-green); }
+
+    .meal-label { display: flex; align-items: center; gap: 6px; padding-right: 4px; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted-foreground); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+    .dot.b { background: var(--amber-strong); }
+    .dot.l { background: var(--vegan-green-bright); }
+    .dot.d { background: var(--lavender-strong); }
+
+    .slot {
+        position: relative; display: flex; align-items: center; justify-content: center; gap: 2px;
+        min-height: 52px; padding: 6px 8px; border-radius: var(--radius-md);
+        border: 1px dashed var(--border); background: transparent; color: #9aa3ad;
+        font-size: 12.5px; text-align: left; transition: background .12s, border-color .12s, color .12s;
+    }
+    .slot:hover { border-color: var(--vegan-green-muted); background: var(--vegan-green-subtle); color: var(--vegan-green); }
+    .slot.filled { border: 1px solid var(--border); background: var(--surface); color: var(--dark); justify-content: space-between; align-items: flex-start; }
+    .slot.filled:hover { border-color: var(--vegan-green-muted); background: var(--vegan-green-subtle); }
+    .slot .name { font-size: 12px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .slot .clear { border: 0; background: transparent; border-radius: 99px; padding: 2px; color: #9aa3ad; line-height: 0; opacity: 0; transition: opacity .12s; flex: none; }
+    .slot.filled:hover .clear, .slot.filled:focus-within .clear { opacity: 1; }
+    .slot .clear:hover { background: var(--muted-bg); color: var(--danger); }
+    .slot .clear svg { width: 13px; height: 13px; }
+    .slot.today-col { background: rgba(230,242,236,.55); }
+    .slot.flash { animation: flash .7s ease-out; }
+    @keyframes flash { from { box-shadow: 0 0 0 3px var(--vegan-green-muted); } to { box-shadow: 0 0 0 0 transparent; } }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 6px 20px 18px; font-size: 11.5px; color: var(--muted-foreground); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* ---------------- Aside ---------------- */
+    .aside { align-self: start; }
+    @media (min-width: 1024px) { .aside { position: sticky; top: 24px; } }
+    .req { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+    .req li { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+    .req .label { color: var(--muted-foreground); }
+    .req .value { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+    .ok { color: var(--vegan-green); }
+    .bad { color: var(--danger); }
+    .req-foot { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--muted-foreground); }
+    .req-foot.ok { color: var(--vegan-green); }
+    .hint { margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--amber-soft); color: #7c4a06; font-size: 12px; line-height: 1.5; }
+
+    /* ---------------- Popover chọn món cho 1 ô ---------------- */
+    .pop {
+        position: fixed; z-index: 60; width: 292px; background: var(--surface);
+        border-radius: var(--radius-xl); box-shadow: 0 0 0 1px var(--border), 0 18px 40px -18px rgba(13,17,23,.4);
+        padding: 10px; display: none;
+    }
+    .pop.open { display: block; }
+    .pop input { height: 34px; font-size: 13px; }
+    .pop ul { list-style: none; margin: 8px 0 0; padding: 0; max-height: 236px; overflow: auto; }
+    .pop li button {
+        display: block; width: 100%; text-align: left; padding: 7px 8px; border: 0; border-radius: 8px;
+        background: transparent; font-size: 13px; color: var(--dark);
+    }
+    .pop li button:hover { background: var(--vegan-green-subtle); }
+    .pop li button small { display: block; font-size: 11px; color: var(--muted-foreground); }
+    .pop .pop-empty { padding: 8px; font-size: 12.5px; color: var(--muted-foreground); }
+</style>
+</head>
+<body>
+<div class="page">
+    <div class="breadcrumb">Thực đơn <span>/</span> <b>Tạo mới</b></div>
+    <div class="head">
+        <div>
+            <h1>Tạo thực đơn tuần</h1>
+            <p>Chọn tối đa ba món mỗi ngày. Lưu thành bản nháp rồi lên lịch sau.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-outline">Huỷ</button>
+            <button class="btn btn-primary" id="saveBtn" disabled>Lưu thực đơn</button>
+        </div>
+    </div>
+
+    <div class="layout">
+        <main class="stack">
+            <section class="card">
+                <div class="card-body stack" style="gap:18px">
+                    <div class="field">
+                        <label for="startDate">Tuần bắt đầu</label>
+                        <input id="startDate" type="date" value="2026-11-09" />
+                        <span class="help">Luôn là Thứ 2 của tuần — chọn ngày khác sẽ tự về Thứ 2.</span>
+                    </div>
+                    <div class="field">
+                        <div style="display:flex;justify-content:space-between;align-items:baseline">
+                            <label for="notes">Ghi chú</label>
+                            <span class="counter" id="notesCount">0 / 500</span>
+                        </div>
+                        <textarea id="notes" maxlength="500" placeholder="Chủ đề của tuần, điều bạn đang kiêng…"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-head">
+                    Khai báo nhanh
+                    <span class="sub">Một món dùng cho nhiều ngày</span>
+                </div>
+                <div class="card-body">
+                    <div class="quick" id="quickRows"></div>
+                    <div class="quick-foot">
+                        <button class="btn btn-outline btn-sm" id="addRow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                            Thêm dòng
+                        </button>
+                        <span class="note">Mỗi món tối đa 3 lần trong tuần — ô vượt giới hạn sẽ bị khoá.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-head">Các bữa trong tuần</div>
+                <div class="week-toolbar">
+                    <span class="count"><b id="filledCount">0</b> / 21 ô đã chọn</span>
+                    <span class="count" id="distinctCount" style="margin-right:0">0 món khác nhau</span>
+                </div>
+                <div class="matrix-wrap">
+                    <div class="matrix" id="matrix"></div>
+                </div>
+                <div class="legend">
+                    <span><i class="dot b"></i> Bữa sáng</span>
+                    <span><i class="dot l"></i> Bữa trưa</span>
+                    <span><i class="dot d"></i> Bữa tối</span>
+                    <span style="margin-left:auto">Bấm ô trống để chọn món · bấm tên món để đổi</span>
+                </div>
+            </section>
+        </main>
+
+        <aside class="aside">
+            <section class="card">
+                <div class="card-head">Yêu cầu của tuần</div>
+                <div class="card-body">
+                    <ul class="req">
+                        <li><span class="label">Món khác nhau</span><span class="value" id="reqDistinct">0 / 5</span></li>
+                        <li><span class="label">Món lặp nhiều nhất</span><span class="value" id="reqRepeat">Chưa chọn món nào</span></li>
+                        <li><span class="label">Ngày có bữa</span><span class="value" id="reqDays">0 / 7</span></li>
+                    </ul>
+                    <div class="req-foot" id="reqFoot">Chưa đủ điều kiện để lưu</div>
+                    <div class="hint">Thực đơn cần ít nhất 5 món khác nhau, mỗi món tối đa 3 lần, và mỗi ngày ít nhất một bữa.</div>
+                </div>
+            </section>
+        </aside>
+    </div>
+</div>
+
+<div class="pop" id="pop">
+    <input type="text" id="popSearch" placeholder="Tìm món" autocomplete="off" />
+    <ul id="popList"></ul>
+</div>
+
+<script>
+const DISHES = [
+    { id: 1, name: "Phở chay", cuisine: "Việt Nam", kcal: 320 },
+    { id: 2, name: "Bún riêu chay", cuisine: "Việt Nam", kcal: 350 },
+    { id: 3, name: "Gỏi cuốn", cuisine: "Việt Nam", kcal: 180 },
+    { id: 4, name: "Cà tím nướng mỡ hành", cuisine: "Việt Nam", kcal: 150 },
+    { id: 5, name: "Đậu hũ sốt cà", cuisine: "Việt Nam", kcal: 210 },
+    { id: 6, name: "Canh chua chay", cuisine: "Việt Nam", kcal: 120 },
+    { id: 7, name: "Cơm gạo lứt rau củ", cuisine: "Việt Nam", kcal: 420 },
+    { id: 8, name: "Miến trộn chay", cuisine: "Việt Nam", kcal: 280 },
+    { id: 9, name: "Bánh xèo chay", cuisine: "Việt Nam", kcal: 390 },
+    { id: 10, name: "Súp bí đỏ", cuisine: "Âu", kcal: 160 },
+    { id: 11, name: "Salad quinoa", cuisine: "Âu", kcal: 240 },
+    { id: 12, name: "Nấm kho tiêu", cuisine: "Việt Nam", kcal: 190 },
+    { id: 13, name: "Bún bò chay Huế", cuisine: "Việt Nam", kcal: 360 },
+    { id: 14, name: "Đậu hũ chiên sả", cuisine: "Việt Nam", kcal: 230 },
+    { id: 15, name: "Rau muống xào tỏi", cuisine: "Việt Nam", kcal: 110 },
+];
+
+const MEALS = [
+    { key: "BREAKFAST", label: "Sáng", dot: "b" },
+    { key: "LUNCH", label: "Trưa", dot: "l" },
+    { key: "DINNER", label: "Tối", dot: "d" },
+];
+const DOW = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+const MAX_REPEATS = 3;
+const MIN_DISTINCT = 5;
+const TODAY_ISO = "2026-11-11";
+
+const state = {
+    start: "2026-11-09",
+    days: [],
+    rows: [],
+    flash: null,
+};
+
+function addDays(iso, n) {
+    const d = new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+}
+function dowIndex(iso) { const g = new Date(iso + "T00:00:00").getDay(); return g === 0 ? 6 : g - 1; }
+function initWeek(start) {
+    state.start = start;
+    state.days = Array.from({ length: 7 }, (_, i) => ({
+        date: addDays(start, i),
+        slots: { BREAKFAST: null, LUNCH: null, DINNER: null },
+    }));
+}
+function dishById(id) { return DISHES.find((dish) => dish.id === id) || null; }
+function slotOf(d, meal) { return state.days[d].slots[meal]; }
+function setSlot(d, meal, dish) { state.days[d].slots[meal] = dish; }
+
+function usageMap() {
+    const map = new Map();
+    state.days.forEach((day) => MEALS.forEach(({ key }) => {
+        const dish = day.slots[key];
+        if (dish) map.set(dish.id, (map.get(dish.id) || 0) + 1);
+    }));
+    return map;
+}
+function usedCount(dishId) { return usageMap().get(dishId) || 0; }
+
+/* ---------- rows (macro) ---------- */
+function newRow(dishId, meal, days) {
+    return { dishId: dishId || null, meal: meal || "BREAKFAST", days: new Set(days || []), replaced: [] };
+}
+function rowDish(row) { return row.dishId ? dishById(row.dishId) : null; }
+
+/** Ghi lại toàn bộ dòng vào lưới; trả về các ô bị đè để hiện cảnh báo. */
+function applyRow(row, previous) {
+    row.replaced = [];
+    const dish = rowDish(row);
+    // Xoá dấu vết của cấu hình cũ (món cũ / bữa cũ) ở những ngày dòng này từng giữ.
+    if (previous) {
+        const prevDish = previous.dishId ? dishById(previous.dishId) : null;
+        previous.days.forEach((d) => {
+            if (prevDish && slotOf(d, previous.meal) && slotOf(d, previous.meal).id === prevDish.id) {
+                setSlot(d, previous.meal, null);
+            }
+        });
+    }
+    if (!dish) { row.days.clear(); return; }
+    [...row.days].forEach((d) => {
+        const current = slotOf(d, row.meal);
+        if (current && current.id !== dish.id) {
+            row.replaced.push({ d, meal: row.meal, dish: current });
+        }
+        setSlot(d, row.meal, dish);
+        state.flash = `${d}-${row.meal}`;
+    });
+}
+
+/** Lưới là sự thật: nếu user sửa tay 1 ô thì dòng không còn giữ ngày đó. */
+function releaseCells(d, meal) {
+    state.rows.forEach((row) => {
+        if (row.meal === meal && row.days.has(d)) row.days.delete(d);
+    });
+}
+
+function setRowDish(row, dishId) {
+    const previous = { dishId: row.dishId, meal: row.meal, days: new Set(row.days) };
+    row.dishId = dishId;
+    // Đổi món: giữ nguyên các ngày đã tick.
+    applyRow(row, previous);
+}
+function setRowMeal(row, meal) {
+    if (meal === row.meal) return;
+    const previous = { dishId: row.dishId, meal: row.meal, days: new Set(row.days) };
+    row.meal = meal;
+    applyRow(row, previous);
+}
+function toggleRowDay(row, d) {
+    if (row.days.has(d)) {
+        row.days.delete(d);
+        const dish = rowDish(row);
+        if (dish && slotOf(d, row.meal) && slotOf(d, row.meal).id === dish.id) setSlot(d, row.meal, null);
+        row.replaced = row.replaced.filter((item) => !(item.d === d && item.meal === row.meal));
+        return;
+    }
+    const dish = rowDish(row);
+    if (!dish) return;
+    row.days.add(d);
+    row.replaced = [];
+    const current = slotOf(d, row.meal);
+    if (current && current.id !== dish.id) {
+        row.replaced.push({ d, meal: row.meal, dish: current });
+    }
+    setSlot(d, row.meal, dish);
+    state.flash = `${d}-${row.meal}`;
+}
+function undoReplace(row) {
+    const dish = rowDish(row);
+    row.replaced.forEach((item) => {
+        setSlot(item.d, item.meal, item.dish);
+        row.days.delete(item.d);
+        state.flash = `${item.d}-${item.meal}`;
+    });
+    row.replaced = [];
+}
+
+/* ---------- render ---------- */
+function renderQuick() {
+    const el = document.getElementById("quickRows");
+    el.innerHTML = "";
+    if (!state.rows.length) {
+        el.innerHTML = '<div class="quick-empty">Chưa có khai báo nào. Bấm “Thêm dòng” để chọn một món và những ngày lặp lại.</div>';
+        return;
+    }
+    const usage = usageMap();
+
+    state.rows.forEach((row, rowIndex) => {
+        const dish = rowDish(row);
+        const row$ = document.createElement("div");
+        row$.className = "qrow" + (dish ? "" : " off");
+
+        // dish input (datalist)
+        const input = document.createElement("input");
+        input.type = "text";
+        input.setAttribute("list", "dishOptions");
+        input.placeholder = "Chọn món";
+        input.value = dish ? dish.name : "";
+        input.addEventListener("change", () => {
+            const match = DISHES.find((x) => x.name.toLowerCase() === input.value.trim().toLowerCase());
+            const nextId = match ? match.id : null;
+            if (nextId === row.dishId) return;
+            setRowDish(row, nextId);
+            renderAll();
+        });
+        row$.appendChild(input);
+
+        // meal select
+        const select = document.createElement("select");
+        select.className = "qmeal";
+        MEALS.forEach((meal) => {
+            const option = document.createElement("option");
+            option.value = meal.key;
+            option.textContent = meal.label;
+            option.selected = meal.key === row.meal;
+            select.appendChild(option);
+        });
+        select.addEventListener("change", () => { setRowMeal(row, select.value); renderAll(); });
+        row$.appendChild(select);
+
+        // day toggles
+        const days = document.createElement("div");
+        days.className = "days";
+        state.days.forEach((day, d) => {
+            const used = dish ? (usage.get(dish.id) || 0) : 0;
+            const alreadyHere = dish && slotOf(d, row.meal) && slotOf(d, row.meal).id === dish.id;
+            const prospective = used + (alreadyHere ? 0 : 1);
+            const blocked = !dish || (!row.days.has(d) && prospective > MAX_REPEATS);
+            const b = document.createElement("button");
+            b.className = "dbtn" + (row.days.has(d) ? " on" : "") + (day.date === TODAY_ISO ? " today" : "");
+            b.type = "button";
+            b.textContent = DOW[d];
+            b.disabled = blocked;
+            b.title = blocked && dish
+                ? `${dish.name} đã dùng ${used}/${MAX_REPEATS} lần trong tuần`
+                : (dish ? `Thêm ${dish.name} vào ${DOW[d]}` : "Chọn món trước");
+            b.addEventListener("click", () => { toggleRowDay(row, d); renderAll(); });
+            days.appendChild(b);
+        });
+        row$.appendChild(days);
+
+        // usage
+        const used = document.createElement("span");
+        used.className = "used" + (dish && (usage.get(dish.id) || 0) >= MAX_REPEATS ? " over" : "");
+        used.textContent = dish ? `${usage.get(dish.id) || 0}/${MAX_REPEATS}` : "—";
+        row$.appendChild(used);
+
+        // remove row
+        const x = document.createElement("button");
+        x.className = "rowx";
+        x.type = "button";
+        x.title = "Bỏ dòng này";
+        x.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+        x.addEventListener("click", () => {
+            const previous = { dishId: row.dishId, meal: row.meal, days: new Set(row.days) };
+            row.dishId = null;
+            applyRow(row, previous);
+            state.rows.splice(rowIndex, 1);
+            renderAll();
+        });
+        row$.appendChild(x);
+
+        // warning / undo
+        if (row.replaced.length) {
+            const msg = document.createElement("div");
+            msg.className = "rowmsg";
+            const names = row.replaced.map((item) => `${DOW[item.d]} ${MEALS.find((m) => m.key === item.meal).label}`);
+            msg.innerHTML = `<span class="warn">Đã thay món cũ ở ${names.join(", ")}</span>
+                <button class="undo" type="button">Hoàn tác</button>`;
+            msg.querySelector(".undo").addEventListener("click", () => { undoReplace(row); renderAll(); });
+            row$.appendChild(msg);
+        }
+
+        el.appendChild(row$);
+    });
+}
+
+function renderMatrix() {
+    const el = document.getElementById("matrix");
+    el.innerHTML = "";
+    el.appendChild(document.createElement("div"));
+    state.days.forEach((day) => {
+        const head = document.createElement("div");
+        head.className = "day-head" + (day.date === TODAY_ISO ? " today" : "");
+        head.innerHTML = `<span class="dow">${DOW[dowIndex(day.date)]}</span><span class="dnum">${day.date.slice(8)}/${day.date.slice(5, 7)}</span>`;
+        el.appendChild(head);
+    });
+
+    MEALS.forEach((meal) => {
+        const label = document.createElement("div");
+        label.className = "meal-label";
+        label.innerHTML = `<i class="dot ${meal.dot}"></i>${meal.label}`;
+        el.appendChild(label);
+
+        state.days.forEach((day, d) => {
+            const dish = day.slots[meal.key];
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "slot" + (dish ? " filled" : "") + (day.date === TODAY_ISO ? " today-col" : "");
+            if (state.flash === `${d}-${meal.key}`) b.classList.add("flash");
+            b.title = dish ? dish.name : "Thêm món";
+            if (dish) {
+                b.innerHTML = `<span class="name">${dish.name}</span>
+                    <span class="clear" data-clear="1" aria-label="Bỏ chọn ${dish.name}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </span>`;
+                b.addEventListener("click", (ev) => {
+                    if (ev.target.closest(".clear")) {
+                        ev.stopPropagation();
+                        setSlot(d, meal.key, null);
+                        releaseCells(d, meal.key);
+                        state.flash = null;
+                        renderAll();
+                        return;
+                    }
+                    openPop(b, d, meal.key);
+                });
+            } else {
+                b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M12 5v14M5 12h14"/></svg>`;
+                b.addEventListener("click", () => openPop(b, d, meal.key));
+            }
+            el.appendChild(b);
+        });
+    });
+    state.flash = null;
+}
+
+function renderChecklist() {
+    const usage = usageMap();
+    const distinct = usage.size;
+    const meals = [...usage.values()].reduce((sum, n) => sum + n, 0);
+    const daysFilled = state.days.filter((day) => Object.values(day.slots).some(Boolean)).length;
+    const max = [...usage.entries()].sort((a, b) => b[1] - a[1])[0];
+    const maxDish = max ? dishById(max[0]) : null;
+
+    document.getElementById("filledCount").textContent = meals;
+    document.getElementById("distinctCount").textContent = `${distinct} món khác nhau`;
+
+    const rd = document.getElementById("reqDistinct");
+    rd.textContent = `${distinct} / ${MIN_DISTINCT}`;
+    rd.className = "value " + (distinct >= MIN_DISTINCT ? "ok" : "bad");
+
+    const rr = document.getElementById("reqRepeat");
+    if (maxDish) {
+        rr.textContent = `${max[1]} × ${maxDish.name}`;
+        rr.className = "value " + (max[1] <= MAX_REPEATS ? "ok" : "bad");
+    } else {
+        rr.textContent = "Chưa chọn món nào";
+        rr.className = "value";
+    }
+
+    const rdy = document.getElementById("reqDays");
+    rdy.textContent = `${daysFilled} / 7`;
+    rdy.className = "value " + (daysFilled === 7 ? "ok" : "bad");
+
+    const ready = distinct >= MIN_DISTINCT && daysFilled === 7 && (!max || max[1] <= MAX_REPEATS);
+    const foot = document.getElementById("reqFoot");
+    foot.className = "req-foot" + (ready ? " ok" : "");
+    foot.innerHTML = ready
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="m5 13 4 4L19 7"/></svg> Sẵn sàng lưu'
+        : "Chưa đủ điều kiện để lưu";
+    document.getElementById("saveBtn").disabled = !ready;
+}
+
+function renderAll() {
+    renderQuick();
+    renderMatrix();
+    renderChecklist();
+}
+
+/* ---------- popover chọn món 1 ô ---------- */
+let popTarget = null;
+function openPop(anchor, d, meal) {
+    popTarget = { d, meal };
+    const pop = document.getElementById("pop");
+    const rect = anchor.getBoundingClientRect();
+    pop.classList.add("open");
+    const width = 292;
+    const left = Math.min(rect.left, window.innerWidth - width - 12);
+    pop.style.left = Math.max(12, left) + "px";
+    pop.style.top = Math.min(rect.bottom + 6, window.innerHeight - 300) + "px";
+    const search = document.getElementById("popSearch");
+    search.value = "";
+    renderPopList();
+    search.focus();
+}
+function closePop() {
+    document.getElementById("pop").classList.remove("open");
+    popTarget = null;
+}
+function renderPopList() {
+    const q = document.getElementById("popSearch").value.trim().toLowerCase();
+    const ul = document.getElementById("popList");
+    ul.innerHTML = "";
+    const hits = DISHES.filter((dish) => dish.name.toLowerCase().includes(q));
+    if (!hits.length) {
+        ul.innerHTML = '<li class="pop-empty">Không có món nào khớp.</li>';
+        return;
+    }
+    hits.forEach((dish) => {
+        const used = usedCount(dish.id);
+        const li = document.createElement("li");
+        const b = document.createElement("button");
+        b.type = "button";
+        b.innerHTML = `${dish.name}<small>${dish.cuisine} · ${dish.kcal} kcal · đã dùng ${used}/${MAX_REPEATS}</small>`;
+        b.disabled = used >= MAX_REPEATS && !(popTarget && slotOf(popTarget.d, popTarget.meal)?.id === dish.id);
+        if (b.disabled) b.style.opacity = ".45";
+        b.addEventListener("click", () => {
+            if (!popTarget) return;
+            setSlot(popTarget.d, popTarget.meal, dish);
+            releaseCells(popTarget.d, popTarget.meal);
+            state.flash = `${popTarget.d}-${popTarget.meal}`;
+            closePop();
+            renderAll();
+        });
+        li.appendChild(b);
+        ul.appendChild(li);
+    });
+}
+
+/* ---------- events ---------- */
+document.getElementById("addRow").addEventListener("click", () => {
+    state.rows.push(newRow(null, "BREAKFAST", []));
+    renderAll();
+    const inputs = document.querySelectorAll("#quickRows input[type=text]");
+    if (inputs.length) inputs[inputs.length - 1].focus();
+});
+document.getElementById("popSearch").addEventListener("input", renderPopList);
+document.addEventListener("click", (ev) => {
+    const pop = document.getElementById("pop");
+    if (!pop.classList.contains("open")) return;
+    if (pop.contains(ev.target) || ev.target.closest(".slot")) return;
+    closePop();
+});
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") closePop(); });
+
+document.getElementById("startDate").addEventListener("change", (ev) => {
+    const picked = new Date(ev.target.value + "T00:00:00");
+    if (isNaN(picked)) return;
+    const dow = picked.getDay();
+    picked.setDate(picked.getDate() + (dow === 0 ? -6 : 1 - dow));
+    const iso = picked.toISOString().slice(0, 10);
+    ev.target.value = iso;
+    const old = state.days.map((day) => Object.values(day.slots));
+    initWeek(iso);
+    state.days.forEach((day, i) => { day.slots = old[i] || day.slots; });
+    renderAll();
+});
+document.getElementById("notes").addEventListener("input", (ev) => {
+    document.getElementById("notesCount").textContent = `${ev.target.value.length} / 500`;
+});
+document.getElementById("saveBtn").addEventListener("click", renderAll);
+
+/* ---------- dữ liệu mẫu ---------- */
+initWeek(state.start);
+state.rows = [
+    newRow(1, "BREAKFAST", [0, 2, 4]),   // Phở chay — sáng T2/T4/T6
+    newRow(2, "LUNCH", [0, 3]),          // Bún riêu chay — trưa T2/T5
+    newRow(7, "LUNCH", [1, 4, 6]),       // Cơm gạo lứt — trưa T3/T6/CN
+    newRow(10, "DINNER", [2, 5]),        // Súp bí đỏ — tối T4/T7
+    newRow(4, "DINNER", [0, 1, 3]),      // Cà tím nướng — tối T2/T3/T5
+];
+state.rows.forEach((row) => applyRow(row, null));
+state.flash = null;
+renderAll();
+
+/* Datalist dùng chung cho input của mọi dòng */
+const datalist = document.createElement("datalist");
+datalist.id = "dishOptions";
+DISHES.forEach((dish) => {
+    const option = document.createElement("option");
+    option.value = dish.name;
+    datalist.appendChild(option);
+});
+document.body.appendChild(datalist);
+</script>
+</body>
+</html>

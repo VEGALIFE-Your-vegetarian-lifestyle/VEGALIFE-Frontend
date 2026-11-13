@@ -4,18 +4,18 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/common/Pagination";
 import { CommentComposer } from "@/features/posts/components/CommentComposer";
 import { CommentThread } from "@/features/posts/components/CommentThread";
-import { PostVoteButtons } from "@/features/posts/components/PostVoteButtons";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
 import { FALLBACK_IMAGE, showFallbackImage, stripMarkdown } from "@/shared/utils/display";
 import { estimateReadMinutes, formatDateLocale } from "@/shared/utils/formatDate";
 import { useUiStore } from "@/shared/ui/uiStore";
 import type { PostListResponse } from "../../types";
-import { getPostComments } from "../../api";
+import { countAllComments, getPostComments } from "../../api";
 
 /** 20 comment gốc/trang — cùng cỡ với `CommentsSection` ở Post Detail. */
 const PER_PAGE = 20;
@@ -41,14 +41,16 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
     const categoryNames = useCategoryNames();
     const [page, setPage] = useState(1);
 
-    const { data: comments, isLoading } = useQuery({
+    const { data: comments, isLoading, isError, refetch } = useQuery({
         queryKey: ["post-comments", post?.id, page],
         queryFn: () => getPostComments(post!.id, { page: page - 1, size: PER_PAGE }),
         enabled: !!post,
     });
 
     const categoryName = post?.categoryIds.map((id) => categoryNames.get(id)).find(Boolean);
-    const total = comments?.totalElements ?? 0;
+    const total = comments
+        ? Math.max(comments.totalElements, countAllComments(comments.content))
+        : 0;
 
     return (
         <Dialog
@@ -96,12 +98,17 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1 border-y border-border py-2">
-                        <PostVoteButtons postId={post.id} />
-                        <span className="ml-auto text-xs font-semibold text-muted-foreground">
+                    <div className="flex items-center justify-between border-y border-border py-2.5">
+                        <h3 className="text-sm font-bold text-dark">
                             {t("post:comments.eyebrow", { count: total })}
-                        </span>
+                        </h3>
                     </div>
+
+                    {isError && comments && comments.content.length > 0 && (
+                        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-2.5 text-center text-xs text-amber-700 dark:text-amber-300">
+                            {t("post:comments.serverSyncNotice")}
+                        </div>
+                    )}
 
                     <div className="max-h-[45vh] space-y-3 overflow-y-auto pr-1">
                         {isLoading ? (
@@ -109,14 +116,28 @@ export function PostCommentsDialog({ post, onClose }: PostCommentsDialogProps) {
                                 <Skeleton className="h-20 w-full rounded-xl" />
                                 <Skeleton className="h-20 w-full rounded-xl" />
                             </>
+                        ) : isError && (!comments || comments.content.length === 0) ? (
+                            <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center">
+                                <p className="text-sm text-destructive">{t("post:comments.loadError")}</p>
+                                <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+                                    {t("common:errorState.retry")}
+                                </Button>
+                            </div>
                         ) : total === 0 ? (
                             <p className="py-4 text-center text-sm text-muted-foreground">
                                 {t("post:comments.empty")}
                             </p>
                         ) : (
-                            (comments?.content ?? []).map((comment) => (
-                                <CommentThread key={comment.id} comment={comment} language={language} />
-                            ))
+                            (comments?.content ?? [])
+                                .filter((comment) => !comment.deleted || (comment.replies && comment.replies.length > 0))
+                                .map((comment) => (
+                                    <CommentThread
+                                        key={comment.id}
+                                        postId={post.id}
+                                        comment={comment}
+                                        language={language}
+                                    />
+                                ))
                         )}
                     </div>
 

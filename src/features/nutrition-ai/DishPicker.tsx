@@ -21,8 +21,8 @@ interface DishPickerProps {
 
 /**
  * Rail chỉ là một dòng mở dialog; danh sách món nằm trong `Dialog` cho đủ chỗ.
- * Hiện cả `name` lẫn `id` — AI cần tên để lập plan, user cần id để đối chiếu
- * lại với menu đã lưu.
+ * Chỉ hiện `name` (+ `cuisineType`) — id vẫn được gửi kèm prompt cho AI để đối chiếu
+ * với menu đã lưu, nhưng không bày ra cho người dùng.
  */
 export function DishPicker({ onAsk, disabled }: DishPickerProps) {
     const { t } = useTranslation("aiNutrition");
@@ -162,9 +162,6 @@ export function DishPicker({ onAsk, disabled }: DishPickerProps) {
                                     />
                                     <span className="min-w-0 flex-1">
                                         <span className="block truncate text-xs font-semibold text-dark">{dish.name}</span>
-                                        <span className="block truncate font-mono text-[10px] text-muted-foreground">
-                                            {dish.id}
-                                        </span>
                                         {dish.cuisineType && (
                                             <span className="text-[10px] text-muted-foreground">{dish.cuisineType}</span>
                                         )}

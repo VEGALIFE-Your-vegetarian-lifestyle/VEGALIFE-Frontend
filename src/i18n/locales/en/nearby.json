@@ -18,12 +18,6 @@
         "list": "List",
         "map": "Map"
     },
-    "recipeFinder": {
-        "title": "Recipe Finder Integration",
-        "subtitle": "Match a dish you already love to the nearest kitchen serving it today.",
-        "cta": "Find my match"
-    },
-    "recipeMatch": "Recipe Match: {{dish}}",
     "viewDetails": "View Details",
     "directions": "Directions",
     "filter": {

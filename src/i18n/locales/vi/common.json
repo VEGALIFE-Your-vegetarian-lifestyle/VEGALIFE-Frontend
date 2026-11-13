@@ -63,16 +63,16 @@
         "minRead": "~{{count}} phút đọc"
     },
     "postStatus": {
-        "created": "Mới tạo",
-        "processed": "Chờ duyệt",
+        "drafted": "Bản nháp",
+        "processing": "Đang chờ duyệt",
         "published": "Đã đăng",
-        "unpublished": "Ngừng đăng"
+        "unpublished": "Bị từ chối"
     },
     "postFlag": {
-        "PENDING": "Chờ kiểm duyệt",
-        "PASSED": "Đã qua kiểm duyệt",
-        "REJECTED": "Bị từ chối",
-        "NEEDS_REVIEW": "Cần xem lại"
+        "FILTER_PASSED": "Đã qua kiểm tra tự động",
+        "FILTER_FAILED": "Máy kiểm tra chưa chắc chắn",
+        "SIMILAR_CONTENT": "Có thể trùng nội dung",
+        "FILTER_SKIPPED": "Không kiểm tra được nội dung"
     },
     "videoStatus": {
         "uploading": "Đang tải lên",
@@ -95,5 +95,6 @@
         "next": "Trang sau",
         "page": "Trang {{page}}"
     },
-    "optional": "không bắt buộc"
+    "optional": "không bắt buộc",
+    "rejectionReason": "Lý do từ chối"
 }

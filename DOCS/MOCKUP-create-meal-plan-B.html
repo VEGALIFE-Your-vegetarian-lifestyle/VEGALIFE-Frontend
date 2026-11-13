@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mockup — Tạo thực đơn tuần (gán từ ô)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+    :root {
+        --vegan-green: #12724a;
+        --vegan-green-hover: #0f6140;
+        --vegan-green-light: #e6f2ec;
+        --vegan-green-muted: #b0d3bd;
+        --vegan-green-subtle: #f2f9f5;
+        --vegan-green-bright: #4caf50;
+        --amber-strong: #b45309;
+        --amber-soft: #fef3c7;
+        --lavender-strong: #2a5f9e;
+        --danger: #dc2626;
+        --danger-soft: #fef2f2;
+        --dark: #0d1117;
+        --background: #f4f5f7;
+        --surface: #fff;
+        --muted-bg: #eaeef2;
+        --muted-foreground: #5c6675;
+        --border: #e3e6ea;
+        --radius-md: 10px;
+        --radius-lg: 12px;
+        --radius-xl: 14px;
+        --radius-2xl: 16px;
+        --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --font-display: "Fraunces", Georgia, serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; border-color: var(--border); }
+    body { margin: 0; background: var(--background); color: var(--dark); font-family: var(--font-sans); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: -.018em; margin: 0; font-size: 28px; line-height: 1.2; }
+    button { font: inherit; cursor: pointer; }
+    .page { max-width: 1152px; margin: 0 auto; padding: 32px 24px 96px; }
+    .breadcrumb { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted-foreground); margin-bottom: 8px; }
+    .breadcrumb b { color: var(--dark); font-weight: 600; }
+    .head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+    .head p { margin: 6px 0 0; font-size: 13px; color: var(--muted-foreground); }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: var(--radius-lg); border: 1px solid transparent; font-size: 14px; font-weight: 600; }
+    .btn-primary { background: var(--vegan-green); color: #fff; }
+    .btn-primary:hover { background: var(--vegan-green-hover); }
+    .btn-primary:disabled { background: var(--muted-bg); color: #98a1ac; cursor: not-allowed; }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--dark); }
+    .btn-outline:hover { background: var(--muted-bg); }
+    .btn-ghost { background: transparent; color: var(--muted-foreground); }
+    .btn-ghost:hover { background: var(--muted-bg); color: var(--dark); }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; border-radius: var(--radius-md); }
+    .btn svg { width: 16px; height: 16px; }
+
+    .layout { display: grid; gap: 24px; }
+    @media (min-width: 1024px) { .layout { grid-template-columns: minmax(0, 1fr) 320px; } }
+    .stack { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+    .card { background: var(--surface); border-radius: var(--radius-2xl); box-shadow: 0 0 0 1px var(--border); overflow: hidden; }
+    .card-head { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .card-body { padding: 20px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; font-weight: 600; }
+    .field .help { font-size: 12px; color: var(--muted-foreground); }
+    input[type="date"], input[type="text"], textarea {
+        width: 100%; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface);
+        padding: 9px 12px; font: inherit; font-size: 14px; color: var(--dark); outline: none;
+    }
+    input:focus, textarea:focus { border-color: var(--vegan-green); box-shadow: 0 0 0 3px rgba(18,114,74,.12); }
+    textarea { resize: vertical; min-height: 80px; }
+    .counter { font-size: 12px; color: var(--muted-foreground); text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* ---------- toolbar ---------- */
+    .week-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--vegan-green-subtle); }
+    .week-toolbar .count { font-size: 12.5px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+    .week-toolbar .count b { color: var(--dark); }
+    .week-toolbar .spacer { margin-right: auto; }
+
+    /* ---------- matrix ---------- */
+    .matrix-wrap { overflow-x: auto; padding: 16px 20px 8px; }
+    .matrix { display: grid; grid-template-columns: 74px repeat(7, minmax(96px, 1fr)); gap: 6px; min-width: 790px; }
+    .day-head { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 0 8px; }
+    .day-head .dow { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+    .day-head .dnum { font-size: 12px; font-weight: 600; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+    .day-head.today .dow, .day-head.today .dnum { color: var(--vegan-green); }
+
+    .meal-label {
+        display: flex; align-items: center; gap: 6px; padding: 0 6px 0 4px; text-align: left;
+        border: 0; background: transparent; border-radius: var(--radius-md);
+        font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted-foreground);
+    }
+    .meal-label:hover { background: var(--vegan-green-subtle); color: var(--vegan-green); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+    .dot.b { background: var(--amber-strong); }
+    .dot.l { background: var(--vegan-green-bright); }
+    .dot.d { background: var(--lavender-strong); }
+
+    .slot {
+        position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 4px;
+        min-height: 52px; padding: 6px 8px; border-radius: var(--radius-md);
+        border: 1px dashed var(--border); background: transparent; color: #9aa3ad;
+        font-size: 12.5px; text-align: left; transition: background .12s, border-color .12s, color .12s;
+    }
+    .slot .plus { margin: auto; }
+    .slot:hover { border-color: var(--vegan-green-muted); background: var(--vegan-green-subtle); color: var(--vegan-green); }
+    .slot.filled { border: 1px solid var(--border); background: var(--surface); color: var(--dark); }
+    .slot.filled:hover { border-color: var(--vegan-green-muted); background: var(--vegan-green-subtle); }
+    .slot .name { font-size: 12px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .slot .clear { border: 0; background: transparent; border-radius: 99px; padding: 2px; color: #9aa3ad; line-height: 0; opacity: 0; transition: opacity .12s; flex: none; }
+    .slot.filled:hover .clear, .slot.filled:focus-within .clear { opacity: 1; }
+    .slot .clear:hover { background: var(--muted-bg); color: var(--danger); }
+    .slot .clear svg { width: 13px; height: 13px; }
+    .slot.today-col { background: rgba(230,242,236,.55); }
+    .slot.flash { animation: flash .7s ease-out; }
+    @keyframes flash { from { box-shadow: 0 0 0 3px var(--vegan-green-muted); } to { box-shadow: 0 0 0 0 transparent; } }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 6px 20px 18px; font-size: 11.5px; color: var(--muted-foreground); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* ---------- aside ---------- */
+    .aside { align-self: start; }
+    @media (min-width: 1024px) { .aside { position: sticky; top: 24px; } }
+    .req { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+    .req li { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+    .req .label { color: var(--muted-foreground); }
+    .req .value { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+    .ok { color: var(--vegan-green); }
+    .bad { color: var(--danger); }
+    .req-foot { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--muted-foreground); }
+    .req-foot.ok { color: var(--vegan-green); }
+    .hint { margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--amber-soft); color: #7c4a06; font-size: 12px; line-height: 1.5; }
+
+    /* ---------- popover ---------- */
+    .pop {
+        position: fixed; z-index: 60; width: 340px; background: var(--surface);
+        border-radius: var(--radius-xl); box-shadow: 0 0 0 1px var(--border), 0 20px 44px -20px rgba(13,17,23,.42);
+        display: none; flex-direction: column; max-height: min(78vh, 620px); overflow: hidden;
+    }
+    .pop.open { display: flex; }
+    .pop-head { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; border-bottom: 1px solid var(--border); }
+    .pop-head .t { font-size: 13px; font-weight: 700; }
+    .pop-head .t span { font-weight: 500; color: var(--muted-foreground); }
+    .pop-head .x { margin-left: auto; border: 0; background: transparent; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; color: #9aa3ad; }
+    .pop-head .x:hover { background: var(--muted-bg); color: var(--dark); }
+    .pop-head .x svg { width: 14px; height: 14px; }
+    .pop-search { padding: 10px 14px 6px; }
+    .pop-search input { height: 34px; font-size: 13px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 14px 8px; }
+    .chip {
+        border: 1px solid var(--border); background: var(--surface); border-radius: 99px; padding: 3px 10px;
+        font-size: 11.5px; font-weight: 600; color: var(--muted-foreground);
+    }
+    .chip:hover { border-color: var(--vegan-green-muted); color: var(--vegan-green); background: var(--vegan-green-subtle); }
+    .chip.on { background: var(--vegan-green); border-color: var(--vegan-green); color: #fff; }
+    .pop-list { list-style: none; margin: 0; padding: 0 8px 8px; overflow: auto; flex: 1; min-height: 0; }
+    .pop-list li button {
+        display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+        padding: 7px 8px; border: 0; border-radius: 8px; background: transparent; font-size: 13px; color: var(--dark);
+    }
+    .pop-list li button:hover:not(:disabled) { background: var(--vegan-green-subtle); }
+    .pop-list li button.on { background: var(--vegan-green-subtle); box-shadow: inset 0 0 0 1px var(--vegan-green-muted); }
+    .pop-list li button:disabled { opacity: .42; cursor: not-allowed; }
+    .pop-list .txt { min-width: 0; flex: 1; }
+    .pop-list .txt b { display: block; font-weight: 600; }
+    .pop-list .txt small { display: block; font-size: 11px; color: var(--muted-foreground); }
+    .pop-list .tally { font-size: 10.5px; font-weight: 800; color: var(--muted-foreground); font-variant-numeric: tabular-nums; flex: none; }
+    .pop-list .tally.max { color: var(--danger); }
+    .pop-list .empty { padding: 10px 8px; font-size: 12.5px; color: var(--muted-foreground); }
+
+    .pop-days { border-top: 1px solid var(--border); background: #fafbfc; padding: 10px 14px 8px; }
+    .pop-days-head { display: flex; align-items: baseline; gap: 8px; font-size: 11.5px; font-weight: 700; color: var(--vegan-green); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+    .pop-days-head .allow { margin-left: auto; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted-foreground); }
+    .pop-days-head .allow.warn { color: var(--amber-strong); }
+    .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .dbtn {
+        height: 34px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface);
+        font-size: 10.5px; font-weight: 800; color: #98a1ac; display: grid; place-items: center; padding: 0;
+    }
+    .dbtn:hover:not(:disabled) { border-color: var(--vegan-green-muted); color: var(--vegan-green); }
+    .dbtn.on { background: var(--vegan-green); border-color: var(--vegan-green); color: #fff; }
+    .dbtn:disabled { opacity: .32; cursor: not-allowed; }
+    .dbtn.today { box-shadow: inset 0 -2px 0 var(--vegan-green-bright); }
+    .dbtn.conflict { border-color: var(--amber-strong); color: var(--amber-strong); }
+    .dbtn.conflict.on { background: var(--amber-strong); border-color: var(--amber-strong); color: #fff; }
+    .pop-warn { margin-top: 8px; font-size: 11.5px; line-height: 1.45; color: var(--amber-strong); }
+    .pop-warn:empty { display: none; }
+    .pop-foot { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); }
+    .pop-foot .clear-dish { border: 0; background: transparent; color: var(--muted-foreground); font-size: 12px; font-weight: 600; }
+    .pop-foot .clear-dish:hover { color: var(--danger); }
+    .pop-foot .clear-dish:disabled { opacity: .4; cursor: not-allowed; }
+    .pop-foot .btn { margin-left: auto; }
+
+    /* ---------- undo toast ---------- */
+    .toast {
+        position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 24px);
+        display: flex; align-items: center; gap: 14px; padding: 11px 16px; border-radius: var(--radius-lg);
+        background: var(--dark); color: #fff; font-size: 13px; opacity: 0; pointer-events: none;
+        transition: opacity .18s, transform .18s; z-index: 70;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+    .toast button { border: 0; background: transparent; color: var(--vegan-green-muted); font-weight: 700; font-size: 13px; padding: 0; }
+    .toast button:hover { color: #fff; }
+</style>
+</head>
+<body>
+<div class="page">
+    <div class="breadcrumb">Thực đơn <span>/</span> <b>Tạo mới</b></div>
+    <div class="head">
+        <div>
+            <h1>Tạo thực đơn tuần</h1>
+            <p>Bấm một ô để chọn món, rồi tick những ngày muốn lặp lại.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-outline">Huỷ</button>
+            <button class="btn btn-primary" id="saveBtn" disabled>Lưu thực đơn</button>
+        </div>
+    </div>
+
+    <div class="layout">
+        <main class="stack">
+            <section class="card">
+                <div class="card-body stack" style="gap:18px">
+                    <div class="field">
+                        <label for="startDate">Tuần bắt đầu</label>
+                        <input id="startDate" type="date" value="2026-11-09" />
+                        <span class="help">Luôn là Thứ 2 của tuần — chọn ngày khác sẽ tự về Thứ 2.</span>
+                    </div>
+                    <div class="field">
+                        <div style="display:flex;justify-content:space-between;align-items:baseline">
+                            <label for="notes">Ghi chú</label>
+                            <span class="counter" id="notesCount">0 / 500</span>
+                        </div>
+                        <textarea id="notes" maxlength="500" placeholder="Chủ đề của tuần, điều bạn đang kiêng…"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-head">Các bữa trong tuần</div>
+                <div class="week-toolbar">
+                    <span class="count"><b id="filledCount">0</b> / 21 ô</span>
+                    <span class="count">· <b id="distinctCount">0</b> món khác nhau</span>
+                    <span class="spacer"></span>
+                    <button class="btn btn-outline btn-sm" id="copyPrev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+                        Chép tuần trước
+                    </button>
+                </div>
+                <div class="matrix-wrap">
+                    <div class="matrix" id="matrix"></div>
+                </div>
+                <div class="legend">
+                    <span><i class="dot b"></i> Sáng</span>
+                    <span><i class="dot l"></i> Trưa</span>
+                    <span><i class="dot d"></i> Tối</span>
+                    <span style="margin-left:auto">Bấm ô để chọn món · bấm nhãn bữa để gán cả hàng</span>
+                </div>
+            </section>
+        </main>
+
+        <aside class="aside">
+            <section class="card">
+                <div class="card-head">Yêu cầu của tuần</div>
+                <div class="card-body">
+                    <ul class="req">
+                        <li><span class="label">Món khác nhau</span><span class="value" id="reqDistinct">0 / 5</span></li>
+                        <li><span class="label">Món lặp nhiều nhất</span><span class="value" id="reqRepeat">Chưa chọn món nào</span></li>
+                        <li><span class="label">Ngày có bữa</span><span class="value" id="reqDays">0 / 7</span></li>
+                    </ul>
+                    <div class="req-foot" id="reqFoot">Chưa đủ điều kiện để lưu</div>
+                    <div class="hint">Thực đơn cần ít nhất 5 món khác nhau, mỗi món tối đa 3 lần, và mỗi ngày ít nhất một bữa.</div>
+                </div>
+            </section>
+        </aside>
+    </div>
+</div>
+
+<!-- popover -->
+<div class="pop" id="pop" role="dialog" aria-modal="false">
+    <div class="pop-head">
+        <span class="t" id="popTitle">Bữa sáng</span>
+        <button class="x" id="popX" type="button" aria-label="Đóng">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+    </div>
+    <div class="pop-search"><input id="popSearch" type="text" placeholder="Tìm món" autocomplete="off" /></div>
+    <div class="chips" id="popChips"></div>
+    <ul class="pop-list" id="popList"></ul>
+
+    <div class="pop-days">
+        <div class="pop-days-head">
+            Áp cho
+            <span class="allow" id="popAllow"></span>
+        </div>
+        <div class="days" id="popDays"></div>
+        <div class="pop-warn" id="popWarn"></div>
+    </div>
+
+    <div class="pop-foot">
+        <button class="clear-dish" id="popClear" type="button">Bỏ món</button>
+        <button class="btn btn-primary btn-sm" id="popApply" type="button" disabled>Áp 0 ô</button>
+    </div>
+</div>
+
+<div class="toast" id="toast">
+    <span id="toastMsg"></span>
+    <button id="toastUndo" type="button">Hoàn tác</button>
+</div>
+
+<script>
+const DISHES = [
+    { id: 1, name: "Phở chay", cuisine: "Việt Nam", kcal: 320 },
+    { id: 2, name: "Bún riêu chay", cuisine: "Việt Nam", kcal: 350 },
+    { id: 3, name: "Gỏi cuốn", cuisine: "Việt Nam", kcal: 180 },
+    { id: 4, name: "Cà tím nướng mỡ hành", cuisine: "Việt Nam", kcal: 150 },
+    { id: 5, name: "Đậu hũ sốt cà", cuisine: "Việt Nam", kcal: 210 },
+    { id: 6, name: "Canh chua chay", cuisine: "Việt Nam", kcal: 120 },
+    { id: 7, name: "Cơm gạo lứt rau củ", cuisine: "Việt Nam", kcal: 420 },
+    { id: 8, name: "Miến trộn chay", cuisine: "Việt Nam", kcal: 280 },
+    { id: 9, name: "Bánh xèo chay", cuisine: "Việt Nam", kcal: 390 },
+    { id: 10, name: "Súp bí đỏ", cuisine: "Âu", kcal: 160 },
+    { id: 11, name: "Salad quinoa", cuisine: "Âu", kcal: 240 },
+    { id: 12, name: "Nấm kho tiêu", cuisine: "Việt Nam", kcal: 190 },
+    { id: 13, name: "Bún bò chay Huế", cuisine: "Việt Nam", kcal: 360 },
+    { id: 14, name: "Đậu hũ chiên sả", cuisine: "Việt Nam", kcal: 230 },
+    { id: 15, name: "Rau muống xào tỏi", cuisine: "Việt Nam", kcal: 110 },
+];
+
+const MEALS = [
+    { key: "BREAKFAST", label: "Sáng", dot: "b" },
+    { key: "LUNCH", label: "Trưa", dot: "l" },
+    { key: "DINNER", label: "Tối", dot: "d" },
+];
+const DOW = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+const MAX_REPEATS = 3;
+const MIN_DISTINCT = 5;
+const TODAY_ISO = "2026-11-11";
+
+/* tuần trước — dùng cho nút "Chép tuần trước" */
+const PREV_WEEK = [
+    [0, "BREAKFAST", 1], [2, "BREAKFAST", 1], [4, "BREAKFAST", 1],
+    [1, "BREAKFAST", 10], [3, "BREAKFAST", 10], [5, "BREAKFAST", 10],
+    [0, "LUNCH", 2], [3, "LUNCH", 2],
+    [1, "LUNCH", 7], [4, "LUNCH", 7], [6, "LUNCH", 7],
+    [2, "DINNER", 10], [5, "DINNER", 10],
+    [0, "DINNER", 4], [1, "DINNER", 4], [3, "DINNER", 4],
+];
+
+const state = { start: "2026-11-09", days: [], flash: null, undo: null };
+
+function addDays(iso, n) { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+function dowIndex(iso) { const g = new Date(iso + "T00:00:00").getDay(); return g === 0 ? 6 : g - 1; }
+function dishById(id) { return DISHES.find((d) => d.id === id) || null; }
+function initWeek(start) {
+    state.start = start;
+    state.days = Array.from({ length: 7 }, (_, i) => ({
+        date: addDays(start, i),
+        slots: { BREAKFAST: null, LUNCH: null, DINNER: null },
+    }));
+}
+function usageMap() {
+    const map = new Map();
+    state.days.forEach((day) => MEALS.forEach(({ key }) => {
+        const dish = day.slots[key];
+        if (dish) map.set(dish.id, (map.get(dish.id) || 0) + 1);
+    }));
+    return map;
+}
+function usedCount(dishId) { return usageMap().get(dishId) || 0; }
+
+/* ================= render lưới ================= */
+function renderMatrix() {
+    const el = document.getElementById("matrix");
+    el.innerHTML = "";
+    el.appendChild(document.createElement("div"));
+    state.days.forEach((day) => {
+        const head = document.createElement("div");
+        head.className = "day-head" + (day.date === TODAY_ISO ? " today" : "");
+        head.innerHTML = `<span class="dow">${DOW[dowIndex(day.date)]}</span><span class="dnum">${day.date.slice(8)}/${day.date.slice(5, 7)}</span>`;
+        el.appendChild(head);
+    });
+
+    MEALS.forEach((meal) => {
+        const label = document.createElement("button");
+        label.type = "button";
+        label.className = "meal-label";
+        label.title = `Gán món cho cả hàng ${meal.label}`;
+        label.innerHTML = `<i class="dot ${meal.dot}"></i>${meal.label}`;
+        label.addEventListener("click", (ev) => openPop(ev.currentTarget, meal.key, null));
+        el.appendChild(label);
+
+        state.days.forEach((day, d) => {
+            const dish = day.slots[meal.key];
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "slot" + (dish ? " filled" : "") + (day.date === TODAY_ISO ? " today-col" : "");
+            if (state.flash === `${d}-${meal.key}`) b.classList.add("flash");
+            b.title = dish ? `${dish.name} · bấm để đổi` : "Chọn món";
+            if (dish) {
+                b.innerHTML = `<span class="name">${dish.name}</span>
+                    <span class="clear" aria-label="Bỏ ${dish.name}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </span>`;
+                b.addEventListener("click", (ev) => {
+                    if (ev.target.closest(".clear")) {
+                        ev.stopPropagation();
+                        applyCells(meal.key, [d], null);
+                        return;
+                    }
+                    openPop(b, meal.key, d);
+                });
+            } else {
+                b.innerHTML = `<span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M12 5v14M5 12h14"/></svg></span>`;
+                b.addEventListener("click", () => openPop(b, meal.key, d));
+            }
+            el.appendChild(b);
+        });
+    });
+    state.flash = null;
+}
+
+function renderChecklist() {
+    const usage = usageMap();
+    const distinct = usage.size;
+    const total = [...usage.values()].reduce((s, n) => s + n, 0);
+    const daysFilled = state.days.filter((day) => Object.values(day.slots).some(Boolean)).length;
+    const max = [...usage.entries()].sort((a, b) => b[1] - a[1])[0];
+    const maxDish = max ? dishById(max[0]) : null;
+
+    document.getElementById("filledCount").textContent = total;
+    document.getElementById("distinctCount").textContent = distinct;
+
+    const rd = document.getElementById("reqDistinct");
+    rd.textContent = `${distinct} / ${MIN_DISTINCT}`;
+    rd.className = "value " + (distinct >= MIN_DISTINCT ? "ok" : "bad");
+
+    const rr = document.getElementById("reqRepeat");
+    if (maxDish) {
+        rr.textContent = `${max[1]} × ${maxDish.name}`;
+        rr.className = "value " + (max[1] <= MAX_REPEATS ? "ok" : "bad");
+    } else {
+        rr.textContent = "Chưa chọn món nào";
+        rr.className = "value";
+    }
+
+    const rdy = document.getElementById("reqDays");
+    rdy.textContent = `${daysFilled} / 7`;
+    rdy.className = "value " + (daysFilled === 7 ? "ok" : "bad");
+
+    const ready = distinct >= MIN_DISTINCT && daysFilled === 7 && (!max || max[1] <= MAX_REPEATS);
+    const foot = document.getElementById("reqFoot");
+    foot.className = "req-foot" + (ready ? " ok" : "");
+    foot.innerHTML = ready
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="m5 13 4 4L19 7"/></svg> Sẵn sàng lưu'
+        : "Chưa đủ điều kiện để lưu";
+    document.getElementById("saveBtn").disabled = !ready;
+}
+
+function renderAll() {
+    renderMatrix();
+    renderChecklist();
+    if (popCtx) renderPopDays();
+}
+
+/* ================= ghi ô + undo ================= */
+function applyCells(meal, dayIndexes, dish) {
+    const before = dayIndexes.map((d) => ({ d, dish: state.days[d].slots[meal] }));
+    dayIndexes.forEach((d) => {
+        state.days[d].slots[meal] = dish;
+        state.flash = `${d}-${meal}`;
+    });
+    state.undo = { meal, before };
+    const count = dayIndexes.length;
+    showToast(count === 1 ? "Đã cập nhật 1 ô" : `Đã cập nhật ${count} ô`);
+    renderAll();
+}
+
+let toastTimer = null;
+function showToast(msg) {
+    const toast = document.getElementById("toast");
+    document.getElementById("toastMsg").textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 5000);
+}
+document.getElementById("toastUndo").addEventListener("click", () => {
+    if (!state.undo) return;
+    if (state.undo.meal) {
+        state.undo.before.forEach((item) => { state.days[item.d].slots[state.undo.meal] = item.dish; });
+    } else {
+        initWeek(state.start);
+        state.undo.before.forEach((item) => { state.days[item.d].slots[item.meal] = item.dish; });
+    }
+    state.undo = null;
+    document.getElementById("toast").classList.remove("show");
+    renderAll();
+});
+
+/* ================= popover ================= */
+let popCtx = null;   // { meal, days:Set<number>, dishId|null, anchor, mode }
+let popDishId = null;
+
+function openPop(anchor, meal, dayIndex) {
+    popCtx = {
+        meal,
+        days: new Set(dayIndex === null ? [] : [dayIndex]),
+        anchor,
+    };
+    popDishId = dayIndex === null ? null : (state.days[dayIndex].slots[meal] ? state.days[dayIndex].slots[meal].id : null);
+    const mealLabel = MEALS.find((m) => m.key === meal).label;
+    document.getElementById("popTitle").innerHTML = `Bữa ${mealLabel.toLowerCase()}`
+        + (dayIndex !== null ? ` <span>· ${DOW[dayIndex]}</span>` : ` <span>· cả hàng</span>`);
+    document.getElementById("popSearch").value = "";
+    renderPopChips();
+    renderPopList();
+    renderPopDays();
+    positionPop(anchor);
+    document.getElementById("pop").classList.add("open");
+    document.getElementById("popSearch").focus();
+}
+function positionPop(anchor) {
+    const pop = document.getElementById("pop");
+    const rect = anchor.getBoundingClientRect();
+    const width = 340;
+    const height = pop.offsetHeight || 460;
+    let left = rect.left;
+    if (left + width > window.innerWidth - 12) left = window.innerWidth - width - 12;
+    let top = rect.bottom + 6;
+    if (top + height > window.innerHeight - 12) top = Math.max(12, rect.top - height - 6);
+    pop.style.left = Math.max(12, left) + "px";
+    pop.style.top = top + "px";
+}
+function closePop() {
+    document.getElementById("pop").classList.remove("open");
+    popCtx = null;
+    popDishId = null;
+}
+
+function renderPopChips() {
+    const el = document.getElementById("popChips");
+    el.innerHTML = "";
+    const recent = [1, 7, 2, 10, 4];
+    recent.forEach((id) => {
+        const dish = dishById(id);
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip" + (popDishId === id ? " on" : "");
+        b.textContent = dish.name;
+        b.addEventListener("click", () => { popDishId = id; renderPopChips(); renderPopList(); renderPopDays(); });
+        el.appendChild(b);
+    });
+}
+function renderPopList() {
+    const q = document.getElementById("popSearch").value.trim().toLowerCase();
+    const ul = document.getElementById("popList");
+    ul.innerHTML = "";
+    const hits = DISHES.filter((dish) => dish.name.toLowerCase().includes(q));
+    if (!hits.length) {
+        ul.innerHTML = '<li class="empty">Không có món nào khớp.</li>';
+        return;
+    }
+    const usage = usageMap();
+    hits.forEach((dish) => {
+        const used = usage.get(dish.id) || 0;
+        const li = document.createElement("li");
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = popDishId === dish.id ? "on" : "";
+        b.innerHTML = `<span class="txt"><b>${dish.name}</b><small>${dish.cuisine} · ${dish.kcal} kcal</small></span>
+            <span class="tally ${used >= MAX_REPEATS ? "max" : ""}">${used}/${MAX_REPEATS}</span>`;
+        b.addEventListener("click", () => {
+            popDishId = dish.id;
+            renderPopChips();
+            renderPopList();
+            renderPopDays();
+        });
+        li.appendChild(b);
+        ul.appendChild(li);
+    });
+}
+function selectedCount() { return popCtx ? popCtx.days.size : 0; }
+
+function renderPopDays() {
+    if (!popCtx) return;
+    const daysEl = document.getElementById("popDays");
+    const usage = usageMap();
+    const dish = popDishId ? dishById(popDishId) : null;
+    const meal = popCtx.meal;
+
+    // Số lần món đã dùng trong cả tuần. Ô đang được chọn giữ nguyên món đó không tính thêm.
+    const totalUsed = dish ? (usage.get(dish.id) || 0) : 0;
+    const newCost = countNewSelected();
+    const remaining = dish ? Math.max(0, MAX_REPEATS - totalUsed - newCost) : MAX_REPEATS;
+
+    daysEl.innerHTML = "";
+    const conflicts = [];
+    state.days.forEach((day, d) => {
+        const selected = popCtx.days.has(d);
+        const current = day.slots[meal];
+        const currentSame = dish && current && current.id === dish.id;
+        const costIfTick = currentSame ? 0 : 1;
+        const wouldExceed = dish && !selected && totalUsed + newCost + costIfTick > MAX_REPEATS;
+
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "dbtn" + (selected ? " on" : "") + (day.date === TODAY_ISO ? " today" : "");
+        if (selected && current && dish && !currentSame) b.classList.add("conflict");
+        b.textContent = DOW[d];
+        b.disabled = Boolean(wouldExceed);
+        b.title = wouldExceed
+            ? `${dish.name} đã dùng ${totalUsed + newCost}/${MAX_REPEATS} lần trong tuần`
+            : DOW[d];
+        b.addEventListener("click", () => {
+            if (selected) popCtx.days.delete(d);
+            else popCtx.days.add(d);
+            renderPopDays();
+        });
+        daysEl.appendChild(b);
+        if (selected && current && dish && !currentSame) conflicts.push(DOW[d]);
+    });
+
+    const allowEl = document.getElementById("popAllow");
+    if (!dish) {
+        allowEl.textContent = "chọn món trước";
+        allowEl.className = "allow";
+    } else {
+        allowEl.textContent = `còn ${remaining} lượt`;
+        allowEl.className = "allow" + (remaining === 0 ? " warn" : "");
+    }
+
+    const warnEl = document.getElementById("popWarn");
+    const parts = [];
+    if (conflicts.length) parts.push(`Sẽ thay món cũ ở ${conflicts.join(", ")}`);
+    if (!dish && selectedCount() === 0) parts.push("Chọn một món để bắt đầu.");
+    warnEl.innerHTML = parts.join("<br>");
+
+    const btn = document.getElementById("popApply");
+    const n = selectedCount();
+    btn.disabled = !dish || n === 0;
+    btn.textContent = `Áp ${n} ô`;
+
+    document.getElementById("popClear").disabled = !dish && selectedCount() === 0;
+}
+function countNewSelected() {
+    if (!popCtx) return 0;
+    const meal = popCtx.meal;
+    let count = 0;
+    [...popCtx.days].forEach((d) => {
+        const current = state.days[d].slots[meal];
+        if (!current || current.id !== popDishId) count += 1;
+    });
+    return count;
+}
+
+function renderDishSelection() {
+    if (!popCtx) return;
+    renderPopChips();
+    renderPopDays();
+}
+document.getElementById("popSearch").addEventListener("input", renderPopList);
+document.getElementById("popX").addEventListener("click", closePop);
+document.getElementById("popApply").addEventListener("click", () => {
+    if (!popCtx || !popDishId) return;
+    const dish = dishById(popDishId);
+    const meal = popCtx.meal;
+    const days = [...popCtx.days];
+    closePop();
+    if (days.length) applyCells(meal, days, dish);
+});
+document.getElementById("popClear").addEventListener("click", () => {
+    if (!popCtx) return;
+    const meal = popCtx.meal;
+    const days = [...popCtx.days];
+    closePop();
+    if (days.length) applyCells(meal, days, null);
+});
+document.addEventListener("click", (ev) => {
+    const pop = document.getElementById("pop");
+    if (!pop.classList.contains("open")) return;
+    if (pop.contains(ev.target)) return;
+    if (ev.target.closest(".slot") || ev.target.closest(".meal-label")) return;
+    closePop();
+});
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") closePop(); });
+window.addEventListener("resize", () => { if (popCtx) positionPop(popCtx.anchor); });
+
+/* ================= toolbar ================= */
+document.getElementById("copyPrev").addEventListener("click", () => {
+    const before = [];
+    state.days.forEach((day, d) => MEALS.forEach(({ key }) => before.push({ d, meal: key, dish: day.slots[key] })));
+    initWeek(state.start);
+    PREV_WEEK.forEach(([d, meal, id]) => { state.days[d].slots[meal] = dishById(id); });
+    state.undo = { meal: null, before };
+    showToast("Đã chép 16 bữa từ tuần trước");
+    renderAll();
+});
+document.getElementById("startDate").addEventListener("change", (ev) => {
+    const picked = new Date(ev.target.value + "T00:00:00");
+    if (isNaN(picked)) return;
+    const dow = picked.getDay();
+    picked.setDate(picked.getDate() + (dow === 0 ? -6 : 1 - dow));
+    const iso = picked.toISOString().slice(0, 10);
+    ev.target.value = iso;
+    const old = state.days.map((day) => ({ ...day.slots }));
+    initWeek(iso);
+    state.days.forEach((day, i) => { day.slots = old[i] || day.slots; });
+    renderAll();
+});
+document.getElementById("notes").addEventListener("input", (ev) => {
+    document.getElementById("notesCount").textContent = `${ev.target.value.length} / 500`;
+});
+document.getElementById("saveBtn").addEventListener("click", renderAll);
+
+/* ================= seed ================= */
+initWeek(state.start);
+state.days[0].slots.BREAKFAST = dishById(1);
+state.days[2].slots.BREAKFAST = dishById(1);
+state.days[4].slots.BREAKFAST = dishById(1);
+state.days[1].slots.LUNCH = dishById(7);
+state.days[4].slots.LUNCH = dishById(7);
+state.days[6].slots.LUNCH = dishById(7);
+state.days[0].slots.DINNER = dishById(4);
+state.days[1].slots.DINNER = dishById(4);
+state.days[3].slots.DINNER = dishById(4);
+renderAll();
+</script>
+</body>
+</html>

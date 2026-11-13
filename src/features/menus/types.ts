@@ -2,6 +2,16 @@ export type MenuStatus = "drafted" | "scheduled" | "cancelled" | "completed";
 
 export type MealType = "BREAKFAST" | "LUNCH" | "DINNER";
 
+/** Thứ tự cố định của 3 ô bữa — bảng tuần luôn vẽ đủ 3, kể cả khi ngày đó trống. */
+export const MEAL_TYPES: MealType[] = ["BREAKFAST", "LUNCH", "DINNER"];
+
+/** Khớp `MenuValidator` backend — sai là 400 cả tuần, không lưu gì. */
+export const MIN_DISTINCT_DISHES = 5;
+export const MAX_DISH_REPEATS = 3;
+/** Backend vẫn bắt buộc `servings ≥ 1`; form tạo tuần luôn gửi `1` nên không cho sửa. */
+export const MIN_SERVINGS = 1;
+export const MAX_NOTES_LENGTH = 500;
+
 /**
  * Món trong menu — `GET /api/menus/details` trả subset của dish.
  * ponytail: trùng tên `Dish` ở `features/recipes/types.ts` nhưng khác shape (bên đó có
@@ -16,10 +26,33 @@ export interface Dish {
     cuisineType: string | null;
 }
 
+/**
+ * Recipe gợi ý kèm mỗi ô bữa — `GET /api/menus/details` bản deploy trả thêm field này
+ * (spec live `MealResponse` chưa khai). Chỉ là summary: thiếu nguyên liệu + bước nấu,
+ * nên bấm vào vẫn gọi `GET /api/recipes/{id}` để có card đầy đủ.
+ */
+export interface RecommendedRecipe {
+    id: string;
+    name: string;
+    description: string | null;
+    prepTimeMinutes: number | null;
+    cookTimeMinutes: number | null;
+    servings: number;
+    difficulty: string | null;
+    calories: number | null;
+    proteinG: number | null;
+    carbohydrateG: number | null;
+    fatG: number | null;
+    fiberG: number | null;
+    nutritionResolved: boolean;
+}
+
 export interface Meal {
     mealType: MealType;
     servings: number;
     dish: Dish;
+    /** Có thể vắng hoặc rỗng — món không có recipe công khai nào. */
+    recommendedRecipes?: RecommendedRecipe[];
 }
 
 /** `days` chỉ chứa ngày có ít nhất một bữa — có thể thiếu ngày, có thể rỗng. */

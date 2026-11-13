@@ -1,0 +1,33 @@
+{
+    "title": "Saved",
+    "subtitle": "{{posts}} saved posts · {{recipes}} saved recipes. Read-only — you can't edit someone else's content.",
+    "nav": "Saved",
+    "tab": {
+        "posts": "Saved posts",
+        "recipes": "Saved recipes"
+    },
+    "save": "Save",
+    "saved": "Saved",
+    "unsave": "Remove",
+    "readPost": "Read post",
+    "composeFromRecipe": "Write a post from this recipe",
+    "prepCook": "{{prep}} + {{cook}} min",
+    "servings": "{{count}} servings",
+    "ingredients": "{{count}} ingredients",
+    "nutritionMissing": "Nutrition incomplete",
+    "loginRequired": "Log in to save content.",
+    "empty": {
+        "posts": {
+            "title": "No saved posts yet",
+            "description": "Tap the bookmark on any post to keep it here for later."
+        },
+        "recipes": {
+            "title": "No saved recipes yet",
+            "description": "Tap the bookmark on a recipe to keep it here and write your own post from it."
+        }
+    },
+    "toast": {
+        "unsavedPost": "Removed from saved posts",
+        "unsavedRecipe": "Removed from saved recipes"
+    }
+}

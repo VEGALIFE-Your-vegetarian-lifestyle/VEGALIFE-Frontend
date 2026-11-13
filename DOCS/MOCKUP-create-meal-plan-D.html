@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mockup — Tạo thực đơn tuần (phương án D)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+    :root {
+        --vegan-green: #12724a;
+        --vegan-green-hover: #0f6140;
+        --vegan-green-light: #e6f2ec;
+        --vegan-green-muted: #b0d3bd;
+        --vegan-green-subtle: #f2f9f5;
+        --vegan-green-bright: #4caf50;
+        --amber-strong: #b45309;
+        --amber-soft: #fef3c7;
+        --lavender-strong: #2a5f9e;
+        --danger: #dc2626;
+        --danger-soft: #fef2f2;
+        --dark: #0d1117;
+        --background: #f4f5f7;
+        --surface: #fff;
+        --muted-bg: #eaeef2;
+        --muted-foreground: #5c6675;
+        --border: #e3e6ea;
+        --radius-md: 10px;
+        --radius-lg: 12px;
+        --radius-xl: 14px;
+        --radius-2xl: 16px;
+        --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --font-display: "Fraunces", Georgia, serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; border-color: var(--border); }
+    body {
+        margin: 0; background: var(--background); color: var(--dark);
+        font-family: var(--font-sans); font-size: 15px; line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+    h1 { font-family: var(--font-display); font-weight: 600; letter-spacing: -.018em; margin: 0; font-size: 28px; line-height: 1.2; text-wrap: balance; }
+    button { font: inherit; cursor: pointer; }
+    .page { max-width: 1152px; margin: 0 auto; padding: 32px 24px 64px; }
+    .breadcrumb { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted-foreground); margin-bottom: 8px; }
+    .breadcrumb b { color: var(--dark); font-weight: 600; }
+    .head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+    .head p { margin: 6px 0 0; font-size: 13px; color: var(--muted-foreground); }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: var(--radius-lg); border: 1px solid transparent; font-size: 14px; font-weight: 600; }
+    .btn-primary { background: var(--vegan-green); color: #fff; }
+    .btn-primary:hover { background: var(--vegan-green-hover); }
+    .btn-primary:disabled { background: var(--muted-bg); color: #98a1ac; cursor: not-allowed; }
+    .btn-outline { background: var(--surface); border-color: var(--border); color: var(--dark); }
+    .btn-outline:hover { background: var(--muted-bg); }
+    .btn-ghost { background: transparent; color: var(--muted-foreground); }
+    .btn-ghost:hover { background: var(--muted-bg); color: var(--dark); }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; border-radius: var(--radius-md); }
+    .btn svg { width: 16px; height: 16px; }
+
+    .layout { display: grid; gap: 24px; }
+    @media (min-width: 1024px) { .layout { grid-template-columns: minmax(0, 1fr) 320px; } }
+    .stack { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+    .card { background: var(--surface); border-radius: var(--radius-2xl); box-shadow: 0 0 0 1px var(--border); overflow: hidden; }
+    .card-head { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .card-body { padding: 20px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; font-weight: 600; }
+    .field .help { font-size: 12px; color: var(--muted-foreground); }
+    input[type="date"], input[type="text"], textarea, select {
+        width: 100%; border: 1px solid var(--border); border-radius: var(--radius-lg);
+        background: var(--surface); padding: 9px 12px; font: inherit; font-size: 14px; color: var(--dark);
+        outline: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--vegan-green); box-shadow: 0 0 0 3px rgba(18,114,74,.12); }
+    textarea { resize: vertical; min-height: 80px; }
+    .counter { font-size: 12px; color: var(--muted-foreground); text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* ---------- Tuần: ma trận 7 ngày × 3 bữa ---------- */
+    .week-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--vegan-green-subtle); }
+    .week-toolbar .count { font-size: 12.5px; color: var(--muted-foreground); margin-right: auto; }
+    .week-toolbar .count b { color: var(--dark); font-variant-numeric: tabular-nums; }
+
+    .matrix-wrap { overflow-x: auto; padding: 16px 20px 20px; }
+    .matrix { display: grid; grid-template-columns: 64px repeat(7, minmax(96px, 1fr)); gap: 6px; min-width: 760px; }
+    .matrix .corner { }
+    .day-head {
+        display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 0 8px;
+        border-radius: var(--radius-md);
+    }
+    .day-head .dow { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+    .day-head .dnum { font-size: 12px; font-weight: 600; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+    .day-head.today .dow, .day-head.today .dnum { color: var(--vegan-green); }
+
+    .meal-label {
+        display: flex; align-items: center; gap: 6px; padding-right: 4px;
+        font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted-foreground);
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+    .dot.b { background: var(--amber-strong); }
+    .dot.l { background: var(--vegan-green-bright); }
+    .dot.d { background: var(--lavender-strong); }
+
+    .slot {
+        position: relative; display: flex; align-items: center; justify-content: center; gap: 2px;
+        min-height: 52px; padding: 6px 8px; border-radius: var(--radius-md);
+        border: 1px dashed var(--border); background: transparent; color: #9aa3ad;
+        font-size: 12.5px; text-align: left; transition: background .12s, border-color .12s, color .12s;
+    }
+    .slot:hover { border-color: var(--vegan-green-muted); background: var(--vegan-green-subtle); color: var(--vegan-green); }
+    .slot.filled {
+        border: 1px solid var(--border); background: var(--surface); color: var(--dark);
+        justify-content: space-between; align-items: flex-start; box-shadow: 0 0 0 1px rgba(13,17,23,.02);
+    }
+    .slot.filled:hover { border-color: var(--vegan-green-muted); background: var(--vegan-green-subtle); }
+    .slot .name { font-size: 12px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .slot .meta { display: block; font-size: 10px; color: var(--muted-foreground); font-weight: 500; margin-top: 2px; }
+    .slot .clear { border: 0; background: transparent; border-radius: 99px; padding: 2px; color: #9aa3ad; line-height: 0; opacity: 0; transition: opacity .12s; flex: none; }
+    .slot.filled:hover .clear, .slot.filled:focus-within .clear { opacity: 1; }
+    .slot .clear:hover { background: var(--muted-bg); color: var(--danger); }
+    .slot .clear svg { width: 13px; height: 13px; }
+    .slot.today-col { background: rgba(230,242,236,.55); }
+    .slot.invalid { border-color: var(--danger); background: var(--danger-soft); }
+    .cell-err { font-size: 10.5px; color: var(--danger); padding: 2px 2px 0; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 0 20px 18px; font-size: 11.5px; color: var(--muted-foreground); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* ---------- Aside checklist ---------- */
+    .aside { align-self: start; }
+    @media (min-width: 1024px) { .aside { position: sticky; top: 24px; } }
+    .req { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+    .req li { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+    .req .label { color: var(--muted-foreground); }
+    .req .value { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+    .ok { color: var(--vegan-green); }
+    .bad { color: var(--danger); }
+    .req-foot { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--muted-foreground); }
+    .req-foot.ok { color: var(--vegan-green); }
+    .hint { margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--amber-soft); color: #7c4a06; font-size: 12px; line-height: 1.5; }
+
+    /* ---------- Dialog ---------- */
+    .overlay { position: fixed; inset: 0; background: rgba(13,17,23,.45); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+    .overlay.open { display: flex; }
+    .dialog { width: min(720px, 100%); max-height: min(86vh, 760px); background: var(--surface); border-radius: var(--radius-2xl); box-shadow: 0 24px 60px -24px rgba(13,17,23,.45); display: flex; flex-direction: column; overflow: hidden; }
+    .dialog-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); }
+    .dialog-head .eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--vegan-green); }
+    .dialog-head h2 { margin: 2px 0 0; font-size: 17px; font-weight: 700; }
+    .dialog-head p { margin: 4px 0 0; font-size: 12.5px; color: var(--muted-foreground); }
+    .steps { display: flex; gap: 6px; margin-top: 14px; }
+    .step { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #98a1ac; }
+    .step .num { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 99px; background: var(--muted-bg); font-size: 11px; font-weight: 800; }
+    .step.active { color: var(--vegan-green); }
+    .step.active .num { background: var(--vegan-green); color: #fff; }
+    .step.done .num { background: var(--vegan-green-light); color: var(--vegan-green); }
+    .step-sep { width: 22px; height: 1px; background: var(--border); align-self: center; }
+
+    .dialog-body { padding: 16px 22px; overflow: auto; flex: 1; min-height: 0; }
+    .search { position: relative; }
+    .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--muted-foreground); }
+    .search input { padding-left: 34px; }
+    .dish-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+    .dish {
+        display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px;
+        border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; text-align: left;
+    }
+    .dish:hover { background: var(--vegan-green-subtle); }
+    .dish.checked { background: var(--vegan-green-subtle); border-color: var(--vegan-green-muted); }
+    .dish .box {
+        width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #c3cad2; flex: none;
+        display: grid; place-items: center; background: var(--surface);
+    }
+    .dish.checked .box { background: var(--vegan-green); border-color: var(--vegan-green); color: #fff; }
+    .dish .box svg { width: 12px; height: 12px; }
+    .dish .txt { min-width: 0; flex: 1; }
+    .dish .txt b { display: block; font-size: 13.5px; font-weight: 600; }
+    .dish .txt span { display: block; font-size: 11.5px; color: var(--muted-foreground); }
+    .dish .tag { font-size: 10.5px; font-weight: 700; color: var(--amber-strong); background: var(--amber-soft); border-radius: 99px; padding: 2px 8px; flex: none; }
+    .dish .tag.over { color: var(--danger); background: var(--danger-soft); }
+
+    .assign-intro { font-size: 12.5px; color: var(--muted-foreground); margin: 0 0 12px; }
+    .assign-grid { display: grid; grid-template-columns: 56px repeat(7, 1fr); gap: 5px; }
+    .assign-grid .h { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted-foreground); text-align: center; padding-bottom: 4px; }
+    .apick { height: 34px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 11px; color: #9aa3ad; display: grid; place-items: center; padding: 0 2px; }
+    .apick:hover { border-color: var(--vegan-green-muted); color: var(--vegan-green); }
+    .apick.on { background: var(--vegan-green); border-color: var(--vegan-green); color: #fff; font-weight: 700; }
+    .apick.has { background: var(--vegan-green-light); border-color: var(--vegan-green-muted); color: var(--vegan-green); font-weight: 600; }
+    .seq { margin: 14px 0 0; padding: 12px; border-radius: var(--radius-md); background: var(--background); display: flex; flex-direction: column; gap: 6px; }
+    .seq .row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .seq .idx { width: 18px; height: 18px; border-radius: 99px; background: var(--vegan-green); color: #fff; font-size: 10.5px; font-weight: 800; display: grid; place-items: center; flex: none; }
+    .seq .arrow { color: #9aa3ad; }
+    .seq .target { margin-left: auto; font-weight: 700; color: var(--dark); }
+    .seq .empty { font-size: 12px; color: var(--muted-foreground); }
+
+    .dialog-foot { display: flex; align-items: center; gap: 10px; padding: 14px 22px; border-top: 1px solid var(--border); background: #fafbfc; }
+    .dialog-foot .sel { margin-right: auto; font-size: 12.5px; color: var(--muted-foreground); }
+    .dialog-foot .sel b { color: var(--dark); }
+
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<div class="page">
+    <div class="breadcrumb">Thực đơn <span>/</span> <b>Tạo mới</b></div>
+    <div class="head">
+        <div>
+            <h1>Tạo thực đơn tuần</h1>
+            <p>Chọn tối đa ba món mỗi ngày. Lưu thành bản nháp rồi lên lịch sau.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-outline">Huỷ</button>
+            <button class="btn btn-primary" id="saveBtn" disabled>Lưu thực đơn</button>
+        </div>
+    </div>
+
+    <div class="layout">
+        <main class="stack">
+            <!-- Tuần + ghi chú -->
+            <section class="card">
+                <div class="card-body stack" style="gap:18px">
+                    <div class="field">
+                        <label for="startDate">Tuần bắt đầu</label>
+                        <input id="startDate" type="date" value="2026-11-09" />
+                        <span class="help">Luôn là Thứ 2 của tuần — chọn ngày khác sẽ tự về Thứ 2.</span>
+                    </div>
+                    <div class="field">
+                        <div style="display:flex;justify-content:space-between;align-items:baseline">
+                            <label for="notes">Ghi chú</label>
+                            <span class="counter" id="notesCount">0 / 300</span>
+                        </div>
+                        <textarea id="notes" maxlength="300" placeholder="Chủ đề của tuần, điều bạn đang kiêng…"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ma trận tuần -->
+            <section class="card">
+                <div class="card-head">Các bữa trong tuần</div>
+                <div class="week-toolbar">
+                    <span class="count"><b id="filledCount">0</b> / 21 ô đã chọn</span>
+                    <button class="btn btn-outline btn-sm" id="openAdd">Thêm món vào tuần</button>
+                </div>
+                <div class="matrix-wrap">
+                    <div class="matrix" id="matrix"></div>
+                </div>
+                <div class="legend">
+                    <span><i class="dot b"></i> Bữa sáng</span>
+                    <span><i class="dot l"></i> Bữa trưa</span>
+                    <span><i class="dot d"></i> Bữa tối</span>
+                    <span style="margin-left:auto">Bấm ô trống để thêm món · bấm tên món để đổi</span>
+                </div>
+            </section>
+        </main>
+
+        <aside class="aside">
+            <section class="card">
+                <div class="card-head">Yêu cầu của tuần</div>
+                <div class="card-body">
+                    <ul class="req">
+                        <li><span class="label">Món khác nhau</span><span class="value" id="reqDistinct">0 / 5</span></li>
+                        <li><span class="label">Món lặp nhiều nhất</span><span class="value" id="reqRepeat">Chưa chọn món nào</span></li>
+                        <li><span class="label">Ngày có bữa</span><span class="value" id="reqDays">0 / 7</span></li>
+                    </ul>
+                    <div class="req-foot" id="reqFoot">Chưa đủ điều kiện để lưu</div>
+                    <div class="hint">Thực đơn cần ít nhất 5 món khác nhau, mỗi món tối đa 3 lần, và mỗi ngày ít nhất một bữa.</div>
+                </div>
+            </section>
+        </aside>
+    </div>
+</div>
+
+<!-- Dialog: chọn món → gán ô -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <div class="dialog">
+        <div class="dialog-head">
+            <div class="eyebrow">Thực đơn tuần</div>
+            <h2 id="dlgTitle">Thêm món</h2>
+            <p id="dlgSub">Chọn một hoặc nhiều món, sau đó chỉ định ô bữa trong tuần.</p>
+            <div class="steps">
+                <span class="step active" id="step1"><span class="num">1</span> Chọn món</span>
+                <span class="step-sep"></span>
+                <span class="step" id="step2"><span class="num">2</span> Gán vào ô</span>
+            </div>
+        </div>
+
+        <div class="dialog-body" id="stepBody1">
+            <div class="search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="dishSearch" type="text" placeholder="Tìm món" autocomplete="off" />
+            </div>
+            <ul class="dish-list" id="dishList"></ul>
+        </div>
+
+        <div class="dialog-body" id="stepBody2" style="display:none">
+            <p class="assign-intro">Bấm các ô trống để chọn chỗ đặt món. Món được gán lần lượt theo thứ tự đã chọn.</p>
+            <div class="assign-grid" id="assignGrid"></div>
+            <div class="seq" id="seq"></div>
+        </div>
+
+        <div class="dialog-foot">
+            <span class="sel" id="selCount">Đã chọn <b>0</b> món</span>
+            <button class="btn btn-ghost" id="dlgBack" style="display:none">Quay lại</button>
+            <button class="btn btn-outline" id="dlgCancel">Huỷ</button>
+            <button class="btn btn-primary" id="dlgNext" disabled>Chọn ô bữa</button>
+            <button class="btn btn-primary" id="dlgApply" style="display:none" disabled>Gán vào tuần</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const DISHES = [
+    { id: 1, name: "Phở chay", cuisine: "Việt Nam", kcal: 320 },
+    { id: 2, name: "Bún riêu chay", cuisine: "Việt Nam", kcal: 350 },
+    { id: 3, name: "Gỏi cuốn", cuisine: "Việt Nam", kcal: 180 },
+    { id: 4, name: "Cà tím nướng mỡ hành", cuisine: "Việt Nam", kcal: 150 },
+    { id: 5, name: "Đậu hũ sốt cà", cuisine: "Việt Nam", kcal: 210 },
+    { id: 6, name: "Canh chua chay", cuisine: "Việt Nam", kcal: 120 },
+    { id: 7, name: "Cơm gạo lứt rau củ", cuisine: "Việt Nam", kcal: 420 },
+    { id: 8, name: "Miến trộn chay", cuisine: "Việt Nam", kcal: 280 },
+    { id: 9, name: "Bánh xèo chay", cuisine: "Việt Nam", kcal: 390 },
+    { id: 10, name: "Súp bí đỏ", cuisine: "Âu", kcal: 160 },
+    { id: 11, name: "Salad quinoa", cuisine: "Âu", kcal: 240 },
+    { id: 12, name: "Nấm kho tiêu", cuisine: "Việt Nam", kcal: 190 },
+    { id: 13, name: "Bún bò chay Huế", cuisine: "Việt Nam", kcal: 360 },
+    { id: 14, name: "Đậu hũ chiên sả", cuisine: "Việt Nam", kcal: 230 },
+    { id: 15, name: "Rau muống xào tỏi", cuisine: "Việt Nam", kcal: 110 },
+];
+
+const MEALS = [
+    { key: "BREAKFAST", label: "Sáng", dot: "b" },
+    { key: "LUNCH", label: "Trưa", dot: "l" },
+    { key: "DINNER", label: "Tối", dot: "d" },
+];
+const DOW = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+const MAX_REPEATS = 3;
+const MIN_DISTINCT = 5;
+const TODAY_ISO = "2026-11-11";
+
+const state = {
+    start: "2026-11-09",
+    days: [],           // [{ date, slots: { BREAKFAST: dish|null, ... } }]
+    selected: new Set(),// bước 1
+    picked: new Set(),  // bước 2: "dayIdx-MEAL"
+    step: 1,
+    showErrors: false,
+};
+
+function addDays(iso, n) {
+    const d = new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+}
+function initWeek(start) {
+    state.start = start;
+    state.days = Array.from({ length: 7 }, (_, i) => ({
+        date: addDays(start, i),
+        slots: { BREAKFAST: null, LUNCH: null, DINNER: null },
+    }));
+}
+function slotKey(d, m) { return d + "-" + m; }
+/** Thứ 2 = 0 … CN = 6 */
+function dowIndex(iso) { const g = new Date(iso + "T00:00:00").getDay(); return g === 0 ? 6 : g - 1; }
+function listMeals() {
+    const out = [];
+    state.days.forEach((day, d) => MEALS.forEach(({ key }) => {
+        if (day.slots[key]) out.push(day.slots[key]);
+    }));
+    return out;
+}
+function usage() {
+    const map = new Map();
+    for (const dish of listMeals()) map.set(dish.id, (map.get(dish.id) || 0) + 1);
+    return map;
+}
+
+/* ---------- render ma trận ---------- */
+function renderMatrix() {
+    const el = document.getElementById("matrix");
+    el.innerHTML = "";
+    el.appendChild(document.createElement("div")).className = "corner";
+    state.days.forEach((day) => {
+        const head = document.createElement("div");
+        head.className = "day-head" + (day.date === TODAY_ISO ? " today" : "");
+        head.innerHTML = `<span class="dow">${DOW[dowIndex(day.date)]}</span>
+                          <span class="dnum">${day.date.slice(8)}/${day.date.slice(5, 7)}</span>`;
+        el.appendChild(head);
+    });
+
+    MEALS.forEach((meal) => {
+        const label = document.createElement("div");
+        label.className = "meal-label";
+        label.innerHTML = `<i class="dot ${meal.dot}"></i>${meal.label}`;
+        el.appendChild(label);
+
+        state.days.forEach((day, d) => {
+            const dish = day.slots[meal.key];
+            const btn = document.createElement("button");
+            btn.className = "slot" + (dish ? " filled" : "") + (day.date === TODAY_ISO ? " today-col" : "");
+            if (!dish && state.showErrors) btn.classList.add("invalid");
+            btn.title = dish ? dish.name : "Thêm món";
+            if (dish) {
+                btn.innerHTML = `<span class="name">${dish.name}</span>
+                    <span class="clear" data-clear="${slotKey(d, meal.key)}" role="button" aria-label="Bỏ chọn ${dish.name}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </span>`;
+                btn.addEventListener("click", (ev) => {
+                    if (ev.target.closest(".clear")) {
+                        ev.stopPropagation();
+                        day.slots[meal.key] = null;
+                        state.showErrors = false;
+                        renderAll();
+                        return;
+                    }
+                    openDialog({ day: d, meal: meal.key });
+                });
+            } else {
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M12 5v14M5 12h14"/></svg>`;
+                btn.addEventListener("click", () => openDialog({ day: d, meal: meal.key }));
+            }
+            el.appendChild(btn);
+        });
+    });
+}
+
+/* ---------- checklist ---------- */
+function renderChecklist() {
+    const use = usage();
+    const distinct = use.size;
+    const daysFilled = state.days.filter((day) => Object.values(day.slots).some(Boolean)).length;
+    const meals = listMeals();
+    const filled = meals.length;
+
+    const max = [...use.entries()].sort((a, b) => b[1] - a[1])[0];
+    const maxDish = max ? DISHES.find((dish) => dish.id === max[0]) : null;
+
+    document.getElementById("filledCount").textContent = filled;
+
+    const rd = document.getElementById("reqDistinct");
+    rd.textContent = `${distinct} / ${MIN_DISTINCT}`;
+    rd.className = "value " + (distinct >= MIN_DISTINCT ? "ok" : "bad");
+
+    const rr = document.getElementById("reqRepeat");
+    if (maxDish) {
+        rr.textContent = `${max[1]} × ${maxDish.name}`;
+        rr.className = "value " + (max[1] <= MAX_REPEATS ? "ok" : "bad");
+    } else {
+        rr.textContent = "Chưa chọn món nào";
+        rr.className = "value";
+    }
+
+    const rdy = document.getElementById("reqDays");
+    rdy.textContent = `${daysFilled} / 7`;
+    rdy.className = "value " + (daysFilled === 7 ? "ok" : "bad");
+
+    const ready = distinct >= MIN_DISTINCT && daysFilled === 7 && (!max || max[1] <= MAX_REPEATS);
+    const foot = document.getElementById("reqFoot");
+    foot.className = "req-foot" + (ready ? " ok" : "");
+    foot.innerHTML = ready
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="m5 13 4 4L19 7"/></svg> Sẵn sàng lưu'
+        : "Chưa đủ điều kiện để lưu";
+    document.getElementById("saveBtn").disabled = !ready;
+}
+
+function renderAll() {
+    renderMatrix();
+    renderChecklist();
+}
+
+/* ---------- dialog ---------- */
+function openDialog(prefill) {
+    state.selected = new Set();
+    state.picked = new Set();
+    state.step = 1;
+    state.prefill = prefill || null;
+    document.getElementById("dishSearch").value = "";
+    if (prefill) {
+        state.picked.add(slotKey(prefill.day, prefill.meal));
+    }
+    renderDishList();
+    renderAssign();
+    setStep(1);
+    document.getElementById("overlay").classList.add("open");
+    document.getElementById("dishSearch").focus();
+}
+function closeDialog() {
+    document.getElementById("overlay").classList.remove("open");
+    state.prefill = null;
+}
+function setStep(n) {
+    state.step = n;
+    document.getElementById("stepBody1").style.display = n === 1 ? "block" : "none";
+    document.getElementById("stepBody2").style.display = n === 2 ? "block" : "none";
+    document.getElementById("step1").className = "step " + (n === 1 ? "active" : "done");
+    document.getElementById("step2").className = "step " + (n === 2 ? "active" : "");
+    document.getElementById("dlgBack").style.display = n === 2 ? "inline-flex" : "none";
+    document.getElementById("dlgNext").style.display = n === 1 ? "inline-flex" : "none";
+    document.getElementById("dlgApply").style.display = n === 2 ? "inline-flex" : "none";
+    document.getElementById("dlgTitle").textContent = n === 1 ? "Thêm món" : "Gán món vào ô bữa";
+    document.getElementById("dlgSub").textContent = n === 1
+        ? "Chọn một hoặc nhiều món, sau đó chỉ định ô bữa trong tuần."
+        : "Bấm các ô trống để chọn chỗ đặt món. Món được gán lần lượt theo thứ tự đã chọn.";
+    updateFoot();
+}
+function renderDishList() {
+    const q = document.getElementById("dishSearch").value.trim().toLowerCase();
+    const use = usage();
+    const ul = document.getElementById("dishList");
+    ul.innerHTML = "";
+    const hits = DISHES.filter((dish) => dish.name.toLowerCase().includes(q));
+    if (!hits.length) {
+        ul.innerHTML = '<li style="padding:12px;color:var(--muted-foreground);font-size:13px">Không có món nào khớp.</li>';
+    }
+    hits.forEach((dish) => {
+        const li = document.createElement("li");
+        const b = document.createElement("button");
+        const used = use.get(dish.id) || 0;
+        b.className = "dish" + (state.selected.has(dish.id) ? " checked" : "");
+        b.type = "button";
+        b.innerHTML = `
+            <span class="box">${state.selected.has(dish.id) ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 13 4 4L19 7"/></svg>' : ""}</span>
+            <span class="txt"><b>${dish.name}</b><span>${dish.cuisine} · ${dish.kcal} kcal</span></span>
+            ${used ? `<span class="tag ${used >= MAX_REPEATS ? "over" : ""}">đã dùng ${used}/${MAX_REPEATS}</span>` : ""}`;
+        b.addEventListener("click", () => {
+            if (state.selected.has(dish.id)) state.selected.delete(dish.id);
+            else state.selected.add(dish.id);
+            renderDishList();
+            updateFoot();
+        });
+        li.appendChild(b);
+        ul.appendChild(li);
+    });
+}
+function renderAssign() {
+    const grid = document.getElementById("assignGrid");
+    grid.innerHTML = "";
+    const corner = document.createElement("div");
+    grid.appendChild(corner);
+    state.days.forEach((day, i) => {
+        const h = document.createElement("div");
+        h.className = "h";
+        h.textContent = DOW[dowIndex(day.date)];
+        grid.appendChild(h);
+    });
+    MEALS.forEach((meal) => {
+        const label = document.createElement("div");
+        label.className = "meal-label";
+        label.style.fontSize = "9px";
+        label.textContent = meal.label;
+        grid.appendChild(label);
+        state.days.forEach((day, d) => {
+            const dish = day.slots[meal.key];
+            const key = slotKey(d, meal.key);
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "apick" + (dish ? " has" : "") + (state.picked.has(key) ? " on" : "");
+            b.textContent = dish ? dish.name.slice(0, 9) : "＋";
+            b.title = dish ? `Đang có: ${dish.name}` : "Trống";
+            b.addEventListener("click", () => {
+                if (state.picked.has(key)) state.picked.delete(key);
+                else state.picked.add(key);
+                renderAssign();
+                updateFoot();
+            });
+            grid.appendChild(b);
+        });
+    });
+    renderSeq();
+}
+function renderSeq() {
+    const seq = document.getElementById("seq");
+    const ids = [...state.selected];
+    const targets = [...state.picked];
+    if (!ids.length) {
+        seq.innerHTML = '<div class="empty">Chưa chọn món nào.</div>';
+        return;
+    }
+    seq.innerHTML = ids.map((id, i) => {
+        const dish = DISHES.find((x) => x.id === id);
+        const target = targets[i];
+        let label = '<span class="target" style="color:var(--muted-foreground)">chưa có ô</span>';
+        if (target) {
+            const [d, m] = target.split("-");
+            const meal = MEALS.find((x) => x.key === m);
+            label = `<span class="target">${DOW[dowIndex(state.days[d].date)]} · ${meal.label}</span>`;
+        }
+        return `<div class="row"><span class="idx">${i + 1}</span>${dish.name}<span class="arrow">→</span>${label}</div>`;
+    }).join("");
+}
+function updateFoot() {
+    const n = state.selected.size;
+    document.getElementById("selCount").innerHTML = `Đã chọn <b>${n}</b> món`;
+    document.getElementById("dlgNext").disabled = n === 0;
+    const willAssign = Math.min(n, state.picked.size);
+    document.getElementById("dlgApply").disabled = willAssign === 0;
+    document.getElementById("dlgApply").textContent = willAssign
+        ? `Gán ${willAssign} món`
+        : "Gán vào tuần";
+}
+function applyAssign() {
+    const ids = [...state.selected];
+    const targets = [...state.picked];
+    ids.slice(0, targets.length).forEach((id, i) => {
+        const [d, m] = targets[i].split("-");
+        state.days[d].slots[m] = DISHES.find((x) => x.id === id);
+    });
+    state.showErrors = false;
+    closeDialog();
+    renderAll();
+}
+
+/* ---------- events ---------- */
+document.getElementById("openAdd").addEventListener("click", () => openDialog(null));
+document.getElementById("dlgCancel").addEventListener("click", closeDialog);
+document.getElementById("overlay").addEventListener("click", (ev) => {
+    if (ev.target.id === "overlay") closeDialog();
+});
+document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && document.getElementById("overlay").classList.contains("open")) closeDialog();
+});
+document.getElementById("dishSearch").addEventListener("input", renderDishList);
+document.getElementById("dlgNext").addEventListener("click", () => setStep(2));
+document.getElementById("dlgBack").addEventListener("click", () => setStep(1));
+document.getElementById("dlgApply").addEventListener("click", applyAssign);
+document.getElementById("startDate").addEventListener("change", (ev) => {
+    const picked = new Date(ev.target.value + "T00:00:00");
+    if (isNaN(picked)) return;
+    const dow = picked.getDay(); // 0 = CN
+    const offset = dow === 0 ? -6 : 1 - dow;
+    picked.setDate(picked.getDate() + offset);
+    const iso = picked.toISOString().slice(0, 10);
+    ev.target.value = iso;
+    const old = state.days.map((day) => Object.values(day.slots));
+    initWeek(iso);
+    state.days.forEach((day, i) => { day.slots = old[i] || day.slots; });
+    renderAll();
+});
+document.getElementById("notes").addEventListener("input", (ev) => {
+    document.getElementById("notesCount").textContent = `${ev.target.value.length} / 300`;
+});
+document.getElementById("saveBtn").addEventListener("click", () => {
+    state.showErrors = true;
+    renderAll();
+});
+
+/* dữ liệu mẫu để thấy trạng thái gần đủ */
+initWeek(state.start);
+state.days[0].slots.BREAKFAST = DISHES[0];
+state.days[0].slots.LUNCH = DISHES[6];
+state.days[1].slots.BREAKFAST = DISHES[1];
+state.days[1].slots.DINNER = DISHES[5];
+state.days[2].slots.LUNCH = DISHES[7];
+state.days[2].slots.DINNER = DISHES[3];
+state.days[3].slots.BREAKFAST = DISHES[10];
+state.days[3].slots.LUNCH = DISHES[2];
+state.days[4].slots.BREAKFAST = DISHES[0];
+state.days[4].slots.DINNER = DISHES[4];
+renderAll();
+</script>
+</body>
+</html>

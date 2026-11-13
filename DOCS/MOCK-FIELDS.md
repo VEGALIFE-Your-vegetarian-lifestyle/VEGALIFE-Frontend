@@ -48,7 +48,7 @@ Trước đây hero + showcase + community cùng `slice(0,3)` nên 3 bài đầu
 
 | Vị trí trên UI | Field | Loại | Ghi chú |
 |---|---|---|---|
-| Hero: badge / h1 / câu hỏi / 4 chip điều hướng / subtitle | `home:hero.*` | **[H]** | chip chỉ là link `/explore`, `/meal-plan/create`, `/nearby`, `/ai-nutrition` |
+| Hero: badge / h1 / câu hỏi / 4 chip điều hướng / subtitle | `home:hero.*` | **[H]** | chip là link `/explore`, `/nearby`, `/ai-nutrition`; chip “meal plan” mở `MealPlanComposerDialog` |
 | Hero: ô search → `/explore?q=` | — | **[D]** | `GET /api/search` **chưa làm** (API-COVERAGE §16) |
 | Hero: thẻ "Daily Highlight" phải | `featuredImageUrl`, `title`, `content`, `categoryIds` | **[R]/[D]** | nhãn thời gian = `estimateReadMinutes(content)` |
 | Hero: 2 con số chân khối | `feed.totalElements`, `categoriesData.totalElements` | **[R]** | |
@@ -66,7 +66,7 @@ Trước đây hero + showcase + community cùng `slice(0,3)` nên 3 bài đầu
 | Card: icon bookmark góc ảnh | — | **[M]** | chỉ trang trí, **không có API lưu bài**. Chỉ bật ở 3 card Showcase |
 | Card: số lượt xem 👁 | `viewCount` | **[R]** | hiện **0** ở mọi bài trên prod |
 | Card: nhãn Video / nút play ▶ | — | **[X]** | `PostListResponse` **không có** `type`/`videoUrl` → mọi bài coi là blog; tab "Videos" ở Explore luôn rỗng |
-| Dải CTA cuối trang | `home:ctaBand.*` | **[H]** | CTA đổi đích theo `isAuthenticated` (`/register` vs `/meal-plan/create`) |
+| Dải CTA cuối trang | `home:ctaBand.*` | **[H]** | CTA đổi theo `isAuthenticated`: `/register` hoặc mở `MealPlanComposerDialog` |
 
 ### Bỏ hẳn khi redesign (mockup có, BE không có — không bịa thay)
 
@@ -97,8 +97,8 @@ File: `ExplorePage.tsx` (khung + state lọc) · `ExploreFilterPanel.tsx` (cột
 `FeedPostCard.tsx` (card) · `PostCommentsDialog.tsx` (dialog bình luận) · `__tests__/FeedPostCard.test.tsx`.
 
 Bố cục: hero giữa (eyebrow pill / h1 / phụ đề) → search pill full-width → `PillTabs` → thanh điều khiển
-(số biên niên + sort) → lưới `lg:grid-cols-4`: **cột trái = panel lọc sticky** (Category / Content Format /
-Reading Time + card CTA tạo bài), **cột phải = feed dọc** (card → "Showing N of M" + `Pagination` số).
+(số biên niên + sort) → lưới `lg:grid-cols-4`: **cột trái = panel lọc sticky** (Category / Content Format
++ card CTA tạo bài), **cột phải = feed dọc** (card → "Showing N of M" + `Pagination` số).
 Mobile: panel lọc ẩn, category chuyển thành hàng chip cuộn ngang phía trên feed.
 
 Trang giới hạn `max-w-6xl` (không `max-w-app`): feed 3/4 của 96rem cho ra card ~1100px — quá rộng
@@ -132,7 +132,6 @@ Data thật:
 | Từ khóa `q`, category `cat` (lặp nhiều lần), tab, sort | `useSearchParams` — state nằm trên URL | **[D]** |
 | Lọc keyword | `title` + `content` + tên category, `.toLowerCase().includes()` | **[D]** |
 | Lọc Content Format | `recipeIds.length > 0` = có công thức, ngược lại = chỉ bài viết | **[D]** |
-| Lọc Reading Time | `estimateReadMinutes(content) < 5` = nhanh, `> 10` = chuyên sâu | **[D]** |
 | Sort `popular` / `recent` | `viewCount` desc / `createdAt` desc | **[R]** |
 | Meta card: thời gian đọc | `estimateReadMinutes(content)` | **[D]** |
 | Phân trang số | cắt client 8 card/trang; đổi filter tự về trang 1 qua khóa `filterKey` | **[D]** |
@@ -364,7 +363,8 @@ Sẽ bổ sung khi tới lượt từng screen.
 | Post Detail `/posts/:id` | ✅ đã audit — **không còn mock**, xem mục riêng ở trên |
 | Create Recipe `/recipes/create` | ✅ đã audit — xem mục riêng ở trên |
 | My Recipes `/recipes` | ✅ đã audit — xem mục riêng ở trên |
-| My Posts `/my-posts` | mock activity feed; tab My Videos / Saved Recipes chưa có API |
+| My Posts `/my-posts` | mock activity feed; tab My Videos chưa có API (Saved Recipes đã tách sang `/saved`) |
+| Saved `/saved` | ✅ đã audit — **không còn mock**: 2 tab Posts/Recipes, phân trang server, mọi field lấy từ `GET /api/saved/{posts,recipes}`. `SavedPost.content` cắt thành excerpt ở client; recipe card đọc badge từ object `Recipe` (không gọi thêm API) |
 | Nearby / Location Detail | `MOCK_AREAS`, review/ảnh/sustainability badges |
 | AI Nutrition | swaps hardcode, BMI 175/67, model name |
 | Create Post (dialog) / MealPlan | summary không gửi BE, 2 pill tĩnh "Draft autosaved" + "Plant Verified"; servings mặc định |

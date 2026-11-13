@@ -1,5 +1,5 @@
 // @vitest-environment node
-/** Test aiService / subscriptionService — mock axios `api`, kiểm tra path và unwrap `data`. */
+/** Test aiService / subscriptionService — mock axios `api`, kiểm tra path và unwrap `data` (V48). */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/shared/api/client";
 import { getAiConversation, getAiConversations, sendAiMessage } from "@/features/nutrition-ai/api";
@@ -11,23 +11,31 @@ const ok = <T,>(data: T) => ({ data: { success: true, message: "ok", data } });
 
 beforeEach(() => vi.resetAllMocks());
 
+/** Lượt AI có thể chạy 40–90s; mặc định 30s của `api` cắt ngang giữa lúc backend tạo menu. */
+const AI_TIMEOUT = { timeout: 90_000 };
+
 describe("sendAiMessage", () => {
     it("POST /api/ai/messages và trả thẳng `data`, bỏ conversationId khi tạo hội thoại mới", async () => {
-        const payload = { conversationId: "c1", reply: "Chào bạn", usage: { used: 1, limit: 20 } };
+        const payload = { conversationId: "c1", reply: "Chào bạn", usage: { remainingUsage: 4 } };
         vi.mocked(api.post).mockResolvedValue(ok(payload));
 
         const result = await sendAiMessage({ message: "Xin chào" });
 
-        expect(api.post).toHaveBeenCalledWith("/api/ai/messages", { message: "Xin chào" });
+        expect(api.post).toHaveBeenCalledWith("/api/ai/messages", { message: "Xin chào" }, AI_TIMEOUT);
         expect(result).toEqual(payload);
     });
 
     it("gửi kèm conversationId khi nối tiếp hội thoại đang mở", async () => {
-        vi.mocked(api.post).mockResolvedValue(ok({ conversationId: "c1", reply: "ok", usage: { used: 2, limit: 20 } }));
+        const payload = { conversationId: "c1", reply: "ok", usage: { remainingUsage: 3 } };
+        vi.mocked(api.post).mockResolvedValue(ok(payload));
 
         await sendAiMessage({ conversationId: "c1", message: "Tiếp" });
 
-        expect(api.post).toHaveBeenCalledWith("/api/ai/messages", { conversationId: "c1", message: "Tiếp" });
+        expect(api.post).toHaveBeenCalledWith(
+            "/api/ai/messages",
+            { conversationId: "c1", message: "Tiếp" },
+            AI_TIMEOUT,
+        );
     });
 });
 
@@ -54,9 +62,9 @@ describe("getAiConversation", () => {
     });
 });
 
-describe("getMySubscription", () => {
-    it("GET /api/subscriptions/me", async () => {
-        const sub = { tier: "FREE", status: "active", renewalDate: null, usage: { used: 0, limit: 20 } };
+describe("getMySubscription (V48)", () => {
+    it("GET /api/subscriptions/me trả về remainingUsage", async () => {
+        const sub = { remainingUsage: 5 };
         vi.mocked(api.get).mockResolvedValue(ok(sub));
 
         expect(await getMySubscription()).toEqual(sub);

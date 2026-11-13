@@ -29,3 +29,8 @@ export const changeMenuStatus = async (menuId: string, status: MenuStatus): Prom
     const { data } = await api.post<ApiResponse<MenuWriteResult>>(`/api/menus/${menuId}/status`, { status });
     return data.data;
 };
+
+/** DELETE /api/menus/{menuId} — xoá hẳn một menu. `data` là chuỗi thông báo, không dùng. */
+export const deleteMenu = async (menuId: string): Promise<void> => {
+    await api.delete<ApiResponse<string>>(`/api/menus/${menuId}`);
+};

@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CalendarDays, ChefHat, FileText, LayoutDashboard, LogOut, Sparkles, User } from "lucide-react";
+import { Bookmark, CalendarDays, ChefHat, FileText, LayoutDashboard, LogOut, Sparkles, User } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { useAuth, useLogout } from "@/features/auth/useAuth";
 import { useProfile } from "@/features/profile/useProfile";
-import { getMyPosts } from "@/features/posts/api";
+import { getMyPostsCounts } from "@/features/posts/api";
 import { getMyRecipes } from "@/features/recipes/api";
 import { cn } from "@/shared/utils/cn";
 
@@ -13,6 +13,7 @@ const NAV = [
     { to: "/account", labelKey: "account.nav.overview", icon: LayoutDashboard, end: true },
     { to: "/my-posts", labelKey: "account.nav.posts", icon: FileText },
     { to: "/recipes", labelKey: "account.nav.recipes", icon: ChefHat },
+    { to: "/saved", labelKey: "account.nav.saved", icon: Bookmark },
     { to: "/meal-plan", labelKey: "account.nav.plan", icon: CalendarDays },
     { to: "/profile", labelKey: "account.nav.profile", icon: User },
     { to: "/account/subscription", labelKey: "common:subscription", icon: Sparkles },
@@ -27,14 +28,13 @@ export function AccountLayout() {
     // `useAuth().profile` luôn null (setProfile không được gọi) → đọc từ query, cache dùng chung.
     const { data: profile } = useProfile();
 
-    // Rail cần số đếm; khoá trùng `AccountOverviewPage` nên hai chỗ dùng chung một request.
-    const { data: postsPage } = useQuery({
-        queryKey: ["my-posts", "summary"],
-        queryFn: () => getMyPosts({ page: 1, size: 6 }),
+    // Rail cần số đếm toàn tài khoản; khoá trùng `MyPostsPage` nên hai chỗ dùng chung một request.
+    const { data: counts } = useQuery({
+        queryKey: ["my-posts", "counts"],
+        queryFn: getMyPostsCounts,
     });
-    const { data: recipes = [] } = useQuery({ queryKey: ["my-recipes"], queryFn: getMyRecipes });
+    const { data: recipes = [] } = useQuery({ queryKey: ["my-recipes"], queryFn: () => getMyRecipes() });
 
-    const counts = postsPage?.counts;
     const pendingRecipes = recipes.filter((recipe) => recipe.moderationStatus === "PENDING").length;
 
     const numbers = [
