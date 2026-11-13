@@ -71,5 +71,6 @@
         "ingredients": "{{list}}{{count}} ingredients",
         "browseMine": "See all my recipes",
         "viewRecipe": "View Recipe"
-    }
+    },
+    "videoPlayer": "Post video"
 }

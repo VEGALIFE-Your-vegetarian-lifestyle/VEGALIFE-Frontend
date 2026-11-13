@@ -66,7 +66,7 @@ describe("authService — endpoint public (không cần tài khoản)", () => {
         async () => {
             // Cố tình gửi payload rỗng để backend tự validate.
             const error = await register({
-                username: "",
+                displayName: "",
                 email: "not-an-email",
                 password: "",
                 confirmPassword: "",

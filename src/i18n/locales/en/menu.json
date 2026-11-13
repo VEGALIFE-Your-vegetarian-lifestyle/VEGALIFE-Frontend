@@ -4,9 +4,9 @@
     "breadcrumb": "Meal plan",
     "week": {
         "label": "{{from}} – {{to}}",
-        "prev": "Previous week",
-        "next": "Next week",
-        "today": "This week"
+        "prev": "Previous 7 days",
+        "next": "Next 7 days",
+        "today": "Today"
     },
     "weekdays": {
         "short": {
@@ -66,33 +66,56 @@
     },
     "actions": {
         "schedule": "Schedule",
-        "complete": "Mark completed",
         "cancelMenu": "Cancel menu",
         "updated": "Menu status updated",
         "failed": "Could not update the menu status.",
         "confirmTitle": "Change menu status",
         "confirmSchedule": "Schedule this week? A week can only have one scheduled menu.",
-        "confirmComplete": "Mark this week as completed? This cannot be undone.",
-        "confirmCancel": "Cancel this menu? This cannot be undone."
+        "confirmCancel": "Cancel this menu? This cannot be undone.",
+        "delete": "Delete",
+        "deleted": "Menu deleted",
+        "deleteFailed": "Could not delete the menu.",
+        "confirmDeleteTitle": "Delete this menu?",
+        "confirmDelete": "This menu and all its meals will be removed permanently. This cannot be undone."
     },
     "create": {
         "action": "Create meal plan",
         "title": "Create a weekly meal plan",
-        "subtitle": "Pick up to three dishes per day. You can save it as a draft and schedule it later.",
+        "subtitle": "Tap a cell to pick a dish, then tick the days you want it repeated.",
+        "eyebrow": "Weekly meal plan",
         "breadcrumb": "Create",
-        "weekLabel": "Week starting",
-        "weekHelper": "Always the Monday of the week — moving the date snaps to it.",
+        "weekLabel": "Start date",
+        "weekHelper": "A plan covers 7 days from this date — it can start on any day.",
         "notesLabel": "Note",
         "notesPlaceholder": "Theme of the week, restrictions you kept to…",
         "notesCounter": "{{count}} / {{max}}",
         "mealsTitle": "Meals this week",
         "mealTypeColumn": "Meal",
         "dishColumn": "Dish",
-        "servingsColumn": "Servings",
         "pickDish": "Pick a dish",
         "searchDish": "Search dishes",
         "noDishFound": "No dish matches that name.",
         "clearDish": "Remove {{name}}",
+        "matrix": {
+            "slots": "cells filled",
+            "hint": "Tap a cell to pick a dish · tap a meal label to fill the whole row",
+            "assignRow": "Fill the whole {{meal}} row"
+        },
+        "pop": {
+            "title": "{{meal}}",
+            "assignTo": "Apply to",
+            "assignDay": "Apply to {{day}}",
+            "remaining": "{{count}} left of {{max}}",
+            "pickFirst": "Pick a dish first",
+            "willReplace": "Replaces another dish on {{days}}",
+            "clearDish": "Clear dish",
+            "apply": "Apply {{count}}"
+        },
+        "discard": {
+            "title": "Discard this meal plan?",
+            "description": "You have unsaved meals in this week. Closing now will lose them.",
+            "confirm": "Discard"
+        },
         "requirements": {
             "title": "Week requirements",
             "distinct": "Distinct dishes",
@@ -102,14 +125,15 @@
             "repeatsNone": "No dish picked yet",
             "days": "Days with meals",
             "daysValue": "{{count}} / 7",
-            "ok": "Ready to save"
+            "ok": "Ready to save",
+            "notReady": "Fill every day and meet the rules"
         },
         "errors": {
             "dayEmpty": "Add at least one meal to this day.",
-            "servings": "Servings must be a whole number of at least 1.",
             "tooFewDishes": "A menu needs at least {{min}} different dishes (currently {{count}}).",
             "tooManyRepeats": "{{name}} appears more than {{max}} times in this week.",
-            "notesTooLong": "The note is longer than {{max}} characters."
+            "notesTooLong": "The note is longer than {{max}} characters.",
+            "startInPast": "Start date must be after today. Pick tomorrow or later."
         },
         "toast": {
             "created": "Meal plan created",

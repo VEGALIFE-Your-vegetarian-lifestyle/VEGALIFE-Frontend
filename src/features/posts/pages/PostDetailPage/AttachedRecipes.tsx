@@ -5,6 +5,7 @@ import { Clock, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SectionCard } from "@/components/common/SectionCard";
 import { getRecipe } from "@/features/recipes/api";
+import { RecipeNutritionLine } from "@/features/recipes/components/RecipeNutritionLine";
 import type { Recipe } from "@/features/recipes/types";
 
 interface AttachedRecipesProps {
@@ -69,6 +70,7 @@ export function AttachedRecipes({ recipeIds }: AttachedRecipesProps) {
                                         </Badge>
                                     )}
                                 </div>
+                                <RecipeNutritionLine recipe={recipe} className="mt-2 flex text-xs" />
                                 {recipe.ingredients.length > 0 && (
                                     <p className="mt-3 text-xs text-muted-foreground">
                                         {t("post:recipes.ingredients", {

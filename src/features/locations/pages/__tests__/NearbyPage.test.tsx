@@ -37,17 +37,12 @@ describe("NearbyPage", () => {
         expect(screen.getByTestId("map")).toHaveTextContent(`${names.length} markers`);
     });
 
-    it("pill có số lượng, bấm vào chỉ hiện đúng loại", async () => {
-        const user = userEvent.setup();
+    it("hiện mọi địa điểm còn hoạt động trong bán kính, không còn pill lọc loại", async () => {
         renderWithProviders(<NearbyPage />);
         await screen.findByText("Quán Chay Lá Xanh");
 
-        const marketTab = screen.getByRole("tab", { name: /Vegan Market/ });
-        expect(marketTab).toHaveTextContent("2");
-        await user.click(marketTab);
-
-        const names = cards().map((card) => within(card).getByRole("heading").textContent);
-        expect(names).toEqual(["Chợ Chay Bình Thạnh", "Chợ Hữu Cơ Cuối Tuần Quận 7"]);
+        expect(screen.queryByRole("tab")).not.toBeInTheDocument();
+        expect(cards()).toHaveLength(11);
     });
 
     it("không hiện địa điểm đã xóa mềm", async () => {

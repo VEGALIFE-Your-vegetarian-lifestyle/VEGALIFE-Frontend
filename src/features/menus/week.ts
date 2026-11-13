@@ -39,12 +39,29 @@ export function addDays(date: Date, days: number): Date {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 }
 
-/** 7 ngày của tuần, bắt đầu từ `monday`. */
-export function weekDays(monday: Date): Date[] {
-    return Array.from({ length: 7 }, (_, index) => addDays(monday, index));
+/** 7 ngày của cửa sổ, bắt đầu từ `start`. */
+export function weekDays(start: Date): Date[] {
+    return Array.from({ length: 7 }, (_, index) => addDays(start, index));
 }
 
-/** Dịch tuần đi `weeks` tuần (âm = lùi). */
-export function shiftWeek(monday: Date, weeks: number): Date {
-    return addDays(monday, weeks * 7);
+/** Hôm nay dạng "YYYY-MM-DD" theo giờ máy. */
+export function todayISO(): string {
+    return toISODate(new Date());
+}
+
+/**
+ * Ngày bắt đầu sớm nhất được phép — **mai**, không phải hôm nay.
+ * So bằng chuỗi `YYYY-MM-DD` nên cộng ngày qua `addDays` rồi format lại, không dựng UTC.
+ */
+export function minStartDateISO(): string {
+    return toISODate(addDays(new Date(), 1));
+}
+
+/**
+ * Kéo ngày bắt đầu về `minStartDateISO()` nếu nó không **sau hôm nay**.
+ * Hôm nay vẫn bị coi là chưa hợp lệ: thực đơn 7 ngày tính từ mai mới không dính ngày đã qua.
+ */
+export function clampStartDate(iso: string): string {
+    const min = minStartDateISO();
+    return iso < min ? min : iso;
 }

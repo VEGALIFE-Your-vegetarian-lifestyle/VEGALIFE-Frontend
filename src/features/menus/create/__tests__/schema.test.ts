@@ -10,11 +10,13 @@ import {
     emptyWeek,
     mostRepeatedDish,
     moveWeek,
+    setDishInDays,
     type MenuFormValues,
     type PickedDish,
 } from "../schema";
 import { validate } from "../validate";
 import { buildCreateMenuPayload } from "../payload";
+import { minStartDateISO, todayISO } from "../../week";
 
 // i18n đã init sẵn (setup.ts) nên `t` dùng được ngay, không cần React.
 const t = i18n.t.bind(i18n) as unknown as TFunction;
@@ -23,7 +25,8 @@ const dish = (id: string): PickedDish => ({ id, name: `Món ${id}` });
 
 /** Tuần hợp lệ tối thiểu: 7 ngày, mỗi ngày 1 bữa sáng, 5 món khác nhau. */
 function validWeek(): MenuFormValues {
-    const values = emptyWeek("2026-10-05");
+    // Không hard-code ngày: validate đòi ngày bắt đầu **sau hôm nay** nên mốc phải là ngày mai.
+    const values = emptyWeek(minStartDateISO());
     const ids = ["a", "b", "c", "d", "e", "a", "b"];
     values.days.forEach((day, index) => {
         day.slots[0].dish = dish(ids[index]);
@@ -54,16 +57,29 @@ describe("emptyWeek", () => {
 });
 
 describe("moveWeek", () => {
-    it("giữ món theo vị trí trong tuần, chỉ đổi ngày", () => {
+    it("giữ món theo vị trí trong cửa sổ, chỉ đổi ngày", () => {
         const before = validWeek();
         const after = moveWeek(before, "2026-10-12");
 
         expect(after.startDate).toBe("2026-10-12");
         expect(after.days[0].date).toBe("2026-10-12");
         expect(after.days[6].date).toBe("2026-10-18");
-        // Thứ 2 vẫn giữ món của thứ 2 tuần cũ.
+        // Ngày đầu vẫn giữ món của ngày đầu cửa sổ cũ.
         expect(after.days[0].slots[0].dish?.id).toBe("a");
         expect(after.days[3].slots[0].dish?.id).toBe("d");
+    });
+
+    it("bắt đầu giữa tuần: 7 ngày liền kề tính từ ngày được chọn", () => {
+        const after = moveWeek(validWeek(), "2026-10-08");
+        expect(after.days.map((day) => day.date)).toEqual([
+            "2026-10-08",
+            "2026-10-09",
+            "2026-10-10",
+            "2026-10-11",
+            "2026-10-12",
+            "2026-10-13",
+            "2026-10-14",
+        ]);
     });
 
     it("giữ nguyên notes", () => {
@@ -99,9 +115,64 @@ describe("dishUsage / daysWithMeals / mostRepeatedDish", () => {
     });
 });
 
+describe("setDishInDays", () => {
+    it("ghi món vào đúng bữa của những ngày được chọn, không đụng ô khác", () => {
+        const values = emptyWeek("2026-10-05");
+        const next = setDishInDays(values, "LUNCH", [0, 3, 6], dish("x"));
+
+        expect(next.days.map((day) => day.slots[1].dish?.id ?? null)).toEqual([
+            "x",
+            null,
+            null,
+            "x",
+            null,
+            null,
+            "x",
+        ]);
+        // Bữa khác vẫn trống.
+        expect(next.days[0].slots[0].dish).toBeNull();
+        // Không sửa giá trị gốc.
+        expect(values.days[0].slots[1].dish).toBeNull();
+    });
+
+    it("ghi null để xoá, giữ nguyên các ngày ngoài phạm vi", () => {
+        const values = setDishInDays(emptyWeek("2026-10-05"), "DINNER", [2], dish("y"));
+        const next = setDishInDays(values, "DINNER", [2], null);
+
+        expect(next.days[2].slots[2].dish).toBeNull();
+        expect(values.days[2].slots[2].dish?.id).toBe("y");
+    });
+
+    it("đè lên món cũ của cùng ô", () => {
+        const values = setDishInDays(emptyWeek("2026-10-05"), "BREAKFAST", [1], dish("old"));
+        const next = setDishInDays(values, "BREAKFAST", [1], dish("new"));
+
+        expect(next.days[1].slots[0].dish).toEqual({ id: "new", name: "Món new" });
+        expect(dishUsage(next).size).toBe(1);
+    });
+});
+
 describe("validate", () => {
     it("tuần hợp lệ không có lỗi", () => {
         expect(validate(validWeek(), t)).toEqual({});
+    });
+
+    it("ngày bắt đầu trong quá khứ hoặc hôm nay đều bị chặn", () => {
+        const past = validWeek();
+        past.startDate = "2020-01-01";
+        expect(validate(past, t).startDate).toBeTruthy();
+
+        const today = validWeek();
+        today.startDate = todayISO();
+        expect(validate(today, t).startDate).toBeTruthy();
+    });
+
+    it("ngày bắt đầu từ mai trở đi hợp lệ", () => {
+        expect(validate(validWeek(), t).startDate).toBeUndefined();
+
+        const future = validWeek();
+        future.startDate = "2099-01-01";
+        expect(validate(future, t).startDate).toBeUndefined();
     });
 
     it("ngày không có bữa nào báo lỗi đúng ngày", () => {
@@ -110,28 +181,8 @@ describe("validate", () => {
         expect(validate(values, t)["days.2"]).toBeTruthy();
     });
 
-    it("servings = 0 báo lỗi đúng ô", () => {
-        const values = validWeek();
-        values.days[1].slots[0].servings = "0";
-        expect(validate(values, t)["days.1.slots.0.servings"]).toBeTruthy();
-    });
-
-    it("servings không nguyên báo lỗi", () => {
-        const values = validWeek();
-        values.days[1].slots[0].servings = "1.5";
-        expect(validate(values, t)["days.1.slots.0.servings"]).toBeTruthy();
-    });
-
-    it("servings không phải số báo lỗi", () => {
-        const values = validWeek();
-        values.days[1].slots[0].servings = "abc";
-        expect(validate(values, t)["days.1.slots.0.servings"]).toBeTruthy();
-    });
-
-    it("ô trống không bị kiểm servings", () => {
-        const values = validWeek();
-        values.days[1].slots[2].servings = "abc"; // slot 2 vẫn trống
-        expect(validate(values, t)["days.1.slots.2.servings"]).toBeUndefined();
+    it("servings không còn là field của form", () => {
+        expect(emptyWeek("2026-10-05").days[0].slots[0]).not.toHaveProperty("servings");
     });
 
     it("dưới 5 món khác nhau báo lỗi cấp tuần", () => {
@@ -161,15 +212,14 @@ describe("validate", () => {
 });
 
 describe("buildCreateMenuPayload", () => {
-    it("bỏ ô trống khỏi meals và đổi servings sang number", () => {
+    it("bỏ ô trống khỏi meals, servings luôn là 1", () => {
         const values = validWeek();
         values.days[0].slots[1].dish = dish("z");
-        values.days[0].slots[1].servings = "3";
 
         const payload = buildCreateMenuPayload(values);
         expect(payload.days[0].meals).toEqual([
             { mealType: "BREAKFAST", dishId: "a", servings: 1 },
-            { mealType: "LUNCH", dishId: "z", servings: 3 },
+            { mealType: "LUNCH", dishId: "z", servings: 1 },
         ]);
     });
 

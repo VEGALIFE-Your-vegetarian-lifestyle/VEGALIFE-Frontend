@@ -27,7 +27,7 @@ const toAdmin = (row: MockLocation): LocationItem => {
 };
 
 /**
- * Tìm địa điểm gần một tọa độ — MOCK của `GET /api/locations/nearby?lat=&lng=&radius=`.
+ * Tìm địa điểm gần một tọa độ — MOCK của `GET /api/restaurants/nearby?lat=&lng=&radius=`.
  * - `radius` tính bằng mét; kết quả không phân trang, gần nhất trước (BR-NEARBY-002).
  * - Mỗi địa điểm có `distance` (mét), không phải cột DB. Không bao giờ có địa điểm đã xóa mềm.
  */
@@ -44,14 +44,13 @@ export async function getNearbyLocations(params: NearbyParams): Promise<Location
 }
 
 /**
- * Danh sách địa điểm — MOCK của `GET /api/locations` (public, các bộ lọc kết hợp bằng AND).
+ * Danh sách địa điểm — MOCK của `GET /api/restaurants` (public, các bộ lọc kết hợp bằng AND).
  * Backend phân trang từ 0; ở đây trả `Paginated` bắt đầu từ 1 như các trang Admin khác.
  */
 export async function getLocations(params: LocationListParams): Promise<Paginated<LocationItem>> {
     await delay();
 
     const filtered = active()
-        .filter((item) => !params.placeType || item.placeType === params.placeType)
         .filter((item) => params.minRating === undefined || (item.rating ?? 0) >= params.minRating)
         .filter((item) => params.maxPriceLevel === undefined || (item.priceLevel ?? 0) <= params.maxPriceLevel)
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -67,8 +66,7 @@ export async function getLocations(params: LocationListParams): Promise<Paginate
 }
 
 /**
- * Chi tiết một địa điểm — MOCK.
- * ponytail: backend chưa có `GET /api/locations/{id}`; trang chi tiết cần endpoint này.
+ * Chi tiết một địa điểm — MOCK của `GET /api/restaurants/{id}`.
  */
 export async function getLocationById(id: string): Promise<LocationItem> {
     await delay();
@@ -77,7 +75,7 @@ export async function getLocationById(id: string): Promise<LocationItem> {
     return toPublic(current);
 }
 
-/** `POST /api/admin/locations` — MOCK. */
+/** `POST /api/admin/restaurants` — MOCK. */
 export async function createLocation(payload: LocationPayload): Promise<LocationItem> {
     await delay();
     const item: MockLocation = {
@@ -90,7 +88,7 @@ export async function createLocation(payload: LocationPayload): Promise<Location
     return toAdmin(item);
 }
 
-/** `PATCH /api/admin/locations/{locationId}` — MOCK, chỉ gửi field muốn sửa. */
+/** `PATCH /api/admin/restaurants/{locationId}` — MOCK, chỉ gửi field muốn sửa. */
 export async function updateLocation(id: string, payload: Partial<LocationPayload>): Promise<LocationItem> {
     await delay();
     const current = active().find((item) => item.id === id);
@@ -100,7 +98,7 @@ export async function updateLocation(id: string, payload: Partial<LocationPayloa
     return toAdmin(updated);
 }
 
-/** `DELETE /api/admin/locations/{locationId}` — MOCK, xóa mềm. */
+/** `DELETE /api/admin/restaurants/{locationId}` — MOCK, xóa mềm. */
 export async function deleteLocation(id: string): Promise<void> {
     await delay();
     const current = active().find((item) => item.id === id);

@@ -1,0 +1,555 @@
+<title>VEGALIFE Saved Content</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Bố cục: rail tài khoản bên trái (238px) + nội dung. Bám token thật của app. */
+:root {
+    color-scheme: light;
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --border: #e3e6ea;
+    --dark: #0d1117;
+    --muted: #5c6675;
+    --muted-bg: #eaeef2;
+    --green: #12724a;
+    --green-hover: #0f6140;
+    --green-light: #e6f2ec;
+    --green-subtle: #f2f9f5;
+    --green-muted: #b0d3bd;
+    --amber-soft: #fef3c7;
+    --amber-strong: #b45309;
+    --radius-card: 16px;
+    --radius-pill: 999px;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 24px 72px;
+    background: var(--bg);
+    color: var(--dark);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+.wrap { max-width: 1180px; margin: 0 auto; }
+.section-label {
+    display: flex; align-items: baseline; gap: 10px;
+    margin: 0 auto 14px; max-width: 1180px;
+    font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted);
+}
+.section-label span { font-weight: 500; letter-spacing: 0; text-transform: none; font-size: 12px; }
+.section + .section { margin-top: 56px; }
+
+/* Khung app giả lập */
+.app {
+    border: 1px solid var(--border); border-radius: var(--radius-card);
+    background: var(--card); overflow: hidden;
+}
+.app-bar {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--card);
+}
+.wordmark { font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: -0.01em; color: var(--green); }
+.app-nav { display: flex; gap: 18px; font-size: 13px; color: var(--muted); }
+.app-nav b { color: var(--dark); font-weight: 600; }
+.app-bar .spacer { flex: 1; }
+.search-pill {
+    display: flex; align-items: center; gap: 8px; min-width: 0;
+    border: 1px solid var(--border); border-radius: var(--radius-pill);
+    padding: 7px 14px; font-size: 12.5px; color: var(--muted); background: var(--card);
+}
+.body-grid {
+    display: grid; grid-template-columns: 238px minmax(0, 1fr);
+    gap: 20px; align-items: start; padding: 24px 20px 32px; background: var(--bg);
+}
+@media (max-width: 860px) { .body-grid { grid-template-columns: minmax(0, 1fr); } .rail { display: none; } }
+
+/* Rail */
+.rail {
+    border: 1px solid var(--border); border-radius: var(--radius-card);
+    background: var(--card); overflow: hidden;
+}
+.rail-head {
+    display: flex; gap: 10px; align-items: center;
+    padding: 14px; border-bottom: 1px solid var(--border); background: var(--green-subtle);
+}
+.avatar {
+    width: 38px; height: 38px; border-radius: var(--radius-pill); flex: none;
+    background: linear-gradient(135deg, var(--green-muted), var(--green)); color: #fff;
+    display: grid; place-items: center; font-weight: 700; font-size: 13px;
+}
+.rail-head .name { font-size: 13px; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-head .mail { font-size: 10.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-counts { display: flex; border-bottom: 1px solid var(--border); }
+.rail-counts div { flex: 1; min-width: 0; padding: 10px 8px; border-left: 1px solid var(--border); }
+.rail-counts div:first-child { border-left: 0; }
+.rail-counts dd { margin: 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rail-counts dt { font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.nav { padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.nav a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 10px; text-decoration: none;
+    font-size: 13px; font-weight: 500; color: var(--muted);
+}
+.nav a:hover { background: var(--muted-bg); color: var(--dark); }
+.nav a.active { background: var(--green-light); color: var(--green); font-weight: 700; }
+.nav .ico { width: 16px; height: 16px; flex: none; opacity: .85; }
+.nav .badge-n {
+    margin-left: auto; font-size: 10.5px; font-weight: 700; padding: 1px 7px;
+    border-radius: var(--radius-pill); background: var(--green-light); color: var(--green);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Nội dung */
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.page-head h1 { font-family: var(--display); font-size: 25px; font-weight: 600; letter-spacing: -0.02em; }
+.page-head p { margin-top: 4px; font-size: 12.5px; color: var(--muted); }
+
+.pill-tabs {
+    display: inline-flex; gap: 4px; padding: 4px; margin-top: 18px;
+    background: var(--muted-bg); border-radius: var(--radius-pill);
+}
+.pill-tabs button {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 0; background: transparent; color: var(--muted);
+    padding: 7px 15px; border-radius: var(--radius-pill);
+    font-size: 12.5px; font-weight: 600;
+}
+.pill-tabs button[aria-selected="true"] { background: var(--card); color: var(--dark); box-shadow: 0 0 0 1px var(--border); }
+.pill-tabs .n { font-variant-numeric: tabular-nums; font-size: 11px; color: var(--muted); }
+.pill-tabs button[aria-selected="true"] .n { color: var(--green); }
+
+.toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+    margin-top: 14px; padding: 12px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--card);
+}
+.field {
+    display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 220px;
+    border: 1px solid var(--border); border-radius: var(--radius-pill);
+    padding: 7px 14px; font-size: 12.5px; color: var(--muted); background: var(--card);
+}
+.field input { border: 0; outline: 0; background: transparent; width: 100%; font: inherit; color: var(--dark); }
+.select {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border); border-radius: 10px; padding: 7px 12px;
+    font-size: 12.5px; font-weight: 500; color: var(--dark); background: var(--card);
+}
+
+/* Card bài đã lưu */
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 16px; }
+@media (max-width: 720px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
+.post-card {
+    display: flex; flex-direction: column; overflow: hidden;
+    border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--card);
+}
+.thumb { position: relative; aspect-ratio: 16 / 9; max-width: 100%; background: var(--muted-bg); overflow: hidden; }
+.thumb .fill {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(135deg, #dfe7e2 0 14px, #e9efeb 14px 28px);
+}
+.thumb .chip {
+    position: absolute; left: 12px; top: 12px;
+    border-radius: var(--radius-pill); background: rgba(255,255,255,.92);
+    padding: 4px 10px; font-size: 10.5px; font-weight: 700; color: var(--dark);
+    backdrop-filter: blur(4px);
+}
+.card-body { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; flex: 1; }
+.card-body h3 { font-size: 15.5px; font-weight: 700; line-height: 1.35; }
+.card-body .excerpt { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.meta-row { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meta-row .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border); align-self: center; }
+.card-actions { display: flex; gap: 8px; align-items: center; margin-top: auto; padding-top: 6px; }
+
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border-radius: var(--radius-pill); padding: 8px 16px;
+    font-size: 12.5px; font-weight: 600; border: 1px solid transparent;
+    white-space: nowrap;
+}
+.btn-primary { background: var(--green); color: #fff; }
+.btn-primary:hover { background: var(--green-hover); }
+.btn-outline { background: var(--card); color: var(--dark); border-color: var(--border); }
+.btn-outline:hover { border-color: var(--green-muted); color: var(--green); }
+.btn-ghost { background: transparent; color: var(--muted); }
+.btn-ghost:hover { color: var(--dark); background: var(--muted-bg); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn .save-on { display: none; }
+.btn.is-saved .save-on { display: inline-flex; }
+.btn.is-saved .save-off { display: none; }
+.btn.is-saved { background: var(--green-light); border-color: var(--green-muted); color: var(--green); }
+
+.readonly-note {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    background: var(--muted-bg); border-radius: var(--radius-pill); padding: 3px 9px;
+}
+
+/* Card công thức đã lưu — dạng hàng ngang */
+.recipe-row {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center;
+    border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--card);
+    padding: 14px 16px;
+}
+.recipe-row + .recipe-row { margin-top: 10px; }
+.recipe-row h3 { font-size: 15px; font-weight: 700; }
+.recipe-row .dish { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--green); }
+.recipe-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 3px 9px;
+    font-variant-numeric: tabular-nums;
+}
+.tag.green { color: var(--green); border-color: var(--green-muted); background: var(--green-subtle); }
+.tag.amber { color: var(--amber-strong); border-color: #f0d9a0; background: var(--amber-soft); }
+.recipe-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+@media (max-width: 720px) { .recipe-row { grid-template-columns: minmax(0, 1fr); } .recipe-actions { justify-content: flex-start; } }
+
+/* Bảng endpoint */
+.spec {
+    margin-top: 16px; overflow-x: auto;
+    border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--card);
+}
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; min-width: 560px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
+tr:last-child td { border-bottom: 0; }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 11.5px; }
+.m {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    border-radius: 4px; padding: 1px 6px; margin-right: 6px;
+}
+.m.get { background: #eff6ff; color: #2a5f9e; }
+.m.post { background: var(--green-light); color: var(--green); }
+.m.del { background: #fef2f2; color: #c0392b; }
+
+.notes { margin-top: 14px; display: grid; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.notes li { margin-left: 18px; }
+
+.empty {
+    display: grid; place-items: center; gap: 6px; text-align: center;
+    border: 1px dashed var(--border); border-radius: var(--radius-card);
+    padding: 40px 20px; margin-top: 16px; background: var(--card);
+}
+.empty .t { font-weight: 700; font-size: 14px; }
+.empty .d { font-size: 12.5px; color: var(--muted); max-width: 42ch; }
+
+/* Panel nhỏ cho phần "nút Save" */
+.panel {
+    border: 1px solid var(--border); border-radius: var(--radius-card);
+    background: var(--card); padding: 16px 18px;
+}
+.panel h3 { font-size: 13px; font-weight: 700; }
+.panel .hint { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+
+.detail-mock { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; }
+@media (max-width: 800px) { .detail-mock { grid-template-columns: minmax(0, 1fr); } }
+.detail-title { font-family: var(--display); font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.detail-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+.detail-lines { margin-top: 14px; display: grid; gap: 8px; }
+.detail-lines i { display: block; height: 9px; border-radius: 6px; background: var(--muted-bg); }
+.detail-lines i.short { width: 62%; }
+
+.dialog-mock {
+    border: 1px solid var(--border); border-radius: var(--radius-card);
+    overflow: hidden; background: var(--card);
+}
+.dialog-head { background: var(--green-subtle); border-bottom: 1px solid var(--border); padding: 16px 18px; }
+.dialog-head .eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--green); }
+.dialog-head h3 { font-family: var(--display); font-size: 19px; font-weight: 600; margin-top: 4px; }
+.stat-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+.stat-strip div { background: var(--card); padding: 10px 12px; }
+.stat-strip dt { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+.stat-strip dd { margin: 2px 0 0; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dialog-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 14px 18px; }
+.dialog-foot .spacer { flex: 1; }
+</style>
+
+<div class="section">
+    <div class="section-label">Mockup 1 <span>/saved — 2 tab, dữ liệu chỉ đọc</span></div>
+    <div class="app">
+        <div class="app-bar">
+            <span class="wordmark">VEGALIFE</span>
+            <span class="app-nav"><b>Home</b><span>Explore</span><span>Nearby</span><span>AI Nutrition</span></span>
+            <span class="spacer"></span>
+            <span class="search-pill">Search plants, recipes…</span>
+            <span class="btn btn-primary btn-sm">+ New Post</span>
+        </div>
+
+        <div class="body-grid">
+            <aside class="rail">
+                <div class="rail-head">
+                    <div class="avatar">LM</div>
+                    <div style="min-width:0">
+                        <div class="name">Lê Hồng Minh</div>
+                        <div class="mail">minh@vegalife.vn</div>
+                    </div>
+                </div>
+                <div class="rail-counts">
+                    <div><dd>12</dd><dt>Published</dt></div>
+                    <div><dd>3</dd><dt>Draft</dt></div>
+                    <div><dd>9</dd><dt>Recipes</dt></div>
+                </div>
+                <nav class="nav">
+                    <a href="#overview"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Overview</a>
+                    <a href="#posts"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>My Posts</a>
+                    <a href="#recipes"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6z"/><path d="M6 17h12"/></svg>My Recipes</a>
+                    <a href="#plan"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Meal Plan</a>
+                    <a href="#saved" class="active"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Saved<span class="badge-n">17</span></a>
+                    <a href="#profile"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profile</a>
+                    <a href="#sub"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>Subscription</a>
+                </nav>
+            </aside>
+
+            <main>
+                <div class="page-head">
+                    <div>
+                        <h1>Saved</h1>
+                        <p>17 mục đã lưu · chỉ đọc, không sửa được nội dung của tác giả khác</p>
+                    </div>
+                </div>
+
+                <div class="pill-tabs" role="tablist">
+                    <button id="tab-posts" role="tab" aria-selected="true" aria-controls="panel-posts">Saved Posts <span class="n">12</span></button>
+                    <button id="tab-recipes" role="tab" aria-selected="false" aria-controls="panel-recipes">Saved Recipes <span class="n">5</span></button>
+                </div>
+
+                <div id="panel-posts" role="tabpanel" aria-labelledby="tab-posts">
+                    <div class="toolbar">
+                        <label class="field">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+                            <input type="search" placeholder="Tìm trong bài đã lưu…" aria-label="Tìm trong bài đã lưu">
+                        </label>
+                        <span class="select">Mới lưu nhất ▾</span>
+                    </div>
+
+                    <div class="grid-2">
+                        <article class="post-card">
+                            <div class="thumb"><div class="fill"></div><span class="chip">Article</span></div>
+                            <div class="card-body">
+                                <h3>The Ultimate Guide to Pressing and Marinating Tofu</h3>
+                                <p class="excerpt">Chi tiết về kỹ thuật ép nước, tốc độ hấp thụ của đậu phụ và cách cân bằng vị amino trong nước sốt.</p>
+                                <div class="meta-row">
+                                    <span>Elena Vance</span><span class="dot"></span><span>2 thg 10, 2026</span><span class="dot"></span><span>98 lượt xem</span>
+                                </div>
+                                <div class="card-actions">
+                                    <a class="btn btn-primary btn-sm" href="#post">Đọc bài</a>
+                                    <button class="btn btn-outline btn-sm is-saved" type="button" data-save>
+                                        <span class="save-on">Đã lưu</span><span class="save-off">Lưu</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="post-card">
+                            <div class="thumb"><div class="fill"></div><span class="chip">Recipe</span></div>
+                            <div class="card-body">
+                                <h3>Crispy Air-Fried Sesame Tofu Bowls</h3>
+                                <p class="excerpt">Bí quyết dùng hỗn hợp bột ngô để chiên giòn mà không cần ngập dầu. 25 phút, 22 g đạm.</p>
+                                <div class="meta-row">
+                                    <span>Marcus Green</span><span class="dot"></span><span>14 thg 10, 2026</span><span class="dot"></span><span>145 lượt xem</span>
+                                </div>
+                                <div class="card-actions">
+                                    <a class="btn btn-primary btn-sm" href="#post">Đọc bài</a>
+                                    <button class="btn btn-outline btn-sm is-saved" type="button" data-save>
+                                        <span class="save-on">Đã lưu</span><span class="save-off">Lưu</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <div id="panel-recipes" role="tabpanel" aria-labelledby="tab-recipes" hidden>
+                    <div class="toolbar">
+                        <label class="field">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+                            <input type="search" placeholder="Tìm trong công thức đã lưu…" aria-label="Tìm trong công thức đã lưu">
+                        </label>
+                        <span class="select">Mới lưu nhất ▾</span>
+                    </div>
+
+                    <div style="margin-top:16px">
+                        <div class="recipe-row">
+                            <div style="min-width:0">
+                                <div class="dish">Smoky maple glazed tofu steaks</div>
+                                <h3>Smoky Maple Glazed Tofu Steaks</h3>
+                                <div class="recipe-meta">
+                                    <span class="tag">EASY</span>
+                                    <span class="tag">15 + 20 phút</span>
+                                    <span class="tag">2 phần</span>
+                                    <span class="tag green">4 nguyên liệu</span>
+                                    <span class="tag">312 kcal</span>
+                                </div>
+                            </div>
+                            <div class="recipe-actions">
+                                <button class="btn btn-primary btn-sm" type="button" data-compose>
+                                    Viết bài từ công thức này
+                                </button>
+                                <button class="btn btn-outline btn-sm is-saved" type="button" data-save>
+                                    <span class="save-on">Đã lưu</span><span class="save-off">Lưu</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="recipe-row">
+                            <div style="min-width:0">
+                                <div class="dish">Fermented cashew herb spread</div>
+                                <h3>Fermented Cashew Herb Spread</h3>
+                                <div class="recipe-meta">
+                                    <span class="tag">MEDIUM</span>
+                                    <span class="tag">20 + 0 phút</span>
+                                    <span class="tag">6 phần</span>
+                                    <span class="tag green">5 nguyên liệu</span>
+                                    <span class="tag amber">Dinh dưỡng chưa đủ</span>
+                                </div>
+                            </div>
+                            <div class="recipe-actions">
+                                <button class="btn btn-primary btn-sm" type="button" data-compose>
+                                    Viết bài từ công thức này
+                                </button>
+                                <button class="btn btn-outline btn-sm is-saved" type="button" data-save>
+                                    <span class="save-on">Đã lưu</span><span class="save-off">Lưu</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="empty">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#b0d3bd" stroke-width="1.6" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        <p class="t">Chưa lưu công thức nào</p>
+                        <p class="d">Bấm biểu tượng lưu trên một công thức ở trang bài viết hoặc hộp thoại công thức để xem lại ở đây.</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-label">Mockup 2 <span>Nút lưu — 3 chỗ đặt</span></div>
+    <div class="grid-2">
+        <div class="panel">
+            <h3>Card feed (Home / Explore)</h3>
+            <p class="hint">Icon bookmark hiện đang là hình trang trí → thành nút thật. Chỉ render khi đã đăng nhập; khách bấm thì toast yêu cầu đăng nhập.</p>
+            <div class="demo-row">
+                <button class="btn btn-ghost btn-sm" type="button" data-save>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    <span class="save-off">Lưu bài</span><span class="save-on">Đã lưu</span>
+                </button>
+                <span class="readonly-note">↔ bấm lại lần nữa để bỏ lưu</span>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Recipe dialog</h3>
+            <p class="hint">Thêm nút Lưu vào footer. Công thức của chính mình thì ẩn nút (backend trả `userId`, so với user đang đăng nhập).</p>
+            <div class="dialog-mock" style="margin-top:12px">
+                <div class="dialog-head">
+                    <div class="eyebrow">Smoky maple glazed tofu steaks</div>
+                    <h3>Smoky Maple Glazed Tofu Steaks</h3>
+                </div>
+                <div class="stat-strip">
+                    <div><dt>Prep</dt><dd>15 phút</dd></div>
+                    <div><dt>Cook</dt><dd>20 phút</dd></div>
+                    <div><dt>Servings</dt><dd>2 phần</dd></div>
+                    <div><dt>Level</dt><dd>EASY</dd></div>
+                </div>
+                <div class="dialog-foot">
+                    <button class="btn btn-primary btn-sm" type="button" data-compose>Viết bài từ công thức này</button>
+                    <span class="spacer"></span>
+                    <button class="btn btn-outline btn-sm" type="button" data-save>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        <span class="save-off">Lưu</span><span class="save-on">Đã lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+        <h3>Post Detail (/posts/:id)</h3>
+        <p class="hint">Nút Save nằm cạnh Share ở cột phải, dưới tiêu đề. Đây là nơi duy nhất người dùng bấm lưu bài của người khác.</p>
+        <div class="detail-mock" style="margin-top:14px">
+            <div>
+                <div class="detail-title">The Ultimate Guide to Pressing and Marinating Tofu</div>
+                <div class="detail-meta"><span>Elena Vance</span><span>·</span><span>2 thg 10, 2026</span><span>·</span><span>8 phút đọc</span><span>·</span><span>98 lượt xem</span></div>
+                <div class="detail-lines"><i></i><i></i><i></i><i class="short"></i><i></i></div>
+            </div>
+            <div class="panel" style="align-self:start">
+                <h3 style="font-size:12px">Bài viết</h3>
+                <div class="demo-row" style="margin-top:10px">
+                    <button class="btn btn-outline btn-sm" type="button" data-save>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        <span class="save-off">Lưu bài</span><span class="save-on">Đã lưu</span>
+                    </button>
+                    <button class="btn btn-ghost btn-sm" type="button">Chia sẻ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-label">Hợp đồng API <span>theo đặc tả backend</span></div>
+    <div class="spec">
+        <table>
+            <thead><tr><th>Endpoint</th><th>Dùng ở</th><th>Ghi chú</th></tr></thead>
+            <tbody>
+                <tr><td><span class="m post">POST</span><code>/api/saved/posts/{postId}</code></td><td>Card feed, Post Detail</td><td>Toggle: gọi lại = lưu lại. Optimistic, invalidate <code>["saved-posts"]</code>.</td></tr>
+                <tr><td><span class="m del">DELETE</span><code>/api/saved/posts/{postId}</code></td><td>Card feed, Post Detail, /saved</td><td>Xoá khỏi danh sách; ở /saved gỡ card tại chỗ.</td></tr>
+                <tr><td><span class="m get">GET</span><code>/api/saved/posts?page&amp;size</code></td><td>/saved tab Posts</td><td>Phân trang server thật (khác My Posts). Trả <code>displayName</code>/<code>avatarUrl</code> → card có tên tác giả thật.</td></tr>
+                <tr><td><span class="m post">POST</span><code>/api/saved/recipes/{recipeId}</code></td><td>Recipe dialog</td><td>Cùng shape toggle.</td></tr>
+                <tr><td><span class="m del">DELETE</span><code>/api/saved/recipes/{recipeId}</code></td><td>Recipe dialog, /saved</td><td>—</td></tr>
+                <tr><td><span class="m get">GET</span><code>/api/saved/recipes?page&amp;size</code></td><td>/saved tab Recipes</td><td>Trả đủ ingredients + dinh dưỡng → dialog tờ công thức dựng trực tiếp, không gọi thêm.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <ul class="notes">
+        <li>Đặc tả DELETE ghi tham số là <code>requestId</code> — chắc là lỗi soạn docs; path khai báo <code>{recipeId}</code>.</li>
+        <li>Không có endpoint "đã lưu hay chưa" cho từng bài → nút Save lấy trạng thái bằng cách phân trang <code>GET /api/saved/posts</code> một lần rồi cache (Set id), hoặc chấp nhận nút hiện "Lưu" cho tới khi bấm. Cần chốt.</li>
+        <li>Composer nhận sẵn <code>recipeIds</code>: mở dialog và điền chip công thức. <code>POST /api/posts/{id}/recipes</code> có thể từ chối recipe không phải của mình — cần kiểm tra.</li>
+    </ul>
+</div>
+
+<script>
+document.querySelectorAll('[data-save]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        btn.classList.toggle('is-saved');
+    });
+});
+document.querySelectorAll('[data-compose]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var on = btn.dataset.on === '1';
+        btn.dataset.on = on ? '0' : '1';
+        btn.textContent = on ? 'Viết bài từ công thức này' : '✓ Đã mở composer với công thức này';
+    });
+});
+var tabs = [
+    { btn: document.getElementById('tab-posts'), panel: document.getElementById('panel-posts') },
+    { btn: document.getElementById('tab-recipes'), panel: document.getElementById('panel-recipes') }
+];
+tabs.forEach(function (tab) {
+    tab.btn.addEventListener('click', function () {
+        tabs.forEach(function (item) {
+            var on = item === tab;
+            item.btn.setAttribute('aria-selected', String(on));
+            item.panel.hidden = !on;
+        });
+    });
+});
+</script>

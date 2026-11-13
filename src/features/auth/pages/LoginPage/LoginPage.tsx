@@ -151,6 +151,9 @@ export default function LoginPage() {
                     identifier: values.identifier.trim(),
                     password: values.password.trim(),
                 });
+            } catch {
+                // Lỗi đã hiện toast qua `onError` của mutation; chặn rejection để Formik
+                // không log "unhandled error from submitForm()".
             } finally {
                 setSubmitting(false);
             }

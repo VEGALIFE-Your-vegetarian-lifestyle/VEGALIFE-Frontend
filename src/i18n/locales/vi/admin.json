@@ -142,11 +142,14 @@
             "videoRemove": "Xóa video",
             "videoDropzoneTitle": "Kéo thả file video vào đây",
             "videoDropzoneHint": "MP4 hoặc WebM, tối đa 100MB.",
-            "videoSourceRequired": "Vui lòng tải file video lên"
+            "videoSourceRequired": "Vui lòng tải file video lên",
+            "coverLabel": "Ảnh bìa",
+            "videoLabel": "Video đính kèm"
         },
         "toast": {
             "created": "Đã tạo bài viết",
             "updated": "Đã cập nhật bài viết",
+            "submitted": "Đã gửi bài, đang chờ duyệt",
             "failed": "Tạo bài viết thất bại. Vui lòng thử lại.",
             "approved": "Đã duyệt bài viết",
             "rejected": "Đã từ chối bài viết",
@@ -177,8 +180,12 @@
             "action": {
                 "approve": "Duyệt",
                 "reject": "Từ chối",
-                "unpublish": "Ngừng đăng",
                 "delete": "Xóa"
+            },
+            "overFilter": "Duyệt dù máy chặn",
+            "flagDetail": {
+                "score": "{{score}} / {{threshold}}",
+                "similarity": "{{percent}}% giống bài"
             },
             "confirm": {
                 "deleteTitle": "Xóa bài viết?",
@@ -325,7 +332,8 @@
             "difficulty": "Độ khó",
             "moderation": "Duyệt",
             "status": "Trạng thái",
-            "createdAt": "Ngày tạo"
+            "createdAt": "Ngày tạo",
+            "actions": "Thao tác"
         },
         "status": {
             "ACTIVE": "Đang dùng",

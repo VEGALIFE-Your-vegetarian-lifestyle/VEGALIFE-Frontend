@@ -19,7 +19,8 @@ function videoDuration(seed: string): string {
 }
 
 export function enrichListItem(post: PostListResponse): PostListResponse {
-    const isVideo = post.type === "video";
+    // Backend bỏ `type`/`videoUrl`; bài có media đính kèm thì coi là có video.
+    const hasVideo = post.mediaIds.length > 0;
     // `content` đã là text thuần BE trả sẵn — dùng luôn cho excerpt/card.
     const plain = post.content;
     const words = plain.trim().split(/\s+/).filter(Boolean).length;
@@ -29,7 +30,7 @@ export function enrichListItem(post: PostListResponse): PostListResponse {
         ...post,
         content: plain,
         authorCard: getAuthorCard(post.id),
-        durationLabel: isVideo ? videoDuration(post.id) : `${readMinutes} min read`,
+        durationLabel: hasVideo ? videoDuration(post.id) : `${readMinutes} min read`,
         rating: Number((4.2 + (hash(`${post.id}-rating`) % 8) / 10).toFixed(1)),
         commentCount: hash(`${post.id}-comments`) % 160,
         saveCount: hash(`${post.id}-saves`) % 900,

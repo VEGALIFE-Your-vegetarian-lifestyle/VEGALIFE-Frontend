@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MapPin, Pencil, Plus, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,24 +13,26 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Pagination } from "@/components/common/Pagination";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
-import { LOCATION_TYPES, type LocationItem, type LocationPayload, type LocationType } from "../../types";
+import type { LocationItem, LocationPayload } from "../../types";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { LocationFormDialog } from "./LocationFormDialog";
 
 const PAGE_SIZE = 8;
+const RATING_FILTERS = ["", "3", "4", "4.5"] as const;
 
 export default function LocationsPage() {
     const { t } = useTranslation(["location", "common"]);
     const queryClient = useQueryClient();
-    const [placeType, setPlaceType] = useState<LocationType | "">("");
+    const [minRating, setMinRating] = useState<string>("");
     const [page, setPage] = useState(1);
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<LocationItem | null>(null);
     const [deleting, setDeleting] = useState<LocationItem | null>(null);
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ["admin-locations", page, placeType],
-        queryFn: () => getLocations({ page, size: PAGE_SIZE, placeType: placeType || undefined }),
+        queryKey: ["admin-locations", page, minRating],
+        queryFn: () =>
+            getLocations({ page, size: PAGE_SIZE, minRating: minRating ? Number(minRating) : undefined }),
     });
 
     // Xóa mềm xong thì Nearby cũng phải bỏ địa điểm đó, nên làm mới cả hai query.
@@ -83,8 +84,8 @@ export default function LocationsPage() {
         setFormOpen(true);
     };
 
-    const handleTypeChange = (value: LocationType | "") => {
-        setPlaceType(value);
+    const handleRatingChange = (value: string) => {
+        setMinRating(value);
         setPage(1);
     };
 
@@ -109,15 +110,15 @@ export default function LocationsPage() {
             <div className="mb-4 flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-end">
                 <div className="flex flex-col gap-2 sm:flex-row">
                     <Select
-                        aria-label={t("page.typeLabel")}
-                        value={placeType}
-                        onChange={(event) => handleTypeChange(event.target.value as LocationType | "")}
+                        aria-label={t("admin.filterRating")}
+                        value={minRating}
+                        onChange={(event) => handleRatingChange(event.target.value)}
                         className="w-full sm:w-48"
                     >
-                        <option value="">{t("allTypes")}</option>
-                        {LOCATION_TYPES.map((type) => (
-                            <option key={type} value={type}>
-                                {t(`type.${type}`)}
+                        <option value="">{t("admin.allRatings")}</option>
+                        {RATING_FILTERS.filter(Boolean).map((value) => (
+                            <option key={value} value={value}>
+                                {value}★+
                             </option>
                         ))}
                     </Select>
@@ -133,7 +134,6 @@ export default function LocationsPage() {
                             <TableRow className="hover:bg-transparent">
                                 <TableHead>{t("admin.columns.name")}</TableHead>
                                 <TableHead>{t("admin.columns.address")}</TableHead>
-                                <TableHead>{t("admin.columns.type")}</TableHead>
                                 <TableHead>{t("admin.columns.rating")}</TableHead>
                                 <TableHead>{t("admin.columns.price")}</TableHead>
                                 <TableHead className="text-right">{t("admin.columns.actions")}</TableHead>
@@ -141,19 +141,12 @@ export default function LocationsPage() {
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableSkeleton columns={6} />
+                                <TableSkeleton columns={5} />
                             ) : (
                                 locations.map((location) => (
                                     <TableRow key={location.id}>
                                         <TableCell className="font-semibold">{location.name}</TableCell>
                                         <TableCell className="max-w-xs text-muted-foreground">{location.address}</TableCell>
-                                        <TableCell>
-                                            {location.placeType ? (
-                                                <Badge variant="lightgreen">{t(`type.${location.placeType}`)}</Badge>
-                                            ) : (
-                                                "—"
-                                            )}
-                                        </TableCell>
                                         <TableCell>{location.rating ?? "—"}</TableCell>
                                         <TableCell>{location.priceLevel ? "$".repeat(location.priceLevel) : "—"}</TableCell>
                                         <TableCell>
@@ -178,15 +171,10 @@ export default function LocationsPage() {
                         <EmptyState
                             icon={MapPin}
                             title={t("admin.empty.title")}
-                            description={placeType ? t("common:emptySearch") : t("admin.empty.description")}
+                            description={minRating ? t("common:emptySearch") : t("admin.empty.description")}
                             action={
-                                placeType ? (
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => {
-                                            handleTypeChange("");
-                                        }}
-                                    >
+                                minRating ? (
+                                    <Button variant="outline" onClick={() => handleRatingChange("")}>
                                         {t("common:clearFilter")}
                                     </Button>
                                 ) : (

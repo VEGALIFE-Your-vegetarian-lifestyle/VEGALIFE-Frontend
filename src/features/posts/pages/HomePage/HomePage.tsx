@@ -57,6 +57,7 @@ export default function HomePage() {
     const { t } = useTranslation("home");
     const { isAuthenticated } = useAuth();
     const language = useUiStore((state) => state.language);
+    const openMealPlanComposer = useUiStore((state) => state.openMealPlanComposer);
 
     const { data: categoriesData, isLoading: isCategoriesLoading } = usePublicCategories({
         page: 0,
@@ -254,13 +255,24 @@ export default function HomePage() {
                         </h2>
                         <p className="text-sm text-white/90 md:text-base">{t("ctaBand.subtitle")}</p>
                         <div className="flex flex-wrap items-center gap-4 pt-2">
-                            <Link
-                                to={isAuthenticated ? "/meal-plan/create" : "/register"}
-                                className="flex h-12 items-center gap-2 rounded-xl bg-surface px-6 text-sm font-bold text-vegan-green shadow-md transition-colors hover:bg-vegan-green-subtle"
-                            >
-                                {isAuthenticated ? t("ctaBand.actionAuthed") : t("ctaBand.action")}
-                                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                            </Link>
+                            {isAuthenticated ? (
+                                <button
+                                    type="button"
+                                    onClick={() => openMealPlanComposer()}
+                                    className="flex h-12 items-center gap-2 rounded-xl bg-surface px-6 text-sm font-bold text-vegan-green shadow-md transition-colors hover:bg-vegan-green-subtle"
+                                >
+                                    {t("ctaBand.actionAuthed")}
+                                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                            ) : (
+                                <Link
+                                    to="/register"
+                                    className="flex h-12 items-center gap-2 rounded-xl bg-surface px-6 text-sm font-bold text-vegan-green shadow-md transition-colors hover:bg-vegan-green-subtle"
+                                >
+                                    {t("ctaBand.action")}
+                                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                                </Link>
+                            )}
                             <Link
                                 to="/explore"
                                 className="flex h-12 items-center gap-2 rounded-xl bg-white/15 px-5 text-sm font-semibold backdrop-blur-sm transition-colors hover:bg-white/25"
@@ -322,7 +334,7 @@ function SectionHeader({ eyebrow, title, subtitle, action, large = false }: Sect
 
 const CHIPS = [
     { key: "quick", to: "/explore", icon: Zap },
-    { key: "mealPlan", to: "/meal-plan/create", icon: CalendarDays },
+    { key: "mealPlan", to: null, icon: CalendarDays },
     { key: "restaurants", to: "/nearby", icon: MapPin },
     { key: "ai", to: "/ai-nutrition", icon: MessageCircle },
 ] as const;
@@ -348,6 +360,7 @@ function HomeHero({ highlight, stories, categories }: HomeHeroProps) {
     const { t } = useTranslation("home");
     const navigate = useNavigate();
     const categoryNames = useCategoryNames();
+    const openMealPlanComposer = useUiStore((state) => state.openMealPlanComposer);
     const [keyword, setKeyword] = useState("");
 
     const handleSearch = (event: FormEvent) => {
@@ -408,16 +421,31 @@ function HomeHero({ highlight, stories, categories }: HomeHeroProps) {
                         <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                             {t("hero.prompt")}
                         </span>
-                        {CHIPS.map(({ key, to, icon: Icon }) => (
-                            <Link
-                                key={key}
-                                to={to}
-                                className="inline-flex items-center gap-1.5 rounded-full bg-vegan-green-subtle px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-vegan-green-light hover:text-vegan-green"
-                            >
-                                <Icon className="h-3 w-3" aria-hidden="true" />
-                                {t(`hero.chips.${key}`)}
-                            </Link>
-                        ))}
+                        {CHIPS.map(({ key, to, icon: Icon }) => {
+                            const chipClass =
+                                "inline-flex items-center gap-1.5 rounded-full bg-vegan-green-subtle px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-vegan-green-light hover:text-vegan-green";
+                            const content = (
+                                <>
+                                    <Icon className="h-3 w-3" aria-hidden="true" />
+                                    {t(`hero.chips.${key}`)}
+                                </>
+                            );
+                            // "Meal plan" mở dialog tại chỗ; các chip khác vẫn điều hướng.
+                            return to ? (
+                                <Link key={key} to={to} className={chipClass}>
+                                    {content}
+                                </Link>
+                            ) : (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => openMealPlanComposer()}
+                                    className={chipClass}
+                                >
+                                    {content}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -504,6 +532,7 @@ function HomeWeeklyBar() {
     const { t } = useTranslation("home");
     const { t: tm } = useTranslation("menu");
     const { isAuthenticated } = useAuth();
+    const openMealPlanComposer = useUiStore((state) => state.openMealPlanComposer);
 
     const { from, to, days } = currentWeekRange();
     const { data, isLoading } = useQuery({
@@ -554,7 +583,7 @@ function HomeWeeklyBar() {
                         <Progress value={(planned.size / 7) * 100} className="mt-2 h-2 w-32 bg-vegan-green-light" />
                     </div>
                     <Link
-                        to={menu ? "/meal-plan" : "/meal-plan/create"}
+                        to="/meal-plan"
                         className="flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-vegan-green-bright px-5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-95"
                     >
                         {menu ? t("weekly.open") : t("weekly.create")}
@@ -630,13 +659,14 @@ function HomeWeeklyBar() {
                                           </span>
                                       </div>
                                   ) : (
-                                      <Link
-                                          to="/meal-plan/create"
+                                      <button
+                                          type="button"
+                                          onClick={() => openMealPlanComposer(from)}
                                           className="flex h-6 items-center gap-1 text-[10px] font-semibold text-vegan-green hover:underline"
                                       >
                                           <Plus className="h-3 w-3" aria-hidden="true" />
                                           {tm("noMeals")}
-                                      </Link>
+                                      </button>
                                   )}
                               </div>
                           );
@@ -743,7 +773,6 @@ function HomeDishes() {
  */
 function HomeNearbyPicks() {
     const { t } = useTranslation("home");
-    const { t: tl } = useTranslation("nearby");
     const { isAuthenticated } = useAuth();
 
     const { data, isLoading } = useQuery({
@@ -756,7 +785,6 @@ function HomeNearbyPicks() {
     if (isAuthenticated && !isLoading && places.length === 0) return null;
 
     const [featured, ...rest] = places;
-    const featuredType = featured ? tl(`filter.${featured.placeType}`) : null;
 
     return (
         <section className="flex flex-col gap-6 lg:col-span-5">
@@ -801,12 +829,6 @@ function HomeNearbyPicks() {
                             {/* ponytail: `LocationItem` không có field ảnh → nền gradient + ghim thay ảnh. */}
                             <div className="relative flex h-44 items-center justify-center rounded-2xl bg-gradient-to-br from-vegan-green-light via-vegan-green-subtle to-cream">
                                 <MapPin className="h-10 w-10 text-vegan-green-muted" aria-hidden="true" />
-                                {featuredType && (
-                                    <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-surface/90 px-3 py-1 text-[11px] font-bold text-vegan-green shadow-sm backdrop-blur-md">
-                                        <Leaf className="h-3.5 w-3.5" aria-hidden="true" />
-                                        {featuredType}
-                                    </span>
-                                )}
                             </div>
 
                             <div className="flex flex-col gap-1">
@@ -829,11 +851,6 @@ function HomeNearbyPicks() {
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                                {featuredType && (
-                                    <span className="rounded-md bg-vegan-green-subtle px-2.5 py-0.5 text-[11px] text-muted-foreground">
-                                        {featuredType}
-                                    </span>
-                                )}
                                 {featured.priceLevel ? (
                                     <span className="rounded-md bg-vegan-green-subtle px-2.5 py-0.5 text-[11px] text-muted-foreground">
                                         {"$".repeat(Math.min(4, featured.priceLevel))}

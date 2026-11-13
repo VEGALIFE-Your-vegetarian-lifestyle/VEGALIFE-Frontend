@@ -71,5 +71,6 @@
         "ingredients": "{{list}}… · {{count}} nguyên liệu",
         "browseMine": "Xem tất cả công thức của tôi",
         "viewRecipe": "Xem công thức"
-    }
+    },
+    "videoPlayer": "Video của bài viết"
 }

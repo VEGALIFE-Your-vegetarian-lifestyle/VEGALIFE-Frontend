@@ -1,12 +1,10 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
     ChefHat,
     Clock,
     CookingPot,
-    Flame,
     ListChecks,
     Leaf,
     PenLine,
@@ -14,6 +12,7 @@ import {
     Search,
     Sparkles,
     Timer,
+    Trash2,
     Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -24,14 +23,17 @@ import { PillTabs } from "@/components/ui/pill-tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Pagination } from "@/components/common/Pagination";
+import { RejectionReason } from "@/components/common/RejectionReason";
 import { StatCard } from "@/components/common/StatCard";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useUiStore } from "@/shared/ui/uiStore";
 import { getMyRecipes } from "../../api";
+import { useDeleteRecipe } from "../../useDeleteRecipe";
 import { RecipeDetailDialog } from "../../components/RecipeDetailDialog";
+import { RecipeNutritionLine } from "../../components/RecipeNutritionLine";
 import { MODERATION_VARIANT } from "../../constants";
-import { nutritionTotals } from "../../nutrition";
 import type { Difficulty, Recipe } from "../../types";
 import { PAGE_SIZE, matchesRecipe, recipeStats, sortRecipes } from "./filter";
 import type { SortKey, TabKey } from "./filter";
@@ -40,34 +42,48 @@ const DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
 
 export default function MyRecipesPage() {
     const { t } = useTranslation(["recipe", "common"]);
-    const navigate = useNavigate();
     const language = useUiStore((state) => state.language);
+    const openRecipeComposer = useUiStore((state) => state.openRecipeComposer);
 
     const [tab, setTab] = useState<TabKey>("all");
     const [query, setQuery] = useState("");
     const [difficulty, setDifficulty] = useState<Difficulty | "">("");
     const [sortKey, setSortKey] = useState<SortKey>("updated");
     const [selected, setSelected] = useState<Recipe | null>(null);
+    /** Công thức đang mở hộp thoại xác nhận xoá — `null` = đóng. */
+    const [deleting, setDeleting] = useState<Recipe | null>(null);
+
+    const deleteMutation = useDeleteRecipe(() => {
+        setDeleting(null);
+        setSelected(null);
+    });
 
     const debouncedQuery = useDebounce(query, 300);
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ["my-recipes"],
-        queryFn: getMyRecipes,
+        // Tab + độ khó lọc ở SERVER; từ khoá lọc client (backend không có `keyword` cho route này).
+        queryKey: ["my-recipes", tab, difficulty],
+        queryFn: () =>
+            getMyRecipes({
+                moderationStatus: tab === "all" ? undefined : tab,
+                difficulty: difficulty || undefined,
+            }),
     });
+
+    // Thẻ thống kê + số trên pill phải đếm TOÀN BỘ công thức, không phải tập đã lọc → query riêng.
+    // Cùng key với `AccountLayout` nên hai chỗ dùng chung một request.
+    const { data: allRecipes = [] } = useQuery({ queryKey: ["my-recipes"], queryFn: () => getMyRecipes() });
 
     const recipes = useMemo(() => data ?? [], [data]);
 
-    const stats = useMemo(() => recipeStats(recipes), [recipes]);
+    const stats = useMemo(() => recipeStats(allRecipes), [allRecipes]);
 
     // Hướng sort cố định theo khoá: ngày → mới nhất trước, tên → A-Z. Không còn nút đảo hướng.
     const filtered = useMemo(() => {
-        const matched = recipes.filter((item) =>
-            matchesRecipe(item, { tab, difficulty, keyword: debouncedQuery }),
-        );
+        const matched = recipes.filter((item) => matchesRecipe(item, { keyword: debouncedQuery }));
         const direction = sortKey === "name" ? "asc" : "desc";
         return sortRecipes(matched, sortKey, direction, language === "vi" ? "vi" : "en");
-    }, [recipes, tab, difficulty, debouncedQuery, sortKey, language]);
+    }, [recipes, debouncedQuery, sortKey, language]);
 
     // Đổi bộ lọc thì tự về trang 1 — so khoá thay vì `useEffect` (cùng cách ExplorePage).
     const filterKey = `${tab}|${difficulty}|${debouncedQuery}|${sortKey}`;
@@ -97,7 +113,7 @@ export default function MyRecipesPage() {
                         {t("recipe:myRecipes.subtitle")}
                     </p>
                 </div>
-                <Button className="max-sm:w-full" onClick={() => navigate("/recipes/create")}>
+                <Button className="max-sm:w-full" onClick={openRecipeComposer}>
                     <Plus className="h-4 w-4" aria-hidden="true" />
                     {t("recipe:myRecipes.create")}
                 </Button>
@@ -207,7 +223,7 @@ export default function MyRecipesPage() {
                             action={
                                 <Button
                                     variant={hasFilter ? "outline" : "primary"}
-                                    onClick={hasFilter ? clearFilters : () => navigate("/recipes/create")}
+                                    onClick={hasFilter ? clearFilters : openRecipeComposer}
                                 >
                                     {hasFilter ? t("common:clearFilter") : t("recipe:myRecipes.create")}
                                 </Button>
@@ -220,6 +236,7 @@ export default function MyRecipesPage() {
                                     key={recipe.id}
                                     recipe={recipe}
                                     onOpen={() => setSelected(recipe)}
+                                    onDelete={() => setDeleting(recipe)}
                                 />
                             ))}
                         </div>
@@ -233,13 +250,33 @@ export default function MyRecipesPage() {
                 recipe={selected}
                 language={language}
                 onClose={() => setSelected(null)}
+                onDelete={selected ? () => setDeleting(selected) : undefined}
+            />
+
+            <ConfirmDialog
+                open={deleting !== null}
+                title={t("myRecipes.delete.title")}
+                description={deleting ? t("myRecipes.delete.body", { name: deleting.name }) : ""}
+                confirmLabel={t("myRecipes.delete.confirm")}
+                destructive
+                loading={deleteMutation.isPending}
+                onConfirm={() => deleting && deleteMutation.mutate(deleting.id)}
+                onClose={() => setDeleting(null)}
             />
         </>
     );
 }
 
 /** Thẻ một công thức — đủ field để mở dialog chi tiết mà không cần gọi thêm API. */
-function RecipeManageCard({ recipe, onOpen }: { recipe: Recipe; onOpen: () => void }) {
+function RecipeManageCard({
+    recipe,
+    onOpen,
+    onDelete,
+}: {
+    recipe: Recipe;
+    onOpen: () => void;
+    onDelete: () => void;
+}) {
     const { t } = useTranslation("recipe");
 
     return (
@@ -286,27 +323,26 @@ function RecipeManageCard({ recipe, onOpen }: { recipe: Recipe; onOpen: () => vo
             </div>
 
             {/* Tổng **cả công thức** — nhãn nằm trong key i18n để không ai tưởng là /phần. */}
-            {(() => {
-                const totals = nutritionTotals(recipe);
-                return totals ? (
-                    <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <Flame className="h-4 w-4" aria-hidden="true" />
-                        {t("myRecipes.meta.nutrition", {
-                            kcal: Math.round(totals.kcal),
-                            protein: Math.round(totals.proteinG),
-                        })}
-                    </p>
-                ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">{t("myRecipes.meta.nutritionMissing")}</p>
-                );
-            })()}
+            <RecipeNutritionLine recipe={recipe} className="mt-2 flex text-sm" />
 
-            {/* ponytail: BE chưa có PATCH/DELETE recipe cho member → chỉ mở chi tiết,
-                không có nút sửa/xoá. Thêm khi backend mở endpoint. */}
-            <div className="mt-3">
+            <RejectionReason
+                reason={recipe.moderationStatus === "REJECTED" ? recipe.rejectionReason : null}
+                className="mt-3"
+            />
+
+            <div className="mt-3 flex gap-2">
                 <Button size="sm" variant="outline" block onClick={onOpen}>
                     <PenLine className="h-4 w-4" aria-hidden="true" />
                     {t("myRecipes.action.view")}
+                </Button>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    aria-label={t("myRecipes.action.delete")}
+                    title={t("myRecipes.action.delete")}
+                    onClick={onDelete}
+                >
+                    <Trash2 className="h-4 w-4 text-danger" aria-hidden="true" />
                 </Button>
             </div>
         </article>

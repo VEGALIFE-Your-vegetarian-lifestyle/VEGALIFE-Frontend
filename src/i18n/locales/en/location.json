@@ -1,12 +1,5 @@
 {
     "directions": "Directions",
-    "type": {
-        "restaurant": "Restaurant",
-        "grocery": "Grocery",
-        "cafe": "Cafe",
-        "market": "Market"
-    },
-    "allTypes": "All types",
     "map": {
         "you": "Your location",
         "tilesFailed": "Could not load the map background. Places are still listed on the left; check your connection or ad blocker."
@@ -66,7 +59,6 @@
         "columns": {
             "name": "Name",
             "address": "Address",
-            "type": "Type",
             "actions": "Actions",
             "rating": "Rating",
             "price": "Price"
@@ -86,10 +78,8 @@
             "address": "Address",
             "latitude": "Latitude",
             "longitude": "Longitude",
-            "type": "Type",
             "phone": "Phone",
             "save": "Save changes",
-            "noType": "Select a type",
             "rating": "Rating (0-5)",
             "price": "Price level (1-4)",
             "website": "Website",
@@ -112,7 +102,9 @@
             "updated": "Location updated",
             "deleted": "Location deleted",
             "failed": "Action failed. Please try again."
-        }
+        },
+        "filterRating": "Minimum rating",
+        "allRatings": "All ratings"
     },
     "days": {
         "monday": "Monday",

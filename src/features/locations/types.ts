@@ -1,7 +1,5 @@
-// Bám API Location của backend (docs mục "Location management" và "Danh sách địa điểm").
-export type LocationType = "restaurant" | "grocery" | "cafe" | "market";
-
-export const LOCATION_TYPES: LocationType[] = ["restaurant", "grocery", "cafe", "market"];
+// Bám API Restaurant của backend (backend đổi `/api/locations` → `/api/restaurants`).
+// Không còn `placeType`: response restaurant không có field này.
 
 /** Key = tên thứ trong tuần, giá trị = các khung giờ mở cửa trong ngày. */
 export type OpeningHours = Record<string, { open: string; close: string }[]>;
@@ -12,7 +10,6 @@ export interface LocationItem {
     address: string;
     latitude: number;
     longitude: number;
-    placeType: LocationType;
     phoneNumber?: string;
     openingHours?: OpeningHours;
     websiteUrl?: string;
@@ -36,7 +33,6 @@ export interface LocationPayload {
     address: string;
     latitude: number;
     longitude: number;
-    placeType: LocationType;
     phoneNumber?: string;
     openingHours?: OpeningHours;
     websiteUrl?: string;
@@ -44,18 +40,19 @@ export interface LocationPayload {
     priceLevel?: number;
 }
 
-/** `GET /api/locations/nearby` — `radius` tính bằng mét. */
+/** `GET /api/restaurants/nearby` — `radius` tính bằng mét. */
 export interface NearbyParams {
     lat: number;
     lng: number;
     radius: number;
 }
 
-/** `GET /api/locations` — các bộ lọc kết hợp bằng AND. */
+/** `GET /api/restaurants` — các bộ lọc kết hợp bằng AND. */
 export interface LocationListParams {
     page: number;
     size: number;
-    placeType?: LocationType;
     minRating?: number;
     maxPriceLevel?: number;
+    openNow?: boolean;
+    keyword?: string;
 }

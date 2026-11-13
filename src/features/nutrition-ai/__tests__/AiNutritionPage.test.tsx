@@ -51,8 +51,8 @@ describe("AiNutritionPage", () => {
 
         renderWithProviders(<AiNutritionPage />);
 
-        expect(await screen.findByText(/Trợ lý AI Dinh dưỡng|AI Nutrition Assistant/i)).toBeInTheDocument();
-        expect(screen.getByText(/Đăng nhập để hỏi trợ lý|Sign in to ask the assistant/i)).toBeInTheDocument();
+        expect(await screen.findByText(/Trợ lý AI Dinh dưỡng|Nutrition AI Assistant/i)).toBeInTheDocument();
+        expect(screen.getByText(/Đăng nhập để hỏi trợ lý|Sign in to chat with assistant/i)).toBeInTheDocument();
     });
 
     it("đã đăng nhập với dữ liệu subscription thật từ backend ({ remainingUsage: 15 }): không bị TypeError crash", async () => {
@@ -75,7 +75,7 @@ describe("AiNutritionPage", () => {
 
         renderWithProviders(<AiNutritionPage />);
 
-        expect(await screen.findByText(/Trợ lý AI Dinh dưỡng|AI Nutrition Assistant/i)).toBeInTheDocument();
+        expect(await screen.findByText(/Trợ lý AI Dinh dưỡng|Nutrition AI Assistant/i)).toBeInTheDocument();
         expect(await screen.findByText(/Còn 15 câu hỏi/i)).toBeInTheDocument();
     });
 
@@ -100,7 +100,8 @@ describe("AiNutritionPage", () => {
 
         renderWithProviders(<AiNutritionPage />);
 
-        expect(await screen.findByText(/Trợ lý AI Dinh dưỡng|AI Nutrition Assistant/i)).toBeInTheDocument();
-        expect(await screen.findByText(/FREE/i)).toBeInTheDocument();
+        expect(await screen.findByText(/Trợ lý AI Dinh dưỡng|Nutrition AI Assistant/i)).toBeInTheDocument();
+        // "FREE" xuất hiện ở cả badge gói lẫn banner nhận gói → không assert duy nhất.
+        expect((await screen.findAllByText(/FREE/i)).length).toBeGreaterThan(0);
     });
 });

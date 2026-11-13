@@ -5,7 +5,7 @@
  * khi thiếu `E2E_USER_*` / `E2E_ADMIN_*`.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { getFeedPosts, getPostDetail, getPosts, getMyPosts, approvePost, rejectPost } from "../api";
+import { getFeedPosts, getPostDetail, getPosts, getMyPosts, getMyPostsCounts, approvePost, rejectPost } from "../api";
 import {
     E2E_ADMIN,
     E2E_USER,
@@ -119,12 +119,11 @@ describe.skipIf(!HAS_USER)("postService — cần JWT user (E2E_USER_*)", () => 
     it(
         "counts đếm toàn tài khoản — không đổi khi lọc hoặc đổi trang",
         async () => {
-            const plain = await getMyPosts({ page: 1, size: 5 });
-            const filtered = await getMyPosts({ page: 1, size: 5, status: "published", q: "zzz-khong-khop-zzz" });
+            const plain = await getMyPostsCounts();
+            const again = await getMyPostsCounts();
 
-            expect(filtered.data).toHaveLength(0);
-            expect(filtered.counts).toEqual(plain.counts);
-            expect(plain.counts.all).toBeGreaterThanOrEqual(plain.counts.published);
+            expect(again).toEqual(plain);
+            expect(plain.all).toBeGreaterThanOrEqual(plain.published);
         },
         REMOTE_TIMEOUT_MS,
     );
@@ -167,8 +166,8 @@ describe.skipIf(!HAS_ADMIN)("postService — cần JWT admin (E2E_ADMIN_*)", () 
             const byDefault = await getPosts({ page: 1, size: 20 });
             const explicit = await getPosts({ page: 1, size: 20, flag: "all" });
 
-            // BE mặc định NEEDS_REVIEW, nên nếu service quên flag thì total sẽ
-            // nhỏ hơn hẳn tập flag=all.
+            // BE (V56) mặc định `all`; test so hai lần gọi để chắc service không bỏ sót
+            // tham số và hai nhánh cho cùng một tập.
             expect(byDefault.total).toBe(explicit.total);
             expect(byDefault.data.map((post) => post.id)).toEqual(explicit.data.map((post) => post.id));
         },

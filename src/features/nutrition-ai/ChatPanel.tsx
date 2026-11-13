@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/features/auth/useAuth";
 import type { AiChat } from "./useAiChat";
 import { MAX_MESSAGE_LENGTH } from "./types";
+import { CopyMessageButton, MarkdownMessage } from "./MarkdownMessage";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 
@@ -202,9 +203,15 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
                             </span>
                             <div className="max-w-2xl rounded-2xl rounded-tl-sm bg-muted-bg p-4">
                                 <p className="text-sm font-semibold text-dark">{t("chat.assistantName")}</p>
-                                <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
-                                    {message.text}
-                                </p>
+                                <div className="mt-1">
+                                    <MarkdownMessage text={message.text} />
+                                </div>
+                                <div className="mt-1.5 flex items-center justify-between gap-2">
+                                    <CopyMessageButton text={message.text} />
+                                    <span className="text-[10px] text-muted-foreground">
+                                        {formatDateLocale(message.createdAt)}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     ),
@@ -224,6 +231,20 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
                         <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                         {t("chat.pendingReply")}
                     </p>
+                )}
+
+                {/* Timeout: backend vẫn chạy tiếp nên KHÔNG hiện như lỗi — chỉ báo đang đối soát. */}
+                {chat.timedOut && (
+                    <div className="flex flex-wrap items-start gap-2 rounded-xl border border-border bg-muted-bg p-3 text-sm text-muted-foreground">
+                        <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                        <div className="flex-1">
+                            <p className="font-semibold text-dark">{t("chat.timeoutTitle")}</p>
+                            <p className="mt-1 text-xs">{t("chat.timeoutHint")}</p>
+                        </div>
+                        <Button variant="outline" size="xs" onClick={chat.newConversation}>
+                            {t("chat.newChat")}
+                        </Button>
+                    </div>
                 )}
 
                 {errorText && (

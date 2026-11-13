@@ -5,13 +5,10 @@ import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { FormField } from "@/components/common/FormField";
 import {
-    LOCATION_TYPES,
     type LocationItem,
     type LocationPayload,
-    type LocationType,
     type OpeningHours,
 } from "../../types";
 
@@ -61,7 +58,6 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
                     .required(t("validation:required"))
                     .min(-180, t("admin.validation.longitude"))
                     .max(180, t("admin.validation.longitude")),
-                placeType: Yup.string().oneOf(LOCATION_TYPES).required(t("validation:required")),
                 phoneNumber: Yup.string().max(MAX_PHONE_LENGTH, t("validation:maxLength", { count: MAX_PHONE_LENGTH })),
                 websiteUrl: Yup.string().url(t("admin.validation.url")),
                 rating: Yup.number()
@@ -98,7 +94,6 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
             address: location?.address ?? "",
             latitude: location ? String(location.latitude) : "",
             longitude: location ? String(location.longitude) : "",
-            placeType: (location?.placeType ?? "") as LocationType | "",
             phoneNumber: location?.phoneNumber ?? "",
             websiteUrl: location?.websiteUrl ?? "",
             rating: location?.rating !== undefined ? String(location.rating) : "",
@@ -113,7 +108,6 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
                 address: values.address.trim(),
                 latitude: Number(values.latitude),
                 longitude: Number(values.longitude),
-                placeType: values.placeType as LocationType,
                 // Chuỗi rỗng: khi sửa nghĩa là xóa giá trị đang lưu, khi tạo thì bị bỏ đi.
                 phoneNumber: values.phoneNumber.trim(),
                 websiteUrl: values.websiteUrl.trim(),
@@ -157,22 +151,6 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
                 {textField("latitude", t("admin.form.latitude"), true)}
                 {textField("longitude", t("admin.form.longitude"), true)}
             </div>
-            <FormField label={t("admin.form.type")} htmlFor="placeType" required error={fieldError("placeType")}>
-                <Select
-                    id="placeType"
-                    name="placeType"
-                    value={formik.values.placeType}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                >
-                    <option value="">{t("admin.form.noType")}</option>
-                    {LOCATION_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                            {t(`type.${type}`)}
-                        </option>
-                    ))}
-                </Select>
-            </FormField>
             <div className="grid grid-cols-2 gap-4">
                 {textField("rating", t("admin.form.rating"))}
                 {textField("priceLevel", t("admin.form.price"))}

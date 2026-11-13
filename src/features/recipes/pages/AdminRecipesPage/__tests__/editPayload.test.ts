@@ -19,6 +19,7 @@ function makeRecipe(overrides: Partial<AdminRecipe> = {}): AdminRecipe {
         missingRequiredIngredients: [],
         moderationStatus: "PENDING",
         dishModerationStatus: "PENDING",
+        rejectionReason: null,
         score: null,
         displayName: "Minh",
         email: "minh@example.com",

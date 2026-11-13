@@ -6,16 +6,13 @@ import {
     ArrowLeft,
     Banknote,
     Clock,
-    Coffee,
     ExternalLink,
     Globe,
     MapPin,
     Navigation,
     Phone,
     Share2,
-    ShoppingBasket,
     Star,
-    Store,
     Utensils,
     type LucideIcon,
 } from "lucide-react";
@@ -25,16 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PlaceMap } from "../components/PlaceMap";
 import { getNearbyPlaceDetail } from "../nearbyApi";
-import type { LocationType } from "../types";
 import { openDirections } from "../geo";
 import { cn } from "@/shared/utils/cn";
-
-const TYPE_ICONS: Record<LocationType, LucideIcon> = {
-    restaurant: Utensils,
-    cafe: Coffee,
-    grocery: ShoppingBasket,
-    market: Store,
-};
 
 const linkClass =
     "flex items-center gap-3 rounded-lg px-2 py-2 text-sm text-muted-foreground transition hover:bg-muted-bg hover:text-vegan-green";
@@ -78,7 +67,7 @@ export default function LocationDetailPage() {
         );
     }
 
-    const TypeIcon = TYPE_ICONS[place.placeType];
+    const TypeIcon: LucideIcon = Utensils;
     // Cả tuần cùng một khung giờ thì gom thành một dòng "Hằng ngày".
     const sameEveryDay = place.hours.length > 1 && place.hours.every((item) => item.hours === place.hours[0].hours);
     const todayHours = place.hours.find((item) => item.today)?.hours ?? "";
@@ -134,8 +123,7 @@ export default function LocationDetailPage() {
                             <TypeIcon className="h-9 w-9" aria-hidden="true" />
                         </span>
                         <div className="min-w-0">
-                            <Badge variant="lightgreen">{t(`filter.${place.placeType}`)}</Badge>
-                            <h1 className="mt-2 text-3xl font-extrabold text-dark">{place.name}</h1>
+                            <h1 className="text-3xl font-extrabold text-dark">{place.name}</h1>
                             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                                 {place.rating !== undefined && (
                                     <span className="flex items-center gap-1.5">

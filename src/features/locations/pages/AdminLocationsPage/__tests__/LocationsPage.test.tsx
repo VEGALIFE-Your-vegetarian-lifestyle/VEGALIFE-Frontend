@@ -26,35 +26,31 @@ beforeAll(() => {
 const openDialog = () => within(document.querySelector("dialog[open]") as HTMLElement);
 
 describe("LocationsPage (Admin)", () => {
-    it("render tiêu đề, bộ lọc loại và nút thêm", async () => {
+    it("render tiêu đề, bộ lọc đánh giá và nút thêm", async () => {
         renderWithProviders(<LocationsPage />);
 
         expect(screen.getByRole("heading", { name: "Location Management" })).toBeInTheDocument();
-        expect(screen.getByLabelText("Filter by type")).toBeInTheDocument();
+        expect(screen.getByLabelText("Minimum rating")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /Add location/ })).toBeInTheDocument();
         expect(await screen.findByText(FIRST_ROW)).toBeInTheDocument();
     });
 
     it("không hiện địa điểm đã xóa mềm", async () => {
-        const user = userEvent.setup();
         renderWithProviders(<LocationsPage />);
         await screen.findByText(FIRST_ROW);
 
-        await user.selectOptions(screen.getByLabelText("Filter by type"), "Restaurant");
-
-        expect(await screen.findByText("Quán Chay Lá Xanh")).toBeInTheDocument();
         expect(screen.queryByText("Quán Chay Đã Đóng Cửa")).not.toBeInTheDocument();
     });
 
-    it("lọc theo loại chỉ hiện loại đó", async () => {
+    it("lọc theo đánh giá tối thiểu chỉ hiện địa điểm đạt ngưỡng", async () => {
         const user = userEvent.setup();
         renderWithProviders(<LocationsPage />);
         await screen.findByText(FIRST_ROW);
 
-        await user.selectOptions(screen.getByLabelText("Filter by type"), "Market");
+        await user.selectOptions(screen.getByLabelText("Minimum rating"), "4.5");
 
-        await waitFor(() => expect(screen.queryByText(FIRST_ROW)).not.toBeInTheDocument());
-        expect(await screen.findByText("Chợ Chay Bình Thạnh")).toBeInTheDocument();
+        await waitFor(() => expect(screen.queryByText("Chợ Chay Bình Thạnh")).not.toBeInTheDocument());
+        expect(await screen.findByText("Quán Chay Lá Xanh")).toBeInTheDocument();
     });
 
     it("form báo lỗi khi để trống và khi nhập vĩ độ ngoài khoảng", async () => {
@@ -84,7 +80,6 @@ describe("LocationsPage (Admin)", () => {
         await user.type(dialog.getByLabelText(/^Address/), "1 Đường Test");
         await user.type(dialog.getByLabelText(/Latitude/), "10.78");
         await user.type(dialog.getByLabelText(/Longitude/), "106.7");
-        await user.selectOptions(dialog.getByLabelText(/Type/), "Cafe");
         await user.type(dialog.getByLabelText(/Phone/), "028 1111 1111");
         await user.click(dialog.getByRole("button", { name: "Add location" }));
 
@@ -92,7 +87,7 @@ describe("LocationsPage (Admin)", () => {
         expect(await screen.findByText("Quán Test Admin")).toBeInTheDocument();
     });
 
-    it("chỉ nhập các trường bắt buộc (tên, địa chỉ, tọa độ, loại) vẫn thêm được, ô thiếu hiện dấu gạch", async () => {
+    it("chỉ nhập các trường bắt buộc (tên, địa chỉ, tọa độ) vẫn thêm được, ô thiếu hiện dấu gạch", async () => {
         const user = userEvent.setup();
         renderWithProviders(<LocationsPage />);
         await screen.findByText(FIRST_ROW);
@@ -103,7 +98,6 @@ describe("LocationsPage (Admin)", () => {
         await user.type(dialog.getByLabelText(/^Address/), "2 Đường Test");
         await user.type(dialog.getByLabelText(/Latitude/), "10.79");
         await user.type(dialog.getByLabelText(/Longitude/), "106.69");
-        await user.selectOptions(dialog.getByLabelText(/Type/), "Market");
         await user.click(dialog.getByRole("button", { name: "Add location" }));
 
         const row = (await screen.findByText("Quán Chỉ Có Tên")).closest("tr")!;
@@ -121,7 +115,6 @@ describe("LocationsPage (Admin)", () => {
         await user.type(dialog.getByLabelText(/^Address/), "3 Đường Test");
         await user.type(dialog.getByLabelText(/Latitude/), "10.79");
         await user.type(dialog.getByLabelText(/Longitude/), "106.69");
-        await user.selectOptions(dialog.getByLabelText(/Type/), "Cafe");
 
         fireEvent.change(dialog.getByLabelText("Opening time"), { target: { value: "07:00" } });
         await user.click(dialog.getByRole("button", { name: "Add location" }));

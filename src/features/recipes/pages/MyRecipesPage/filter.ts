@@ -1,4 +1,4 @@
-import type { Difficulty, ModerationStatus, Recipe } from "../../types";
+import type { ModerationStatus, Recipe } from "../../types";
 
 /** Mockup: 6 thẻ một trang. `GET /api/recipes/me` trả mảng phẳng → cắt ở client. */
 export const PAGE_SIZE = 6;
@@ -9,15 +9,14 @@ export type SortKey = "updated" | "created" | "name";
 export type TabKey = "all" | ModerationStatus;
 
 export interface RecipeFilters {
-    tab: TabKey;
-    difficulty: Difficulty | "";
     keyword: string;
 }
 
-/** Khớp tab trạng thái + độ khó + từ khoá (tên công thức / tên món / tên nguyên liệu). */
-export function matchesRecipe(recipe: Recipe, { tab, difficulty, keyword }: RecipeFilters): boolean {
-    if (tab !== "all" && recipe.moderationStatus !== tab) return false;
-    if (difficulty && recipe.difficulty !== difficulty) return false;
+/**
+ * Chỉ lọc từ khoá ở client (tên công thức / tên món / tên nguyên liệu) — backend không có
+ * `keyword` cho `/api/recipes/me`. Tab trạng thái và độ khó do server lọc.
+ */
+export function matchesRecipe(recipe: Recipe, { keyword }: RecipeFilters): boolean {
     const needle = keyword.trim().toLowerCase();
     if (!needle) return true;
     return (

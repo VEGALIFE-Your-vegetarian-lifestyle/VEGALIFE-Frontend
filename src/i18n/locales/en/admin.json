@@ -142,11 +142,14 @@
             "videoRemove": "Remove video",
             "videoDropzoneTitle": "Drop your video file here",
             "videoDropzoneHint": "MP4 or WebM, up to 100MB.",
-            "videoSourceRequired": "Please upload a video file"
+            "videoSourceRequired": "Please upload a video file",
+            "coverLabel": "Cover",
+            "videoLabel": "Attached video"
         },
         "toast": {
             "created": "Post created successfully",
             "updated": "Post updated successfully",
+            "submitted": "Post submitted for review",
             "failed": "Failed to create post. Please try again.",
             "approved": "Post approved",
             "rejected": "Post rejected",
@@ -177,8 +180,12 @@
             "action": {
                 "approve": "Approve",
                 "reject": "Reject",
-                "unpublish": "Unpublish",
                 "delete": "Delete"
+            },
+            "overFilter": "Approved over filter",
+            "flagDetail": {
+                "score": "{{score}} / {{threshold}}",
+                "similarity": "{{percent}}% similar"
             },
             "confirm": {
                 "deleteTitle": "Delete post?",
@@ -325,7 +332,8 @@
             "difficulty": "Difficulty",
             "moderation": "Review",
             "status": "Status",
-            "createdAt": "Created"
+            "createdAt": "Created",
+            "actions": "Actions"
         },
         "status": {
             "ACTIVE": "Active",

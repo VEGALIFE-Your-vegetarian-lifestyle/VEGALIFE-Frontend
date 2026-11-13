@@ -1,12 +1,5 @@
 {
     "directions": "Chỉ đường",
-    "type": {
-        "restaurant": "Nhà hàng",
-        "grocery": "Cửa hàng",
-        "cafe": "Quán cà phê",
-        "market": "Chợ"
-    },
-    "allTypes": "Tất cả loại",
     "map": {
         "you": "Vị trí của bạn",
         "tilesFailed": "Không tải được nền bản đồ. Danh sách địa điểm vẫn hiển thị bên cạnh; hãy kiểm tra kết nối mạng hoặc tiện ích chặn quảng cáo."
@@ -66,7 +59,6 @@
         "columns": {
             "name": "Tên",
             "address": "Địa chỉ",
-            "type": "Loại",
             "actions": "Thao tác",
             "rating": "Đánh giá",
             "price": "Mức giá"
@@ -86,10 +78,8 @@
             "address": "Địa chỉ",
             "latitude": "Vĩ độ",
             "longitude": "Kinh độ",
-            "type": "Loại",
             "phone": "Số điện thoại",
             "save": "Lưu thay đổi",
-            "noType": "Chọn loại",
             "rating": "Đánh giá (0-5)",
             "price": "Mức giá (1-4)",
             "website": "Website",
@@ -112,7 +102,9 @@
             "updated": "Đã cập nhật địa điểm",
             "deleted": "Đã xóa địa điểm",
             "failed": "Thao tác thất bại. Vui lòng thử lại."
-        }
+        },
+        "filterRating": "Lọc theo đánh giá",
+        "allRatings": "Mọi đánh giá"
     },
     "days": {
         "monday": "Thứ Hai",

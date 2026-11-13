@@ -18,6 +18,7 @@ function makeRecipe(overrides: Partial<Recipe> = {}): Recipe {
         ingredients: [{ ingredientId: "i1", name: "cà chua", amount: 2, unit: "quả" }],
         moderationStatus: "PENDING" as ModerationStatus,
         dishModerationStatus: "PENDING",
+        rejectionReason: null,
         nutritionResolved: false,
         calories: null,
         proteinG: null,
@@ -31,39 +32,22 @@ function makeRecipe(overrides: Partial<Recipe> = {}): Recipe {
 }
 
 describe("matchesRecipe", () => {
-    it("tab all nhận mọi trạng thái", () => {
+    it("từ khoá rỗng giữ mọi công thức", () => {
         const recipes = [
             makeRecipe({ id: "a", moderationStatus: "APPROVED" }),
             makeRecipe({ id: "b", moderationStatus: "PENDING" }),
             makeRecipe({ id: "c", moderationStatus: "REJECTED" }),
         ];
-        const kept = recipes.filter((r) => matchesRecipe(r, { tab: "all", difficulty: "", keyword: "" }));
+        const kept = recipes.filter((r) => matchesRecipe(r, { keyword: "" }));
         expect(kept.map((r) => r.id)).toEqual(["a", "b", "c"]);
-    });
-
-    it("tab trạng thái chỉ giữ đúng trạng thái đó", () => {
-        const approved = makeRecipe({ moderationStatus: "APPROVED" });
-        const rejected = makeRecipe({ moderationStatus: "REJECTED" });
-        expect(matchesRecipe(approved, { tab: "APPROVED", difficulty: "", keyword: "" })).toBe(true);
-        expect(matchesRecipe(rejected, { tab: "APPROVED", difficulty: "", keyword: "" })).toBe(false);
-    });
-
-    it("độ khó rỗng = không lọc", () => {
-        expect(matchesRecipe(makeRecipe({ difficulty: null }), { tab: "all", difficulty: "", keyword: "" })).toBe(true);
-    });
-
-    it("độ khó không khớp bị loại", () => {
-        const recipe = makeRecipe({ difficulty: "HARD" });
-        expect(matchesRecipe(recipe, { tab: "all", difficulty: "EASY", keyword: "" })).toBe(false);
-        expect(matchesRecipe(recipe, { tab: "all", difficulty: "HARD", keyword: "" })).toBe(true);
     });
 
     it("từ khoá khớp tên công thức / tên món / tên nguyên liệu, không phân biệt hoa thường", () => {
         const recipe = makeRecipe({ name: "Canh chua chay", dishName: "canh chua" });
-        expect(matchesRecipe(recipe, { tab: "all", difficulty: "", keyword: "  CHAY  " })).toBe(true);
-        expect(matchesRecipe(recipe, { tab: "all", difficulty: "", keyword: "cà chua" })).toBe(true);
-        expect(matchesRecipe(recipe, { tab: "all", difficulty: "", keyword: "canh" })).toBe(true);
-        expect(matchesRecipe(recipe, { tab: "all", difficulty: "", keyword: "pizza" })).toBe(false);
+        expect(matchesRecipe(recipe, { keyword: "  CHAY  " })).toBe(true);
+        expect(matchesRecipe(recipe, { keyword: "cà chua" })).toBe(true);
+        expect(matchesRecipe(recipe, { keyword: "canh" })).toBe(true);
+        expect(matchesRecipe(recipe, { keyword: "pizza" })).toBe(false);
     });
 });
 

@@ -13,8 +13,8 @@ import { ImageUploader } from "@/components/common/ImageUploader";
 import { RichTextEditor } from "../editor/RichTextEditor";
 import { EMPTY_DOC, isEditorEmpty, parseStoredContent, textToDoc } from "../editor/editorContent";
 import { usePublicCategories } from "@/features/categories/usePublicCategories";
-import { getMyRecipes } from "@/features/recipes/api";
-import { attachPostRecipes, createPost, getPostDetail, updatePost } from "../../api";
+import { useAttachableRecipes } from "@/features/saved/useSaved";
+import { attachPostMedia, attachPostRecipes, createPost, getPostDetail, updatePost } from "../../api";
 import { confirmUpload, createUploadGrant, uploadFileToProvider } from "@/shared/api/media";
 import { useUiStore } from "@/shared/ui/uiStore";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
@@ -45,10 +45,26 @@ export function PostComposerDialog() {
     if (!composer) return null;
 
     // `key` đặt lại state form mỗi lần mở / đổi bài — không cần tự reset.
-    return <Composer key={composer.postId ?? "new"} postId={composer.postId} onClose={closeComposer} />;
+    return (
+        <Composer
+            key={composer.postId ?? "new"}
+            postId={composer.postId}
+            initialRecipeIds={composer.recipeIds}
+            onClose={closeComposer}
+        />
+    );
 }
 
-function Composer({ postId, onClose }: { postId: string | null; onClose: () => void }) {
+function Composer({
+    postId,
+    initialRecipeIds,
+    onClose,
+}: {
+    postId: string | null;
+    /** Công thức gắn sẵn khi mở từ trang Saved / dialog công thức. */
+    initialRecipeIds?: string[];
+    onClose: () => void;
+}) {
     const { t } = useTranslation(["admin", "validation", "common", "post"]);
     const queryClient = useQueryClient();
     const isEditing = postId !== null;
@@ -57,6 +73,8 @@ function Composer({ postId, onClose }: { postId: string | null; onClose: () => v
     const editorRef = useRef<Editor | null>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
     const [isUploadingImage, setIsUploadingImage] = useState(false);
+    /** URL video đã upload — chỉ để hiện preview; `mediaId` nằm trong form (`videoMediaId`). */
+    const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [pickerOpen, setPickerOpen] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -77,12 +95,8 @@ function Composer({ postId, onClose }: { postId: string | null; onClose: () => v
         enabled: isEditing,
     });
 
-    // Tên công thức đã gắn — cùng cache với RecipePickerDialog nên mở picker không gọi lại.
-    const { data: myRecipes } = useQuery({
-        queryKey: ["my-recipes"],
-        queryFn: getMyRecipes,
-        staleTime: 60_000,
-    });
+    // Công thức gắn được: của mình + đã lưu (xem `useAttachableRecipes`).
+    const { items: attachableRecipes } = useAttachableRecipes();
 
     const validationSchema = useMemo(() => buildValidationSchema(t), [t]);
 
@@ -97,6 +111,8 @@ function Composer({ postId, onClose }: { postId: string | null; onClose: () => v
                 const updated = await updatePost(postId as string, patch);
                 // Sửa: luôn đồng bộ (mảng rỗng = bỏ hết công thức đã gắn).
                 await attachPostRecipes(postId as string, values.recipeIds);
+                // Media cũng replace toàn bộ — gửi mảng rỗng để gỡ video.
+                await attachPostMedia(postId as string, values.videoMediaId ? [values.videoMediaId] : []);
                 return updated;
             }
 
@@ -109,10 +125,16 @@ function Composer({ postId, onClose }: { postId: string | null; onClose: () => v
             });
             await updatePost(created.id, patch);
             if (values.recipeIds.length > 0) await attachPostRecipes(created.id, values.recipeIds);
+            if (values.videoMediaId) await attachPostMedia(created.id, [values.videoMediaId]);
             return created;
         },
         onSuccess: () => {
-            toast.success(t(isEditing ? "posts.toast.updated" : "posts.toast.created", { ns: "admin" }));
+            // `publish: true` chỉ gửi duyệt (bài về `processing`, filter chạy async) — không nói "đã đăng".
+            toast.success(
+                intentRef.current === "publish"
+                    ? t("posts.toast.submitted", { ns: "admin" })
+                    : t(isEditing ? "posts.toast.updated" : "posts.toast.created", { ns: "admin" }),
+            );
             void queryClient.invalidateQueries({ queryKey: ["my-posts"] });
             if (postId) void queryClient.invalidateQueries({ queryKey: ["post-detail", postId] });
             onClose();
@@ -133,8 +155,9 @@ function Composer({ postId, onClose }: { postId: string | null; onClose: () => v
                 : EMPTY_DOC,
             rawContent: existingPost?.content ?? "",
             featuredImageUrl: existingPost?.featuredImageUrl ?? "",
+            videoMediaId: existingPost?.mediaIds?.[0] ?? "",
             categoryIds: existingPost?.categoryIds ?? [],
-            recipeIds: existingPost?.recipeIds ?? [],
+            recipeIds: existingPost?.recipeIds ?? initialRecipeIds ?? [],
         },
         enableReinitialize: true,
         validationSchema,
@@ -227,7 +250,7 @@ function Composer({ postId, onClose }: { postId: string | null; onClose: () => v
     ];
     const doneCount = checklist.filter((item) => item.done).length;
 
-    const attachedRecipes = (myRecipes ?? []).filter((recipe) => formik.values.recipeIds.includes(recipe.id));
+    const attachedRecipes = attachableRecipes.filter((recipe) => formik.values.recipeIds.includes(recipe.id));
     const titleError = formik.touched.title && formik.errors.title ? (formik.errors.title as string) : undefined;
     // Chỉ `setFieldError` ở `onSubmit` đặt 2 lỗi này (Yup không có rule tương ứng),
     // nên đọc thẳng `errors` — không gate bằng `touched`.
@@ -299,16 +322,40 @@ function Composer({ postId, onClose }: { postId: string | null; onClose: () => v
                             </p>
                         )}
 
-                        {/* Meta: ảnh bìa thumbnail + tóm tắt + danh mục. */}
-                        <div className="grid flex-none grid-cols-1 gap-3 border-b border-border px-4 pb-3 pt-2.5 sm:grid-cols-[104px_minmax(0,1.1fr)_minmax(0,1fr)]">
-                            <ImageUploader
-                                variant="compact"
-                                value={formik.values.featuredImageUrl || null}
-                                onChange={(url) => void formik.setFieldValue("featuredImageUrl", url ?? "")}
-                                disabled={saveMutation.isPending}
-                            />
+                        {/* Meta: ảnh bìa thumbnail + video đính kèm + tóm tắt + danh mục. */}
+                        <div className="flex flex-none flex-wrap gap-3 border-b border-border px-4 pb-3 pt-2.5">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10.5px] font-semibold text-dark">
+                                    {t("posts.form.coverLabel", { ns: "admin" })}
+                                </span>
+                                <ImageUploader
+                                    variant="compact"
+                                    value={formik.values.featuredImageUrl || null}
+                                    onChange={(url) => void formik.setFieldValue("featuredImageUrl", url ?? "")}
+                                    disabled={saveMutation.isPending}
+                                />
+                            </div>
 
-                            <div className="flex min-w-0 flex-col gap-1">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10.5px] font-semibold text-dark">
+                                    {t("posts.form.videoLabel", { ns: "admin" })}{" "}
+                                    <span className="font-medium text-muted-foreground">
+                                        · {t("common:optional")}
+                                    </span>
+                                </span>
+                                <ImageUploader
+                                    kind="video"
+                                    variant="compact"
+                                    value={videoUrl}
+                                    onChange={(url) => setVideoUrl(url)}
+                                    onMediaChange={(media) => {
+                                        void formik.setFieldValue("videoMediaId", media?.mediaId ?? "");
+                                    }}
+                                    disabled={saveMutation.isPending}
+                                />
+                            </div>
+
+                            <div className="flex min-w-[160px] flex-1 flex-col gap-1">
                                 <label
                                     htmlFor="composer-summary"
                                     className="text-[10.5px] font-semibold text-dark"
@@ -333,7 +380,7 @@ function Composer({ postId, onClose }: { postId: string | null; onClose: () => v
                                 </span>
                             </div>
 
-                            <div className="flex min-w-0 flex-col gap-1">
+                            <div className="flex min-w-[180px] flex-1 flex-col gap-1">
                                 <span className="text-[10.5px] font-semibold text-dark">
                                     {t("posts.form.categoryLabel", { ns: "admin" })}{" "}
                                     <span className="text-danger">*</span>

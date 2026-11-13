@@ -15,23 +15,18 @@ import {
     Sparkles,
     Star,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlaceMap } from "../components/PlaceMap";
-import { PillTabs } from "@/components/ui/pill-tabs";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useGeolocation, formatDistance, openDirections, type Coordinates } from "../geo";
 import { MOCK_AREAS, type MockAreaKey } from "../mocks";
 import { getNearbyLocations } from "../api";
-import type { LocationItem, LocationType } from "../types";
+import type { LocationItem } from "../types";
 import { cn } from "@/shared/utils/cn";
 
-type CategoryFilter = LocationType | "all";
 type ViewMode = "split" | "list" | "map";
-
-const FILTERS: CategoryFilter[] = ["all", "restaurant", "cafe", "grocery", "market"];
 
 // Bán kính tìm kiếm cố định; backend nhận bán kính qua tham số khi có API.
 const RADIUS_KM = 10;
@@ -75,9 +70,6 @@ function PlaceCard({
 
             <div className="flex min-w-0 flex-1 flex-col">
                 <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={place.placeType === "restaurant" ? "lightgreen" : "cream"} size="sm">
-                        {t(`filter.${place.placeType}`)}
-                    </Badge>
                     {place.rating !== undefined && (
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Star className="h-3.5 w-3.5 fill-amber-soft text-amber-strong" aria-hidden="true" />
@@ -140,7 +132,6 @@ export default function NearbyPage() {
     const geo = useGeolocation();
     const [areaKey, setAreaKey] = useState<MockAreaKey>(MOCK_AREAS[0].key);
     const [useGps, setUseGps] = useState(false);
-    const [category, setCategory] = useState<CategoryFilter>("all");
     const [view, setView] = useState<ViewMode>("split");
     const [sort, setSort] = useState("distance");
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -157,22 +148,10 @@ export default function NearbyPage() {
         queryFn: () => getNearbyLocations({ lat: origin.lat, lng: origin.lng, radius: RADIUS_KM * 1000 }),
     });
 
-    const allPlaces = data ?? [];
-
-    const countFor = (key: CategoryFilter) =>
-        key === "all" ? allPlaces.length : allPlaces.filter((place) => place.placeType === key).length;
-
-    const tabs = FILTERS.map((key) => ({
-        key,
-        label: t(`filter.${key}`),
-        count: countFor(key),
-    }));
-
-    const sorted = allPlaces
-        .filter((place) => category === "all" || place.placeType === category)
-        .sort((a, b) =>
-            sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) : (a.distance ?? 0) - (b.distance ?? 0),
-        );
+    // Bản sao trước khi sort — sort tại chỗ sẽ sửa luôn mảng trong cache của React Query.
+    const sorted = [...(data ?? [])].sort((a, b) =>
+        sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) : (a.distance ?? 0) - (b.distance ?? 0),
+    );
 
     const requestGps = () => {
         setUseGps(true);
@@ -303,9 +282,6 @@ export default function NearbyPage() {
                 {t("sortStrict")}
             </p>
 
-            {/* Category pills có count */}
-            <PillTabs items={tabs} value={category} onChange={setCategory} className="mt-4" />
-
             <div
                 className={cn(
                     "mt-6 grid gap-6",
@@ -334,7 +310,7 @@ export default function NearbyPage() {
                                     icon={MapPin}
                                     title={t("empty.title")}
                                     description={t("empty.description")}
-                                    action={<Button onClick={() => setCategory("all")}>{t("empty.action")}</Button>}
+                                    action={<Button onClick={() => refetch()}>{t("retry")}</Button>}
                                 />
                             </div>
                         ) : (

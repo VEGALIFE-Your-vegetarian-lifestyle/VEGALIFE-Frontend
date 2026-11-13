@@ -8,6 +8,7 @@ export const MEAL_TYPES: MealType[] = ["BREAKFAST", "LUNCH", "DINNER"];
 /** Khớp `MenuValidator` backend — sai là 400 cả tuần, không lưu gì. */
 export const MIN_DISTINCT_DISHES = 5;
 export const MAX_DISH_REPEATS = 3;
+/** Backend vẫn bắt buộc `servings ≥ 1`; form tạo tuần luôn gửi `1` nên không cho sửa. */
 export const MIN_SERVINGS = 1;
 export const MAX_NOTES_LENGTH = 500;
 

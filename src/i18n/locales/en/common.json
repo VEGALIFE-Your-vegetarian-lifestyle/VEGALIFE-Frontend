@@ -63,16 +63,16 @@
         "minRead": "~{{count}} min read"
     },
     "postStatus": {
-        "created": "Draft",
-        "processed": "Pending review",
+        "drafted": "Draft",
+        "processing": "Pending review",
         "published": "Published",
-        "unpublished": "Unpublished"
+        "unpublished": "Rejected"
     },
     "postFlag": {
-        "PENDING": "Pending moderation",
-        "PASSED": "Moderation passed",
-        "REJECTED": "Rejected",
-        "NEEDS_REVIEW": "Needs review"
+        "FILTER_PASSED": "Cleared by the automatic check",
+        "FILTER_FAILED": "Automatic check not confident",
+        "SIMILAR_CONTENT": "Possible duplicate",
+        "FILTER_SKIPPED": "Automatic check did not run"
     },
     "videoStatus": {
         "uploading": "Uploading",
@@ -95,5 +95,6 @@
         "next": "Next page",
         "page": "Page {{page}}"
     },
-    "optional": "optional"
+    "optional": "optional",
+    "rejectionReason": "Reason for rejection"
 }

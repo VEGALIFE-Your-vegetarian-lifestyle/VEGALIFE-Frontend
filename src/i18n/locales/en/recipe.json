@@ -9,7 +9,10 @@
         "instructions": "Cooking Steps",
         "instructionsHint": "Step-by-step instructions with cooking timers",
         "details": "Servings & Cook Time",
-        "detailsHint": "Specify serving size, preparation time, and skill level"
+        "detailsHint": "Specify serving size, preparation time, and skill level",
+        "composerTitle": "Create a recipe",
+        "composerSubtitle": "Your recipe starts as Pending review until an admin approves it.",
+        "composerEyebrow": "Recipe"
     },
     "field": {
         "name": "Recipe Title",
@@ -98,10 +101,12 @@
             "ingredients_one": "{{count}} ingredient",
             "ingredients_other": "{{count}} ingredients",
             "nutrition": "{{kcal}} kcal · {{protein}} g protein (whole recipe)",
-            "nutritionMissing": "No nutrition data yet"
+            "nutritionMissing": "No nutrition data yet",
+            "total": "{{count}}m total"
         },
         "action": {
-            "view": "View Recipe"
+            "view": "View Recipe",
+            "delete": "Delete recipe"
         },
         "detail": {
             "dishPending": "This recipe is published, but its shared dish name is still awaiting moderation."
@@ -111,6 +116,13 @@
             "hint": "Recipes you create will show up here with their moderation status.",
             "filtered": "No recipes match these filters",
             "filteredHint": "Try another keyword, difficulty, or status tab."
+        },
+        "delete": {
+            "title": "Delete this recipe?",
+            "body": "\"{{name}}\" will be removed from your recipes, from the recipe picker, and from any post that attached it. This cannot be undone.",
+            "confirm": "Delete recipe",
+            "hint": "There is no restore — this action is permanent.",
+            "done": "Recipe deleted"
         }
     },
     "servings": {
@@ -218,5 +230,11 @@
         "fat": "Fat",
         "fiber": "Fibre",
         "wholeRecipe": "Whole recipe — not per serving."
+    },
+    "discard": {
+        "title": "Discard this recipe?",
+        "description": "You have unsaved content. Closing now will lose it.",
+        "keep": "Keep editing",
+        "confirm": "Discard"
     }
 }

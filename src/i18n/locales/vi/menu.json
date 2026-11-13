@@ -4,9 +4,9 @@
     "breadcrumb": "Thực đơn",
     "week": {
         "label": "{{from}} – {{to}}",
-        "prev": "Tuần trước",
-        "next": "Tuần sau",
-        "today": "Tuần này"
+        "prev": "7 ngày trước",
+        "next": "7 ngày sau",
+        "today": "Hôm nay"
     },
     "weekdays": {
         "short": {
@@ -66,33 +66,56 @@
     },
     "actions": {
         "schedule": "Lên lịch",
-        "complete": "Đánh dấu hoàn thành",
         "cancelMenu": "Huỷ thực đơn",
         "updated": "Đã cập nhật trạng thái thực đơn",
         "failed": "Không cập nhật được trạng thái thực đơn.",
         "confirmTitle": "Đổi trạng thái thực đơn",
         "confirmSchedule": "Lên lịch cho tuần này? Mỗi tuần chỉ có một thực đơn đã lên lịch.",
-        "confirmComplete": "Đánh dấu tuần này đã xong? Không thể hoàn tác.",
-        "confirmCancel": "Huỷ thực đơn này? Không thể hoàn tác."
+        "confirmCancel": "Huỷ thực đơn này? Không thể hoàn tác.",
+        "delete": "Xoá",
+        "deleted": "Đã xoá thực đơn",
+        "deleteFailed": "Không xoá được thực đơn.",
+        "confirmDeleteTitle": "Xoá thực đơn này?",
+        "confirmDelete": "Thực đơn và toàn bộ bữa trong đó sẽ bị xoá vĩnh viễn. Không thể hoàn tác."
     },
     "create": {
         "action": "Tạo thực đơn",
         "title": "Tạo thực đơn tuần",
-        "subtitle": "Chọn tối đa ba món mỗi ngày. Lưu thành bản nháp rồi lên lịch sau.",
+        "subtitle": "Bấm một ô để chọn món, rồi tick những ngày muốn lặp lại.",
+        "eyebrow": "Thực đơn tuần",
         "breadcrumb": "Tạo mới",
-        "weekLabel": "Tuần bắt đầu",
-        "weekHelper": "Luôn là Thứ 2 của tuần — chọn ngày khác sẽ tự về Thứ 2.",
+        "weekLabel": "Ngày bắt đầu",
+        "weekHelper": "Thực đơn kéo dài 7 ngày kể từ ngày này — bắt đầu ngày nào cũng được.",
         "notesLabel": "Ghi chú",
         "notesPlaceholder": "Chủ đề của tuần, điều bạn đang kiêng…",
         "notesCounter": "{{count}} / {{max}}",
         "mealsTitle": "Các bữa trong tuần",
         "mealTypeColumn": "Bữa",
         "dishColumn": "Món",
-        "servingsColumn": "Số phần",
         "pickDish": "Chọn món",
         "searchDish": "Tìm món",
         "noDishFound": "Không có món nào khớp.",
         "clearDish": "Bỏ chọn {{name}}",
+        "matrix": {
+            "slots": "ô đã chọn",
+            "hint": "Bấm ô để chọn món · bấm nhãn bữa để gán cả hàng",
+            "assignRow": "Gán món cho cả hàng {{meal}}"
+        },
+        "pop": {
+            "title": "Bữa {{meal}}",
+            "assignTo": "Áp cho",
+            "assignDay": "Áp cho {{day}}",
+            "remaining": "còn {{count}} / {{max}} lượt",
+            "pickFirst": "chọn món trước",
+            "willReplace": "Sẽ thay món cũ ở {{days}}",
+            "clearDish": "Bỏ món",
+            "apply": "Áp {{count}} ô"
+        },
+        "discard": {
+            "title": "Bỏ thực đơn đang lập?",
+            "description": "Bạn có món chưa lưu trong tuần này. Đóng lại sẽ mất hết.",
+            "confirm": "Bỏ"
+        },
         "requirements": {
             "title": "Yêu cầu của tuần",
             "distinct": "Món khác nhau",
@@ -102,14 +125,15 @@
             "repeatsNone": "Chưa chọn món nào",
             "days": "Ngày có bữa",
             "daysValue": "{{count}} / 7",
-            "ok": "Sẵn sàng lưu"
+            "ok": "Sẵn sàng lưu",
+            "notReady": "Điền đủ mọi ngày và đúng luật"
         },
         "errors": {
             "dayEmpty": "Thêm ít nhất một bữa cho ngày này.",
-            "servings": "Số phần phải là số nguyên từ 1 trở lên.",
             "tooFewDishes": "Thực đơn cần ít nhất {{min}} món khác nhau (hiện có {{count}}).",
             "tooManyRepeats": "{{name}} xuất hiện quá {{max}} lần trong tuần này.",
-            "notesTooLong": "Ghi chú dài quá {{max}} ký tự."
+            "notesTooLong": "Ghi chú dài quá {{max}} ký tự.",
+            "startInPast": "Ngày bắt đầu phải sau hôm nay. Chọn từ ngày mai trở đi."
         },
         "toast": {
             "created": "Đã tạo thực đơn",
