@@ -50,8 +50,16 @@ export async function getNearbyLocations(params: NearbyParams): Promise<Location
 export async function getLocations(params: LocationListParams): Promise<Paginated<LocationItem>> {
     await delay();
 
+    const keyword = params.keyword?.trim().toLowerCase();
+
     const filtered = active()
-        .filter((item) => !params.placeType || item.placeType === params.placeType)
+        .filter((item) => {
+            if (!keyword) return true;
+            const matchesName = item.name.toLowerCase().includes(keyword);
+            const matchesAddress = item.address.toLowerCase().includes(keyword);
+            const matchesDishes = (item.dishes ?? []).some((d) => d.name.toLowerCase().includes(keyword));
+            return matchesName || matchesAddress || matchesDishes;
+        })
         .filter((item) => params.minRating === undefined || (item.rating ?? 0) >= params.minRating)
         .filter((item) => params.maxPriceLevel === undefined || (item.priceLevel ?? 0) <= params.maxPriceLevel)
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -74,7 +82,10 @@ export async function getLocationById(id: string): Promise<LocationItem> {
     await delay();
     const current = active().find((item) => item.id === id);
     if (!current) throw new Error("Location not found");
-    return toPublic(current);
+    return {
+        ...toPublic(current),
+        dishes: current.dishes ?? [],
+    };
 }
 
 /** `POST /api/admin/locations` — MOCK. */
@@ -83,6 +94,13 @@ export async function createLocation(payload: LocationPayload): Promise<Location
     const item: MockLocation = {
         ...payload,
         id: `loc-${crypto.randomUUID().slice(0, 8)}`,
+        dishes: payload.dishIds?.map((id) => ({
+            id,
+            name: id,
+            description: null,
+            imageUrl: null,
+            cuisineType: null,
+        })),
         createdAt: new Date().toISOString(),
         deletedAt: null,
     };
@@ -95,7 +113,20 @@ export async function updateLocation(id: string, payload: Partial<LocationPayloa
     await delay();
     const current = active().find((item) => item.id === id);
     if (!current) throw new Error("Location not found");
-    const updated: MockLocation = { ...current, ...payload, updatedAt: new Date().toISOString() };
+    const updated: MockLocation = {
+        ...current,
+        ...payload,
+        dishes: payload.dishIds !== undefined
+            ? payload.dishIds.map((id) => ({
+                  id,
+                  name: id,
+                  description: null,
+                  imageUrl: null,
+                  cuisineType: null,
+              }))
+            : current.dishes,
+        updatedAt: new Date().toISOString(),
+    };
     locations = locations.map((item) => (item.id === id ? updated : item));
     return toAdmin(updated);
 }

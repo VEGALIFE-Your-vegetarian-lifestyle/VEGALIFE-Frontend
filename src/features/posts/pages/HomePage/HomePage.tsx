@@ -756,7 +756,7 @@ function HomeNearbyPicks() {
     if (isAuthenticated && !isLoading && places.length === 0) return null;
 
     const [featured, ...rest] = places;
-    const featuredType = featured ? tl(`filter.${featured.placeType}`) : null;
+    const featuredType = featured?.placeType ? tl(`filter.${featured.placeType}`) : null;
 
     return (
         <section className="flex flex-col gap-6 lg:col-span-5">

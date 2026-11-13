@@ -1,18 +1,22 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { Loader2, Plus, Search, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { FormField } from "@/components/common/FormField";
+import { searchDishes } from "@/shared/api/dishes";
+import { useDebounce } from "@/shared/hooks/useDebounce";
+import { getLocationById } from "../../api";
 import {
-    LOCATION_TYPES,
     type LocationItem,
     type LocationPayload,
-    type LocationType,
     type OpeningHours,
+    type RestaurantDish,
 } from "../../types";
 
 const MAX_NAME_LENGTH = 255;
@@ -32,13 +36,60 @@ const emptyToUndefined = (value: unknown, original: unknown) => (original === ""
 
 interface LocationFormProps {
     location: LocationItem | null;
+    isFetchingDetail?: boolean;
     loading: boolean;
     onSubmit: (payload: LocationPayload) => void;
     onClose: () => void;
 }
 
-function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProps) {
+function LocationForm({ location, isFetchingDetail, loading, onSubmit, onClose }: LocationFormProps) {
     const { t } = useTranslation(["location", "validation", "common"]);
+    const [dishQuery, setDishQuery] = useState("");
+    const [isDishDropdownOpen, setIsDishDropdownOpen] = useState(false);
+    const [selectedDishes, setSelectedDishes] = useState<RestaurantDish[]>(
+        () => location?.dishes ?? [],
+    );
+
+    // Đồng bộ danh sách món ăn khi API chi tiết GET /api/restaurants/{id} trả về
+    useEffect(() => {
+        if (location?.dishes) {
+            setSelectedDishes(location.dishes);
+        }
+    }, [location?.dishes]);
+
+    const debouncedDishQ = useDebounce(dishQuery.trim(), 300);
+
+    // Tìm kiếm món ăn: gọi khi người dùng focus ô tìm kiếm hoặc đang gõ
+    const { data: dishData, isFetching: isSearchingDishes } = useQuery({
+        queryKey: ["admin-dishes-suggest", debouncedDishQ],
+        queryFn: () => searchDishes({ name: debouncedDishQ || undefined, size: 8 }),
+        enabled: isDishDropdownOpen,
+        staleTime: 30_000,
+    });
+
+    const dishSuggestions = (dishData?.content ?? []).filter(
+        (dish) => !selectedDishes.some((s) => s.id === dish.id),
+    );
+
+    const addDish = (dish: { id: string; name: string; description?: string | null; imageUrl?: string | null; cuisineType?: string | null }) => {
+        if (!selectedDishes.some((s) => s.id === dish.id)) {
+            setSelectedDishes((prev) => [
+                ...prev,
+                {
+                    id: dish.id,
+                    name: dish.name,
+                    description: dish.description ?? null,
+                    imageUrl: dish.imageUrl ?? null,
+                    cuisineType: dish.cuisineType ?? null,
+                },
+            ]);
+        }
+        setDishQuery("");
+    };
+
+    const removeDish = (id: string) => {
+        setSelectedDishes((prev) => prev.filter((d) => d.id !== id));
+    };
 
     const schema = useMemo(
         () =>
@@ -47,6 +98,7 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
                     .trim()
                     .required(t("validation:required"))
                     .max(MAX_NAME_LENGTH, t("validation:maxLength", { count: MAX_NAME_LENGTH })),
+                description: Yup.string().max(1000, t("validation:maxLength", { count: 1000 })),
                 address: Yup.string()
                     .trim()
                     .required(t("validation:required"))
@@ -61,7 +113,6 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
                     .required(t("validation:required"))
                     .min(-180, t("admin.validation.longitude"))
                     .max(180, t("admin.validation.longitude")),
-                placeType: Yup.string().oneOf(LOCATION_TYPES).required(t("validation:required")),
                 phoneNumber: Yup.string().max(MAX_PHONE_LENGTH, t("validation:maxLength", { count: MAX_PHONE_LENGTH })),
                 websiteUrl: Yup.string().url(t("admin.validation.url")),
                 rating: Yup.number()
@@ -93,12 +144,13 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
 
     // Ô số giữ dạng chuỗi trong form, Yup kiểm tra rồi mới đổi sang số khi gửi.
     const formik = useFormik({
+        enableReinitialize: true,
         initialValues: {
             name: location?.name ?? "",
+            description: location?.description ?? "",
             address: location?.address ?? "",
             latitude: location ? String(location.latitude) : "",
             longitude: location ? String(location.longitude) : "",
-            placeType: (location?.placeType ?? "") as LocationType | "",
             phoneNumber: location?.phoneNumber ?? "",
             websiteUrl: location?.websiteUrl ?? "",
             rating: location?.rating !== undefined ? String(location.rating) : "",
@@ -110,10 +162,10 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
         onSubmit: (values) =>
             onSubmit({
                 name: values.name.trim(),
+                description: values.description.trim() || undefined,
                 address: values.address.trim(),
                 latitude: Number(values.latitude),
                 longitude: Number(values.longitude),
-                placeType: values.placeType as LocationType,
                 // Chuỗi rỗng: khi sửa nghĩa là xóa giá trị đang lưu, khi tạo thì bị bỏ đi.
                 phoneNumber: values.phoneNumber.trim(),
                 websiteUrl: values.websiteUrl.trim(),
@@ -126,6 +178,7 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
                         : location?.openingHours
                           ? {}
                           : undefined,
+                dishIds: selectedDishes.map((d) => d.id),
             }),
     });
 
@@ -133,7 +186,16 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
         formik.touched[name] ? (formik.errors[name] as string | undefined) : undefined;
 
     const textField = (
-        name: "name" | "address" | "latitude" | "longitude" | "phoneNumber" | "websiteUrl" | "rating" | "priceLevel",
+        name:
+            | "name"
+            | "description"
+            | "address"
+            | "latitude"
+            | "longitude"
+            | "phoneNumber"
+            | "websiteUrl"
+            | "rating"
+            | "priceLevel",
         label: string,
         required = false,
     ) => (
@@ -152,33 +214,148 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
     return (
         <form onSubmit={formik.handleSubmit} noValidate className="space-y-4">
             {textField("name", t("admin.form.name"), true)}
+            {textField("description", t("admin.form.description"))}
             {textField("address", t("admin.form.address"), true)}
             <div className="grid grid-cols-2 gap-4">
                 {textField("latitude", t("admin.form.latitude"), true)}
                 {textField("longitude", t("admin.form.longitude"), true)}
             </div>
-            <FormField label={t("admin.form.type")} htmlFor="placeType" required error={fieldError("placeType")}>
-                <Select
-                    id="placeType"
-                    name="placeType"
-                    value={formik.values.placeType}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                >
-                    <option value="">{t("admin.form.noType")}</option>
-                    {LOCATION_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                            {t(`type.${type}`)}
-                        </option>
-                    ))}
-                </Select>
-            </FormField>
             <div className="grid grid-cols-2 gap-4">
                 {textField("rating", t("admin.form.rating"))}
                 {textField("priceLevel", t("admin.form.price"))}
             </div>
             {textField("phoneNumber", t("admin.form.phone"))}
             {textField("websiteUrl", t("admin.form.website"))}
+
+            {/* Món ăn đặc trưng gắn với quán (bảng restaurant_dishes) */}
+            <div className="space-y-2">
+                <FormField
+                    label={t("admin.form.dishes")}
+                    htmlFor="dishSearch"
+                    aside={
+                        isFetchingDetail ? (
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Loader2 className="h-3 w-3 animate-spin text-vegan-green" />
+                                <span>Đang nạp món...</span>
+                            </span>
+                        ) : undefined
+                    }
+                >
+                    <div className="relative">
+                        <Input
+                            id="dishSearch"
+                            value={dishQuery}
+                            onFocus={() => setIsDishDropdownOpen(true)}
+                            onBlur={() => {
+                                // Trì hoãn đóng dropdown để click onMouseDown kịp kích hoạt
+                                setTimeout(() => setIsDishDropdownOpen(false), 250);
+                            }}
+                            onChange={(event) => {
+                                setDishQuery(event.target.value);
+                                setIsDishDropdownOpen(true);
+                            }}
+                            onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                    event.preventDefault();
+                                    if (dishSuggestions[0]) {
+                                        addDish(dishSuggestions[0]);
+                                    }
+                                }
+                            }}
+                            placeholder={t("admin.form.dishesPlaceholder")}
+                            className="pr-9"
+                        />
+                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            {isSearchingDishes ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-vegan-green" />
+                            ) : (
+                                <Search className="h-4 w-4" />
+                            )}
+                        </div>
+
+                        {/* Dropdown gợi ý món ăn */}
+                        {isDishDropdownOpen && (
+                            <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-52 overflow-y-auto rounded-xl border border-border bg-card p-1.5 shadow-lg">
+                                {isSearchingDishes && (
+                                    <div className="flex items-center gap-2 p-2.5 text-xs text-muted-foreground">
+                                        <Loader2 className="h-4 w-4 animate-spin text-vegan-green" />
+                                        <span>Đang tìm món...</span>
+                                    </div>
+                                )}
+                                {!isSearchingDishes && dishSuggestions.length > 0 && (
+                                    <div className="space-y-1">
+                                        <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase">
+                                            {t("admin.form.suggestedDishes")}
+                                        </div>
+                                        {dishSuggestions.map((dish) => (
+                                            <button
+                                                key={dish.id}
+                                                type="button"
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    addDish(dish);
+                                                }}
+                                                className="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-sm text-dark hover:bg-vegan-green/10 transition-colors"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium">{dish.name}</span>
+                                                    {dish.cuisineType && (
+                                                        <Badge variant="outline" size="sm" className="text-[10px] py-0">
+                                                            {dish.cuisineType}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <Plus className="h-4 w-4 text-vegan-green shrink-0" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {!isSearchingDishes && dishSuggestions.length === 0 && debouncedDishQ.length > 0 && (
+                                    <div className="p-2.5 text-xs text-muted-foreground">
+                                        {t("admin.form.noDishesFound", { query: debouncedDishQ })}
+                                    </div>
+                                )}
+                                {!isSearchingDishes && dishSuggestions.length === 0 && debouncedDishQ.length === 0 && (
+                                    <div className="p-2.5 text-xs text-muted-foreground">
+                                        {t("admin.form.searchDishesPrompt")}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </FormField>
+
+                {/* Danh sách các món ăn đã chọn gắn với quán */}
+                <div className="min-h-[32px]">
+                    {selectedDishes.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                            {selectedDishes.map((dish) => (
+                                <Badge
+                                    key={dish.id}
+                                    variant="lightgreen"
+                                    size="sm"
+                                    className="flex items-center gap-1.5 py-1 pl-2.5 pr-1.5"
+                                >
+                                    <span className="font-medium">{dish.name}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeDish(dish.id)}
+                                        aria-label={`Remove ${dish.name}`}
+                                        className="rounded p-0.5 hover:bg-black/10 transition-colors"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </Badge>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-xs text-muted-foreground pt-1">
+                            Chưa có món ăn nào được gắn. Hãy tìm và chọn món ở trên để quán xuất hiện khi người dùng tìm món đó.
+                        </p>
+                    )}
+                </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
                 <FormField label={t("admin.form.openTime")} htmlFor="openTime" error={fieldError("openTime")}>
                     <Input
@@ -213,16 +390,37 @@ function LocationForm({ location, loading, onSubmit, onClose }: LocationFormProp
     );
 }
 
-interface LocationFormDialogProps extends LocationFormProps {
+interface LocationFormDialogProps extends Omit<LocationFormProps, "isFetchingDetail"> {
     open: boolean;
 }
 
 export function LocationFormDialog({ open, location, loading, onSubmit, onClose }: LocationFormDialogProps) {
     const { t } = useTranslation("location");
 
+    // Khi edit, fetch thông tin chi tiết đầy đủ kèm dishes (GET /api/restaurants/{id})
+    const { data: detailData, isFetching: isFetchingDetail } = useQuery({
+        queryKey: ["restaurant-detail-form", location?.id],
+        queryFn: () => (location?.id ? getLocationById(location.id) : null),
+        enabled: open && Boolean(location?.id),
+        staleTime: 0,
+        refetchOnMount: "always",
+    });
+
+    const activeLocation = detailData ?? location;
+
     return (
         <Dialog open={open} onClose={onClose} title={t(location ? "admin.form.editTitle" : "admin.form.createTitle")}>
-            <LocationForm location={location} loading={loading} onSubmit={onSubmit} onClose={onClose} />
+            {open && (
+                <LocationForm
+                    key={activeLocation?.id ?? "new"}
+                    location={activeLocation}
+                    isFetchingDetail={isFetchingDetail}
+                    loading={loading}
+                    onSubmit={onSubmit}
+                    onClose={onClose}
+                />
+            )}
         </Dialog>
     );
 }
+
