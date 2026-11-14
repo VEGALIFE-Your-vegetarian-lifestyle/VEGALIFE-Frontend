@@ -53,8 +53,6 @@ export async function getLocations(params: LocationListParams): Promise<Paginate
     const keyword = params.keyword?.trim().toLowerCase();
 
     const filtered = active()
-<<<<<<< HEAD
-=======
         .filter((item) => {
             if (!keyword) return true;
             const matchesName = item.name.toLowerCase().includes(keyword);
@@ -62,7 +60,6 @@ export async function getLocations(params: LocationListParams): Promise<Paginate
             const matchesDishes = (item.dishes ?? []).some((d) => d.name.toLowerCase().includes(keyword));
             return matchesName || matchesAddress || matchesDishes;
         })
->>>>>>> dev
         .filter((item) => params.minRating === undefined || (item.rating ?? 0) >= params.minRating)
         .filter((item) => params.maxPriceLevel === undefined || (item.priceLevel ?? 0) <= params.maxPriceLevel)
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
