@@ -83,7 +83,7 @@ describe("AdminDashboardPage", () => {
         expect(reviewLinks.some((link) => link.getAttribute("href") === "/admin/comments")).toBe(true);
     });
 
-    it("hiển thị phân bổ nội dung và chỉ số tương tác cộng đồng", async () => {
+    it("hiển thị các chỉ số tương tác cộng đồng từ API", async () => {
         renderWithProviders(<AdminDashboardPage />);
 
         await waitFor(() => expect(screen.getByText("Total Votes")).toBeInTheDocument());
@@ -107,21 +107,6 @@ describe("AdminDashboardPage", () => {
         await waitFor(() => {
             expect(spy).toHaveBeenCalledWith(expect.objectContaining({ range: "day" }));
         });
-    });
-
-    it("render đầy đủ 8 liên kết lối tắt quản trị nhanh", async () => {
-        renderWithProviders(<AdminDashboardPage />);
-
-        await waitFor(() => expect(screen.getByText("Quick Management")).toBeInTheDocument());
-
-        expect(screen.getByRole("link", { name: /Posts/i })).toHaveAttribute("href", "/admin/posts");
-        expect(screen.getByRole("link", { name: /Recipes/i })).toHaveAttribute("href", "/admin/recipes");
-        expect(screen.getByRole("link", { name: /Categories/i })).toHaveAttribute("href", "/admin/categories");
-        expect(screen.getByRole("link", { name: /Comments/i })).toHaveAttribute("href", "/admin/comments");
-        expect(screen.getByRole("link", { name: /Ingredients/i })).toHaveAttribute("href", "/admin/ingredients");
-        expect(screen.getByRole("link", { name: /Locations/i })).toHaveAttribute("href", "/admin/locations");
-        expect(screen.getByRole("link", { name: /Users/i })).toHaveAttribute("href", "/admin/users");
-        expect(screen.getByRole("link", { name: /Videos/i })).toHaveAttribute("href", "/admin/videos");
     });
 
     it("hiện ErrorState khi API gặp lỗi và cho phép retry", async () => {

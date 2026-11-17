@@ -4,20 +4,16 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
     AlertTriangle,
-    Apple,
     ArrowUpRight,
     CheckCircle2,
     ChefHat,
     FileText,
-    MapPin,
     MessageSquare,
     RefreshCw,
     ShieldAlert,
-    Tags,
     ThumbsUp,
     TrendingUp,
     Users,
-    Video,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,11 +69,6 @@ export default function AdminDashboardPage() {
             </div>
         );
     }
-
-    const totalContent = (data?.content.totalPosts ?? 0) + (data?.content.totalRecipes ?? 0) + (data?.content.totalComments ?? 0);
-    const postsShare = totalContent > 0 ? (((data?.content.totalPosts ?? 0) / totalContent) * 100).toFixed(1) : "0";
-    const recipesShare = totalContent > 0 ? (((data?.content.totalRecipes ?? 0) / totalContent) * 100).toFixed(1) : "0";
-    const commentsShare = totalContent > 0 ? (((data?.content.totalComments ?? 0) / totalContent) * 100).toFixed(1) : "0";
 
     const totalPending =
         (data?.moderationQueue.pendingPosts ?? 0) +
@@ -409,238 +400,65 @@ export default function AdminDashboardPage() {
                 ) : null}
             </div>
 
-            {/* Content & Engagement Breakdown Grid */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                {/* Content Distribution Panel */}
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
-                    <h2 className="text-lg font-bold text-dark">{t("dashboard.breakdown.contentTitle")}</h2>
-                    <p className="text-sm text-muted-foreground">{t("dashboard.breakdown.contentSubtitle")}</p>
-
-                    {isLoading ? (
-                        <div className="mt-5 space-y-4">
-                            <Skeleton className="h-4 w-full rounded-full" />
-                            <Skeleton className="h-20 w-full rounded-xl" />
-                        </div>
-                    ) : data ? (
-                        <div className="mt-5 space-y-5">
-                            {/* Proportional visual bar chart */}
-                            <div>
-                                <div className="flex h-3.5 w-full overflow-hidden rounded-full bg-muted">
-                                    <div
-                                        style={{ width: `${postsShare}%` }}
-                                        title={`Posts: ${postsShare}%`}
-                                        className="bg-vegan-green transition-all"
-                                    />
-                                    <div
-                                        style={{ width: `${recipesShare}%` }}
-                                        title={`Recipes: ${recipesShare}%`}
-                                        className="bg-terracotta transition-all"
-                                    />
-                                    <div
-                                        style={{ width: `${commentsShare}%` }}
-                                        title={`Comments: ${commentsShare}%`}
-                                        className="bg-dark transition-all"
-                                    />
-                                </div>
-                                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="h-2.5 w-2.5 rounded-full bg-vegan-green" />
-                                        <span>{t("dashboard.metrics.posts")} ({postsShare}%)</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="h-2.5 w-2.5 rounded-full bg-terracotta" />
-                                        <span>{t("dashboard.metrics.recipes")} ({recipesShare}%)</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="h-2.5 w-2.5 rounded-full bg-dark" />
-                                        <span>{t("dashboard.metrics.comments")} ({commentsShare}%)</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Detailed breakdown list */}
-                            <div className="divide-y divide-border rounded-xl border border-border">
-                                <div className="flex items-center justify-between p-3 text-xs">
-                                    <span className="font-semibold text-dark">{t("dashboard.metrics.posts")}</span>
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-muted-foreground">
-                                            {t("dashboard.breakdown.lifetimeTotal")}: <strong className="text-dark">{data.content.totalPosts}</strong>
-                                        </span>
-                                        <Badge variant="secondary" size="sm" className="bg-vegan-green-light text-vegan-green">
-                                            +{data.content.newPosts}
-                                        </Badge>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between p-3 text-xs">
-                                    <span className="font-semibold text-dark">{t("dashboard.metrics.recipes")}</span>
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-muted-foreground">
-                                            {t("dashboard.breakdown.lifetimeTotal")}: <strong className="text-dark">{data.content.totalRecipes}</strong>
-                                        </span>
-                                        <Badge variant="secondary" size="sm" className="bg-cream text-terracotta">
-                                            +{data.content.newRecipes}
-                                        </Badge>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between p-3 text-xs">
-                                    <span className="font-semibold text-dark">{t("dashboard.metrics.comments")}</span>
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-muted-foreground">
-                                            {t("dashboard.breakdown.lifetimeTotal")}: <strong className="text-dark">{data.content.totalComments}</strong>
-                                        </span>
-                                        <Badge variant="secondary" size="sm">
-                                            +{data.content.newComments}
-                                        </Badge>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ) : null}
-                </div>
-
-                {/* Community Engagement Insights */}
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
+            {/* Community Engagement Section */}
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
+                <div className="border-b border-border pb-4">
                     <h2 className="text-lg font-bold text-dark">{t("dashboard.breakdown.engagementTitle")}</h2>
                     <p className="text-sm text-muted-foreground">{t("dashboard.breakdown.engagementSubtitle")}</p>
-
-                    {isLoading ? (
-                        <div className="mt-5 space-y-4">
-                            <Skeleton className="h-16 w-full rounded-xl" />
-                            <Skeleton className="h-16 w-full rounded-xl" />
-                        </div>
-                    ) : data ? (
-                        <div className="mt-5 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="rounded-xl border border-border bg-background p-4">
-                                    <div className="flex items-center justify-between text-muted-foreground">
-                                        <span className="text-xs font-semibold">{t("dashboard.breakdown.votes")}</span>
-                                        <ThumbsUp className="h-4 w-4 text-vegan-green" />
-                                    </div>
-                                    <p className="mt-2 text-2xl font-bold text-dark">
-                                        {data.engagement.votesInRange.toLocaleString()}
-                                    </p>
-                                    <p className="mt-1 text-[11px] text-muted-foreground">
-                                        {t("dashboard.breakdown.votesDesc")}
-                                    </p>
-                                </div>
-
-                                <div className="rounded-xl border border-border bg-background p-4">
-                                    <div className="flex items-center justify-between text-muted-foreground">
-                                        <span className="text-xs font-semibold">{t("dashboard.breakdown.commentsCount")}</span>
-                                        <MessageSquare className="h-4 w-4 text-terracotta" />
-                                    </div>
-                                    <p className="mt-2 text-2xl font-bold text-dark">
-                                        {data.engagement.commentsInRange.toLocaleString()}
-                                    </p>
-                                    <p className="mt-1 text-[11px] text-muted-foreground">
-                                        {t("dashboard.breakdown.commentsCountDesc")}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-xl border border-border bg-vegan-green-light/40 p-4">
-                                <div>
-                                    <p className="text-xs font-semibold text-dark">
-                                        {t("dashboard.breakdown.avgInteractions")}
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-muted-foreground">
-                                        {data.users.activeInRange} {t("dashboard.metrics.usersActive")}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-2xl font-bold text-vegan-green">{avgInteractions}</span>
-                                    <span className="ml-1 text-xs text-muted-foreground">/ user</span>
-                                </div>
-                            </div>
-                        </div>
-                    ) : null}
                 </div>
-            </div>
 
-            {/* Quick Management Shortcuts */}
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
-                <h2 className="mb-4 text-lg font-bold text-dark">{t("dashboard.quickManagement")}</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    <Link
-                        to="/admin/posts"
-                        className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition hover:border-vegan-green-muted hover:bg-vegan-green-light"
-                    >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-vegan-green-light text-vegan-green">
-                            <FileText className="h-4 w-4" />
+                {isLoading ? (
+                    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <Skeleton className="h-24 w-full rounded-xl" />
+                        <Skeleton className="h-24 w-full rounded-xl" />
+                        <Skeleton className="h-24 w-full rounded-xl" />
+                    </div>
+                ) : data ? (
+                    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        {/* Votes */}
+                        <div className="rounded-xl border border-border bg-background p-4">
+                            <div className="flex items-center justify-between text-muted-foreground">
+                                <span className="text-xs font-semibold">{t("dashboard.breakdown.votes")}</span>
+                                <ThumbsUp className="h-4 w-4 text-vegan-green" />
+                            </div>
+                            <p className="mt-2 text-3xl font-bold text-dark">
+                                {data.engagement.votesInRange.toLocaleString()}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {t("dashboard.breakdown.votesDesc")}
+                            </p>
                         </div>
-                        <span className="truncate text-sm font-semibold text-dark">{t("dashboard.quickLink.posts")}</span>
-                    </Link>
 
-                    <Link
-                        to="/admin/recipes"
-                        className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition hover:border-vegan-green-muted hover:bg-vegan-green-light"
-                    >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cream text-terracotta">
-                            <ChefHat className="h-4 w-4" />
+                        {/* Comments */}
+                        <div className="rounded-xl border border-border bg-background p-4">
+                            <div className="flex items-center justify-between text-muted-foreground">
+                                <span className="text-xs font-semibold">{t("dashboard.breakdown.commentsCount")}</span>
+                                <MessageSquare className="h-4 w-4 text-terracotta" />
+                            </div>
+                            <p className="mt-2 text-3xl font-bold text-dark">
+                                {data.engagement.commentsInRange.toLocaleString()}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {t("dashboard.breakdown.commentsCountDesc")}
+                            </p>
                         </div>
-                        <span className="truncate text-sm font-semibold text-dark">{t("dashboard.quickLink.recipes")}</span>
-                    </Link>
 
-                    <Link
-                        to="/admin/categories"
-                        className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition hover:border-vegan-green-muted hover:bg-vegan-green-light"
-                    >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-vegan-green-light text-vegan-green">
-                            <Tags className="h-4 w-4" />
+                        {/* Avg Interactions per Active User */}
+                        <div className="flex flex-col justify-between rounded-xl border border-border bg-vegan-green-light/40 p-4">
+                            <div className="flex items-center justify-between text-dark">
+                                <span className="text-xs font-semibold">{t("dashboard.breakdown.avgInteractions")}</span>
+                                <TrendingUp className="h-4 w-4 text-vegan-green" />
+                            </div>
+                            <div className="mt-2 flex items-baseline gap-2">
+                                <span className="text-3xl font-bold text-vegan-green">{avgInteractions}</span>
+                                <span className="text-xs text-muted-foreground">/ user</span>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {data.users.activeInRange} {t("dashboard.metrics.usersActive")}
+                            </p>
                         </div>
-                        <span className="truncate text-sm font-semibold text-dark">{t("dashboard.quickLink.categories")}</span>
-                    </Link>
-
-                    <Link
-                        to="/admin/comments"
-                        className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition hover:border-vegan-green-muted hover:bg-vegan-green-light"
-                    >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-dark">
-                            <MessageSquare className="h-4 w-4" />
-                        </div>
-                        <span className="truncate text-sm font-semibold text-dark">{t("dashboard.quickLink.comments")}</span>
-                    </Link>
-
-                    <Link
-                        to="/admin/ingredients"
-                        className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition hover:border-vegan-green-muted hover:bg-vegan-green-light"
-                    >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-vegan-green-light text-vegan-green">
-                            <Apple className="h-4 w-4" />
-                        </div>
-                        <span className="truncate text-sm font-semibold text-dark">{t("dashboard.quickLink.ingredients")}</span>
-                    </Link>
-
-                    <Link
-                        to="/admin/locations"
-                        className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition hover:border-vegan-green-muted hover:bg-vegan-green-light"
-                    >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cream text-terracotta">
-                            <MapPin className="h-4 w-4" />
-                        </div>
-                        <span className="truncate text-sm font-semibold text-dark">{t("dashboard.quickLink.locations")}</span>
-                    </Link>
-
-                    <Link
-                        to="/admin/users"
-                        className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition hover:border-vegan-green-muted hover:bg-vegan-green-light"
-                    >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-vegan-green-light text-vegan-green">
-                            <Users className="h-4 w-4" />
-                        </div>
-                        <span className="truncate text-sm font-semibold text-dark">{t("dashboard.quickLink.users")}</span>
-                    </Link>
-
-                    <Link
-                        to="/admin/videos"
-                        className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition hover:border-vegan-green-muted hover:bg-vegan-green-light"
-                    >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-dark">
-                            <Video className="h-4 w-4" />
-                        </div>
-                        <span className="truncate text-sm font-semibold text-dark">{t("dashboard.quickLink.videos")}</span>
-                    </Link>
-                </div>
+                    </div>
+                ) : null}
             </div>
         </div>
     );
