@@ -2,6 +2,60 @@
     "dashboard": {
         "title": "Dashboard",
         "subtitle": "Overview of platform metrics and management links.",
+        "refresh": "Refresh data",
+        "range": {
+            "label": "Time Range",
+            "day": "Today (24h)",
+            "week": "Last 7 Days",
+            "month": "Last 30 Days",
+            "custom": "Custom",
+            "from": "From",
+            "to": "To",
+            "window": "Data calculated from"
+        },
+        "metrics": {
+            "users": "Members",
+            "usersDesc": "Registered accounts",
+            "usersNew": "new in range",
+            "usersActive": "active members",
+            "posts": "Posts",
+            "postsDesc": "Community blog posts",
+            "postsNew": "new posts",
+            "recipes": "Recipes",
+            "recipesDesc": "Vegan recipes created",
+            "recipesNew": "new recipes",
+            "comments": "Comments",
+            "commentsDesc": "Community discussions",
+            "commentsNew": "new comments"
+        },
+        "moderation": {
+            "title": "Moderation Queue",
+            "eyebrow": "Requires Attention",
+            "subtitle": "Items waiting for review or reported by members requiring administrator action.",
+            "pendingPosts": "Pending Posts",
+            "pendingPostsDesc": "Held for safety moderation",
+            "pendingRecipes": "Pending Recipes",
+            "pendingRecipesDesc": "Vegan dishes awaiting verification",
+            "reportedComments": "Reported Comments",
+            "reportedCommentsDesc": "Flagged by users for review",
+            "cleanQueue": "Clean queue",
+            "noPending": "No pending items",
+            "actionReview": "Review now"
+        },
+        "breakdown": {
+            "contentTitle": "Content Distribution",
+            "contentSubtitle": "Proportion of posts, recipes and comments",
+            "engagementTitle": "Community Engagement",
+            "engagementSubtitle": "Community activity during the selected timeframe",
+            "votes": "Total Votes",
+            "votesDesc": "Helpful feedback from members",
+            "commentsCount": "Total Comments",
+            "commentsCountDesc": "Discussions and replies",
+            "avgInteractions": "Interactions / active member",
+            "lifetimeTotal": "Lifetime total",
+            "newInRange": "Created in range",
+            "activeUserRate": "Active user rate"
+        },
         "totalCategories": "Total Categories",
         "activeCategories": "Active Categories",
         "softDeletedCategories": "Soft Deleted",
@@ -20,7 +74,11 @@
             "categories": "Categories",
             "posts": "Posts",
             "videos": "Videos",
-            "users": "Users"
+            "users": "Users",
+            "recipes": "Recipes",
+            "comments": "Comments",
+            "ingredients": "Ingredients",
+            "locations": "Locations"
         },
         "manageBadge": "Manage",
         "nav": {

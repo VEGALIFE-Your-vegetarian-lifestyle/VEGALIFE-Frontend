@@ -1,141 +1,464 @@
-import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Archive, FileText, Tags, Users, Video } from "lucide-react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import {
+    AlertTriangle,
+    ArrowUpRight,
+    CheckCircle2,
+    ChefHat,
+    FileText,
+    MessageSquare,
+    RefreshCw,
+    ShieldAlert,
+    ThumbsUp,
+    TrendingUp,
+    Users,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/common/PageHeader";
-import { getDashboardStats } from "../../dashboardApi";
+import { ErrorState } from "@/components/common/ErrorState";
+import { getAdminDashboard } from "../../dashboardApi";
+import type { DashboardRangeType, DashboardResponse } from "../../types";
+import { formatDateLocale } from "@/shared/utils/formatDate";
 import { cn } from "@/shared/utils/cn";
+import { useUiStore } from "@/shared/ui/uiStore";
 
-interface MetricCardProps {
-    title: string;
-    value: number;
-    description: string;
-    icon: React.ElementType;
-    colorClass: string;
-}
-
-function MetricCard({ title, value, description, icon: Icon, colorClass }: MetricCardProps) {
-    return (
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
-            <div className="flex items-start justify-between">
-                <div>
-                    <p className="text-sm text-muted-foreground">{title}</p>
-                    <p className="mt-1 text-3xl font-bold text-dark">{value.toLocaleString()}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-                </div>
-                <div className={cn("flex h-12 w-12 items-center justify-center rounded-xl", colorClass)}>
-                    <Icon className="h-6 w-6" />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function QuickLink({ to, label, icon: Icon, badge }: { to: string; label: string; icon: React.ElementType; badge?: string }) {
-    return (
-        <Link
-            to={to}
-            className="flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-vegan-green-muted hover:bg-vegan-green-light"
-        >
-            <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-vegan-green-light text-vegan-green">
-                    <Icon className="h-5 w-5" />
-                </div>
-                <span className="font-semibold text-dark">{label}</span>
-            </div>
-            {badge && <Badge variant="secondary">{badge}</Badge>}
-        </Link>
-    );
-}
+const RANGE_OPTIONS: { key: DashboardRangeType; labelKey: string }[] = [
+    { key: "day", labelKey: "range.day" },
+    { key: "week", labelKey: "range.week" },
+    { key: "month", labelKey: "range.month" },
+    { key: "custom", labelKey: "range.custom" },
+];
 
 export default function AdminDashboardPage() {
     const { t } = useTranslation("admin");
-    const { data: stats, isLoading } = useQuery({
-        queryKey: ["admin-dashboard-stats"],
-        queryFn: getDashboardStats,
+    const language = useUiStore((state) => state.language);
+    const [range, setRange] = useState<DashboardRangeType>("week");
+    const [customFrom, setCustomFrom] = useState("");
+    const [customTo, setCustomTo] = useState("");
+
+    const isCustomValid = range !== "custom" || (Boolean(customFrom) && Boolean(customTo) && customFrom <= customTo);
+
+    const { data, isLoading, isError, isFetching, refetch } = useQuery<DashboardResponse>({
+        queryKey: ["admin-dashboard", range, range === "custom" ? customFrom : undefined, range === "custom" ? customTo : undefined],
+        queryFn: () =>
+            getAdminDashboard({
+                range,
+                from: range === "custom" ? customFrom : undefined,
+                to: range === "custom" ? customTo : undefined,
+            }),
+        enabled: isCustomValid,
+        placeholderData: keepPreviousData,
     });
 
-    const metrics = stats ?? {
-        totalCategories: 0,
-        activeCategories: 0,
-        softDeletedCategories: 0,
-        associatedContent: 0,
-    };
+    if (isError) {
+        return (
+            <div className="space-y-6">
+                <PageHeader
+                    breadcrumb={[t("dashboard.adminLabel"), t("dashboard.title")]}
+                    title={t("dashboard.title")}
+                    description={t("dashboard.subtitle")}
+                />
+                <div className="rounded-2xl border border-border bg-card p-6">
+                    <ErrorState onRetry={() => void refetch()} />
+                </div>
+            </div>
+        );
+    }
+
+    const totalPending =
+        (data?.moderationQueue.pendingPosts ?? 0) +
+        (data?.moderationQueue.pendingRecipes ?? 0) +
+        (data?.moderationQueue.reportedComments ?? 0);
+
+    const activeUsers = data?.users.activeInRange ?? 0;
+    const totalInteractions = (data?.engagement.votesInRange ?? 0) + (data?.engagement.commentsInRange ?? 0);
+    const avgInteractions = activeUsers > 0 ? (totalInteractions / activeUsers).toFixed(1) : "0";
 
     return (
-        <div>
-            <PageHeader
-                breadcrumb={[t("common:admin"), t("dashboard.title")]}
-                title={t("dashboard.title")}
-                description={t("dashboard.subtitle")}
-            />
+        <div className="space-y-6">
+            {/* Header + Range Filter Bar */}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <PageHeader
+                    breadcrumb={[t("dashboard.adminLabel"), t("dashboard.title")]}
+                    title={t("dashboard.title")}
+                    description={t("dashboard.subtitle")}
+                />
 
-            {isLoading ? (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                        <Skeleton key={index} className="h-32 rounded-2xl" />
-                    ))}
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:self-start lg:self-auto">
+                    {/* Range Tabs */}
+                    <div className="inline-flex items-center rounded-xl border border-border bg-card p-1 shadow-sm">
+                        {RANGE_OPTIONS.map((opt) => (
+                            <button
+                                key={opt.key}
+                                type="button"
+                                onClick={() => setRange(opt.key)}
+                                className={cn(
+                                    "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                                    range === opt.key
+                                        ? "bg-vegan-green text-white shadow-xs"
+                                        : "text-muted-foreground hover:text-dark hover:bg-muted",
+                                )}
+                            >
+                                {t(`dashboard.${opt.labelKey}`)}
+                            </button>
+                        ))}
+                    </div>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void refetch()}
+                        disabled={isFetching}
+                        className="gap-2 self-start sm:self-auto"
+                        title={t("dashboard.refresh")}
+                    >
+                        <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin text-vegan-green")} />
+                        <span className="hidden sm:inline">{t("dashboard.refresh")}</span>
+                    </Button>
                 </div>
-            ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <MetricCard
-                        title={t("dashboard.totalCategories")}
-                        value={metrics.totalCategories}
-                        description={t("dashboard.metricDescription.totalCategories")}
-                        icon={Tags}
-                        colorClass="bg-vegan-green-light text-vegan-green"
-                    />
-                    <MetricCard
-                        title={t("dashboard.activeCategories")}
-                        value={metrics.activeCategories}
-                        description={t("dashboard.metricDescription.activeCategories")}
-                        icon={Tags}
-                        colorClass="bg-vegan-green-light text-vegan-green"
-                    />
-                    <MetricCard
-                        title={t("dashboard.softDeletedCategories")}
-                        value={metrics.softDeletedCategories}
-                        description={t("dashboard.metricDescription.softDeletedCategories")}
-                        icon={Archive}
-                        colorClass="bg-cream text-terracotta"
-                    />
-                    <MetricCard
-                        title={t("dashboard.associatedContent")}
-                        value={metrics.associatedContent}
-                        description={t("dashboard.metricDescription.associatedContent")}
-                        icon={FileText}
-                        colorClass="bg-muted-bg text-dark"
-                    />
+            </div>
+
+            {/* Custom Date Pickers (if custom range selected) */}
+            {range === "custom" && (
+                <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-dark">
+                        <span>{t("dashboard.range.from")}:</span>
+                        <Input
+                            type="date"
+                            value={customFrom}
+                            onChange={(e) => setCustomFrom(e.target.value)}
+                            className="h-8 w-auto text-xs"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-dark">
+                        <span>{t("dashboard.range.to")}:</span>
+                        <Input
+                            type="date"
+                            value={customTo}
+                            onChange={(e) => setCustomTo(e.target.value)}
+                            className="h-8 w-auto text-xs"
+                        />
+                    </div>
+                    {customFrom && customTo && customFrom > customTo && (
+                        <p className="text-xs text-destructive">
+                            {language === "vi" ? "Ngày bắt đầu phải trước ngày kết thúc" : "Start date must be before end date"}
+                        </p>
+                    )}
                 </div>
             )}
 
-            <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <h2 className="mb-4 text-lg font-bold text-dark">{t("dashboard.quickManagement")}</h2>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <QuickLink to="/admin/categories" label={t("dashboard.quickLink.categories")} icon={Tags} badge={t("dashboard.manageBadge")} />
-                        <QuickLink to="/admin/posts" label={t("dashboard.quickLink.posts")} icon={FileText} />
-                        <QuickLink to="/admin/videos" label={t("dashboard.quickLink.videos")} icon={Video} />
-                        <QuickLink to="/admin/users" label={t("dashboard.quickLink.users")} icon={Users} />
+            {/* Date Window Indicator */}
+            {data?.range && !isLoading && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <TrendingUp className="h-3.5 w-3.5 text-vegan-green" />
+                    <span>{t("dashboard.range.window")}</span>
+                    <span className="font-semibold text-dark">
+                        {formatDateLocale(data.range.from, language)} — {formatDateLocale(data.range.to, language)}
+                    </span>
+                    <Badge variant="secondary" size="sm" className="uppercase text-[10px]">
+                        {data.range.type}
+                    </Badge>
+                </div>
+            )}
+
+            {/* Top KPI Cards (4 columns) */}
+            {isLoading ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <Skeleton key={i} className="h-32 rounded-2xl" />
+                    ))}
+                </div>
+            ) : data ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {/* Users KPI */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">{t("dashboard.metrics.users")}</span>
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-vegan-green-light text-vegan-green">
+                                <Users className="h-5 w-5" />
+                            </span>
+                        </div>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">{data.users.total.toLocaleString()}</p>
+                        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                            <span className="inline-flex items-center gap-1 font-semibold text-vegan-green">
+                                +{data.users.newInRange} {t("dashboard.metrics.usersNew")}
+                            </span>
+                            <span className="text-muted-foreground">•</span>
+                            <span className="text-muted-foreground">
+                                {data.users.activeInRange} {t("dashboard.metrics.usersActive")}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Posts KPI */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">{t("dashboard.metrics.posts")}</span>
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-vegan-green-light text-vegan-green">
+                                <FileText className="h-5 w-5" />
+                            </span>
+                        </div>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">{data.content.totalPosts.toLocaleString()}</p>
+                        <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-vegan-green">
+                            +{data.content.newPosts} {t("dashboard.metrics.postsNew")}
+                        </div>
+                    </div>
+
+                    {/* Recipes KPI */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">{t("dashboard.metrics.recipes")}</span>
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cream text-terracotta">
+                                <ChefHat className="h-5 w-5" />
+                            </span>
+                        </div>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">{data.content.totalRecipes.toLocaleString()}</p>
+                        <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-terracotta">
+                            +{data.content.newRecipes} {t("dashboard.metrics.recipesNew")}
+                        </div>
+                    </div>
+
+                    {/* Comments KPI */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">{t("dashboard.metrics.comments")}</span>
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-dark">
+                                <MessageSquare className="h-5 w-5" />
+                            </span>
+                        </div>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">{data.content.totalComments.toLocaleString()}</p>
+                        <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-muted-foreground">
+                            +{data.content.newComments} {t("dashboard.metrics.commentsNew")}
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {/* Moderation Queue - Attention Required Snapshot */}
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-4">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-terracotta">
+                                {t("dashboard.moderation.eyebrow")}
+                            </span>
+                            {totalPending > 0 ? (
+                                <Badge variant="destructive" size="sm">
+                                    {totalPending} {language === "vi" ? "cần duyệt" : "pending"}
+                                </Badge>
+                            ) : (
+                                <Badge variant="secondary" size="sm" className="bg-vegan-green-light text-vegan-green">
+                                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                                    {t("dashboard.moderation.cleanQueue")}
+                                </Badge>
+                            )}
+                        </div>
+                        <h2 className="mt-1 text-lg font-bold text-dark">{t("dashboard.moderation.title")}</h2>
+                        <p className="text-sm text-muted-foreground">{t("dashboard.moderation.subtitle")}</p>
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                    <h2 className="mb-4 text-lg font-bold text-dark">{t("dashboard.guideTitle")}</h2>
-                    <ul className="list-inside list-disc space-y-2 text-sm text-muted-foreground">
-                        <li>{t("dashboard.guide.retire")}</li>
-                        <li>{t("dashboard.guide.restore")}</li>
-                        <li>{t("dashboard.guide.access")}</li>
-                    </ul>
-                    <div className="mt-4">
-                        <Link to="/admin/categories">
-                            <Button>{t("dashboard.openCategoryManagement")}</Button>
-                        </Link>
+                {isLoading ? (
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <Skeleton className="h-28 rounded-xl" />
+                        <Skeleton className="h-28 rounded-xl" />
+                        <Skeleton className="h-28 rounded-xl" />
                     </div>
+                ) : data ? (
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        {/* Pending Posts */}
+                        <div
+                            className={cn(
+                                "flex flex-col justify-between rounded-xl border p-4 transition-all",
+                                data.moderationQueue.pendingPosts > 0
+                                    ? "border-amber-300 bg-amber-50/60 dark:bg-amber-950/20"
+                                    : "border-border bg-background",
+                            )}
+                        >
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <span className="text-xs font-semibold text-muted-foreground">
+                                        {t("dashboard.moderation.pendingPosts")}
+                                    </span>
+                                    <p className="mt-1 text-2xl font-bold text-dark">
+                                        {data.moderationQueue.pendingPosts}
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        {t("dashboard.moderation.pendingPostsDesc")}
+                                    </p>
+                                </div>
+                                <ShieldAlert
+                                    className={cn(
+                                        "h-5 w-5",
+                                        data.moderationQueue.pendingPosts > 0 ? "text-amber-600" : "text-muted-foreground",
+                                    )}
+                                />
+                            </div>
+                            <div className="mt-4">
+                                <Link to="/admin/posts">
+                                    <Button
+                                        variant={data.moderationQueue.pendingPosts > 0 ? "primary" : "outline"}
+                                        size="sm"
+                                        className="w-full text-xs"
+                                    >
+                                        <span>{t("dashboard.moderation.actionReview")}</span>
+                                        <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Pending Recipes */}
+                        <div
+                            className={cn(
+                                "flex flex-col justify-between rounded-xl border p-4 transition-all",
+                                data.moderationQueue.pendingRecipes > 0
+                                    ? "border-amber-300 bg-amber-50/60 dark:bg-amber-950/20"
+                                    : "border-border bg-background",
+                            )}
+                        >
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <span className="text-xs font-semibold text-muted-foreground">
+                                        {t("dashboard.moderation.pendingRecipes")}
+                                    </span>
+                                    <p className="mt-1 text-2xl font-bold text-dark">
+                                        {data.moderationQueue.pendingRecipes}
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        {t("dashboard.moderation.pendingRecipesDesc")}
+                                    </p>
+                                </div>
+                                <ChefHat
+                                    className={cn(
+                                        "h-5 w-5",
+                                        data.moderationQueue.pendingRecipes > 0 ? "text-amber-600" : "text-muted-foreground",
+                                    )}
+                                />
+                            </div>
+                            <div className="mt-4">
+                                <Link to="/admin/recipes">
+                                    <Button
+                                        variant={data.moderationQueue.pendingRecipes > 0 ? "primary" : "outline"}
+                                        size="sm"
+                                        className="w-full text-xs"
+                                    >
+                                        <span>{t("dashboard.moderation.actionReview")}</span>
+                                        <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Reported Comments */}
+                        <div
+                            className={cn(
+                                "flex flex-col justify-between rounded-xl border p-4 transition-all",
+                                data.moderationQueue.reportedComments > 0
+                                    ? "border-rose-300 bg-rose-50/60 dark:bg-rose-950/20"
+                                    : "border-border bg-background",
+                            )}
+                        >
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <span className="text-xs font-semibold text-muted-foreground">
+                                        {t("dashboard.moderation.reportedComments")}
+                                    </span>
+                                    <p className="mt-1 text-2xl font-bold text-dark">
+                                        {data.moderationQueue.reportedComments}
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        {t("dashboard.moderation.reportedCommentsDesc")}
+                                    </p>
+                                </div>
+                                <AlertTriangle
+                                    className={cn(
+                                        "h-5 w-5",
+                                        data.moderationQueue.reportedComments > 0 ? "text-terracotta" : "text-muted-foreground",
+                                    )}
+                                />
+                            </div>
+                            <div className="mt-4">
+                                <Link to="/admin/comments">
+                                    <Button
+                                        variant={data.moderationQueue.reportedComments > 0 ? "destructive" : "outline"}
+                                        size="sm"
+                                        className="w-full text-xs"
+                                    >
+                                        <span>{t("dashboard.moderation.actionReview")}</span>
+                                        <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
+            </div>
+
+            {/* Community Engagement Section */}
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
+                <div className="border-b border-border pb-4">
+                    <h2 className="text-lg font-bold text-dark">{t("dashboard.breakdown.engagementTitle")}</h2>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.breakdown.engagementSubtitle")}</p>
                 </div>
+
+                {isLoading ? (
+                    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <Skeleton className="h-24 w-full rounded-xl" />
+                        <Skeleton className="h-24 w-full rounded-xl" />
+                        <Skeleton className="h-24 w-full rounded-xl" />
+                    </div>
+                ) : data ? (
+                    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        {/* Votes */}
+                        <div className="rounded-xl border border-border bg-background p-4">
+                            <div className="flex items-center justify-between text-muted-foreground">
+                                <span className="text-xs font-semibold">{t("dashboard.breakdown.votes")}</span>
+                                <ThumbsUp className="h-4 w-4 text-vegan-green" />
+                            </div>
+                            <p className="mt-2 text-3xl font-bold text-dark">
+                                {data.engagement.votesInRange.toLocaleString()}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {t("dashboard.breakdown.votesDesc")}
+                            </p>
+                        </div>
+
+                        {/* Comments */}
+                        <div className="rounded-xl border border-border bg-background p-4">
+                            <div className="flex items-center justify-between text-muted-foreground">
+                                <span className="text-xs font-semibold">{t("dashboard.breakdown.commentsCount")}</span>
+                                <MessageSquare className="h-4 w-4 text-terracotta" />
+                            </div>
+                            <p className="mt-2 text-3xl font-bold text-dark">
+                                {data.engagement.commentsInRange.toLocaleString()}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {t("dashboard.breakdown.commentsCountDesc")}
+                            </p>
+                        </div>
+
+                        {/* Avg Interactions per Active User */}
+                        <div className="flex flex-col justify-between rounded-xl border border-border bg-vegan-green-light/40 p-4">
+                            <div className="flex items-center justify-between text-dark">
+                                <span className="text-xs font-semibold">{t("dashboard.breakdown.avgInteractions")}</span>
+                                <TrendingUp className="h-4 w-4 text-vegan-green" />
+                            </div>
+                            <div className="mt-2 flex items-baseline gap-2">
+                                <span className="text-3xl font-bold text-vegan-green">{avgInteractions}</span>
+                                <span className="text-xs text-muted-foreground">/ user</span>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {data.users.activeInRange} {t("dashboard.metrics.usersActive")}
+                            </p>
+                        </div>
+                    </div>
+                ) : null}
             </div>
         </div>
     );

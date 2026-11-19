@@ -1,18 +1,19 @@
-import { categoriesSeed } from "@/features/categories/mocks";
-import type { DashboardStats } from "./types";
-import { delay } from "@/shared/utils/delay";
+import { api } from "@/shared/api/client";
+import type { ApiResponse } from "@/shared/types/common";
+import type { DashboardParams, DashboardResponse } from "./types";
 
-export async function getDashboardStats(): Promise<DashboardStats> {
-    await delay();
-    const total = categoriesSeed.length;
-    const softDeleted = categoriesSeed.filter((category) => category.deletedAt !== null).length;
-    const active = total - softDeleted;
-    const associatedContent = categoriesSeed.reduce((sum, category) => sum + (category.contentCount ?? 0), 0);
-
-    return {
-        totalCategories: total,
-        activeCategories: active,
-        softDeletedCategories: softDeleted,
-        associatedContent,
-    };
+/**
+ * `GET /api/admin/dashboard` — Lấy các chỉ số tổng hợp toàn hệ thống cho Admin console.
+ * Hỗ trợ lọc theo khoảng thời gian: range=day|week|month|custom.
+ */
+export async function getAdminDashboard(params?: DashboardParams): Promise<DashboardResponse> {
+    const { data } = await api.get<ApiResponse<DashboardResponse>>("/api/admin/dashboard", {
+        params,
+    });
+    return data.data;
 }
+
+/**
+ * Alias cho getAdminDashboard để giữ tương thích ngược.
+ */
+export const getDashboardStats = getAdminDashboard;

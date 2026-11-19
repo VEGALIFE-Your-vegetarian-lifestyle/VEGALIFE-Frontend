@@ -14,7 +14,6 @@ export interface HomePlace {
     id: string;
     name: string;
     address: string;
-    placeType?: HomePlaceType;
     rating: number | null;
     /** 1–4, 1 = rẻ. */
     priceLevel?: number;
