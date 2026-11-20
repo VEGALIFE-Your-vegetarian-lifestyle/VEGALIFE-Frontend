@@ -64,7 +64,7 @@ export default function LoginPage() {
             );
             toast.success(t("login.success"));
             // `ProtectedRoute` gửi kèm trang đang muốn vào → đăng nhập xong quay lại đó
-            // (vd bấm chi tiết một quán ở `/nearby/:id`), thay vì luôn về trang chủ.
+            // (vd bấm chi tiết một quán ở `/restaurants/:id`), thay vì luôn về trang chủ.
             const from = (location.state as { from?: { pathname: string; search?: string } } | null)?.from;
             navigate(from ? `${from.pathname}${from.search ?? ""}` : role === "ADMIN" ? "/admin/dashboard" : "/", {
                 replace: true,

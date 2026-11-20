@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PlaceMap } from "../components/PlaceMap";
-import { getNearbyPlaceDetail } from "../nearbyApi";
+import { getRestaurantPlaceDetail } from "../restaurantApi";
 import { openDirections } from "../geo";
 import { cn } from "@/shared/utils/cn";
 
@@ -29,7 +29,7 @@ const linkClass =
     "flex items-center gap-3 rounded-lg px-2 py-2 text-sm text-muted-foreground transition hover:bg-muted-bg hover:text-vegan-green";
 
 export default function LocationDetailPage() {
-    const { t } = useTranslation("nearby");
+    const { t } = useTranslation("restaurant");
     const { t: tl } = useTranslation("location");
     const { id = "" } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -40,8 +40,8 @@ export default function LocationDetailPage() {
         isLoading,
         isError,
     } = useQuery({
-        queryKey: ["nearby-place", id],
-        queryFn: () => getNearbyPlaceDetail(id),
+        queryKey: ["restaurant-place", id],
+        queryFn: () => getRestaurantPlaceDetail(id),
         enabled: id !== "",
     });
 
@@ -61,7 +61,7 @@ export default function LocationDetailPage() {
                     icon={MapPin}
                     title={t("detail.notFound.title")}
                     description={t("detail.notFound.description")}
-                    action={<Button onClick={() => navigate("/nearby")}>{t("detail.notFound.action")}</Button>}
+                    action={<Button onClick={() => navigate("/restaurants")}>{t("detail.notFound.action")}</Button>}
                 />
             </div>
         );
@@ -96,7 +96,7 @@ export default function LocationDetailPage() {
                     </li>
                     <li aria-hidden="true">/</li>
                     <li>
-                        <Link to="/nearby" className="hover:text-vegan-green">
+                        <Link to="/restaurants" className="hover:text-vegan-green">
                             {t("title")}
                         </Link>
                     </li>
@@ -106,7 +106,7 @@ export default function LocationDetailPage() {
                     </li>
                 </ol>
                 <Link
-                    to="/nearby"
+                    to="/restaurants"
                     className="hidden whitespace-nowrap text-sm font-semibold text-vegan-green hover:underline sm:block"
                 >
                     <ArrowLeft className="mr-1 inline h-4 w-4" aria-hidden="true" />

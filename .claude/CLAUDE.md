@@ -10,7 +10,7 @@ React SPA cho nền tảng VEGALIFE (lối sống thực vật). File này là *
 - **State**: Zustand (auth, ui) + TanStack React Query 5 (server state)
 - **Forms**: Formik + Yup
 - **HTTP**: Axios, interceptor 401/refresh trong `src/shared/api/client.ts`
-- **i18n**: i18next + react-i18next — **15 namespace**: `common`, `auth`, `admin`, `validation`, `profile`, `home`, `explore`, `post`, `nearby`, `aiNutrition`, `location`, `subscription`, `recipe`, `menu`, `saved`
+- **i18n**: i18next + react-i18next — **15 namespace**: `common`, `auth`, `admin`, `validation`, `profile`, `home`, `explore`, `post`, `restaurant`, `aiNutrition`, `location`, `subscription`, `recipe`, `menu`, `saved`
 - **Editor**: TipTap 3 (`src/features/posts/components/editor/`)
 - **Map**: react-leaflet + leaflet (`src/features/locations/components/PlaceMap.tsx`)
 - **Toast**: sonner · **Icons**: lucide-react · **Port dev**: 5173
@@ -37,7 +37,7 @@ React SPA cho nền tảng VEGALIFE (lối sống thực vật). File này là *
 | Validate + payload form soạn bài | `src/features/posts/components/composer/{schema,payload}.ts` |
 | Validate + payload form soạn recipe | `src/features/recipes/pages/CreateRecipePage/{schema,payload}.ts` |
 | Validate + payload form tạo thực đơn tuần | `src/features/menus/create/{schema,validate,payload}.ts` |
-| Service theo domain | `src/features/<feature>/api.ts` — `auth`, `posts`, `categories`, `videos`, `locations` (+`nearbyApi`), `profile`, `admin` (+`dashboardApi`), `nutrition-ai` (+`subscriptionApi`), `recipes` (+`adminApi`), `menus`, `subscription`, `saved` |
+| Service theo domain | `src/features/<feature>/api.ts` — `auth`, `posts`, `categories`, `videos`, `locations` (+`restaurantApi`), `profile`, `admin` (+`dashboardApi`), `nutrition-ai` (+`subscriptionApi`), `recipes` (+`adminApi`), `menus`, `subscription`, `saved` |
 | Lưu bài / công thức (bookmark) | `src/features/saved/` — `api.ts` (6 endpoint), `useSaved.ts` (`useSavePost`, `useSaveRecipe`, `useAttachableRecipes`), `components/{SaveButton,SavedCards}.tsx` |
 | Gói AI + thanh toán VNPay (hook) | `src/features/subscription/useBilling.ts` |
 | Tìm món (`GET /api/dishes`) — dùng chung 3 feature | `src/shared/api/dishes.ts` → `searchDishes` |
@@ -66,8 +66,8 @@ src/
                     # pages/{AdminDashboardPage (+DashboardCharts), PostsPage, UsersPage}
     auth/           # api, useAuth, AuthLayout, pages/{Login,Register,VerifyEmail,ForgotPassword}
     categories/     # CategoriesPage, CategoryFormDialog, api, usePublicCategories, types, mocks
-    locations/      # api, nearbyApi, geo, openingHours, types, mocks,
-                    # components/PlaceMap, pages/{NearbyPage,LocationDetailPage,AdminLocationsPage}
+    locations/      # api, restaurantApi, geo, openingHours, types, mocks,
+                    # components/PlaceMap, pages/{RestaurantsPage,LocationDetailPage,AdminLocationsPage}
     menus/          # api, useMealPlans, week.ts (tính tuần local), types,
                     # create/ (schema, validate, payload — không có UI),
                     # components/{MealPlanComposerDialog, MealPlanMatrix,
@@ -141,8 +141,8 @@ mount một lần ở `Layout`.
 |---|---|
 | `/` | Home |
 | `/explore` | Danh sách bài viết |
-| `/nearby` | Tìm theo vị trí (API thật) — public |
-| `/nearby/:id` | Chi tiết địa điểm — cần đăng nhập (`ProtectedRoute`) |
+| `/restaurants` | Danh sách nhà hàng theo vị trí (API thật) — public; `/nearby` redirect sang đây |
+| `/restaurants/:id` | Chi tiết địa điểm — cần đăng nhập (`ProtectedRoute`) |
 | `/ai-nutrition` | Chatbot dinh dưỡng (API thật) |
 | `/posts/:id` | Chi tiết bài — public |
 | `/recipes` | `MyRecipesPage` — công thức của tôi (lọc/sort client-side) — cần đăng nhập |

@@ -21,7 +21,7 @@ Ký hiệu: **[R]** field thật từ API · **[M]** mock/hardcode · **[D]** su
 | Post detail | ✅ **không còn mock** (bỏ hẳn 2026-10-29) — xem `MOCK-FIELDS.md` § Post Detail | — |
 | Comment | ✅ đã gọi API thật (`GET/POST /api/posts/{id}/comments`); chỉ **activity feed** ở `/my-posts` còn bịa | `mockEnrichment.ts` (`getMockActivity`) |
 | Location detail | review, số ảnh, badge "Farm Direct" / sustainability / dietary transparency | i18n key còn nguyên nhưng **0 chỗ dùng**: `nearby:detail.{farmDirect,verifiedReviews,ethics,ethicsValue,aboutTitle,sustainability.*,photoCount,galleryLabels.*,insiderTip,verifiedNote,parkingNote,transitNote,dishesTitle,dishesSubtitle,communityRecipeMatch,cookAtHome,dietaryTitle,dietarySubtitle,reviewsTitle,totalReviews,helpful}` |
-| Nearby | 22 toạ độ quận trong `MOCK_AREAS`, bán kính `RADIUS_KM = 10` cố định, mảng `FILTERS` hardcode, nhãn "Sorted strictly: Closest to Farthest" **tĩnh kể cả khi sort theo rating** | `locations/mocks.ts`, `NearbyPage.tsx` |
+| Restaurants | 22 toạ độ quận trong `MOCK_AREAS`, bán kính `RADIUS_KM = 10` cố định, mảng `FILTERS` hardcode, nhãn "Sorted strictly: Closest to Farthest" **tĩnh kể cả khi sort theo rating** | `locations/mocks.ts`, `RestaurantsPage.tsx` |
 | AI Nutrition | 4 ingredient swaps (tiếng Anh, hardcode), BMI input `175`/`67` (profile **có** `heightCm`/`weightKg` mà không dùng), protein max `min + 12` tự chế, model name "GreenHealth 4.2" | `nutrition-ai/AiNutritionPage.tsx`, `ChatPanel.tsx` |
 | AuthLayout | "10,000+ Plant Recipes", "4.2" model rating, ảnh Unsplash cứng | `auth/AuthLayout.tsx` |
 | CreatePost (dialog) | `summary` (không gửi lên BE), 2 pill tĩnh "Draft autosaved" + "Plant Verified" | `posts/components/composer/PostComposerDialog.tsx` |
@@ -77,10 +77,10 @@ Card dùng lại: `PostCard` (`posts/components/PostCard.tsx`) ở Home / Explor
 
 | Page | Endpoint | Field render |
 |---|---|---|
-| Nearby `/nearby` | `GET /api/locations/nearby?lat&lng&radius` (radius **mét**, trả mảng phẳng, không phân trang) | placeType, rating, priceLevel, **distance** (chỉ có ở đường này), name, address, phoneNumber, latitude, longitude, websiteUrl, openingHours |
-| LocationDetail `/nearby/:id` (**`ProtectedRoute`** — phải đăng nhập mới xem chi tiết) | `GET /api/locations?page=0&size=100` rồi `.find(id)` — **không có** `GET /api/locations/{id}` | như trên **trừ `distance`** |
+| Restaurants `/restaurants` | `GET /api/restaurants/nearby?lat&lng&radius` (radius **mét**, trả mảng phẳng, không phân trang) | rating, priceLevel, **distance** (chỉ có ở đường này), name, address, phoneNumber, latitude, longitude, websiteUrl, openingHours |
+| LocationDetail `/restaurants/:id` (**`ProtectedRoute`** — phải đăng nhập mới xem chi tiết) | `GET /api/restaurants/{id}` (fallback: `GET /api/restaurants?page=1&size=100` rồi `.find(id)`) | như trên **trừ `distance`**, cộng `dishes[]` |
 
-`openNow` không phải field BE — `nearbyApi.ts` tự suy từ `openingHours` + đồng hồ máy
+`openNow` không phải field BE — `restaurantApi.ts` tự suy từ `openingHours` + đồng hồ máy
 (`openingHours.ts`). Quá 100 địa điểm thì detail trả "not found" (ponytail có chủ ý).
 
 ### 3.3 Thực đơn
@@ -157,8 +157,8 @@ gộp thành `"tiêu đề — thân"` mỗi bước một dòng trước khi g�
 | Posts `/admin/posts` | `GET /api/admin/posts`, `DELETE /api/posts/{id}` | 🔴 nút duyệt còn gọi `POST /api/admin/posts/{id}/moderate` — endpoint **BE đã xoá (ADR-016)** → 404/405 |
 | Videos `/admin/videos` | `GET /api/media?type=video` | BE **không** trả `title` (lấy `description`); kéo size 100 rồi lọc client |
 | Categories `/admin/categories` | `GET /api/categories` (public) | `deletedAt` hardcode `null`; badge "Active" tĩnh; metric "Active" chỉ đếm dòng trang hiện tại |
-| Recipes `/admin/recipes` | `GET /api/admin/recipes` + approve/reject | `?status=` lạ → ép `PENDING`; search lọc client trên trang hiện tại. `GET/PATCH/DELETE /api/admin/recipes/{id}` **BE đã có**, FE cố ý không gọi (row đủ field cho dialog) |
-| Users `/admin/users` | `GET /api/admin/users`, suspend/restore | `getUsers` gửi `page` **verbatim** → caller truyền `page - 1`; `sort=createdAt,desc` cứng, không có `q` |
+| Recipes `/admin/recipes` | `GET /api/admin/recipes` + approve/reject | `?status=` lạ → ép `PENDING`; search gửi `?keyword=` lọc + phân trang ở server. `GET/PATCH/DELETE /api/admin/recipes/{id}` **BE đã có**, FE cố ý không gọi (row đủ field cho dialog) |
+| Users `/admin/users` | `GET /api/admin/users`, suspend/restore | `getUsers` gửi `page` **verbatim** → caller truyền `page - 1`; `sort=createdAt,desc` cứng; search gửi `?keyword=` |
 | Locations `/admin/locations` | CRUD `/api/locations` | |
 | Profile `/admin/profile` | dùng lại `ProfilePage` (embedded) | |
 | Comments `/admin/comments` | **chưa dựng** (`ready: false`) | `GET /api/admin/comments` **có** nhận `status`/`userId`/`postId`/`sort`; `POST .../moderate` `{reason}` bắt buộc |

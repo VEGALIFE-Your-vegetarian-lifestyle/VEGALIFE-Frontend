@@ -563,10 +563,17 @@
             "body": "“{{name}}” will be soft-deleted. There is no restore endpoint.",
             "confirm": "Delete dish"
         },
+        "reject": {
+            "title": "Reject dish?",
+            "body": "“{{name}}” will be permanently rejected: members can never create a dish with this name again.",
+            "confirm": "Reject dish"
+        },
         "toast": {
             "created": "Dish created",
             "updated": "Dish updated",
             "deleted": "Dish deleted",
+            "approved": "Dish approved",
+            "rejected": "Dish rejected",
             "failed": "Action failed. Please try again."
         },
         "empty": {

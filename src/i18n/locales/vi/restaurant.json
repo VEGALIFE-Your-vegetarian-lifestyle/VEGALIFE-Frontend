@@ -1,6 +1,6 @@
 {
     "directoryLabel": "Danh bạ cộng đồng thực vật / TP. Hồ Chí Minh",
-    "title": "Địa điểm thuần chay gần đây",
+    "title": "Nhà hàng thuần chay",
     "subtitle": "Khám phá nhà hàng thuần thực vật 100%, quán cà phê hữu cơ và cửa hàng chay đặc sản gần bạn.",
     "changeLocation": "Dùng vị trí của tôi",
     "gpsRefresh": "Làm mới GPS",
@@ -32,9 +32,9 @@
         "description": "Thử bộ lọc khác hoặc mở rộng bán kính tìm kiếm.",
         "action": "Hiện tất cả địa điểm"
     },
-    "error": "Không thể tải địa điểm gần đây. Vui lòng thử lại.",
+    "error": "Không thể tải danh sách nhà hàng. Vui lòng thử lại.",
     "detail": {
-        "back": "Về danh sách địa điểm",
+        "back": "Về danh sách nhà hàng",
         "farmDirect": "Trực tiếp từ nông trại",
         "getDirections": "Chỉ đường",
         "saveToFavorites": "Lưu yêu thích",

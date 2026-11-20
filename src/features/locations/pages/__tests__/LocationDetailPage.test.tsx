@@ -13,7 +13,7 @@ vi.mock("../../components/PlaceMap", () => ({
 vi.mock("../../api", () => import("@/test/fakeLocationService"));
 
 const renderDetail = (id: string) =>
-    renderWithProviders(<LocationDetailPage />, { route: `/nearby/${id}`, path: "/nearby/:id" });
+    renderWithProviders(<LocationDetailPage />, { route: `/restaurants/${id}`, path: "/restaurants/:id" });
 
 describe("LocationDetailPage", () => {
     afterEach(() => vi.restoreAllMocks());

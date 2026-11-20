@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Check, Salad, Search, Trash2, XCircle } from "lucide-react";
@@ -83,11 +83,12 @@ export default function AdminRecipesPage() {
     const moderationFilter = allStates ? "ALL" : moderationStatus;
 
     const { data, isLoading, isFetching, isError, refetch } = useQuery({
-        queryKey: ["admin-recipes", page, createdFrom, createdTo, moderationFilter],
+        queryKey: ["admin-recipes", page, debouncedQ, createdFrom, createdTo, moderationFilter],
         queryFn: () =>
             getAdminRecipes({
                 page,
                 size: PAGE_SIZE,
+                q: debouncedQ,
                 createdFrom,
                 createdTo,
                 moderationStatus: allStates ? undefined : moderationStatus,
@@ -188,19 +189,8 @@ export default function AdminRecipesPage() {
         updateMutation.isPending ||
         deleteMutation.isPending;
 
-    // Không gọi lại API khi gõ tìm kiếm — backend chưa có tham số tên (xem `adminApi.ts`).
-    const recipes = useMemo(() => {
-        const keyword = debouncedQ.trim().toLowerCase();
-        const rows = data?.data ?? [];
-        if (!keyword) return rows;
-        return rows.filter(
-            (recipe) =>
-                recipe.name.toLowerCase().includes(keyword) ||
-                (recipe.dishName ?? "").toLowerCase().includes(keyword) ||
-                (recipe.displayName ?? "").toLowerCase().includes(keyword) ||
-                recipe.email.toLowerCase().includes(keyword),
-        );
-    }, [data, debouncedQ]);
+    // BE lọc + phân trang theo `keyword` rồi, không lọc lại ở client.
+    const recipes = data?.data ?? [];
 
     const total = data?.total ?? 0;
     // Hàng đợi PENDING mặc định cũng là bộ lọc — rỗng nghĩa là "không có gì chờ duyệt",

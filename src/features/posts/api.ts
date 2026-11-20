@@ -434,7 +434,7 @@ export async function getMyActivity(seed: string): Promise<PostActivity[]> {
 export interface AdminPostListParams {
     page: number;
     size: number;
-    /** `q` lọc client-side — BE chưa có tham số tìm kiếm. */
+    /** BE tìm substring (tiêu đề / tên / email tác giả) qua `keyword`. */
     q?: string;
     status?: PostStatus;
     /** Mặc định `all` — khớp default mới của BE (V56). */
@@ -475,22 +475,12 @@ export const getPosts = async ({
     if (categoryId) params.categoryId = categoryId;
     if (createdFrom) params.createdFrom = createdFrom;
     if (createdTo) params.createdTo = createdTo;
+    if (q?.trim()) params.keyword = q.trim();
 
     const { data } = await api.get<ApiResponse<PageResponse<AdminPost>>>("/api/admin/posts", { params });
 
-    const keyword = q?.trim().toLowerCase() ?? "";
-    // ponytail: BE chưa có tham số `q` — lọc trong trang hiện tại, phân trang vẫn theo server.
-    const filtered = keyword
-        ? data.data.content.filter(
-              (post) =>
-                  post.title.toLowerCase().includes(keyword) ||
-                  (post.displayName ?? "").toLowerCase().includes(keyword) ||
-                  post.email.toLowerCase().includes(keyword),
-          )
-        : data.data.content;
-
     return {
-        data: filtered,
+        data: data.data.content,
         total: Number(data.data.totalElements),
         page,
         size: data.data.size,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Pencil, Plus, Search, Trash2, UtensilsCrossed } from "lucide-react";
+import { Check, Pencil, Plus, Search, Trash2, UtensilsCrossed, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,14 @@ import { TableSkeleton } from "@/components/common/TableSkeleton";
 import { useListParams } from "@/shared/hooks/useListParams";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { FALLBACK_IMAGE, showFallbackImage } from "@/shared/utils/display";
-import { createAdminDish, deleteAdminDish, getAdminDishes, updateAdminDish } from "../../adminApi";
+import {
+    approveDish,
+    createAdminDish,
+    deleteAdminDish,
+    getAdminDishes,
+    rejectDish,
+    updateAdminDish,
+} from "../../adminApi";
 import { MODERATION_VARIANT } from "../../constants";
 import type { AdminDish, ModerationStatus } from "../../types";
 import { buildDishCreate, buildDishUpdate, toDishForm, type DishFormValues } from "./dishForm";
@@ -37,6 +44,8 @@ export default function AdminDishesPage() {
     const { page, q, status, debouncedQ, setQ, setStatus, setPage } = useListParams();
     const [form, setForm] = useState<{ dish: AdminDish | null } | null>(null);
     const [deleting, setDeleting] = useState<AdminDish | null>(null);
+    /** Từ chối là vĩnh viễn (tên không tạo lại được) → luôn xác nhận trước. */
+    const [rejecting, setRejecting] = useState<AdminDish | null>(null);
 
     // URL `?status=` dùng chung key với các trang admin khác; `""` = mọi trạng thái.
     const moderationStatus = isModerationState(status) ? status : "";
@@ -95,6 +104,30 @@ export default function AdminDishesPage() {
         },
         onError,
     });
+
+    // Trả void → phải invalidate list để badge đổi trạng thái.
+    const approveMutation = useMutation({
+        mutationFn: (dish: AdminDish) => approveDish(dish.id),
+        onSuccess: () => {
+            toast.success(t("dishes.toast.approved"));
+            invalidate();
+            // Món APPROVED mới hiện ở ô chọn món của thực đơn / recipe.
+            void queryClient.invalidateQueries({ queryKey: ["dishes"] });
+        },
+        onError,
+    });
+
+    const rejectMutation = useMutation({
+        mutationFn: (dish: AdminDish) => rejectDish(dish.id),
+        onSuccess: () => {
+            toast.success(t("dishes.toast.rejected"));
+            setRejecting(null);
+            invalidate();
+        },
+        onError,
+    });
+
+    const mutating = approveMutation.isPending || rejectMutation.isPending;
 
     const submit = (values: DishFormValues) => {
         if (!form) return;
@@ -191,6 +224,29 @@ export default function AdminDishesPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center justify-end gap-2">
+                                                {/* Chỉ PENDING mới duyệt/từ chối được — nút trên
+                                                    hàng đã quyết chỉ tổ 400. */}
+                                                {dish.moderationStatus === "PENDING" && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            disabled={mutating}
+                                                            onClick={() => approveMutation.mutate(dish)}
+                                                        >
+                                                            <Check className="h-4 w-4" aria-hidden="true" />
+                                                            {t("recipes.moderation.approve")}
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="warning"
+                                                            disabled={mutating}
+                                                            onClick={() => setRejecting(dish)}
+                                                        >
+                                                            <XCircle className="h-4 w-4" aria-hidden="true" />
+                                                            {t("recipes.moderation.reject")}
+                                                        </Button>
+                                                    </>
+                                                )}
                                                 <Button size="sm" variant="outline" onClick={() => setForm({ dish })}>
                                                     <Pencil className="h-4 w-4" />
                                                     {t("dishes.action.edit")}
@@ -255,6 +311,18 @@ export default function AdminDishesPage() {
                 loading={deleteMutation.isPending}
                 onConfirm={() => deleting && deleteMutation.mutate(deleting)}
                 onClose={() => setDeleting(null)}
+            />
+
+            {/* Reject một chiều ở phía member: tên bị chặn tạo lại (BR-DISH-001) → xác nhận. */}
+            <ConfirmDialog
+                open={rejecting !== null}
+                title={t("dishes.reject.title")}
+                description={t("dishes.reject.body", { name: rejecting?.name ?? "" })}
+                confirmLabel={t("dishes.reject.confirm")}
+                destructive
+                loading={rejectMutation.isPending}
+                onConfirm={() => rejecting && rejectMutation.mutate(rejecting)}
+                onClose={() => setRejecting(null)}
             />
         </div>
     );

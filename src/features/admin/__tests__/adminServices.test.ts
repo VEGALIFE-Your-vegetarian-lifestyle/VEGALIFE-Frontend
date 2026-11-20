@@ -90,6 +90,16 @@ describe.skipIf(!HAS_ADMIN)("adminUserService — cần JWT admin (E2E_ADMIN_*)"
     );
 
     it(
+        "getUsers tìm keyword ở server — từ khoá không khớp trả rỗng",
+        async () => {
+            const page = await getUsers({ page: 0, size: 10, q: "zzz-khong-user-nao-khop-zzz" });
+
+            expect(page.data).toHaveLength(0);
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
+    it(
         "suspendUser trên UUID không tồn tại trả 4xx chứ không 5xx",
         async () => {
             const error = await suspendUser(MISSING_UUID).catch((e) => e);

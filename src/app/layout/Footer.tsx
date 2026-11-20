@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Leaf, ShieldCheck } from "lucide-react";
 
-const NAV_KEYS = ["home", "explore", "nearby", "aiNutrition"] as const;
+const NAV_KEYS = ["home", "explore", "restaurants", "aiNutrition"] as const;
 const NAV_HREFS: Record<(typeof NAV_KEYS)[number], string> = {
     home: "/",
     explore: "/explore",
-    nearby: "/nearby",
+    restaurants: "/restaurants",
     aiNutrition: "/ai-nutrition",
 };
 

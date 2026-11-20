@@ -83,6 +83,7 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                                 {t("pill")}
                             </Badge>
                         </div>
+                        <p className="mb-2 text-sm text-muted-foreground">{t("plans.stackHint")}</p>
                         <h1 className="text-3xl font-semibold tracking-tight text-dark">{t("title")}</h1>
                         <p className="mt-2 max-w-2xl text-muted-foreground">{t("subtitle")}</p>
                     </div>
@@ -125,9 +126,9 @@ export default function SubscriptionPage({ embedded = false }: { embedded?: bool
                                         >
                                             <div className="flex items-center justify-between">
                                                 <h2 className="text-lg font-bold text-dark">{plan.name}</h2>
-                                                <Badge variant={isFree ? "lightgreen" : "info"}>
-                                                    {isFree ? t("plans.claimHint") : t("plans.stackHint")}
-                                                </Badge>
+                                                {isFree && (
+                                                    <Badge variant="lightgreen">{t("plans.claimHint")}</Badge>
+                                                )}
                                             </div>
                                             <p className="mt-3 text-3xl font-bold text-dark">
                                                 {isFree

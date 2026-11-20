@@ -23,7 +23,8 @@ export async function getUsers(params: UserListParams): Promise<Paginated<AdminU
     if (params.role) queryParams.set("role", params.role);
     if (params.createdFrom) queryParams.set("createdFrom", params.createdFrom);
     if (params.createdTo) queryParams.set("createdTo", params.createdTo);
-    // Backend không có tham số tìm kiếm; `q` lọc client-side ở UsersPage (chỉ trong trang hiện tại).
+    // BE tìm substring theo tên/email qua `keyword` (lọc + phân trang ở server).
+    if (params.q?.trim()) queryParams.set("keyword", params.q.trim());
 
     const response = await api.get<ApiResponse<PageResponse<AdminUser>>>(`/api/admin/users?${queryParams.toString()}`);
     const page = response.data.data;

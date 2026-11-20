@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/features/auth/useAuth";
-import { useAcquirePlan } from "@/features/subscription/useBilling";
+import { useAcquirePlan, useSubscriptionHistory } from "@/features/subscription/useBilling";
 import { useAiChat } from "./useAiChat";
 import { useSubscription } from "./useSubscription";
 import { formatDateLocale } from "@/shared/utils/formatDate";
@@ -42,9 +42,17 @@ export default function AiNutritionPage() {
     const chat = useAiChat(isAuthenticated);
     const subscription = useSubscription(isAuthenticated);
     const acquirePlan = useAcquirePlan();
+    // `/subscriptions/me` chỉ trả `remainingUsage` → biết đã mua gói hay chưa phải xem history.
+    const history = useSubscriptionHistory(0, isAuthenticated);
 
     // V48: Số lượt hỏi còn lại là một con số duy nhất không hết hạn
     const remainingCount = chat.usage?.remainingUsage ?? subscription.data?.remainingUsage ?? 0;
+
+    // ponytail: chỉ soi trang history đầu (10 row) — lần mua luôn là row mới nhất,
+    // trừ khi user claim free >10 lần sau khi mua. Nâng lên `size` lớn hơn nếu cần.
+    const isPaid = history.data?.content.some(
+        (item) => item.source === "PURCHASE" && item.status === "succeeded",
+    ) ?? false;
 
     const requireLogin = () => navigate("/login");
 
@@ -110,10 +118,9 @@ export default function AiNutritionPage() {
                 {isAuthenticated && subscription.data ? (
                     <span className="flex items-center gap-2 rounded-full bg-vegan-green-light px-3.5 py-1.5 text-xs font-semibold text-vegan-green">
                         <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                        {subscription.data.currentPlan?.name ?? subscription.data.tier ?? "FREE"} ·{" "}
-                        {subscription.data.remainingUsage !== undefined
-                            ? `Còn ${remainingCount} câu hỏi`
-                            : t("chat.quotaLeft", { count: remainingCount })}
+                        {isPaid
+                            ? t("chat.quotaLeft", { count: remainingCount })
+                            : `${tSub("plans.free")} · ${t("chat.quotaLeft", { count: remainingCount })}`}
                     </span>
                 ) : (
                     !isAuthenticated && (
