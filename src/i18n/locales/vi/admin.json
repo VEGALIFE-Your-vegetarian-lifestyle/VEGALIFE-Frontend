@@ -3,30 +3,35 @@
         "title": "Tổng quan",
         "subtitle": "Xem nhanh số liệu nền tảng và các mục quản trị.",
         "refresh": "Làm mới dữ liệu",
-        "range": {
-            "label": "Khoảng thời gian",
-            "day": "Hôm nay (24h)",
-            "week": "7 ngày qua",
-            "month": "30 ngày qua",
-            "custom": "Tùy chỉnh",
-            "from": "Từ ngày",
-            "to": "Đến ngày",
-            "window": "Dữ liệu tính từ"
-        },
+        "asOf": "Số liệu lúc {{time}}",
         "metrics": {
             "users": "Thành viên",
             "usersDesc": "Tài khoản đăng ký",
-            "usersNew": "mới trong kỳ",
-            "usersActive": "thành viên hoạt động",
             "posts": "Bài viết",
             "postsDesc": "Bài viết chia sẻ cộng đồng",
-            "postsNew": "bài viết mới",
             "recipes": "Công thức món chay",
-            "recipesDesc": "Công thức nấu ăn đã tạo",
-            "recipesNew": "công thức mới",
-            "comments": "Bình luận",
-            "commentsDesc": "Lượt thảo luận cộng đồng",
-            "commentsNew": "bình luận mới"
+            "recipesDesc": "Công thức nấu ăn đã tạo"
+        },
+        "users": {
+            "activationRate": "{{value}} đã xác thực email"
+        },
+        "money": {
+            "revenueTotal": "Doanh thu",
+            "revenueGross": "Gộp, toàn thời gian",
+            "payingUsersTotal": "Thành viên trả phí",
+            "payerConversionRate": "trên tổng thành viên đã từng trả phí"
+        },
+        "engagement": {
+            "title": "Chỉ số tương tác",
+            "subtitle": "Tổng tích luỹ — số liệu theo kỳ không còn nữa.",
+            "totalVotes": "Tổng lượt bình chọn",
+            "totalSaves": "Tổng lượt lưu",
+            "savesBreakdown": "{{posts}} bài viết · {{recipes}} công thức",
+            "emailVerified": "Email đã xác thực",
+            "activationRate": "{{value}} trên tổng tài khoản",
+            "accountState": "Trạng thái tài khoản",
+            "suspendedCount": "Đang khoá: {{count, number}}",
+            "deactivatedCount": "Đã tự huỷ: {{count, number}}"
         },
         "moderation": {
             "title": "Hàng chờ kiểm duyệt",
@@ -38,23 +43,35 @@
             "pendingRecipesDesc": "Công thức món ăn cần xác thực nguyên liệu",
             "reportedComments": "Bình luận bị báo cáo",
             "reportedCommentsDesc": "Bình luận có phản hồi vi phạm từ người dùng",
+            "pendingCount": "{{count}} cần duyệt",
             "cleanQueue": "Hàng chờ sạch",
             "noPending": "Không có nội dung tồn đọng",
+            "oldest": "Mục cũ nhất đã chờ {{age}}",
+            "filterSkipped": "{{count}} bài viết bị bộ lọc bỏ qua",
             "actionReview": "Kiểm duyệt ngay"
         },
-        "breakdown": {
-            "contentTitle": "Phân bổ nội dung",
-            "contentSubtitle": "Tỉ trọng bài viết, công thức và bình luận",
-            "engagementTitle": "Chỉ số tương tác",
-            "engagementSubtitle": "Mức độ gắn kết của cộng đồng trong khoảng thời gian đã chọn",
-            "votes": "Lượt bình chọn (Votes)",
-            "votesDesc": "Đánh giá hữu ích từ thành viên",
-            "commentsCount": "Lượt bình luận (Comments)",
-            "commentsCountDesc": "Thảo luận và đóng góp ý kiến",
-            "avgInteractions": "Tương tác / thành viên hoạt động",
-            "lifetimeTotal": "Tổng tích lũy",
-            "newInRange": "Mới tạo trong kỳ",
-            "activeUserRate": "Tỉ lệ hoạt động trong kỳ"
+        "charts": {
+            "title": "Biến động theo thời gian",
+            "subtitle": "Mọi thứ thay đổi theo thời gian nằm ở đây — phần tổng quan phía trên là số tích luỹ.",
+            "partialBucket": "Cột cuối vẫn đang diễn ra: cửa sổ kết thúc ở hiện tại chứ không phải mốc cột, nên luôn trông như tụt. Đã đánh dấu bằng dấu *.",
+            "axisUtc": "giờ UTC",
+            "inProgress": "đang diễn ra",
+            "range": {
+                "day": "24 giờ qua",
+                "week": "7 ngày qua",
+                "month": "30 ngày qua"
+            },
+            "revenueByPlan": {
+                "title": "Doanh thu theo gói",
+                "subtitle": "Số tiền thực thu trong cửa sổ này.",
+                "amount": "Doanh thu · {{purchases}} lượt mua",
+                "inactive": "ngừng bán"
+            },
+            "publishedPosts": {
+                "title": "Bài viết đã đăng",
+                "subtitle": "Số bài viết được đăng trong mỗi cột.",
+                "published": "Bài đã đăng"
+            }
         },
         "totalCategories": "Tổng danh mục",
         "activeCategories": "Đang hoạt động",

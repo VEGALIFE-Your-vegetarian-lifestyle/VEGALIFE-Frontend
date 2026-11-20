@@ -1,61 +1,68 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
     AlertTriangle,
     ArrowUpRight,
-    CheckCircle2,
+    BadgeCheck,
     ChefHat,
+    CheckCircle2,
+    CreditCard,
     FileText,
-    MessageSquare,
+    Heart,
     RefreshCw,
     ShieldAlert,
+    ThumbsDown,
     ThumbsUp,
     TrendingUp,
     Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/common/PageHeader";
 import { ErrorState } from "@/components/common/ErrorState";
-import { getAdminDashboard } from "../../dashboardApi";
-import type { DashboardRangeType, DashboardResponse } from "../../types";
+import { SectionCard } from "@/components/common/SectionCard";
+import { getAdminDashboard, getAdminDashboardCharts } from "../../dashboardApi";
+import type {
+    DashboardChartsResponse,
+    DashboardRangeType,
+    DashboardResponse,
+} from "../../types";
+import { formatVnd, formatRate, formatHoursAge } from "../../dashboardFormat";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { cn } from "@/shared/utils/cn";
 import { useUiStore } from "@/shared/ui/uiStore";
 
-const RANGE_OPTIONS: { key: DashboardRangeType; labelKey: string }[] = [
-    { key: "day", labelKey: "range.day" },
-    { key: "week", labelKey: "range.week" },
-    { key: "month", labelKey: "range.month" },
-    { key: "custom", labelKey: "range.custom" },
-];
+// recharts chỉ cần ở trang này → tách chunk riêng, user thường không tải.
+const DashboardCharts = lazy(() =>
+    import("./DashboardCharts").then((m) => ({ default: m.DashboardCharts })),
+);
 
 export default function AdminDashboardPage() {
     const { t } = useTranslation("admin");
     const language = useUiStore((state) => state.language);
     const [range, setRange] = useState<DashboardRangeType>("week");
-    const [customFrom, setCustomFrom] = useState("");
-    const [customTo, setCustomTo] = useState("");
 
-    const isCustomValid = range !== "custom" || (Boolean(customFrom) && Boolean(customTo) && customFrom <= customTo);
+    // Summary: lifetime/trạng thái hiện tại, không tham số thời gian.
+    const summary = useQuery<DashboardResponse>({
+        queryKey: ["admin-dashboard"],
+        queryFn: () => getAdminDashboard(),
+    });
 
-    const { data, isLoading, isError, isFetching, refetch } = useQuery<DashboardResponse>({
-        queryKey: ["admin-dashboard", range, range === "custom" ? customFrom : undefined, range === "custom" ? customTo : undefined],
-        queryFn: () =>
-            getAdminDashboard({
-                range,
-                from: range === "custom" ? customFrom : undefined,
-                to: range === "custom" ? customTo : undefined,
-            }),
-        enabled: isCustomValid,
+    // Charts: cửa sổ thời gian, cache riêng theo từng range.
+    const charts = useQuery<DashboardChartsResponse>({
+        queryKey: ["admin-dashboard-charts", range],
+        queryFn: () => getAdminDashboardCharts({ range }),
         placeholderData: keepPreviousData,
     });
 
-    if (isError) {
+    const { data, isLoading, isFetching } = summary;
+    const currency = data?.meta.currency ?? "VND";
+    const money = (amount: number) => formatVnd(amount, language, currency);
+
+    if (summary.isError) {
         return (
             <div className="space-y-6">
                 <PageHeader
@@ -64,7 +71,7 @@ export default function AdminDashboardPage() {
                     description={t("dashboard.subtitle")}
                 />
                 <div className="rounded-2xl border border-border bg-card p-6">
-                    <ErrorState onRetry={() => void refetch()} />
+                    <ErrorState onRetry={() => void summary.refetch()} />
                 </div>
             </div>
         );
@@ -75,13 +82,9 @@ export default function AdminDashboardPage() {
         (data?.moderationQueue.pendingRecipes ?? 0) +
         (data?.moderationQueue.reportedComments ?? 0);
 
-    const activeUsers = data?.users.activeInRange ?? 0;
-    const totalInteractions = (data?.engagement.votesInRange ?? 0) + (data?.engagement.commentsInRange ?? 0);
-    const avgInteractions = activeUsers > 0 ? (totalInteractions / activeUsers).toFixed(1) : "0";
-
     return (
         <div className="space-y-6">
-            {/* Header + Range Filter Bar */}
+            {/* Header */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <PageHeader
                     breadcrumb={[t("dashboard.adminLabel"), t("dashboard.title")]}
@@ -90,177 +93,162 @@ export default function AdminDashboardPage() {
                 />
 
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:self-start lg:self-auto">
-                    {/* Range Tabs */}
-                    <div className="inline-flex items-center rounded-xl border border-border bg-card p-1 shadow-sm">
-                        {RANGE_OPTIONS.map((opt) => (
-                            <button
-                                key={opt.key}
-                                type="button"
-                                onClick={() => setRange(opt.key)}
-                                className={cn(
-                                    "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-                                    range === opt.key
-                                        ? "bg-vegan-green text-white shadow-xs"
-                                        : "text-muted-foreground hover:text-dark hover:bg-muted",
-                                )}
-                            >
-                                {t(`dashboard.${opt.labelKey}`)}
-                            </button>
-                        ))}
-                    </div>
-
+                    {data && (
+                        <span className="text-xs text-muted-foreground">
+                            {t("dashboard.asOf", { time: formatDateLocale(data.meta.generatedAt, language) })}
+                        </span>
+                    )}
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => void refetch()}
-                        disabled={isFetching}
+                        onClick={() => {
+                            void summary.refetch();
+                            void charts.refetch();
+                        }}
+                        disabled={isFetching || charts.isFetching}
                         className="gap-2 self-start sm:self-auto"
                         title={t("dashboard.refresh")}
                     >
-                        <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin text-vegan-green")} />
+                        <RefreshCw
+                            className={cn("h-4 w-4", (isFetching || charts.isFetching) && "animate-spin text-vegan-green")}
+                        />
                         <span className="hidden sm:inline">{t("dashboard.refresh")}</span>
                     </Button>
                 </div>
             </div>
 
-            {/* Custom Date Pickers (if custom range selected) */}
-            {range === "custom" && (
-                <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-dark">
-                        <span>{t("dashboard.range.from")}:</span>
-                        <Input
-                            type="date"
-                            value={customFrom}
-                            onChange={(e) => setCustomFrom(e.target.value)}
-                            className="h-8 w-auto text-xs"
-                        />
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-dark">
-                        <span>{t("dashboard.range.to")}:</span>
-                        <Input
-                            type="date"
-                            value={customTo}
-                            onChange={(e) => setCustomTo(e.target.value)}
-                            className="h-8 w-auto text-xs"
-                        />
-                    </div>
-                    {customFrom && customTo && customFrom > customTo && (
-                        <p className="text-xs text-destructive">
-                            {language === "vi" ? "Ngày bắt đầu phải trước ngày kết thúc" : "Start date must be before end date"}
-                        </p>
-                    )}
-                </div>
-            )}
-
-            {/* Date Window Indicator */}
-            {data?.range && !isLoading && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <TrendingUp className="h-3.5 w-3.5 text-vegan-green" />
-                    <span>{t("dashboard.range.window")}</span>
-                    <span className="font-semibold text-dark">
-                        {formatDateLocale(data.range.from, language)} — {formatDateLocale(data.range.to, language)}
-                    </span>
-                    <Badge variant="secondary" size="sm" className="uppercase text-[10px]">
-                        {data.range.type}
-                    </Badge>
-                </div>
-            )}
-
-            {/* Top KPI Cards (4 columns) */}
+            {/* Tổng quan: 5 chỉ số chính */}
             {isLoading ? (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    {Array.from({ length: 5 }).map((_, i) => (
                         <Skeleton key={i} className="h-32 rounded-2xl" />
                     ))}
                 </div>
             ) : data ? (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {/* Users KPI */}
-                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    {/* Thành viên */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-muted-foreground">{t("dashboard.metrics.users")}</span>
+                            <span className="text-sm font-medium text-muted-foreground">
+                                {t("dashboard.metrics.users")}
+                            </span>
                             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-vegan-green-light text-vegan-green">
                                 <Users className="h-5 w-5" />
                             </span>
                         </div>
-                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">{data.users.total.toLocaleString()}</p>
-                        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                            <span className="inline-flex items-center gap-1 font-semibold text-vegan-green">
-                                +{data.users.newInRange} {t("dashboard.metrics.usersNew")}
-                            </span>
-                            <span className="text-muted-foreground">•</span>
-                            <span className="text-muted-foreground">
-                                {data.users.activeInRange} {t("dashboard.metrics.usersActive")}
-                            </span>
-                        </div>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">
+                            {data.users.total.toLocaleString()}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            {t("dashboard.users.activationRate", {
+                                value: formatRate(data.users.activationRate, language),
+                            })}
+                        </p>
                     </div>
 
-                    {/* Posts KPI */}
-                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm">
+                    {/* Bài viết */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-muted-foreground">{t("dashboard.metrics.posts")}</span>
+                            <span className="text-sm font-medium text-muted-foreground">
+                                {t("dashboard.metrics.posts")}
+                            </span>
                             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-vegan-green-light text-vegan-green">
                                 <FileText className="h-5 w-5" />
                             </span>
                         </div>
-                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">{data.content.totalPosts.toLocaleString()}</p>
-                        <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-vegan-green">
-                            +{data.content.newPosts} {t("dashboard.metrics.postsNew")}
-                        </div>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">
+                            {data.content.totalPosts.toLocaleString()}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">{t("dashboard.metrics.postsDesc")}</p>
                     </div>
 
-                    {/* Recipes KPI */}
-                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm">
+                    {/* Công thức */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-muted-foreground">{t("dashboard.metrics.recipes")}</span>
+                            <span className="text-sm font-medium text-muted-foreground">
+                                {t("dashboard.metrics.recipes")}
+                            </span>
                             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cream text-terracotta">
                                 <ChefHat className="h-5 w-5" />
                             </span>
                         </div>
-                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">{data.content.totalRecipes.toLocaleString()}</p>
-                        <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-terracotta">
-                            +{data.content.newRecipes} {t("dashboard.metrics.recipesNew")}
-                        </div>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">
+                            {data.content.totalRecipes.toLocaleString()}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">{t("dashboard.metrics.recipesDesc")}</p>
                     </div>
 
-                    {/* Comments KPI */}
-                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition hover:shadow-sm">
+                    {/* Thành viên trả phí */}
+                    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-muted-foreground">{t("dashboard.metrics.comments")}</span>
+                            <span className="text-sm font-medium text-muted-foreground">
+                                {t("dashboard.money.payingUsersTotal")}
+                            </span>
                             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-dark">
-                                <MessageSquare className="h-5 w-5" />
+                                <CreditCard className="h-5 w-5" />
                             </span>
                         </div>
-                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">{data.content.totalComments.toLocaleString()}</p>
-                        <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-                            +{data.content.newComments} {t("dashboard.metrics.commentsNew")}
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">
+                            {data.money.payingUsersTotal.toLocaleString()}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            {formatRate(data.money.payerConversionRate, language)}{" "}
+                            {t("dashboard.money.payerConversionRate")}
+                        </p>
+                    </div>
+
+                    {/* Doanh thu */}
+                    <div className="rounded-2xl border border-border bg-vegan-green-light/50 p-5 shadow-xs">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">
+                                {t("dashboard.money.revenueTotal")}
+                            </span>
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-vegan-green">
+                                <TrendingUp className="h-5 w-5" />
+                            </span>
                         </div>
+                        <p className="mt-2 text-3xl font-bold tracking-tight text-dark">
+                            {money(data.money.revenueTotal)}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">{t("dashboard.money.revenueGross")}</p>
                     </div>
                 </div>
             ) : null}
 
-            {/* Moderation Queue - Attention Required Snapshot */}
+            {/* Hàng chờ kiểm duyệt */}
             <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-4">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-terracotta">
-                                {t("dashboard.moderation.eyebrow")}
-                            </span>
-                            {totalPending > 0 ? (
-                                <Badge variant="destructive" size="sm">
-                                    {totalPending} {language === "vi" ? "cần duyệt" : "pending"}
-                                </Badge>
-                            ) : (
-                                <Badge variant="secondary" size="sm" className="bg-vegan-green-light text-vegan-green">
-                                    <CheckCircle2 className="mr-1 h-3 w-3" />
-                                    {t("dashboard.moderation.cleanQueue")}
-                                </Badge>
-                            )}
-                        </div>
-                        <h2 className="mt-1 text-lg font-bold text-dark">{t("dashboard.moderation.title")}</h2>
-                        <p className="text-sm text-muted-foreground">{t("dashboard.moderation.subtitle")}</p>
+                <div className="border-b border-border pb-4">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-terracotta">
+                            {t("dashboard.moderation.eyebrow")}
+                        </span>
+                        {totalPending > 0 ? (
+                            <Badge variant="destructive" size="sm">
+                                {t("dashboard.moderation.pendingCount", { count: totalPending })}
+                            </Badge>
+                        ) : (
+                            <Badge variant="secondary" size="sm" className="bg-vegan-green-light text-vegan-green">
+                                <CheckCircle2 className="mr-1 h-3 w-3" />
+                                {t("dashboard.moderation.cleanQueue")}
+                            </Badge>
+                        )}
                     </div>
+                    <h2 className="mt-1 text-lg font-bold text-dark">{t("dashboard.moderation.title")}</h2>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.moderation.subtitle")}</p>
+                    {data && data.moderationQueue.oldestPendingAgeHours > 0 && (
+                        <p className="mt-2 text-xs font-semibold text-terracotta">
+                            {t("dashboard.moderation.oldest", {
+                                age: formatHoursAge(data.moderationQueue.oldestPendingAgeHours, language),
+                            })}
+                        </p>
+                    )}
+                    {data && data.moderationQueue.filterSkippedPosts > 0 && (
+                        <p className="mt-1 text-xs font-semibold text-amber-strong">
+                            {t("dashboard.moderation.filterSkipped", {
+                                count: data.moderationQueue.filterSkippedPosts,
+                            })}
+                        </p>
+                    )}
                 </div>
 
                 {isLoading ? (
@@ -271,7 +259,6 @@ export default function AdminDashboardPage() {
                     </div>
                 ) : data ? (
                     <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        {/* Pending Posts */}
                         <div
                             className={cn(
                                 "flex flex-col justify-between rounded-xl border p-4 transition-all",
@@ -295,7 +282,9 @@ export default function AdminDashboardPage() {
                                 <ShieldAlert
                                     className={cn(
                                         "h-5 w-5",
-                                        data.moderationQueue.pendingPosts > 0 ? "text-amber-600" : "text-muted-foreground",
+                                        data.moderationQueue.pendingPosts > 0
+                                            ? "text-amber-600"
+                                            : "text-muted-foreground",
                                     )}
                                 />
                             </div>
@@ -313,7 +302,6 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
 
-                        {/* Pending Recipes */}
                         <div
                             className={cn(
                                 "flex flex-col justify-between rounded-xl border p-4 transition-all",
@@ -337,7 +325,9 @@ export default function AdminDashboardPage() {
                                 <ChefHat
                                     className={cn(
                                         "h-5 w-5",
-                                        data.moderationQueue.pendingRecipes > 0 ? "text-amber-600" : "text-muted-foreground",
+                                        data.moderationQueue.pendingRecipes > 0
+                                            ? "text-amber-600"
+                                            : "text-muted-foreground",
                                     )}
                                 />
                             </div>
@@ -355,7 +345,6 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
 
-                        {/* Reported Comments */}
                         <div
                             className={cn(
                                 "flex flex-col justify-between rounded-xl border p-4 transition-all",
@@ -379,7 +368,9 @@ export default function AdminDashboardPage() {
                                 <AlertTriangle
                                     className={cn(
                                         "h-5 w-5",
-                                        data.moderationQueue.reportedComments > 0 ? "text-terracotta" : "text-muted-foreground",
+                                        data.moderationQueue.reportedComments > 0
+                                            ? "text-terracotta"
+                                            : "text-muted-foreground",
                                     )}
                                 />
                             </div>
@@ -400,66 +391,89 @@ export default function AdminDashboardPage() {
                 ) : null}
             </div>
 
-            {/* Community Engagement Section */}
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
-                <div className="border-b border-border pb-4">
-                    <h2 className="text-lg font-bold text-dark">{t("dashboard.breakdown.engagementTitle")}</h2>
-                    <p className="text-sm text-muted-foreground">{t("dashboard.breakdown.engagementSubtitle")}</p>
-                </div>
-
-                {isLoading ? (
-                    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <Skeleton className="h-24 w-full rounded-xl" />
-                        <Skeleton className="h-24 w-full rounded-xl" />
-                        <Skeleton className="h-24 w-full rounded-xl" />
-                    </div>
-                ) : data ? (
-                    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        {/* Votes */}
+            {/* Tương tác — toàn bộ là số LIFETIME (không còn số theo kỳ) */}
+            {data && (
+                <SectionCard title={t("dashboard.engagement.title")} subtitle={t("dashboard.engagement.subtitle")}>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="rounded-xl border border-border bg-background p-4">
                             <div className="flex items-center justify-between text-muted-foreground">
-                                <span className="text-xs font-semibold">{t("dashboard.breakdown.votes")}</span>
+                                <span className="text-xs font-semibold">{t("dashboard.engagement.totalVotes")}</span>
                                 <ThumbsUp className="h-4 w-4 text-vegan-green" />
                             </div>
                             <p className="mt-2 text-3xl font-bold text-dark">
-                                {data.engagement.votesInRange.toLocaleString()}
+                                {data.engagement.totalVotes.toLocaleString()}
                             </p>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                                {t("dashboard.breakdown.votesDesc")}
+                            <p className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                                <span className="inline-flex items-center gap-1 text-vegan-green">
+                                    <ThumbsUp className="h-3 w-3" />
+                                    {data.engagement.votesUp.toLocaleString()}
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-terracotta">
+                                    <ThumbsDown className="h-3 w-3" />
+                                    {data.engagement.votesDown.toLocaleString()}
+                                </span>
                             </p>
                         </div>
 
-                        {/* Comments */}
                         <div className="rounded-xl border border-border bg-background p-4">
                             <div className="flex items-center justify-between text-muted-foreground">
-                                <span className="text-xs font-semibold">{t("dashboard.breakdown.commentsCount")}</span>
-                                <MessageSquare className="h-4 w-4 text-terracotta" />
+                                <span className="text-xs font-semibold">{t("dashboard.engagement.totalSaves")}</span>
+                                <Heart className="h-4 w-4 text-terracotta" />
                             </div>
                             <p className="mt-2 text-3xl font-bold text-dark">
-                                {data.engagement.commentsInRange.toLocaleString()}
+                                {data.engagement.totalSaves.toLocaleString()}
                             </p>
                             <p className="mt-1 text-xs text-muted-foreground">
-                                {t("dashboard.breakdown.commentsCountDesc")}
+                                {t("dashboard.engagement.savesBreakdown", {
+                                    posts: data.engagement.savedPosts,
+                                    recipes: data.engagement.savedRecipes,
+                                })}
                             </p>
                         </div>
 
-                        {/* Avg Interactions per Active User */}
-                        <div className="flex flex-col justify-between rounded-xl border border-border bg-vegan-green-light/40 p-4">
-                            <div className="flex items-center justify-between text-dark">
-                                <span className="text-xs font-semibold">{t("dashboard.breakdown.avgInteractions")}</span>
-                                <TrendingUp className="h-4 w-4 text-vegan-green" />
+                        <div className="rounded-xl border border-border bg-background p-4">
+                            <div className="flex items-center justify-between text-muted-foreground">
+                                <span className="text-xs font-semibold">{t("dashboard.engagement.emailVerified")}</span>
+                                <BadgeCheck className="h-4 w-4 text-vegan-green" />
                             </div>
-                            <div className="mt-2 flex items-baseline gap-2">
-                                <span className="text-3xl font-bold text-vegan-green">{avgInteractions}</span>
-                                <span className="text-xs text-muted-foreground">/ user</span>
-                            </div>
+                            <p className="mt-2 text-3xl font-bold text-dark">
+                                {data.users.emailVerified.toLocaleString()}
+                            </p>
                             <p className="mt-1 text-xs text-muted-foreground">
-                                {data.users.activeInRange} {t("dashboard.metrics.usersActive")}
+                                {t("dashboard.engagement.activationRate", {
+                                    value: formatRate(data.users.activationRate, language),
+                                })}
+                            </p>
+                        </div>
+
+                        <div className="rounded-xl border border-border bg-background p-4">
+                            <div className="flex items-center justify-between text-muted-foreground">
+                                <span className="text-xs font-semibold">{t("dashboard.engagement.accountState")}</span>
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                {t("dashboard.engagement.suspendedCount", { count: data.users.suspended })}
+                            </p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {t("dashboard.engagement.deactivatedCount", { count: data.users.deactivated })}
                             </p>
                         </div>
                     </div>
-                ) : null}
-            </div>
+                </SectionCard>
+            )}
+
+            {/* Charts theo thời gian — range chỉ còn ý nghĩa ở đây */}
+            <Suspense fallback={<Skeleton className="h-96 rounded-2xl" />}>
+                <DashboardCharts
+                    data={charts.data}
+                    isLoading={charts.isLoading}
+                    isError={charts.isError}
+                    onRetry={() => void charts.refetch()}
+                    range={range}
+                    onRangeChange={setRange}
+                    language={language}
+                />
+            </Suspense>
         </div>
     );
 }

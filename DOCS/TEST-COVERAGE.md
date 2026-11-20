@@ -69,7 +69,7 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 | `posts/postApi.test.ts` | `getFeedPosts`, `getPostDetail`, `getMyPosts`, `getPosts`, `approvePost`, `rejectPost` | public + user + admin + writes |
 | `categories/categoryApi.test.ts` | `getPublicCategories`, `getCategories`, `createCategory`, `updateCategory`, `retireCategory`, `exportCategoriesCsv` | public + admin + writes |
 | `locations/locationApi.test.ts` | `features/locations/api` — mock `@/shared/api/client` | public |
-| `admin/adminServices.test.ts` | `admin/api` (getUsers/suspend/restore), `videos/api` (getVideos/deleteVideo), `admin/dashboardApi` | admin + **mock** |
+| `admin/adminServices.test.ts` | `admin/api` (getUsers/suspend/restore), `videos/api` (getVideos/deleteVideo), `admin/dashboardApi` (2 endpoint) | admin, gọi BE thật |
 | `nutrition-ai/aiApi.test.ts` | `nutrition-ai/api` + `subscriptionApi` — mock client | user |
 | `nutrition-ai/useAiChat.test.tsx` | `useAiChat` — gửi 2 lần liên tiếp trong một tick chỉ tạo 1 request | user |
 | `recipes/adminApi.test.ts` | `getAdminRecipes` — phân trang 1-based → wire 0-based, whitelist `sort` | admin |
@@ -100,7 +100,7 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 | `locations/pages/LocationDetailPage/` | chi tiết địa điểm, giờ mở cửa, chỉ đường | public |
 | `locations/pages/AdminLocationsPage/` | CRUD địa điểm với `fakeLocationService` | public |
 | `admin/pages/adminPages.test.tsx` | PostsPage/CategoriesPage/UsersPage/VideosPage render + ErrorState | public + admin |
-| `admin/pages/AdminDashboardPage/` | skeleton → 4 metric card, số liệu mock khớp | public |
+| `admin/pages/AdminDashboardPage/` | khối money, KPI lifetime, cảnh báo hàng chờ, đổi range charts không gọi lại summary, ErrorState+retry | public |
 
 ## Điểm đáng lưu ý
 
@@ -123,7 +123,7 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 | Việc | Ghi chú |
 |---|---|
 | Test ghi dữ liệu thật | mới là `it.todo` ở `posts/api`, `categories/api`, `admin/api`; cần `E2E_ALLOW_WRITES=1` |
-| `dashboardService` | test đang khẳng định **dữ liệu mock** (`categoriesSeed` + `delay`). Phải viết lại khi backend có endpoint thật |
+| `dashboardService` | đã viết lại theo 2 endpoint thật (2026-11-20); chạy khi có `E2E_ADMIN_*` |
 | `ProfilePage`, `MyPostsPage`, `ExplorePage`, `HomePage` | chưa có test screen (dietary chỉ test logic, chưa test UI) |
 | `CreateRecipePage` | chỉ test logic `schema`/`payload`; phần render (4 khối, mỗi bước 1 ô, stepper khẩu phần, segmented độ khó) chưa phủ |
 | `MealPlanPage` | chưa có test screen — `week.ts` có test logic, phần render 7 cột/badge/empty chưa phủ |

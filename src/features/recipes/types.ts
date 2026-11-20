@@ -56,6 +56,8 @@ export interface Recipe {
     userId: string;
     dishId: string;
     dishName: string;
+    /** Ảnh của dish dùng chung (`recipe → dish → image_url`) — chỉ đọc, `null` khi admin chưa đặt. */
+    imageUrl: string | null;
     name: string;
     description: string | null;
     instructions: string;
@@ -89,18 +91,15 @@ export interface Recipe {
  * Khác `Recipe`: có `status` (soft-delete suy ra từ `deleted_at`, không lưu cột),
  * thông tin chủ recipe và `categoryIds` (resolve qua post_recipe).
  *
- * Admin list **không** trả tổng dinh dưỡng lẫn `nutritionResolved` (spec live
- * `AdminRecipeListResponse`) → omit cả 6 để type không hứa field BE không gửi.
+ * Payload admin **có** 5 tổng dinh dưỡng + `nutritionResolved` (verify live 2026-11-20)
+ * nên kế thừa nguyên từ `Recipe`. `score` đã bị BE xoá (ADR-026, migration V59).
  */
-export interface AdminRecipe
-    extends Omit<Recipe, "dishName" | "nutritionResolved" | "calories" | "proteinG" | "carbohydrateG" | "fatG" | "fiberG"> {
+export interface AdminRecipe extends Omit<Recipe, "dishName"> {
     /** Admin list trả `null` được, khác response của `POST /api/recipes`. */
     dishName: string | null;
     status: RecipeStatus;
     /** Trạng thái duyệt của recipe — khác `status` (xoá mềm). */
     moderationStatus: ModerationStatus;
-    /** Điểm liên quan lúc nộp; `null` = chưa từng chấm. */
-    score: number | null;
     /** Trạng thái duyệt của tên món dùng chung; duyệt recipe KHÔNG đổi nó. */
     dishModerationStatus: ModerationStatus;
     /** BE trả `displayName` — không còn `username`. */

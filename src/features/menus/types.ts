@@ -98,7 +98,14 @@ export interface CreateMenuRequest {
 export interface MenuWriteResult extends Omit<MenuDetail, "days"> {
     days: {
         date: string;
-        meals: { mealType: MealType; dishId: string; dishName: string; servings: number }[];
+        meals: {
+            mealType: MealType;
+            dishId: string;
+            dishName: string;
+            /** Ảnh dish, đi kèm `dishName` để row bữa ăn khỏi đọc lại. `null` nếu chưa có. */
+            imageUrl: string | null;
+            servings: number;
+        }[];
     }[];
 }
 

@@ -3,30 +3,35 @@
         "title": "Dashboard",
         "subtitle": "Overview of platform metrics and management links.",
         "refresh": "Refresh data",
-        "range": {
-            "label": "Time Range",
-            "day": "Today (24h)",
-            "week": "Last 7 Days",
-            "month": "Last 30 Days",
-            "custom": "Custom",
-            "from": "From",
-            "to": "To",
-            "window": "Data calculated from"
-        },
+        "asOf": "Data as of {{time}}",
         "metrics": {
             "users": "Members",
             "usersDesc": "Registered accounts",
-            "usersNew": "new in range",
-            "usersActive": "active members",
             "posts": "Posts",
             "postsDesc": "Community blog posts",
-            "postsNew": "new posts",
             "recipes": "Recipes",
-            "recipesDesc": "Vegan recipes created",
-            "recipesNew": "new recipes",
-            "comments": "Comments",
-            "commentsDesc": "Community discussions",
-            "commentsNew": "new comments"
+            "recipesDesc": "Vegan recipes created"
+        },
+        "users": {
+            "activationRate": "{{value}} verified email"
+        },
+        "money": {
+            "revenueTotal": "Revenue",
+            "revenueGross": "Gross, all time",
+            "payingUsersTotal": "Paying Members",
+            "payerConversionRate": "of all members ever paid"
+        },
+        "engagement": {
+            "title": "Community Engagement",
+            "subtitle": "Lifetime totals — the per-window figures no longer exist.",
+            "totalVotes": "Total Votes",
+            "totalSaves": "Total Saves",
+            "savesBreakdown": "{{posts}} posts · {{recipes}} recipes",
+            "emailVerified": "Verified Emails",
+            "activationRate": "{{value}} of all accounts",
+            "accountState": "Account State",
+            "suspendedCount": "Suspended: {{count, number}}",
+            "deactivatedCount": "Deactivated: {{count, number}}"
         },
         "moderation": {
             "title": "Moderation Queue",
@@ -38,23 +43,35 @@
             "pendingRecipesDesc": "Vegan dishes awaiting verification",
             "reportedComments": "Reported Comments",
             "reportedCommentsDesc": "Flagged by users for review",
+            "pendingCount": "{{count}} pending",
             "cleanQueue": "Clean queue",
             "noPending": "No pending items",
+            "oldest": "Oldest item has been waiting {{age}}",
+            "filterSkipped": "{{count}} post(s) skipped by the safety filter",
             "actionReview": "Review now"
         },
-        "breakdown": {
-            "contentTitle": "Content Distribution",
-            "contentSubtitle": "Proportion of posts, recipes and comments",
-            "engagementTitle": "Community Engagement",
-            "engagementSubtitle": "Community activity during the selected timeframe",
-            "votes": "Total Votes",
-            "votesDesc": "Helpful feedback from members",
-            "commentsCount": "Total Comments",
-            "commentsCountDesc": "Discussions and replies",
-            "avgInteractions": "Interactions / active member",
-            "lifetimeTotal": "Lifetime total",
-            "newInRange": "Created in range",
-            "activeUserRate": "Active user rate"
+        "charts": {
+            "title": "Trends",
+            "subtitle": "Everything that moves over time lives here — the summary above is lifetime.",
+            "partialBucket": "The last bucket is still in progress: the window ends now, not on a bucket boundary, so it will always look like a drop. It is marked with *.",
+            "axisUtc": "UTC",
+            "inProgress": "in progress",
+            "range": {
+                "day": "Last 24h",
+                "week": "Last 7 days",
+                "month": "Last 30 days"
+            },
+            "revenueByPlan": {
+                "title": "Revenue by Plan",
+                "subtitle": "What was actually charged in this window.",
+                "amount": "Revenue · {{purchases}} purchases",
+                "inactive": "inactive"
+            },
+            "publishedPosts": {
+                "title": "Published Posts",
+                "subtitle": "Posts that went live in each bucket.",
+                "published": "Published posts"
+            }
         },
         "totalCategories": "Total Categories",
         "activeCategories": "Active Categories",

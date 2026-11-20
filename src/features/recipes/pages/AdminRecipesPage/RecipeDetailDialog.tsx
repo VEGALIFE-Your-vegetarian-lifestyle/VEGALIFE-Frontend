@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { RejectionReason } from "@/components/common/RejectionReason";
 import { formatDateLocale } from "@/shared/utils/formatDate";
+import { FALLBACK_IMAGE, showFallbackImage } from "@/shared/utils/display";
 import { MODERATION_VARIANT } from "../../constants";
+import { nutritionTotals } from "../../nutrition";
 import type { AdminRecipe, ModerationStatus } from "../../types";
 
 interface RecipeDetailDialogProps {
@@ -50,6 +52,43 @@ function ModerationBadge({ status, size }: { status: ModerationStatus; size?: "s
     );
 }
 
+/** `nutritionResolved === false` → 5 field đều null; hiện một dòng thay vì 5 ô trống. */
+function NutritionBlock({ recipe }: { recipe: AdminRecipe }) {
+    const { t } = useTranslation("recipe");
+    const totals = nutritionTotals(recipe);
+
+    if (!totals) {
+        return (
+            <p className="rounded-xl bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                {t("myRecipes.meta.nutritionMissing")}
+            </p>
+        );
+    }
+
+    const grams = (value: number) => (Number.isInteger(value) ? `${value} g` : `${value.toFixed(1)} g`);
+    const cells = [
+        { label: t("nutrition.kcal"), value: `${Math.round(totals.kcal)} kcal` },
+        { label: t("nutrition.protein"), value: grams(totals.proteinG) },
+        { label: t("nutrition.carbohydrate"), value: grams(totals.carbohydrateG) },
+        { label: t("nutrition.fat"), value: grams(totals.fatG) },
+        { label: t("nutrition.fiber"), value: grams(totals.fiberG) },
+    ];
+
+    return (
+        <section>
+            <h3 className="mb-2 text-sm font-semibold text-dark">{t("nutrition.title")}</h3>
+            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {cells.map((cell) => (
+                    <div key={cell.label} className="min-w-0 rounded-xl bg-muted/40 px-3 py-2">
+                        <dt className="text-xs text-muted-foreground">{cell.label}</dt>
+                        <dd className="text-sm font-semibold tabular-nums text-dark">{cell.value}</dd>
+                    </div>
+                ))}
+            </dl>
+        </section>
+    );
+}
+
 export function RecipeDetailDialog({
     recipe,
     categoryNames,
@@ -73,7 +112,17 @@ export function RecipeDetailDialog({
         >
             {recipe && (
                 <div className="space-y-5">
-                    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {/* Ảnh thuộc dish dùng chung, không phải của recipe — chỉ đọc. */}
+                    <div className="flex items-start gap-4">
+                        <img
+                            src={recipe.imageUrl ?? FALLBACK_IMAGE}
+                            alt={recipe.dishName ?? recipe.name}
+                            loading="lazy"
+                            onError={showFallbackImage()}
+                            className="h-24 w-24 shrink-0 rounded-xl border border-border object-cover"
+                        />
+                        <div className="min-w-0 flex-1">
+                            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         <Meta
                             label={t("recipes.column.dish")}
                             value={recipe.dishName ?? "—"}
@@ -121,6 +170,8 @@ export function RecipeDetailDialog({
                         <Meta label={t("recipes.column.creator")} value={recipe.displayName} />
                         <Meta label={t("recipes.detail.email")} value={recipe.email} />
                     </dl>
+                        </div>
+                    </div>
 
                     <div className="flex flex-wrap items-center gap-2">
                         <ModerationBadge status={recipe.moderationStatus} />
@@ -156,6 +207,8 @@ export function RecipeDetailDialog({
                             })}
                         </p>
                     )}
+
+                    <NutritionBlock recipe={recipe} />
 
                     <section>
                         <h3 className="mb-2 text-sm font-semibold text-dark">

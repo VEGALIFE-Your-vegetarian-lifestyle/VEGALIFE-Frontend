@@ -369,4 +369,4 @@ Sẽ bổ sung khi tới lượt từng screen.
 | AI Nutrition | swaps hardcode, BMI 175/67, model name |
 | Create Post (dialog) / MealPlan | summary không gửi BE, 2 pill tĩnh "Draft autosaved" + "Plant Verified"; servings mặc định |
 | Auth | "10,000+ recipes", "4.2" model rating |
-| Admin | dashboard số giả, `contentCount` giả |
+| Admin | `contentCount` giả (dashboard đã dùng API thật) |

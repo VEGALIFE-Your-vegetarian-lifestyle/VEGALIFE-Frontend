@@ -703,13 +703,23 @@ Muốn hiện plan name ở trang kết quả: hoặc `GET /api/subscriptions/me
 Plan FREE **không bao giờ** tắt được (`PATCH .../active=false` lẫn `DELETE` đều 409) — nó là
 fallback mặc định của BR-SUBS-003.
 
-## 27. Admin dashboard — ❌ còn mock
+## 27. Admin dashboard — ✅ đã nối (2026-11-20, BE PR #211)
 
 | Endpoint | Trạng thái |
 |---|---|
-| GET /api/admin/dashboard | ❌ **backend đã có** (verify live 2026-11-06). Response `DashboardResponse` = `{range{type,from,to}, users{total,newInRange,activeInRange}, content{totalPosts,newPosts,totalRecipes,newRecipes,totalComments,newComments}, engagement{votesInRange,commentsInRange}, moderationQueue{pendingPosts,pendingRecipes,reportedComments}}` |
+| GET /api/admin/dashboard | ✅ lifetime snapshot, **không** tham số. `{meta{generatedAt,currency}, users{total,emailVerified,activatedEver,suspended,deactivated,activationRate}, content{totalPosts,totalRecipes,totalComments}, engagement{totalVotes,votesUp,votesDown,totalSaves,savedPosts,savedRecipes}, moderationQueue{pendingPosts,pendingRecipes,reportedComments,oldestPendingAgeHours,filterSkippedPosts}, money{revenueTotal,transactionsTotal,payingUsersTotal,averageOrderValue,arpu,freeGrantsTotal,payerConversionRate,pendingStaleCount}}`. Cache 5 phút. |
+| GET /api/admin/dashboard/charts | ✅ `?range=day\|week\|month` (khác → 400). **2 series sau khi BE rút gọn (2026-11-20):** `revenueByPlan{items[].purchases}` và `publishedPosts{points[].published}`. `revenueTrend`/`paymentHealth`/`growth` đã bị BE bỏ. Cache 15 phút theo range. |
 
-`features/admin/dashboardApi.ts` vẫn trả số giả — **xoá được ngay**, shape khớp 1:1.
+Spec cũ (4 series, 2026-11-20 sáng): `DOCS/frontend-api-changes-admin-dashboard-split.md` — phần charts trong đó **không còn đúng**.
+
+**Đã xoá khỏi backend, không có thay thế** (UI đã bỏ hẳn, đừng dựng lại):
+`users.newInRange`/`activeInRange` (→ `growth.points[].newUsers` chỉ cover phần "mới"),
+`content.newPosts/newRecipes/newComments`, `engagement.votesInRange/commentsInRange`,
+`range=day|week|month|custom` ở summary, `custom` range nói chung.
+
+**Bẫy khi sửa trang này:** tiền là đồng nguyên (không chia 100); `arpu` chia theo **payer**
+(nhãn "revenue per paying user"); `revenueTotal` là gross; bucket theo UTC (00:00 UTC = 07:00 VN);
+bucket cuối luôn thiếu giờ.
 
 ---
 
@@ -725,7 +735,7 @@ fallback mặc định của BR-SUBS-003.
 5. 🔴 **Recipe V49/V50** — xoá 5 field dinh dưỡng khỏi schema/payload; `unit` optional +
    giới hạn `g/ml/piece`; render 5 tổng + `nutritionResolved` (§19b). Plan chi tiết:
    `DOCS/PLAN-INGREDIENT-NUTRITION.md`.
-6. **Dashboard thật** — `GET /api/admin/dashboard` đã có, bỏ mock `dashboardApi.ts`.
+6. ~~**Dashboard thật**~~ — ✅ xong 2026-11-20 (2 endpoint, xem §27).
 7. **Bỏ `mockAuthors`** — `PostListResponse` đã trả `userId`/`displayName`/`avatarUrl` (§17).
 8. **Comment** — còn: mở UI trả lời (`parentId`), sửa/xoá comment.
 9. **Upload video thật** — thay ô nhập tay `videoUrl` bằng grant → upload → confirm →
@@ -749,8 +759,7 @@ fallback mặc định của BR-SUBS-003.
 
 | File | Dùng bởi | Thay bằng |
 |---|---|---|
-| `src/features/admin/dashboardApi.ts` | `AdminDashboardPage` | `GET /api/admin/dashboard` |
 | `src/features/posts/mockAuthors.ts` | `features/posts/api.ts` | 🟢 **`displayName`/`avatarUrl`/`userId` của `PostListResponse`** — không cần `GET /api/profile/{userId}` nữa |
 | `src/features/posts/mockEnrichment.ts` | `features/posts/api.ts` (`enrichListItem`, `getMockActivity` — cấp card) | `GET /api/posts/{id}/related`, `/votes`. Phần tác giả xoá được ngay |
-| `src/features/categories/mocks.ts` | `features/admin/dashboardApi.ts` | xoá cùng dashboard mock |
-| `src/shared/utils/delay.ts` | `features/admin/dashboardApi.ts`, `src/test/fakeLocationService.ts` | — |
+| `src/features/categories/mocks.ts` | hiện **không ai dùng** (dashboard đã bỏ) — xoá được | — |
+| `src/shared/utils/delay.ts` | `src/test/fakeLocationService.ts` | — |

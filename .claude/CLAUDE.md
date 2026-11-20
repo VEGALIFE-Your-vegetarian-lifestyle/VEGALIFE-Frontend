@@ -62,8 +62,8 @@ src/
     ui/             # 11 primitive UI (xem bảng trên)
     common/         # 10 component dùng chung (xem bảng trên)
   features/
-    admin/          # AdminShell, api, dashboardApi (mock), types,
-                    # pages/{AdminDashboardPage,PostsPage,UsersPage}
+    admin/          # AdminShell, api, dashboardApi (2 endpoint thật), dashboardFormat, types,
+                    # pages/{AdminDashboardPage (+DashboardCharts), PostsPage, UsersPage}
     auth/           # api, useAuth, AuthLayout, pages/{Login,Register,VerifyEmail,ForgotPassword}
     categories/     # CategoriesPage, CategoryFormDialog, api, usePublicCategories, types, mocks
     locations/      # api, nearbyApi, geo, openingHours, types, mocks,
@@ -158,8 +158,8 @@ Sidebar admin khai báo ở `src/features/admin/AdminShell.tsx` (`navItems`; c�
 
 ## Thật vs mock
 
-- **Gọi API thật**: auth, posts, categories, profile (kể cả 5 field dietary), media, videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`, `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus (`GET /api/menus/details`, `POST /api/menus`, `POST /api/menus/{id}/status`), saved (`/api/saved/{posts,recipes}` × GET/POST/DELETE).
-- **Còn mock**: `src/features/admin/dashboardApi.ts` (endpoint `GET /api/admin/dashboard` **đã có** ở backend 2026-11-06, FE chưa nối — shape khớp 1:1); `src/features/posts/{mockEnrichment,mockAuthors}.ts` (field hiển thị BE chưa trả).
+- **Gọi API thật**: auth, posts, categories, profile (kể cả 5 field dietary), media, videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`, `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus (`GET /api/menus/details`, `POST /api/menus`, `POST /api/menus/{id}/status`), saved (`/api/saved/{posts,recipes}` × GET/POST/DELETE), admin dashboard (`GET /api/admin/dashboard` + `/charts`).
+- **Còn mock**: `src/features/posts/{mockEnrichment,mockAuthors}.ts` (field hiển thị BE chưa trả).
 - `src/features/locations/mocks.ts` **không phải** mock API — chỉ là toạ độ tâm các quận TP.HCM.
 - Trạng thái chi tiết từng endpoint: `DOCS/API-COVERAGE.md`.
 
