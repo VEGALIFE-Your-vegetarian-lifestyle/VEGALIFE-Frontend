@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Apple, ChefHat, FileText, LayoutDashboard, Leaf, LogOut, MapPin, Menu, MessageSquare, Tags, UserCircle, Users, Video } from "lucide-react";
+import { Apple, ChefHat, FileText, LayoutDashboard, Leaf, LogOut, MapPin, Menu, MessageSquare, Settings, Tags, UserCircle, Users, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -21,6 +21,7 @@ const navItems = [
     { to: "/admin/recipes", labelKey: "recipes", icon: ChefHat, ready: true },
     { to: "/admin/ingredients", labelKey: "ingredients", icon: Apple, ready: true },
     { to: "/admin/locations", labelKey: "locations", icon: MapPin, ready: true },
+    { to: "/admin/settings", labelKey: "settings", icon: Settings, ready: true },
     { to: "/admin/profile", labelKey: "profile", icon: UserCircle, ready: true },
 ];
 

@@ -9,6 +9,7 @@ import { PublicRoute } from "@/app/guards/PublicRoute";
 import CategoriesPage from "@/features/categories/CategoriesPage";
 import PostsPage from "@/features/admin/pages/PostsPage/PostsPage";
 import AdminCommentsPage from "@/features/admin/pages/AdminCommentsPage/AdminCommentsPage";
+import AdminSettingsPage from "@/features/admin/pages/AdminSettingsPage/AdminSettingsPage";
 import UsersPage from "@/features/admin/pages/UsersPage/UsersPage";
 import VideosPage from "@/features/videos/VideosPage";
 import AdminDashboardPage from "@/features/admin/pages/AdminDashboardPage/AdminDashboardPage";
@@ -131,6 +132,7 @@ export default function AppRoutes() {
                 <Route path="ingredients" element={<AdminIngredientsPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="locations" element={<LocationsPage />} />
+                <Route path="settings" element={<AdminSettingsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
             </Route>
 

@@ -6,7 +6,7 @@ import AdminDashboardPage from "../AdminDashboardPage";
 import * as dashboardApi from "@/features/admin/dashboardApi";
 import type { DashboardChartsResponse, DashboardResponse } from "@/features/admin/types";
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 const mockSummary: DashboardResponse = {
     meta: { generatedAt: "2026-11-20T02:59:47Z", currency: "VND" },

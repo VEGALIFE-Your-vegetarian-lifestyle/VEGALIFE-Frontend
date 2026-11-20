@@ -10,7 +10,7 @@ import CategoriesPage from "@/features/categories/CategoriesPage";
 import UsersPage from "../UsersPage/UsersPage";
 import VideosPage from "@/features/videos/VideosPage";
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 /**
  * Các trang admin gọi API thật cần JWT. Chưa đăng nhập thì query lỗi và trang

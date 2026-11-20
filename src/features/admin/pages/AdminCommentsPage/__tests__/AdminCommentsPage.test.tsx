@@ -5,7 +5,7 @@ import { renderWithProviders } from "@/test/renderWithProviders";
 import AdminCommentsPage from "../AdminCommentsPage";
 import type { AdminComment } from "../../../types";
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 const { getAdminComments, moderateComment } = vi.hoisted(() => ({
     getAdminComments: vi.fn(),

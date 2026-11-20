@@ -111,7 +111,8 @@
             "locations": "Địa điểm",
             "recipes": "Công thức",
             "profile": "Hồ sơ",
-            "ingredients": "Nguyên liệu"
+            "ingredients": "Nguyên liệu",
+            "settings": "Cài đặt"
         },
         "guide": {
             "retire": "Danh mục đang dùng chỉ có thể ngừng sử dụng, không xóa hẳn.",
@@ -204,19 +205,17 @@
             "uploading": "Đang tải...",
             "uploadFailed": "Tải ảnh thất bại",
             "invalidImageType": "Vui lòng chọn file ảnh",
-            "imageTooLarge": "Ảnh không được vượt quá 5MB",
             "removeImage": "Xóa ảnh",
             "dropzoneTitle": "Kéo thả ảnh bìa vào đây",
-            "dropzoneHint": "PNG hoặc JPG, tối đa 5MB. Ảnh ngang tỉ lệ 16:9 là đẹp nhất.",
+            "dropzoneHint": "PNG hoặc JPG. Ảnh ngang tỉ lệ 16:9 là đẹp nhất; giới hạn dung lượng do quản trị viên đặt.",
             "saveChanges": "Lưu thay đổi",
             "addCover": "Thêm ảnh",
             "videoUpload": "Tải video lên",
             "videoFailed": "Tải video thất bại",
             "videoInvalidType": "Vui lòng chọn file video",
-            "videoTooLarge": "Video không được vượt quá 100MB",
             "videoRemove": "Xóa video",
             "videoDropzoneTitle": "Kéo thả file video vào đây",
-            "videoDropzoneHint": "MP4 hoặc WebM, tối đa 100MB.",
+            "videoDropzoneHint": "MP4 hoặc WebM. Giới hạn dung lượng do quản trị viên đặt.",
             "videoSourceRequired": "Vui lòng tải file video lên",
             "coverLabel": "Ảnh bìa",
             "videoLabel": "Video đính kèm"
@@ -658,6 +657,81 @@
             "moderatedSuccess": "Đã gỡ bình luận vi phạm",
             "moderateFailed": "Kiểm duyệt bình luận thất bại. Vui lòng thử lại.",
             "loadFailed": "Không thể tải danh sách bình luận."
+        }
+    },
+    "settings": {
+        "title": "Cài đặt nền tảng",
+        "description": "Giới hạn tải lên, bộ lọc nội dung và trạng thái trợ lý AI — thay đổi áp dụng cho toàn nền tảng.",
+        "unsaved": "{{count}} thay đổi chưa lưu",
+        "allSaved": "Đã lưu",
+        "updatedAt": "Cập nhật {{time}}",
+        "listPlaceholder": "giá,trị,phân,cách",
+        "footnote": "Chỉ những key bạn sửa mới được gửi đi. Bộ lọc nội dung yêu cầu ngưỡng từ chối < ngưỡng chấp nhận.",
+        "actions": {
+            "save": "Lưu thay đổi",
+            "reset": "Bỏ thay đổi"
+        },
+        "toast": {
+            "saved": "Đã cập nhật cài đặt.",
+            "saveFailed": "Cập nhật cài đặt thất bại. Vui lòng thử lại."
+        },
+        "errors": {
+            "emptyList": "Cần ít nhất một giá trị.",
+            "unknownValue": "Giá trị không được hỗ trợ: {{values}}",
+            "notInteger": "Phải là số nguyên.",
+            "notDecimal": "Phải là số.",
+            "notBoolean": "Phải là true hoặc false.",
+            "belowMin": "Tối thiểu là {{min}}.",
+            "aboveMax": "Tối đa là {{max}}.",
+            "rejectNotLessThanAccept": "Ngưỡng từ chối phải thấp hơn ngưỡng chấp nhận."
+        },
+        "categories": {
+            "media": {
+                "title": "Tải lên",
+                "description": "Loại tệp và giới hạn dung lượng áp dụng cho mọi lần tải lên."
+            },
+            "content": {
+                "title": "Bộ lọc nội dung",
+                "description": "Kiểm duyệt tự động nội dung bài viết trước khi đăng."
+            },
+            "ai": {
+                "title": "Trợ lý dinh dưỡng AI",
+                "description": "Trạng thái hoạt động của trợ lý dinh dưỡng."
+            }
+        },
+        "keys": {
+            "upload_allowed_image_types": {
+                "label": "Định dạng ảnh được phép",
+                "helper": "Các MIME type cách nhau bằng dấu phẩy. Hỗ trợ: image/jpeg, image/png, image/webp, image/gif."
+            },
+            "upload_allowed_video_types": {
+                "label": "Định dạng video được phép",
+                "helper": "Các MIME type cách nhau bằng dấu phẩy. Hỗ trợ: video/mp4, video/webm, video/quicktime."
+            },
+            "max_image_upload_mb": {
+                "label": "Dung lượng ảnh tối đa (MB)",
+                "helper": "Từ 1 đến 100."
+            },
+            "max_video_upload_mb": {
+                "label": "Dung lượng video tối đa (MB)",
+                "helper": "Từ 1 đến 1024."
+            },
+            "content_filter_enabled": {
+                "label": "Bật bộ lọc nội dung",
+                "helper": "Khi tắt, mọi bài gửi lên đều bị bỏ qua bước kiểm tra tự động và chờ admin."
+            },
+            "content_filter_accept_threshold": {
+                "label": "Ngưỡng chấp nhận",
+                "helper": "Điểm từ mức này trở lên được đăng tự động. Trong khoảng 0 đến 1."
+            },
+            "content_filter_reject_threshold": {
+                "label": "Ngưỡng từ chối",
+                "helper": "Điểm dưới mức này bị từ chối. Phải thấp hơn ngưỡng chấp nhận."
+            },
+            "ai_chat_enabled": {
+                "label": "Bật trợ lý AI",
+                "helper": "Khi tắt, thành viên không gửi được tin nhắn cho trợ lý dinh dưỡng."
+            }
         }
     }
 }

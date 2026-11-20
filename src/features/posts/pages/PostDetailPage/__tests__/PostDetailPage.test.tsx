@@ -4,7 +4,7 @@ import { renderWithProviders } from "@/test/renderWithProviders";
 import { REMOTE_TIMEOUT_MS } from "@/test/e2eEnv";
 import PostDetailPage from "../PostDetailPage";
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 // ProseMirror cần layout engine thật — jsdom không có. Nội dung bài không phải
 // đối tượng của test này.

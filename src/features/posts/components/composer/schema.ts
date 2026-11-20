@@ -4,7 +4,6 @@ import type { TFunction } from "i18next";
 /** Mockup screen05 đếm `48 / 90`. BE cho 255 nhưng 90 khớp thẻ feed preview (tiêu đề line-clamp). */
 export const MAX_TITLE_LENGTH = 90;
 export const MAX_SUMMARY_LENGTH = 180;
-export const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 /** Schema validate của form soạn bài. Tách khỏi page để sửa rule không phải mở file 600 dòng. */
 export function buildValidationSchema(t: TFunction) {

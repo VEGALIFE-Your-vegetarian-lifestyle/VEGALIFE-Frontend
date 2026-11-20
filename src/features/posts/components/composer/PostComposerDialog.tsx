@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useId, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useFormik } from "formik";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -19,7 +19,7 @@ import { confirmUpload, createUploadGrant, uploadFileToProvider } from "@/shared
 import { useUiStore } from "@/shared/ui/uiStore";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { cn } from "@/shared/utils/cn";
-import { MAX_IMAGE_SIZE, MAX_SUMMARY_LENGTH, MAX_TITLE_LENGTH, buildValidationSchema } from "./schema";
+import { MAX_SUMMARY_LENGTH, MAX_TITLE_LENGTH, buildValidationSchema } from "./schema";
 import { buildContentPayload, buildPatch, type FormValues } from "./payload";
 import { PostPreviewCard } from "./PostPreviewCard";
 import { RecipePickerDialog } from "./RecipePickerDialog";
@@ -72,6 +72,8 @@ function Composer({
     const intentRef = useRef<SubmitIntent>("draft");
     const editorRef = useRef<Editor | null>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
+    /** Handler nằm ngoài cây con của `<Dialog>` → tự tạo id thay vì đọc context. */
+    const composerToastId = useId();
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     /** URL video đã upload — chỉ để hiện preview; `mediaId` nằm trong form (`videoMediaId`). */
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -190,13 +192,10 @@ function Composer({
         if (!file) return;
 
         if (!file.type.startsWith("image/")) {
-            toast.error(t("posts.form.invalidImageType", { ns: "admin" }));
+            toast.error(t("posts.form.invalidImageType", { ns: "admin" }), { toasterId: composerToastId });
             return;
         }
-        if (file.size > MAX_IMAGE_SIZE) {
-            toast.error(t("posts.form.imageTooLarge", { ns: "admin" }));
-            return;
-        }
+        // Không chặn theo 5MB phía client: hạn mức là setting admin sửa được và BE trả câu cụ thể.
 
         setIsUploadingImage(true);
         try {
@@ -210,8 +209,12 @@ function Composer({
             if (confirmed.mediaUrl) {
                 editorRef.current?.chain().focus().setImage({ src: confirmed.mediaUrl }).run();
             }
-        } catch {
-            toast.error(t("posts.form.uploadFailed", { ns: "admin" }));
+        } catch (error) {
+            // 400 của BE mang lý do thật (vượt dung lượng, sai MIME) — đừng nuốt thành câu chung.
+            toast.error(
+                getApiErrorMessage(error, t("posts.form.uploadFailed", { ns: "admin" })),
+                { toasterId: composerToastId },
+            );
         } finally {
             setIsUploadingImage(false);
             if (imageInputRef.current) imageInputRef.current.value = "";
@@ -262,6 +265,7 @@ function Composer({
             <Dialog
                 open
                 onClose={onClose}
+                toasterId={composerToastId}
                 title={t(isEditing ? "posts.edit.title" : "posts.create.title", { ns: "admin" })}
                 description={t(isEditing ? "posts.composer.dialogSubtitleEdit" : "posts.composer.dialogSubtitle", {
                     ns: "admin",

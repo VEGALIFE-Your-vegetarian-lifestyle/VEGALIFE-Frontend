@@ -111,7 +111,8 @@
             "locations": "Locations",
             "recipes": "Recipes",
             "profile": "Profile",
-            "ingredients": "Ingredients"
+            "ingredients": "Ingredients",
+            "settings": "Settings"
         },
         "guide": {
             "retire": "Active categories can only be retired, not permanently deleted.",
@@ -204,19 +205,17 @@
             "uploading": "Uploading...",
             "uploadFailed": "Image upload failed",
             "invalidImageType": "Please select an image file",
-            "imageTooLarge": "Image must not exceed 5MB",
             "removeImage": "Remove image",
             "dropzoneTitle": "Drop your cover image here",
-            "dropzoneHint": "PNG or JPG, up to 5MB. A landscape 16:9 shot works best.",
+            "dropzoneHint": "PNG or JPG. A landscape 16:9 shot works best; the size limit is set by the platform admin.",
             "saveChanges": "Save Changes",
             "addCover": "Add cover",
             "videoUpload": "Upload video",
             "videoFailed": "Video upload failed",
             "videoInvalidType": "Please select a video file",
-            "videoTooLarge": "Video must not exceed 100MB",
             "videoRemove": "Remove video",
             "videoDropzoneTitle": "Drop your video file here",
-            "videoDropzoneHint": "MP4 or WebM, up to 100MB.",
+            "videoDropzoneHint": "MP4 or WebM. The size limit is set by the platform admin.",
             "videoSourceRequired": "Please upload a video file",
             "coverLabel": "Cover",
             "videoLabel": "Attached video"
@@ -658,6 +657,81 @@
             "moderatedSuccess": "Comment successfully moderated",
             "moderateFailed": "Failed to moderate comment. Please try again.",
             "loadFailed": "Failed to load comments."
+        }
+    },
+    "settings": {
+        "title": "Platform Settings",
+        "description": "Upload limits, content filter and AI availability — changes apply to the whole platform.",
+        "unsaved": "{{count}} unsaved change(s)",
+        "allSaved": "Saved",
+        "updatedAt": "Updated {{time}}",
+        "listPlaceholder": "comma,separated,values",
+        "footnote": "Saving sends only the keys you changed. The content filter requires reject < accept.",
+        "actions": {
+            "save": "Save changes",
+            "reset": "Discard"
+        },
+        "toast": {
+            "saved": "Settings updated.",
+            "saveFailed": "Failed to update settings. Please try again."
+        },
+        "errors": {
+            "emptyList": "Enter at least one value.",
+            "unknownValue": "Unsupported value(s): {{values}}",
+            "notInteger": "Must be a whole number.",
+            "notDecimal": "Must be a number.",
+            "notBoolean": "Must be true or false.",
+            "belowMin": "Must be at least {{min}}.",
+            "aboveMax": "Must be at most {{max}}.",
+            "rejectNotLessThanAccept": "The reject threshold must be lower than the accept threshold."
+        },
+        "categories": {
+            "media": {
+                "title": "Uploads",
+                "description": "File types and size limits enforced on every upload."
+            },
+            "content": {
+                "title": "Content Filter",
+                "description": "Automatic moderation of post content before it is published."
+            },
+            "ai": {
+                "title": "AI Nutrition Chat",
+                "description": "Availability of the nutrition assistant."
+            }
+        },
+        "keys": {
+            "upload_allowed_image_types": {
+                "label": "Allowed image types",
+                "helper": "Comma-separated MIME types. Supported: image/jpeg, image/png, image/webp, image/gif."
+            },
+            "upload_allowed_video_types": {
+                "label": "Allowed video types",
+                "helper": "Comma-separated MIME types. Supported: video/mp4, video/webm, video/quicktime."
+            },
+            "max_image_upload_mb": {
+                "label": "Max image size (MB)",
+                "helper": "Between 1 and 100."
+            },
+            "max_video_upload_mb": {
+                "label": "Max video size (MB)",
+                "helper": "Between 1 and 1024."
+            },
+            "content_filter_enabled": {
+                "label": "Content filter enabled",
+                "helper": "When off, every submitted post is skipped by the automatic check and waits for an admin."
+            },
+            "content_filter_accept_threshold": {
+                "label": "Accept threshold",
+                "helper": "Scores at or above this are published automatically. Between 0 and 1."
+            },
+            "content_filter_reject_threshold": {
+                "label": "Reject threshold",
+                "helper": "Scores below this are refused. Must be lower than the accept threshold."
+            },
+            "ai_chat_enabled": {
+                "label": "AI chat enabled",
+                "helper": "When off, members cannot send messages to the nutrition assistant."
+            }
         }
     }
 }

@@ -693,17 +693,17 @@ Bản đồ: react-leaflet (`features/locations/components/PlaceMap.tsx`).
 Muốn hiện plan name ở trang kết quả: hoặc `GET /api/subscriptions/me/history?page=0` tìm theo
 `paymentId`, hoặc bỏ hẳn dòng plan (khuyến nghị — response không cam kết có).
 
-## 26. Admin payments / plans / settings — ❌ chưa làm
+## 26. Admin payments / plans / settings
 
 | Endpoint | Ghi chú |
 |---|---|
+| GET /api/admin/settings | ✅ `getAdminSettings` (`features/admin/settingsApi.ts`). Trả `SettingGroupResponse[]` = `[{category, items:[{key, value, updatedAt}]}]`, sắp category rồi key. **Không có type** — kiểu/biên ở `features/admin/settingsSchema.ts` (bản sao `SettingKey.java`: `media` ×4, `content` ×3, `ai` ×1) |
+| PATCH /api/admin/settings | ✅ `updateAdminSettings`. Body `{settings: Record<string,string>}` (≥1 key), partial — thiếu key = giữ nguyên. Trả **toàn bộ** danh sách. 400: key lạ, sai kiểu/biên (INT `1–100`/`1–1024`, DECIMAL `0–1`, STRING_LIST phải là MIME trong whitelist), hoặc `reject >= accept` |
 | GET /api/admin/payments | `AdminPaymentListRequest` = `page,size,userId,status,createdFrom,createdTo`. Row = `PaymentHistoryItemResponse{id,amount,currency,status,provider,txnRef,paidAt,createdAt,userId}` — 🟢 **live KHÔNG có `subscription`/`plan`** (khác doc cũ mô tả). Pure ledger read, sort `createdAt desc` |
 | GET /api/admin/plans | Trả mảng. Row live `AdminPlanResponse` = `{id, code, name, description, **requestQuota**, priceAmount, priceCurrency, active, sortOrder, createdAt, updatedAt}` |
 | POST /api/admin/plans | `AdminPlanCreateRequest` = `code,name,description,requestQuota,priceAmount,priceCurrency,active,sortOrder`. `code` bất biến, tự uppercase; 409 nếu trùng |
 | PATCH /api/admin/plans/{planId} | 400 khi không gửi field nào; 404; 409 khi tắt `active` của plan FREE |
 | DELETE /api/admin/plans/{planId} | Thực chất là deactivate. 409 với FREE |
-| GET /api/admin/settings | Trả nhóm `{category, items[{key, value, updatedAt}]}` |
-| PATCH /api/admin/settings | `{settings}` — mỗi thay đổi ghi `moderation_log` |
 
 Plan FREE **không bao giờ** tắt được (`PATCH .../active=false` lẫn `DELETE` đều 409) — nó là
 fallback mặc định của BR-SUBS-003.

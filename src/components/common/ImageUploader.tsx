@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Film, ImagePlus, Loader2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDialogToastId } from "@/components/ui/dialog";
 import { confirmUpload, createUploadGrant, uploadFileToProvider } from "@/shared/api/media";
 import type { Media } from "@/shared/types/media";
+import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { cn } from "@/shared/utils/cn";
 
 interface ImageUploaderProps {
@@ -25,14 +27,10 @@ interface ImageUploaderProps {
     variant?: "default" | "compact";
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
-
 /** Nhãn i18n theo loại tệp — ảnh giữ nguyên key cũ để không phải đổi chỗ gọi nào khác. */
 const LABELS = {
     image: {
         invalidType: "posts.form.invalidImageType",
-        tooLarge: "posts.form.imageTooLarge",
         failed: "posts.form.uploadFailed",
         remove: "posts.form.removeImage",
         dropzoneTitle: "posts.form.dropzoneTitle",
@@ -41,7 +39,6 @@ const LABELS = {
     },
     video: {
         invalidType: "posts.form.videoInvalidType",
-        tooLarge: "posts.form.videoTooLarge",
         failed: "posts.form.videoFailed",
         remove: "posts.form.videoRemove",
         dropzoneTitle: "posts.form.videoDropzoneTitle",
@@ -59,25 +56,29 @@ export function ImageUploader({
     variant = "default",
 }: ImageUploaderProps) {
     const { t } = useTranslation("admin");
+    const toasterId = useDialogToastId();
     const [isUploading, setIsUploading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const isVideo = kind === "video";
     const compact = variant === "compact";
-    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_FILE_SIZE;
     const label = LABELS[kind];
+    /** Lỗi hiện trong top layer của dialog nếu có — Toaster toàn cục bị `showModal()` che. */
+    const notifyError = (message: string) => toast.error(message, { toasterId });
 
     const upload = async (file: File) => {
         if (!file.type.startsWith(`${kind}/`)) {
-            toast.error(t(label.invalidType));
+            notifyError(t(label.invalidType));
             return;
         }
 
-        if (file.size > maxSize) {
-            toast.error(t(label.tooLarge));
-            return;
-        }
+        /**
+         * Không chặn theo hằng số phía client: hạn mức là setting admin sửa được
+         * (`max_image_upload_mb` / `max_video_upload_mb`) và BE trả 400 kèm câu cụ thể
+         * ("File exceeds the 50 MB limit"). Chặn trước sẽ hoặc chặn nhầm file hợp lệ,
+         * hoặc nuốt mất câu giải thích thật.
+         */
 
         setIsUploading(true);
         try {
@@ -97,8 +98,9 @@ export function ImageUploader({
                 throw new Error("Media upload confirmation returned no URL");
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : t(label.failed);
-            toast.error(message);
+            // 400 của BE mang lý do thật (sai MIME, vượt dung lượng, grant hết hạn) — đọc từ body.
+            // `uploadFileToProvider` ném `Error` thuần (không có `response`) → rơi về message của nó.
+            notifyError(getApiErrorMessage(error, t(label.failed)));
         } finally {
             setIsUploading(false);
             if (inputRef.current) {
