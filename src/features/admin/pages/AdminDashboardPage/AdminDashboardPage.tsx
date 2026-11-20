@@ -289,7 +289,8 @@ export default function AdminDashboardPage() {
                                 />
                             </div>
                             <div className="mt-4">
-                                <Link to="/admin/posts">
+                                {/* Counter đếm `status=pending` (ADR-029) — mở đúng hàng chờ đó. */}
+                                <Link to="/admin/posts?status=pending">
                                     <Button
                                         variant={data.moderationQueue.pendingPosts > 0 ? "primary" : "outline"}
                                         size="sm"

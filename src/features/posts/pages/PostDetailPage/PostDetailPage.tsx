@@ -50,7 +50,8 @@ export default function PostDetailPage() {
         queryKey: ["post-detail", id],
         queryFn: () => getPostDetail(id),
         enabled: id !== "",
-        // Filter kiểm duyệt chạy async: bài vừa gửi sẽ tự flip sang published/rejected.
+        // Filter kiểm duyệt chạy async: bài vừa gửi đi `processing` → `pending`/`published`.
+        // CHỈ poll `processing`: sang `pending` là đang chờ admin quyết, poll không đổi được gì.
         // ponytail: 3s cố định; đổi sang backoff 3/5/10/30 nếu tải server thành vấn đề.
         refetchInterval: (query) => (query.state.data?.status === "processing" ? 3000 : false),
     });

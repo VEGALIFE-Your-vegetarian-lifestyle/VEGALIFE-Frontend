@@ -131,7 +131,7 @@ describe("AdminDashboardPage", () => {
         expect(screen.getByText("Reported Comments")).toBeInTheDocument();
 
         const reviewLinks = screen.getAllByRole("link", { name: /Review now/i });
-        expect(reviewLinks.some((link) => link.getAttribute("href") === "/admin/posts")).toBe(true);
+        expect(reviewLinks.some((link) => link.getAttribute("href") === "/admin/posts?status=pending")).toBe(true);
         expect(reviewLinks.some((link) => link.getAttribute("href") === "/admin/recipes")).toBe(true);
         expect(reviewLinks.some((link) => link.getAttribute("href") === "/admin/comments")).toBe(true);
     });

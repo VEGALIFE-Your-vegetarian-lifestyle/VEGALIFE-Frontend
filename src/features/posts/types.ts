@@ -1,9 +1,12 @@
 import type { JSONContent } from "@tiptap/react";
 
-// Post status machine — ADR-023. `status` trả lời "công khai thấy được không?";
-// `flag` trả lời "verdict cuối là gì?". Filter fail KHÔNG đẩy bài sang unpublished —
-// chỉ admin từ chối mới tới đó. `hidden` đã bỏ khỏi backend (V56).
-export type PostStatus = "drafted" | "processing" | "published" | "unpublished";
+// Post status machine — ADR-023, ADR-029 (V61). `status` trả lời "công khai thấy được không?";
+// `flag` trả lời "verdict cuối là gì?".
+//   processing — đã gửi, filter còn đang chạy; CHƯA có verdict nên flag luôn null.
+//   pending    — verdict đã có, chờ admin quyết. Đây là hàng chờ duyệt thật sự.
+// Filter fail KHÔNG đẩy bài sang unpublished — chỉ admin từ chối mới tới đó.
+// `hidden` đã bỏ khỏi backend (V56).
+export type PostStatus = "drafted" | "processing" | "pending" | "published" | "unpublished";
 
 /** Verdict cuối của lần kiểm duyệt tự động gần nhất — chỉ có ở admin endpoint. */
 export type PostFlag = "FILTER_PASSED" | "FILTER_FAILED" | "SIMILAR_CONTENT" | "FILTER_SKIPPED";

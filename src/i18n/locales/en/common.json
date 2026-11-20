@@ -64,7 +64,8 @@
     },
     "postStatus": {
         "drafted": "Draft",
-        "processing": "Pending review",
+        "processing": "Processing",
+        "pending": "Pending review",
         "published": "Published",
         "unpublished": "Rejected"
     },

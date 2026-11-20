@@ -68,12 +68,17 @@ Lý do từ chối hiện **chỉ** nằm trong `RejectPostDialog` (bắt buộc
 qua body `{reason}`; tác giả đọc lại qua `rejectionReason` khi `status === "unpublished"`.
 
 Kèm theo, từ **V56/V57/V58** (xem `DOCS/frontend-api-changes-post-status-flag.md`):
-`hidden` **đã bị xoá khỏi backend**; state machine còn `drafted|processing|published|unpublished`.
+`hidden` **đã bị xoá khỏi backend (V56)**. Từ **V61 / ADR-029** state machine có **5** trạng thái:
+`drafted|processing|pending|published|unpublished` — `processing` = filter còn đang chạy (flag
+luôn `null`), `pending` = verdict đã có, **chờ admin quyết** (hàng chờ duyệt thật; dashboard
+`pendingPosts` và `?status=pending` đều đếm cái này). DB ràng buộc
+`status <> 'processing' OR flag IS NULL`.
 `flag` đổi vocab thành `FILTER_PASSED|FILTER_FAILED|SIMILAR_CONTENT|FILTER_SKIPPED|null`, sống
 sót qua publish/approve/reject, và **chỉ trả ở admin endpoint** — `PostListResponse` của member
 không còn `flag`/`flagDetail`. `flagDetail` là object `{kind, outcome?, score?, threshold?,
 postId?, similarity?, cause?}`. `publish: true` chỉ **gửi duyệt** (bài về `processing`), filter
-chạy async mới flip `published`.
+chạy async mới flip `pending`/`published`; bài có media đậu ở `pending` dù text đã pass
+(vì filter không đọc media).
 `PATCH /api/posts/{id}/visibility` **đã bị xoá** → 404.
 
 ## Tổng quan
@@ -281,9 +286,9 @@ admin list là chấp nhận được — `name` lọc ở server, không cần 
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
-| GET /api/admin/posts | ✅ `getPosts` | PostsPage. BE có `status`/`flag`/`userId`/`categoryId`/`createdFrom`/`createdTo`/`sort` — **nhưng swagger chỉ hiện `page`/`size`**, xem ⚠️ dưới. `flag` mặc định **`all`** (V56). Dòng trả kèm `flagDetail` |
+| GET /api/admin/posts | ✅ `getPosts` | PostsPage. `status` ∈ `drafted\|processing\|pending\|published\|unpublished`; **hàng chờ duyệt = `?status=pending`** (V61/ADR-029). `flag` mặc định `all`. Dòng trả kèm `flagDetail` |
 | GET /api/admin/posts/{id} | ❌ | `AdminPostDetailResponse` = `id, title, content, status, flag, flagDetail, contentScore, **recipes[]**, **names[]**, userId, displayName, email`. Mỗi phần tử `ComponentSummary` = `{id, type, name, moderationStatus, score}`. Duyệt theo từng tên |
-| POST /api/admin/posts/{id}/approve | ✅ `approvePost` | `{reason?}` ≤1000. Trả **`AdminPostDetailResponse`** (không phải void). 400 nếu bài `drafted` hoặc chưa có category; 404 nếu không có / xoá mềm. **Duyệt luôn các component PENDING**; **`flag` giữ nguyên** (admin duyệt đè máy) |
+| POST /api/admin/posts/{id}/approve | ✅ `approvePost` | `{reason?}` ≤1000. Trả **`AdminPostDetailResponse`** (không phải void). 400 nếu bài `drafted` hoặc chưa có category; 404 nếu không có / xoá mềm. Chấp nhận cả `processing` (quyết sớm, verdict tới sau bị bỏ) lẫn `pending`. **Duyệt luôn các component PENDING**; **`flag` giữ nguyên** (admin duyệt đè máy) |
 | POST /api/admin/posts/{id}/reject | ✅ `rejectPost` | `{reason?}` ≤1000. Trả `AdminPostDetailResponse`. 400 nếu bài `drafted`; 404. **Chỉ từ chối các component còn `PENDING`**; `flag`/`flagDetail` giữ nguyên |
 | ~~POST /api/admin/posts/{id}/moderate~~ | 🟢 **đã xoá khỏi backend** | `moderatePost` đã xoá khỏi `features/posts/api.ts`. Xem mục đầu file |
 | ~~PATCH /api/posts/{id}/visibility~~ | 🟢 **đã xoá khỏi backend (V56)** → 404 | Thay bằng: admin `POST /api/admin/posts/{id}/reject`; tác giả `PATCH /api/posts/{id}` `{publish: false}` (→ `drafted`) |

@@ -28,8 +28,8 @@ import { RejectPostDialog } from "./RejectPostDialog";
 
 const PAGE_SIZE = 8;
 
-/** Thứ tự hiện trong dropdown lọc — bốn giá trị còn sống sau V56 (`hidden` đã bỏ). */
-const POST_STATUSES: PostStatus[] = ["drafted", "processing", "published", "unpublished"];
+/** Thứ tự hiện trong dropdown lọc — năm giá trị còn sống sau V61 (`hidden` đã bỏ, `pending` mới). */
+const POST_STATUSES: PostStatus[] = ["drafted", "processing", "pending", "published", "unpublished"];
 
 interface ModerateVars {
     id: string;

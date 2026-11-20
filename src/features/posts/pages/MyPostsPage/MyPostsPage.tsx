@@ -39,7 +39,8 @@ const PAGE_SIZE = 8;
 const STATUS_FILTERS: { value: PostStatus | ""; labelKey: string; countKey: keyof MyPostsCounts }[] = [
     { value: "", labelKey: "statusAll", countKey: "all" },
     { value: "published", labelKey: "statusPublished", countKey: "published" },
-    { value: "processing", labelKey: "statusPending", countKey: "processing" },
+    // `pending` = verdict đã có, chờ admin (ADR-029) — đây mới là "chờ duyệt" của member.
+    { value: "pending", labelKey: "statusPending", countKey: "pending" },
     { value: "drafted", labelKey: "statusDraft", countKey: "draft" },
     { value: "unpublished", labelKey: "statusUnpublished", countKey: "unpublished" },
 ];
@@ -65,8 +66,8 @@ export default function MyPostsPage() {
         queryKey: ["my-posts", "counts"],
         queryFn: getMyPostsCounts,
         // Bài vừa gửi tự flip status sau vài giây nên phải poll bảng đếm, không phải danh sách.
-        // ponytail: bài kẹt `processing` (FILTER_SKIPPED chờ admin) khiến poll chạy mãi tới khi
-        // rời trang; React Query tự tạm dừng khi tab ẩn. Thêm backoff nếu thành vấn đề tải.
+        // Chỉ poll khi còn bài `processing` (filter đang chạy); `pending` chờ admin nên poll vô ích.
+        // ponytail: dừng khi rời trang nhờ React Query tự tạm dừng lúc tab ẩn. Thêm backoff nếu tải cao.
         refetchInterval: (query) => ((query.state.data?.processing ?? 0) > 0 ? 3000 : false),
     });
 

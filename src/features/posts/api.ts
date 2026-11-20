@@ -501,7 +501,10 @@ export const getPosts = async ({
 export interface MyPostsCounts {
     all: number;
     published: number;
+    /** Filter còn đang chạy — vài giây, tự flip. Không hiện thành chip. */
     processing: number;
+    /** Verdict đã có, chờ admin quyết — "chờ duyệt" mà user thật sự thấy (ADR-029). */
+    pending: number;
     draft: number;
     unpublished: number;
     /** Số bài có media đính kèm — backend bỏ `type`, giờ suy từ `mediaIds`. */
@@ -560,6 +563,7 @@ export const getMyPostsCounts = async (): Promise<MyPostsCounts> => {
         all: data.data.totalElements,
         published: all.filter((post) => post.status === "published").length,
         processing: all.filter((post) => post.status === "processing").length,
+        pending: all.filter((post) => post.status === "pending").length,
         draft: all.filter((post) => post.status === "drafted").length,
         unpublished: all.filter((post) => post.status === "unpublished").length,
         withMedia: all.filter((post) => post.mediaIds.length > 0).length,

@@ -64,7 +64,8 @@
     },
     "postStatus": {
         "drafted": "Bản nháp",
-        "processing": "Đang chờ duyệt",
+        "processing": "Đang xử lý",
+        "pending": "Đang chờ duyệt",
         "published": "Đã đăng",
         "unpublished": "Bị từ chối"
     },
