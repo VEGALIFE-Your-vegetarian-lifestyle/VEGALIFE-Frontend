@@ -1202,8 +1202,8 @@ Scenario: Admin views member list
 | `/` | HomePage | Hero banner, featured posts, trending videos | ✅ |
 | `/explore` | ExplorePage | Danh sách bài viết (thay cho `/blog`) | ✅ |
 | `/posts/:id` | PostDetailPage | Chi tiết bài + bình luận (thay cho `/blog/:id`) | ✅ |
-| `/nearby` | NearbyPage | Tìm quán chay theo vị trí (thay cho `/restaurants`) | ✅ |
-| `/nearby/:id` | LocationDetailPage | Chi tiết địa điểm | ✅ |
+| `/restaurants` | RestaurantsPage | Tìm quán chay theo vị trí (`/nearby` redirect sang) | ✅ |
+| `/restaurants/:id` | LocationDetailPage | Chi tiết địa điểm | ✅ |
 | `/ai-nutrition` | AiNutritionPage | AI Nutrition Chatbot (thay cho `/chatbot`) | ✅ |
 | `/register` | Auth/Register | Registration form | ✅ |
 | `/login` | Auth/Login | Login form | ✅ |

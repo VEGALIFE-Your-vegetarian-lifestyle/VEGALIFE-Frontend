@@ -17,6 +17,8 @@ export interface AdminRecipeListParams {
     /** 1-based như mọi trang admin khác; hàm này tự trừ 1 khi gửi lên wire. */
     page: number;
     size: number;
+    /** BE tìm substring theo `keyword` (lọc + phân trang ở server). */
+    q?: string;
     sort?: RecipeSort;
     /** Bỏ trống = cả 3 trạng thái. `PENDING` là hàng đợi duyệt. */
     moderationStatus?: ModerationStatus;
@@ -32,10 +34,7 @@ export interface AdminRecipeListParams {
 /**
  * GET /api/admin/recipes — ADMIN-only, phân trang thật ở server.
  * Trả **cả** recipe đã xoá mềm với `status: "DELETED"`; không có tham số lọc status.
- *
- * ponytail: backend chưa có tham số tìm kiếm theo tên → `q` lọc client-side ở
- * `AdminRecipesPage` trên đúng trang đang hiển thị. Thay bằng param `name`/`q` khi
- * backend mở.
+ * Tìm kiếm: BE lọc + phân trang theo `keyword`.
  */
 export async function getAdminRecipes(params: AdminRecipeListParams): Promise<Paginated<AdminRecipe>> {
     const queryParams = new URLSearchParams();
@@ -43,6 +42,7 @@ export async function getAdminRecipes(params: AdminRecipeListParams): Promise<Pa
     queryParams.set("size", String(params.size));
     queryParams.set("sort", params.sort ?? "createdAt,desc");
 
+    if (params.q?.trim()) queryParams.set("keyword", params.q.trim());
     if (params.moderationStatus) queryParams.set("moderationStatus", params.moderationStatus);
     if (params.userId) queryParams.set("userId", params.userId);
     if (params.categoryId) queryParams.set("categoryId", params.categoryId);
@@ -198,6 +198,14 @@ export async function deleteAdminIngredient(id: string): Promise<void> {
  */
 export async function approveDish(dishId: string): Promise<void> {
     await api.post(`/api/admin/dishes/${dishId}/approve`, {});
+}
+
+/**
+ * POST /api/admin/dishes/{id}/reject — từ chối **vĩnh viễn** tên món với member: KHÔNG tạo lại
+ * được tên đó (BR-DISH-001). Không xoá gì, chỉ đổi `moderationStatus`.
+ */
+export async function rejectDish(dishId: string): Promise<void> {
+    await api.post(`/api/admin/dishes/${dishId}/reject`, {});
 }
 
 export interface AdminDishListParams {

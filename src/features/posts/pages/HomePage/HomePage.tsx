@@ -335,7 +335,7 @@ function SectionHeader({ eyebrow, title, subtitle, action, large = false }: Sect
 const CHIPS = [
     { key: "quick", to: "/explore", icon: Zap },
     { key: "mealPlan", to: null, icon: CalendarDays },
-    { key: "restaurants", to: "/nearby", icon: MapPin },
+    { key: "restaurants", to: "/restaurants", icon: MapPin },
     { key: "ai", to: "/ai-nutrition", icon: MessageCircle },
 ] as const;
 
@@ -769,7 +769,7 @@ function HomeDishes() {
  * `lg:col-span-5` nên khi ẩn thì "Community Buzz" tự giãn hết 12 cột.
  * `LocationItem` KHÔNG có ảnh và không có toạ độ người dùng ở đây → thẻ lớn dùng nền gradient
  * + icon thay ảnh, không hiện khoảng cách (mockup vẽ "0.4 km away"); muốn "gần đây" thật phải
- * xin GPS như `/nearby`.
+ * xin GPS như `/restaurants`.
  */
 function HomeNearbyPicks() {
     const { t } = useTranslation("home");
@@ -789,12 +789,12 @@ function HomeNearbyPicks() {
     return (
         <section className="flex flex-col gap-6 lg:col-span-5">
             <SectionHeader
-                eyebrow={t("nearbyPicks.eyebrow")}
-                title={t("nearbyPicks.title")}
-                subtitle={t("nearbyPicks.subtitle")}
+                eyebrow={t("restaurantPicks.eyebrow")}
+                title={t("restaurantPicks.title")}
+                subtitle={t("restaurantPicks.subtitle")}
                 action={
                     <span className="shrink-0 rounded-full bg-vegan-green-subtle px-2.5 py-1 text-[11px] font-bold text-vegan-green">
-                        {t("nearbyPicks.badge")}
+                        {t("restaurantPicks.badge")}
                     </span>
                 }
             />
@@ -806,12 +806,12 @@ function HomeNearbyPicks() {
                     <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-vegan-green-subtle">
                         <Lock className="h-5 w-5 text-vegan-green" aria-hidden="true" />
                     </span>
-                    <p className="text-sm text-muted-foreground">{t("nearbyPicks.loginRequired")}</p>
+                    <p className="text-sm text-muted-foreground">{t("restaurantPicks.loginRequired")}</p>
                     <Link
                         to="/login"
                         className="flex h-10 items-center gap-1.5 rounded-xl bg-vegan-green-bright px-5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-95"
                     >
-                        {t("nearbyPicks.login")}
+                        {t("restaurantPicks.login")}
                         <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                     </Link>
                 </div>
@@ -834,7 +834,7 @@ function HomeNearbyPicks() {
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-center justify-between gap-2">
                                     <h3 className="text-base font-bold leading-snug text-dark md:text-lg">
-                                        <Link to={`/nearby/${featured.id}`} className="hover:text-vegan-green">
+                                        <Link to={`/restaurants/${featured.id}`} className="hover:text-vegan-green">
                                             {featured.name}
                                         </Link>
                                     </h3>
@@ -860,17 +860,17 @@ function HomeNearbyPicks() {
 
                             <div className="grid grid-cols-2 gap-3 pt-1">
                                 <Link
-                                    to="/nearby"
+                                    to="/restaurants"
                                     className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-background text-xs font-semibold text-dark transition-colors hover:bg-muted-bg"
                                 >
                                     <Navigation className="h-3.5 w-3.5" aria-hidden="true" />
-                                    {t("nearbyPicks.viewMap")}
+                                    {t("restaurantPicks.viewMap")}
                                 </Link>
                                 <Link
-                                    to={`/nearby/${featured.id}`}
+                                    to={`/restaurants/${featured.id}`}
                                     className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-vegan-green-bright text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-95"
                                 >
-                                    {t("nearbyPicks.viewPlace")}
+                                    {t("restaurantPicks.viewPlace")}
                                 </Link>
                             </div>
                         </article>
@@ -880,7 +880,7 @@ function HomeNearbyPicks() {
                         {rest.map((place) => (
                             <Link
                                 key={place.id}
-                                to={`/nearby/${place.id}`}
+                                to={`/restaurants/${place.id}`}
                                 className="flex items-center justify-between gap-4 rounded-2xl bg-card p-4 shadow-sm transition-colors hover:bg-vegan-green-subtle"
                             >
                                 <span className="flex min-w-0 items-center gap-3">

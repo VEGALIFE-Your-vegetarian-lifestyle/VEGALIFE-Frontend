@@ -51,7 +51,7 @@ function PlaceCard({
     selected: boolean;
     onSelect: () => void;
 }) {
-    const { t } = useTranslation("nearby");
+    const { t } = useTranslation("restaurant");
     const navigate = useNavigate();
 
     return (
@@ -62,7 +62,7 @@ function PlaceCard({
                 selected ? "border-vegan-green ring-2 ring-vegan-green/30" : "border-border",
             )}
         >
-            <div className="relative flex h-32 w-full flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-vegan-green-subtle sm:w-44">
+            <div className="relative flex h-32 w-full flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-vegan-green-subtle sm:w-32">
                 <MapPin className="h-8 w-8 text-vegan-green" aria-hidden="true" />
                 {place.distance !== undefined && (
                     <span className="absolute bottom-2 left-2 rounded-full bg-dark/80 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
@@ -109,7 +109,7 @@ function PlaceCard({
                         variant="outline"
                         onClick={(event) => {
                             event.stopPropagation();
-                            navigate(`/nearby/${place.id}`);
+                            navigate(`/restaurants/${place.id}`);
                         }}
                     >
                         {t("viewDetails")}
@@ -130,8 +130,8 @@ function PlaceCard({
     );
 }
 
-export default function NearbyPage() {
-    const { t } = useTranslation(["nearby", "common"]);
+export default function RestaurantsPage() {
+    const { t } = useTranslation(["restaurant", "common"]);
     const { t: tl } = useTranslation("location");
     const geo = useGeolocation();
     const [areaKey, setAreaKey] = useState<MockAreaKey>(MOCK_AREAS[0].key);
@@ -151,7 +151,7 @@ export default function NearbyPage() {
     const directionsOrigin = useGps && geo.coords ? geo.coords : undefined;
 
     const nearbyQuery = useQuery({
-        queryKey: ["nearby-locations", origin.lat, origin.lng, RADIUS_KM],
+        queryKey: ["restaurants-nearby", origin.lat, origin.lng, RADIUS_KM],
         queryFn: () => getNearbyLocations({ lat: origin.lat, lng: origin.lng, radius: RADIUS_KM * 1000 }),
         enabled: !hasKeyword,
     });

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "@/test/renderWithProviders";
-import NearbyPage from "../NearbyPage";
+import RestaurantsPage from "../RestaurantsPage";
 import { getLocations, getNearbyLocations } from "../../api";
 
 // Bản đồ Leaflet cần layout thật của trình duyệt nên thay bằng khối đơn giản.
@@ -22,7 +22,7 @@ vi.mock("../../api", async () => {
 
 const cards = () => screen.getAllByRole("article");
 
-describe("NearbyPage", () => {
+describe("RestaurantsPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -31,9 +31,9 @@ describe("NearbyPage", () => {
     });
 
     it("mặc định hiện khu vực Quận 1, xếp gần đến xa, có bản đồ, không còn Recipe Finder và placeType", async () => {
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
 
-        expect(screen.getByRole("heading", { name: "Nearby Vegan Places" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "Vegan Restaurants" })).toBeInTheDocument();
         await screen.findByText("Quán Chay Lá Xanh");
         const names = cards().map((card) => within(card).getByRole("heading").textContent);
         expect(names[0]).toBe("Quán Chay Lá Xanh");
@@ -45,7 +45,7 @@ describe("NearbyPage", () => {
 
     it("tìm theo món/tên gọi GET /api/restaurants với keyword, xóa ô search quay về list theo location", async () => {
         const user = userEvent.setup();
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
         await screen.findByText("Quán Chay Lá Xanh");
 
         const searchInput = screen.getByLabelText("Search by dish or name");
@@ -67,7 +67,7 @@ describe("NearbyPage", () => {
 
     it("search không có kết quả thì hiện trạng thái rỗng", async () => {
         const user = userEvent.setup();
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
         await screen.findByText("Quán Chay Lá Xanh");
 
         await user.type(screen.getByLabelText("Search by dish or name"), "mon-khong-ton-tai");
@@ -77,7 +77,7 @@ describe("NearbyPage", () => {
     });
 
     it("không hiện địa điểm đã xóa mềm", async () => {
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
         await screen.findByText("Quán Chay Lá Xanh");
 
         expect(screen.queryByText("Quán Chay Đã Đóng Cửa")).not.toBeInTheDocument();
@@ -85,7 +85,7 @@ describe("NearbyPage", () => {
 
     it("sắp xếp theo đánh giá cao nhất", async () => {
         const user = userEvent.setup();
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
         await screen.findByText("Quán Chay Lá Xanh");
 
         await user.selectOptions(screen.getByLabelText("Sort by"), "Highest rated");
@@ -95,7 +95,7 @@ describe("NearbyPage", () => {
 
     it("đổi khu vực thì tìm lại theo tọa độ mới", async () => {
         const user = userEvent.setup();
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
         await screen.findByText("Quán Chay Lá Xanh");
 
         await user.selectOptions(screen.getByLabelText("Choose an area"), "District 7");
@@ -109,7 +109,7 @@ describe("NearbyPage", () => {
     it("Directions mở Google Maps với địa chỉ làm đích và để Google tự lấy vị trí hiện tại khi chưa dùng GPS", async () => {
         const open = vi.spyOn(window, "open").mockReturnValue(null);
         const user = userEvent.setup();
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
         const card = (await screen.findByText("Quán Chay Lá Xanh")).closest("article")!;
 
         await user.click(within(card).getByRole("button", { name: /Directions/ }));
@@ -129,7 +129,7 @@ describe("NearbyPage", () => {
         );
         Object.defineProperty(navigator, "geolocation", { value: { getCurrentPosition }, configurable: true });
         const user = userEvent.setup();
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
         await screen.findByText("Quán Chay Lá Xanh");
 
         await user.click(screen.getByRole("button", { name: "Use my location" }));
@@ -140,7 +140,7 @@ describe("NearbyPage", () => {
 
     it("không có địa điểm thì hiện thông báo rỗng, bấm hiện tất cả", async () => {
         vi.mocked(getNearbyLocations).mockResolvedValueOnce([]);
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
 
         expect(await screen.findByText("No places in this category")).toBeInTheDocument();
         expect(screen.queryByRole("article")).not.toBeInTheDocument();
@@ -149,9 +149,9 @@ describe("NearbyPage", () => {
     it("lỗi tải thì báo lỗi và thử lại được", async () => {
         vi.mocked(getNearbyLocations).mockRejectedValueOnce(new Error("boom"));
         const user = userEvent.setup();
-        renderWithProviders(<NearbyPage />);
+        renderWithProviders(<RestaurantsPage />);
 
-        expect(await screen.findByRole("alert")).toHaveTextContent("Unable to load nearby places");
+        expect(await screen.findByRole("alert")).toHaveTextContent("Unable to load restaurants");
         await user.click(screen.getByRole("button", { name: "Try again" }));
 
         expect(await screen.findByText("Quán Chay Lá Xanh")).toBeInTheDocument();

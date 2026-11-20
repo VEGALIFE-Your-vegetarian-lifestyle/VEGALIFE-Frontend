@@ -564,10 +564,17 @@
             "body": "“{{name}}” sẽ bị xoá mềm. Không có endpoint khôi phục.",
             "confirm": "Xoá món"
         },
+        "reject": {
+            "title": "Từ chối món?",
+            "body": "“{{name}}” sẽ bị từ chối vĩnh viễn: thành viên không thể tạo lại món với tên này.",
+            "confirm": "Từ chối món"
+        },
         "toast": {
             "created": "Đã tạo món",
             "updated": "Đã cập nhật món",
             "deleted": "Đã xoá món",
+            "approved": "Đã duyệt món",
+            "rejected": "Đã từ chối món",
             "failed": "Thao tác thất bại. Vui lòng thử lại."
         },
         "empty": {

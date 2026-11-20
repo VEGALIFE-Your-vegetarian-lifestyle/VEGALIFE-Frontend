@@ -37,6 +37,7 @@ export default function UsersPage() {
             getUsers({
                 page: page - 1,
                 size: PAGE_SIZE,
+                q: debouncedQ,
                 status: status || undefined,
             }),
         placeholderData: keepPreviousData,
@@ -75,12 +76,8 @@ export default function UsersPage() {
         else restoreMutation.mutate(confirm.user.id);
     };
 
-    const filteredUsers =
-        data?.data.filter(
-            (user) =>
-                (user.displayName ?? "").toLowerCase().includes(debouncedQ.toLowerCase()) ||
-                user.email.toLowerCase().includes(debouncedQ.toLowerCase()),
-        ) ?? [];
+    // BE lọc + phân trang theo `keyword` rồi, không lọc lại ở client.
+    const users = data?.data ?? [];
 
     const hasFilter = q !== "" || status !== "";
 
@@ -133,7 +130,7 @@ export default function UsersPage() {
                             {isLoading ? (
                                 <TableSkeleton columns={6} />
                             ) : (
-                                filteredUsers.map((user) => (
+                                users.map((user) => (
                                     <TableRow key={user.id}>
                                         <TableCell className="font-medium">{user.displayName}</TableCell>
                                         <TableCell>{user.email}</TableCell>
@@ -172,7 +169,7 @@ export default function UsersPage() {
                         </TableBody>
                     </Table>
 
-                    {!isLoading && filteredUsers.length === 0 && (
+                    {!isLoading && users.length === 0 && (
                         <EmptyState
                             icon={User}
                             title={t("users.empty.title")}

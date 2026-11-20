@@ -42,12 +42,12 @@ export default function LocationsPage() {
             }),
     });
 
-    // Xóa mềm xong thì Nearby cũng phải bỏ địa điểm đó, nên làm mới cả hai query.
+    // Xóa mềm xong thì trang Nhà hàng cũng phải bỏ địa điểm đó, nên làm mới cả hai query.
     const invalidate = () => {
         queryClient.invalidateQueries({ queryKey: ["admin-locations"] });
-        queryClient.invalidateQueries({ queryKey: ["nearby-locations"] });
+        queryClient.invalidateQueries({ queryKey: ["restaurants-nearby"] });
         queryClient.invalidateQueries({ queryKey: ["restaurants-search"] });
-        queryClient.invalidateQueries({ queryKey: ["nearby-place"] });
+        queryClient.invalidateQueries({ queryKey: ["restaurant-place"] });
         queryClient.removeQueries({ queryKey: ["restaurant-detail-form"] });
     };
     const onError = (error: unknown) => {

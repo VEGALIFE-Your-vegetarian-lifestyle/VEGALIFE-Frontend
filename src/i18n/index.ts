@@ -9,7 +9,7 @@ import enProfile from "./locales/en/profile.json";
 import enHome from "./locales/en/home.json";
 import enExplore from "./locales/en/explore.json";
 import enPost from "./locales/en/post.json";
-import enNearby from "./locales/en/nearby.json";
+import enRestaurant from "./locales/en/restaurant.json";
 import enAiNutrition from "./locales/en/aiNutrition.json";
 import enLocation from "./locales/en/location.json";
 import enSubscription from "./locales/en/subscription.json";
@@ -24,7 +24,7 @@ import viProfile from "./locales/vi/profile.json";
 import viHome from "./locales/vi/home.json";
 import viExplore from "./locales/vi/explore.json";
 import viPost from "./locales/vi/post.json";
-import viNearby from "./locales/vi/nearby.json";
+import viRestaurant from "./locales/vi/restaurant.json";
 import viAiNutrition from "./locales/vi/aiNutrition.json";
 import viLocation from "./locales/vi/location.json";
 import viSubscription from "./locales/vi/subscription.json";
@@ -50,7 +50,7 @@ i18n.use(LanguageDetector)
                 home: enHome,
                 explore: enExplore,
                 post: enPost,
-                nearby: enNearby,
+                restaurant: enRestaurant,
                 aiNutrition: enAiNutrition,
                 location: enLocation,
                 subscription: enSubscription,
@@ -67,7 +67,7 @@ i18n.use(LanguageDetector)
                 home: viHome,
                 explore: viExplore,
                 post: viPost,
-                nearby: viNearby,
+                restaurant: viRestaurant,
                 aiNutrition: viAiNutrition,
                 location: viLocation,
                 subscription: viSubscription,

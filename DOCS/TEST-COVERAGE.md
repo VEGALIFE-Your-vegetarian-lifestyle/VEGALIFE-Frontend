@@ -96,7 +96,7 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 | `menus/__tests__/week.test.ts` | `toISODate`, `parseISODate`, `startOfWeek`, `addDays`, `weekDays` (thuần logic): parse ra ngày **local** không qua UTC, chuỗi rác/ngày không tồn tại → `Invalid Date`, ranh giới tháng/năm, không sửa Date gốc | public |
 | `posts/pages/HomePage/__tests__/homeData.test.ts` | `currentWeekRange` (thuần logic, 5 case): bắt đầu thứ Hai đủ 7 ngày, Chủ nhật thuộc tuần đang chạy, thứ Hai là chính nó, bắc qua ranh giới tháng/năm, `toISODate` dùng giờ máy không lệch UTC | public |
 | `menus/create/__tests__/schema.test.ts` | `emptyWeek`, `moveWeek`, `dishUsage`, `daysWithMeals`, `mostRepeatedDish`, `validate`, `buildCreateMenuPayload`, `setDishInDays` (thuần logic, 24 case): 7 ngày liên tiếp, giữ món theo vị trí khi đổi tuần, ngày trống, servings 0/1.5/abc, <5 món, >3 lần/món (ưu tiên hơn thiếu món), notes quá dài, bỏ ô trống khỏi payload | public |
-| `locations/pages/NearbyPage/` | danh sách + bản đồ, đổi vùng, GPS bị từ chối | public |
+| `locations/pages/RestaurantsPage/` | danh sách + bản đồ, đổi vùng, GPS bị từ chối | public |
 | `locations/pages/LocationDetailPage/` | chi tiết địa điểm, giờ mở cửa, chỉ đường | public |
 | `locations/pages/AdminLocationsPage/` | CRUD địa điểm với `fakeLocationService` | public |
 | `admin/pages/adminPages.test.tsx` | PostsPage/CategoriesPage/UsersPage/VideosPage render + ErrorState | public + admin |

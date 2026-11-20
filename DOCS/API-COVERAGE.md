@@ -85,11 +85,11 @@ chạy async mới flip `pending`/`published`; bài có media đậu ở `pendin
 
 | Trạng thái | Số endpoint |
 |---|---|
-| ✅ Đã gọi API thật | 60 |
-| ❌ Chưa làm (backend đã có) | 50 |
+| ✅ Đã gọi API thật | 62 |
+| ❌ Chưa làm (backend đã có) | 48 |
 | — Backend-only, FE không gọi | 2 (`/api/payments/vnpay/ipn` GET+POST) |
 
-> **112 operation** từ `/v3/api-docs` live (2026-11-06). 60 + 50 + 2 = 112.
+> **112 operation** từ `/v3/api-docs` live (2026-11-06). 62 + 48 + 2 = 112.
 >
 > **Endpoint FE đang gọi mà spec live KHÔNG có (3)**: `POST /api/payments/checkout`,
 > `POST /api/subscriptions/me/cancel`, `POST /api/subscriptions/me/purchase/eligibility`.
@@ -120,8 +120,8 @@ chạy async mới flip `pending`/`published`; bài có media đậu ở `pendin
 | Admin Posts | `/admin/posts` | ✅ `GET /api/admin/posts` + `approve`/`reject`/`delete` |
 | Profile | `/profile` | ✅ `GET/PUT /api/profile` (gồm 5 field dietary) + `GET /api/posts` (stats) |
 | Login / Register | `/login`, `/register` | 🔴 auth — RegisterPage gửi `username`, BE nhận `displayName` |
-| Nearby | `/nearby` | ✅ `GET /api/locations/nearby` |
-| Location Detail | `/nearby/:id` | ✅ `GET /api/locations` (lọc theo id ở client) |
+| Restaurants | `/restaurants` | ✅ `GET /api/restaurants/nearby` (redirect `/nearby` → `/restaurants`) |
+| Location Detail | `/restaurants/:id` | ✅ `GET /api/restaurants/{id}` |
 | AI Nutrition | `/ai-nutrition` | ⚠️ `POST /api/ai/messages` + lịch sử hội thoại; `GET /api/subscriptions/me` chỉ trả `remainingUsage` |
 | Create Recipe | `/recipes/create` | ⚠️ `POST /api/recipes` + `GET /api/dishes`, `GET /api/ingredients` — xem §19 |
 | My Recipes | `/recipes` | ⚠️ `GET /api/recipes/me` (lọc/sort/phân trang client-side) — 5 tổng dinh dưỡng mới, chưa render |
@@ -247,7 +247,7 @@ ProfilePage stats (`published`/`videos`/`saved`/`contributions`) suy từ `GET /
 
 | Endpoint | Hàm | UI |
 |---|---|---|
-| GET /api/admin/users | `getUsers` | UsersPage. Gửi `page`/`size`/`sort=createdAt,desc`/`status`; `role` + `createdFrom`/`createdTo` khai báo sẵn nhưng UI chưa dùng |
+| GET /api/admin/users | `getUsers` | UsersPage. Gửi `page`/`size`/`sort=createdAt,desc`/`status`/`keyword`; `role` + `createdFrom`/`createdTo` khai báo sẵn nhưng UI chưa dùng |
 | POST /api/admin/users/{id}/suspend | `suspendUser` | UsersPage |
 | POST /api/admin/users/{id}/restore | `restoreUser` | UsersPage |
 
@@ -256,7 +256,7 @@ thẳng `params.page` và trả `page.page + 1`, nên `UsersPage` phải truyề
 ([api.ts:17](src/features/admin/api.ts#L17), [UsersPage.tsx:37](src/features/admin/pages/UsersPage/UsersPage.tsx#L37)).
 Truyền 1-based như các service khác sẽ lặng lẽ lấy sai trang.
 
-Search `q` lọc client-side **trong trang hiện tại** — backend chưa có tham số tìm kiếm.
+Search `q` gửi lên dưới dạng `?keyword=` — BE lọc + phân trang ở server.
 
 ## 6. Category management (Admin) — ✅ đủ theo backend
 
@@ -294,7 +294,7 @@ admin list là chấp nhận được — `name` lọc ở server, không cần 
 | ~~PATCH /api/posts/{id}/visibility~~ | 🟢 **đã xoá khỏi backend (V56)** → 404 | Thay bằng: admin `POST /api/admin/posts/{id}/reject`; tác giả `PATCH /api/posts/{id}` `{publish: false}` (→ `drafted`) |
 | DELETE /api/posts/{id} | ✅ `deletePost` | |
 
-→ `q` (tìm kiếm) lọc **trong trang hiện tại** — BE chưa có tham số search cho `/api/admin/posts`.
+→ `q` (tìm kiếm) gửi lên dưới dạng `?keyword=` — BE lọc + phân trang ở server.
 
 ⚠️ **Bẫy OpenAPI (vẫn còn 2026-11-06)**: `/api/admin/posts` và `/api/posts` cùng tham chiếu
 schema `PostListRequest` (hai class khác package trùng tên). Bản trong `/v3/api-docs` chỉ có
@@ -321,7 +321,7 @@ BE tối đa 100). Chỉ MIME video được liệt kê (`image/*` bị bỏ); *
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
-| GET /api/admin/recipes | ✅ `getAdminRecipes` | 🟢 `moderationStatus` có trong `RecipeListRequest` lẫn row. ⚠️ Không có tham số tìm theo tên → `q` lọc client-side |
+| GET /api/admin/recipes | ✅ `getAdminRecipes` | 🟢 `moderationStatus` có trong `RecipeListRequest` lẫn row. Tìm kiếm `?keyword=` lọc + phân trang ở server |
 | GET /api/admin/recipes/{id} | ✅ `getAdminRecipe` | Đã nối nhưng **UI không gọi** — row list đủ field, gọi thêm là request thừa |
 | PATCH /api/admin/recipes/{id} | ✅ `updateAdminRecipe` | Chỉ 7 field: `name,description,instructions,prepTimeMinutes,cookTimeMinutes,servings,difficulty`. **Không** sửa được ingredients/dish/dinh dưỡng. 400 khi name/instructions rỗng hoặc `difficulty` lạ; 404 khi xoá mềm |
 | DELETE /api/admin/recipes/{id} | ✅ `deleteAdminRecipe` | **Xoá mềm, một chiều** — spec live **không có** endpoint khôi phục. Row vẫn hiện với `status: DELETED`. ConfirmDialog nói rõ |
@@ -329,10 +329,9 @@ BE tối đa 100). Chỉ MIME video được liệt kê (`image/*` bị bỏ); *
 | POST /api/admin/recipes/{id}/reject | ✅ `rejectRecipe` | `{reason?}` → dialog `RejectRecipeDialog` nhập lý do (bắt buộc ở UI, lưu `moderation_log`). Không xoá gì; tên bị chặn tạo lại |
 
 Route `/admin/recipes`. Phân trang thật ở server (`page`/`size`/`sort` + lọc `userId`,
-`categoryId`, `moderationStatus`, `createdFrom`, `createdTo`). Sort cố định `createdAt,desc`
+`categoryId`, `moderationStatus`, `createdFrom`, `createdTo`, `keyword`). Sort cố định `createdAt,desc`
 (2026-11-20 bỏ `<Select>` chọn sort). Backend trả **cả** recipe đã
-xoá mềm với `status: "DELETED"` và **không** có tham số lọc theo status hay tìm theo tên —
-`q` lọc client-side trên trang hiện tại (xem `ponytail:` trong `features/recipes/adminApi.ts`).
+xoá mềm với `status: "DELETED"` và **không** có tham số lọc theo status.
 
 UI: cột "Duyệt" + `<Select>` lọc 4 lựa chọn (Pending/Approved/Rejected/All). Mọi thao tác ghi
 (Duyệt/Từ chối/Sửa/Xoá) nằm trong dialog chi tiết — admin phải đọc nội dung trước. Duyệt qua
@@ -402,7 +401,7 @@ Shape response:
 - `AdminDishCreateRequest` = `name, description, imageUrl, cuisineType`
 - `AdminIngredientCreateRequest` = `name` (bắt buộc, ≤100), `unit` (≤30), 5 giá trị dinh dưỡng — (**không** `pieceGrams` — đã bỏ). Gửi 1–4 giá trị → 400; có dinh dưỡng mà không có `unit` → 400
 
-**Dish — route `/admin/dishes`, đã nối 4/7 endpoint** (`features/recipes/adminApi.ts` +
+**Dish — route `/admin/dishes`, đã nối 6/7 endpoint** (`features/recipes/adminApi.ts` +
 `pages/AdminDishesPage/`):
 
 | Endpoint | Hàm | UI |
@@ -411,8 +410,9 @@ Shape response:
 | POST | ✅ `createAdminDish` | `DishFormDialog` — tạo tay, `APPROVED` ngay. 409 trùng tên |
 | PATCH | ✅ `updateAdminDish` | Cùng dialog; chỉ gửi field đã đổi |
 | DELETE | ✅ `deleteAdminDish` | `ConfirmDialog` nói rõ xoá mềm, không restore |
+| POST `/{dishId}/approve` | ✅ `approveDish` | Nút Duyệt trên hàng `PENDING`. Cũng dùng ở dialog chi tiết recipe |
+| POST `/{dishId}/reject` | ✅ `rejectDish` | Nút Từ chối trên hàng `PENDING` → `ConfirmDialog` nói rõ tên bị chặn tạo lại vĩnh viễn (BR-DISH-001) |
 | GET `/{dishId}` | ❌ | Row list đủ field |
-| POST `/{dishId}/approve` \| `/reject` | ❌ **cố ý bỏ** | `approveDish()` vẫn dùng ở dialog chi tiết recipe; trang dish không có cột duyệt |
 | 4 endpoint `/{dishId}/ingredients` | ❌ | Chưa làm |
 
 ⚠️ `AdminDishResponse` **không có** `status`/`deletedAt` → không phân biệt được món đã xoá mềm,
@@ -658,17 +658,17 @@ Bài cũ có video ngoài nội dung vẫn hiện qua `PostVideo` ở `PostDetai
 
 Soạn bài là **một dialog** (`PostComposerDialog`, mở bằng `useUiStore().openComposer(postId?)`, mount một lần ở `Layout`) — không còn route `/posts/create` hay `/posts/:id/edit`. Một màn hình: tiêu đề trần → hàng meta (ảnh bìa compact / summary / dropdown danh mục) → editor cao hết khung → dải chip công thức; rail phải = readiness checklist (suy từ form) + preview card; footer cố định = Cancel / Save Draft / Publish.
 
-## 21–22. Nearby location / Location detail — ✅ đủ
+## 21–22. Restaurant / Location detail — ✅ đủ
 
 | Endpoint | Hàm | UI |
 |---|---|---|
-| GET /api/locations/nearby | `getNearbyLocations` | NearbyPage |
-| GET /api/locations | `getLocations` | AdminLocationsPage. BE có `minRating`/`placeType`/`maxPriceLevel`/`openNow`, UI chưa dùng |
-| GET /api/locations/{id} | ❌ backend chưa có | LocationDetailPage dùng `getLocationById` = lấy 100 địa điểm rồi lọc ở client (`ponytail:` trong `api.ts`) |
-| GET /api/admin/locations/{id} | ❌ backend chưa có | Chỉ có PATCH/DELETE trên path này |
-| POST /api/admin/locations | `createLocation` | AdminLocationsPage |
-| PATCH /api/admin/locations/{id} | `updateLocation` | AdminLocationsPage |
-| DELETE /api/admin/locations/{id} | `deleteLocation` | AdminLocationsPage |
+| GET /api/restaurants/nearby | `getNearbyLocations` | RestaurantsPage |
+| GET /api/restaurants | `getLocations` | RestaurantsPage (search), AdminLocationsPage. BE có `minRating`/`maxPriceLevel`/`openNow`, UI chưa dùng hết |
+| GET /api/restaurants/{id} | `getLocationById` | LocationDetailPage — fallback lấy 100 rồi lọc nếu endpoint riêng lỗi (`ponytail:` trong `api.ts`) |
+| GET /api/admin/locations/{id} | ❌ backend chưa có | Chỉ có PATCH/DELETE trên path này (`/api/admin/restaurants/{id}`) |
+| POST /api/admin/restaurants | `createLocation` | AdminLocationsPage |
+| PATCH /api/admin/restaurants/{id} | `updateLocation` | AdminLocationsPage |
+| DELETE /api/admin/restaurants/{id} | `deleteLocation` | AdminLocationsPage |
 
 Bản đồ: react-leaflet (`features/locations/components/PlaceMap.tsx`).
 
