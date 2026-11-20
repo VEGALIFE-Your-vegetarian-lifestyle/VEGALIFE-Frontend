@@ -21,6 +21,7 @@ import { VIDEO_STATUS_VARIANT, VIDEO_STATUSES } from "./constants";
 import type { Video, VideoStatus } from "./types";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
+import { RefreshButton } from "@/components/common/RefreshButton";
 
 const PAGE_SIZE = 8;
 
@@ -31,7 +32,7 @@ export default function VideosPage() {
     const [preview, setPreview] = useState<Video | null>(null);
     const [deleting, setDeleting] = useState<Video | null>(null);
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
         queryKey: ["admin-videos", page, debouncedQ, status],
         queryFn: () =>
             getVideos({ page, size: PAGE_SIZE, q: debouncedQ, status: (status || undefined) as VideoStatus | undefined }),
@@ -57,6 +58,7 @@ export default function VideosPage() {
                 breadcrumb={[t("common:admin"), t("videos.title")]}
                 title={t("videos.title")}
                 description={t("videos.description")}
+                action={<RefreshButton onRefresh={() => void refetch()} isRefreshing={isFetching} />}
             />
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row">

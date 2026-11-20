@@ -104,20 +104,3 @@ export async function retireCategory(id: string): Promise<void> {
 // ponytail: backend chưa có restore / permanent delete / GET admin categories.
 // Thêm lại khi có endpoint: PATCH .../restore, DELETE .../permanent.
 
-/** Export CSV từ chính GET /api/categories (không có endpoint export riêng). */
-export async function exportCategoriesCsv(): Promise<string> {
-    const { data } = await api.get<ApiResponse<PageResponse<BackendCategory>>>("/api/categories", {
-        params: { page: 0, size: 100 },
-    });
-
-    const headers = ["ID", "Name", "Description", "Created At"];
-    const rows = data.data.content.map((category) => [
-        category.id,
-        category.name,
-        category.description ?? "",
-        category.createdAt,
-    ]);
-    const escape = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    return [headers.join(","), ...rows.map((row) => row.map(escape).join(","))].join("\n");
-}
-

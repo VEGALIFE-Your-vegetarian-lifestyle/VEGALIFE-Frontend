@@ -5,6 +5,7 @@ import { Check, FileText, Search, Trash2, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PostStatusBadge } from "@/features/posts/components/PostStatusBadge";
 import { PostFlagBadge } from "@/features/posts/components/PostFlagBadge";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,13 +24,14 @@ import { canPublish, canReject } from "@/features/posts/constants";
 import type { AdminPost, PostStatus } from "@/features/posts/types";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
+import { RefreshButton } from "@/components/common/RefreshButton";
 import { PostPreviewDialog } from "./PostPreviewDialog";
 import { RejectPostDialog } from "./RejectPostDialog";
 
 const PAGE_SIZE = 8;
 
-/** Thứ tự hiện trong dropdown lọc — bốn giá trị còn sống sau V56 (`hidden` đã bỏ). */
-const POST_STATUSES: PostStatus[] = ["drafted", "processing", "published", "unpublished"];
+/** Thứ tự hiện trong dropdown lọc — năm giá trị còn sống sau V61 (`hidden` đã bỏ, `pending` mới). */
+const POST_STATUSES: PostStatus[] = ["drafted", "processing", "pending", "published", "unpublished"];
 
 interface ModerateVars {
     id: string;
@@ -51,7 +53,7 @@ export default function PostsPage() {
     // BE chỉ trả `categoryIds` — tra tên qua danh mục public, chưa có thì hiện UUID.
     const categoryNames = useCategoryNames();
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
         queryKey: ["admin-posts", page, debouncedQ, status],
         queryFn: () =>
             getPosts({ page, size: PAGE_SIZE, q: debouncedQ, status: (status || undefined) as PostStatus | undefined }),
@@ -105,6 +107,7 @@ export default function PostsPage() {
                 breadcrumb={[t("common:admin"), t("posts.title")]}
                 title={t("posts.title")}
                 description={t("posts.description")}
+                action={<RefreshButton onRefresh={() => void refetch()} isRefreshing={isFetching} />}
             />
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row">
@@ -172,7 +175,12 @@ export default function PostsPage() {
                                                 ))}
                                             </div>
                                         </TableCell>
-                                        <TableCell>{post.displayName}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Avatar name={post.displayName} src={post.avatarUrl} size="xs" />
+                                                <span className="truncate">{post.displayName}</span>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             <PostStatusBadge status={post.status} raw />
                                         </TableCell>

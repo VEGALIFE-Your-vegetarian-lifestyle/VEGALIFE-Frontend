@@ -11,8 +11,8 @@ export async function createRecipe(request: CreateRecipeRequest): Promise<Recipe
 
 /**
  * GET /api/recipes/me — công thức của chính mình, **lọc ở server**.
- * `moderationStatus`/`difficulty` bỏ trống = không lọc. Backend **không có** `keyword`
- * → trang tự lọc từ khoá ở client.
+ * `moderationStatus`/`difficulty`/`dishId`/`maxTotalTimeMinutes` bỏ trống = không lọc.
+ * Backend **không có** `keyword` → trang tự lọc từ khoá ở client.
  * Backend trả trang phân trang (`size` ≤ 100); ở đây gom một trang lớn rồi trả mảng phẳng
  * để `recipeStats`/sort/tìm của MyRecipesPage chạy tại chỗ.
  * ponytail: trần 100 công thức mỗi bộ lọc; khi có tác giả vượt trần thì phân trang server.
@@ -20,9 +20,13 @@ export async function createRecipe(request: CreateRecipeRequest): Promise<Recipe
 export async function getMyRecipes({
     moderationStatus,
     difficulty,
+    dishId,
+    maxTotalTimeMinutes,
 }: {
     moderationStatus?: ModerationStatus;
     difficulty?: Difficulty;
+    dishId?: string;
+    maxTotalTimeMinutes?: number;
 } = {}): Promise<Recipe[]> {
     const { data } = await api.get<ApiResponse<PageResponse<Recipe>>>("/api/recipes/me", {
         params: {
@@ -30,6 +34,8 @@ export async function getMyRecipes({
             size: 100,
             ...(moderationStatus ? { moderationStatus } : {}),
             ...(difficulty ? { difficulty } : {}),
+            ...(dishId ? { dishId } : {}),
+            ...(maxTotalTimeMinutes !== undefined ? { maxTotalTimeMinutes } : {}),
         },
     });
     return data.data.content;

@@ -79,7 +79,7 @@ export function ModerateCommentDialog({ open, comment, loading, onSubmit, onClos
             description={
                 comment
                     ? t("comments.moderate.description", {
-                          author: comment.username || comment.userId,
+                          author: comment.displayName || comment.userId,
                           snippet: comment.content.slice(0, 80),
                       })
                     : undefined

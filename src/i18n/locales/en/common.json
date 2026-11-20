@@ -4,6 +4,7 @@
     "vi": "Vietnamese",
     "en": "English",
     "loading": "Loading...",
+    "refresh": "Refresh",
     "save": "Save",
     "cancel": "Cancel",
     "create": "Create",
@@ -55,6 +56,7 @@
         "link": "Insert link",
         "linkPrompt": "Enter the link URL (http:// or https://)",
         "image": "Insert image",
+        "video": "Insert video",
         "table": "Insert table",
         "divider": "Divider",
         "undo": "Undo",
@@ -64,7 +66,8 @@
     },
     "postStatus": {
         "drafted": "Draft",
-        "processing": "Pending review",
+        "processing": "Processing",
+        "pending": "Pending review",
         "published": "Published",
         "unpublished": "Rejected"
     },

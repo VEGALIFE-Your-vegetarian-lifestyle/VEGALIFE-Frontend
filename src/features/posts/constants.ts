@@ -3,26 +3,24 @@ import type { PostFlag, PostStatus } from "./types";
 /** Nhãn hiển thị nằm ở i18n `common:postStatus.*` — xem `PostStatusBadge`. */
 export const POST_STATUS_VARIANT: Record<PostStatus, "secondary" | "cream" | "lightgreen" | "destructive"> = {
     drafted: "secondary",
-    processing: "cream",
+    processing: "secondary",
+    pending: "cream",
     published: "lightgreen",
     unpublished: "destructive",
 };
 
 /**
- * `approvePost` chỉ có nghĩa trên bài đang chờ duyệt (`processing`). Bài `published` đã
- * duyệt rồi → không còn nút; bài `drafted` chưa ai gửi thì BE trả 400; bài `unpublished`
- * đã từ chối rồi → cũng không còn nút.
+ * `approvePost` có nghĩa trên bài đang chờ quyết: `pending` (verdict đã có, chờ admin) và
+ * `processing` (admin được quyết sớm, verdict tới sau bị bỏ — AdminPostService). Bài `drafted`
+ * chưa ai gửi thì BE trả 400; bài `published`/`unpublished` không còn nút.
  */
 export function canPublish(status: PostStatus): boolean {
-    return status === "processing";
+    return status === "pending" || status === "processing";
 }
 
-/**
- * `rejectPost` chỉ hiện trên bài đang chờ duyệt (`processing`). Bài đã duyệt (`published`)
- * hay đã từ chối (`unpublished`) thì ẩn nút, chỉ còn xoá.
- */
+/** `rejectPost` cùng điều kiện với `canPublish` — xem chú thích trên. */
 export function canReject(status: PostStatus): boolean {
-    return status === "processing";
+    return status === "pending" || status === "processing";
 }
 
 /**

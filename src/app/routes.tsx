@@ -9,12 +9,14 @@ import { PublicRoute } from "@/app/guards/PublicRoute";
 import CategoriesPage from "@/features/categories/CategoriesPage";
 import PostsPage from "@/features/admin/pages/PostsPage/PostsPage";
 import AdminCommentsPage from "@/features/admin/pages/AdminCommentsPage/AdminCommentsPage";
+import AdminSettingsPage from "@/features/admin/pages/AdminSettingsPage/AdminSettingsPage";
 import UsersPage from "@/features/admin/pages/UsersPage/UsersPage";
 import VideosPage from "@/features/videos/VideosPage";
 import AdminDashboardPage from "@/features/admin/pages/AdminDashboardPage/AdminDashboardPage";
 import AiNutritionPage from "@/features/nutrition-ai/AiNutritionPage";
 import MyRecipesPage from "@/features/recipes/pages/MyRecipesPage/MyRecipesPage";
 import AdminRecipesPage from "@/features/recipes/pages/AdminRecipesPage/AdminRecipesPage";
+import AdminDishesPage from "@/features/recipes/pages/AdminDishesPage/AdminDishesPage";
 import AdminIngredientsPage from "@/features/recipes/pages/AdminIngredientsPage/AdminIngredientsPage";
 import ExplorePage from "@/features/posts/pages/ExplorePage/ExplorePage";
 import LocationsPage from "@/features/locations/pages/AdminLocationsPage/LocationsPage";
@@ -128,9 +130,11 @@ export default function AppRoutes() {
                 <Route path="comments" element={<AdminCommentsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="recipes" element={<AdminRecipesPage />} />
+                <Route path="dishes" element={<AdminDishesPage />} />
                 <Route path="ingredients" element={<AdminIngredientsPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="locations" element={<LocationsPage />} />
+                <Route path="settings" element={<AdminSettingsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
             </Route>
 

@@ -7,7 +7,7 @@ import LocationsPage from "../LocationsPage";
 
 // Dùng bản giả của locationService (dữ liệu trong bộ nhớ) vì backend thật cần đăng nhập.
 vi.mock("../../../api", () => import("@/test/fakeLocationService"));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 // Dữ liệu mock sắp theo ngày tạo mới nhất trước, nên dòng đầu là địa điểm này.
 const FIRST_ROW = "Quán Chay Hoa Sen Tân Bình";

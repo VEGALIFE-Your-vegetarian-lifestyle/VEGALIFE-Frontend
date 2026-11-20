@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PostCard } from "../../components/PostCard";
 import { PostStatusBadge } from "../../components/PostStatusBadge";
 import { PostContent } from "../../components/editor/PostContent";
+import { collectVideoMediaIds } from "../../components/editor/editorContent";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useAuth } from "@/features/auth/useAuth";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
@@ -50,7 +51,8 @@ export default function PostDetailPage() {
         queryKey: ["post-detail", id],
         queryFn: () => getPostDetail(id),
         enabled: id !== "",
-        // Filter kiểm duyệt chạy async: bài vừa gửi sẽ tự flip sang published/rejected.
+        // Filter kiểm duyệt chạy async: bài vừa gửi đi `processing` → `pending`/`published`.
+        // CHỈ poll `processing`: sang `pending` là đang chờ admin quyết, poll không đổi được gì.
         // ponytail: 3s cố định; đổi sang backoff 3/5/10/30 nếu tải server thành vấn đề.
         refetchInterval: (query) => (query.state.data?.status === "processing" ? 3000 : false),
     });
@@ -67,6 +69,9 @@ export default function PostDetailPage() {
     const categoryLabels = (post?.categoryIds ?? [])
         .map((categoryId) => categoryNames.get(categoryId))
         .filter((label): label is string => !!label);
+
+    // Video đã nằm trong nội dung (bài tạo sau khi video chuyển vào editor).
+    const embeddedVideoIds = new Set(collectVideoMediaIds(post?.contentJson));
 
     const handleShare = async () => {
         try {
@@ -149,20 +154,15 @@ export default function PostDetailPage() {
             <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
                 {/* ── Cột đọc ─────────────────────────────────────────── */}
                 <article className="min-w-0">
-                    {/* Video đính kèm đứng trước ảnh bìa — đó là nội dung chính của bài. */}
-                    {post.mediaIds.length > 0 ? (
-                        <PostVideo mediaId={post.mediaIds[0]} />
-                    ) : (
-                        post.featuredImageUrl && (
-                            <div className="aspect-[16/9] overflow-hidden rounded-3xl bg-muted-bg shadow-sm">
-                                <img
-                                    src={post.featuredImageUrl}
-                                    onError={showFallbackImage()}
-                                    alt={post.title}
-                                    className="h-full w-full object-cover"
-                                />
-                            </div>
-                        )
+                    {post.featuredImageUrl && (
+                        <div className="aspect-[16/9] overflow-hidden rounded-3xl bg-muted-bg shadow-sm">
+                            <img
+                                src={post.featuredImageUrl}
+                                onError={showFallbackImage()}
+                                alt={post.title}
+                                className="h-full w-full object-cover"
+                            />
+                        </div>
                     )}
 
                     <header className="mt-8">
@@ -217,6 +217,16 @@ export default function PostDetailPage() {
                     <div className="mt-8 max-w-[68ch]">
                         <PostContent doc={post.contentJson} fallbackText={post.content} className="text-[1.0625rem]" />
                     </div>
+
+                    {/* Video của bài cũ (upload trước khi video vào nội dung) — media nào đã có
+                        node trong `rawContent` thì bỏ qua, tránh hiện hai lần. */}
+                    {post.mediaIds
+                        .filter((mediaId) => !embeddedVideoIds.has(mediaId))
+                        .map((mediaId) => (
+                            <div key={mediaId} className="mt-8 max-w-[68ch]">
+                                <PostVideo mediaId={mediaId} />
+                            </div>
+                        ))}
 
                     {post.categoryIds.length > 0 && (
                         <div className="mt-10 flex flex-wrap items-center gap-2 border-t border-border pt-6">

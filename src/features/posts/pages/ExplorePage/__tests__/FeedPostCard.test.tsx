@@ -5,7 +5,7 @@ import { renderWithProviders } from "@/test/renderWithProviders";
 import type { PostListResponse } from "../../../types";
 import { FeedPostCard } from "../FeedPostCard";
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 // `vi.mock` bị hoist lên đầu file → mọi biến nó dùng phải khai báo qua `vi.hoisted`.
 const { POST_ID, getPostVotes, getPostComments } = vi.hoisted(() => ({

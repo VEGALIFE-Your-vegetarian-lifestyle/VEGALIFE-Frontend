@@ -1,13 +1,12 @@
 // @vitest-environment node
 /**
  * Test categoryService — gọi BACKEND THẬT.
- * `getPublicCategories` / `getCategories` / `exportCategoriesCsv` đều đi qua
+ * `getPublicCategories` / `getCategories` đều đi qua
  * GET /api/categories (public) nên chạy được không cần tài khoản.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
     createCategory,
-    exportCategoriesCsv,
     getCategories,
     getPublicCategories,
     retireCategory,
@@ -93,37 +92,6 @@ describe("categoryService — public", () => {
             const times = page.data.map((category) => new Date(category.createdAt).getTime());
 
             expect(times).toEqual([...times].sort((a, b) => b - a));
-        },
-        REMOTE_TIMEOUT_MS,
-    );
-
-    it(
-        "exportCategoriesCsv trả CSV có header và số dòng khớp số category",
-        async () => {
-            const [csv, page] = await Promise.all([
-                exportCategoriesCsv(),
-                getPublicCategories({ page: 0, size: 100 }),
-            ]);
-
-            const lines = csv.split("\n");
-            // Header không escape — chỉ các dòng dữ liệu mới bọc nháy.
-            expect(lines[0]).toBe("ID,Name,Description,Created At");
-            expect(lines).toHaveLength(page.content.length + 1);
-        },
-        REMOTE_TIMEOUT_MS,
-    );
-
-    it(
-        "exportCategoriesCsv escape dấu nháy kép để CSV không vỡ cột",
-        async () => {
-            const csv = await exportCategoriesCsv();
-            const dataLines = csv.split("\n").slice(1);
-
-            for (const line of dataLines) {
-                // 4 field đều được bọc nháy → số dấu " luôn chẵn (kể cả nháy escape).
-                const quotes = (line.match(/"/g) ?? []).length;
-                expect(quotes % 2).toBe(0);
-            }
         },
         REMOTE_TIMEOUT_MS,
     );

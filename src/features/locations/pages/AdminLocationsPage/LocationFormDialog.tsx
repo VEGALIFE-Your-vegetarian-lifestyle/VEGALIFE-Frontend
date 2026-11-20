@@ -12,6 +12,7 @@ import { FormField } from "@/components/common/FormField";
 import { searchDishes } from "@/shared/api/dishes";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { getLocationById } from "../../api";
+import { searchAddresses, type AddressSuggestion } from "../../geo";
 import {
     type LocationItem,
     type LocationPayload,
@@ -49,6 +50,20 @@ function LocationForm({ location, isFetchingDetail, loading, onSubmit, onClose }
     const [selectedDishes, setSelectedDishes] = useState<RestaurantDish[]>(
         () => location?.dishes ?? [],
     );
+
+    // Gợi ý địa chỉ: chỉ chạy khi admin focus ô address và đã gõ đủ dài.
+    const [isAddressOpen, setIsAddressOpen] = useState(false);
+    const [addressQuery, setAddressQuery] = useState("");
+    /** Kết quả chọn được là cấp đường/thành phố, không có số nhà → cảnh báo admin. */
+    const [addressApproximate, setAddressApproximate] = useState(false);
+    const debouncedAddress = useDebounce(addressQuery.trim(), 400);
+    const { data: addressHits, isFetching: isSearchingAddress, isError: isAddressError } = useQuery({
+        queryKey: ["geocode", debouncedAddress],
+        queryFn: () => searchAddresses(debouncedAddress),
+        enabled: isAddressOpen && debouncedAddress.length >= 3,
+        staleTime: 5 * 60_000,
+        retry: 1,
+    });
 
     // Đồng bộ danh sách món ăn khi API chi tiết GET /api/restaurants/{id} trả về
     useEffect(() => {
@@ -182,6 +197,19 @@ function LocationForm({ location, isFetchingDetail, loading, onSubmit, onClose }
             }),
     });
 
+    /** Chọn gợi ý: địa chỉ đầy đủ ghi đè ô address, toạ độ điền vào 2 ô lat/lng. */
+    const pickAddress = (hit: AddressSuggestion) => {
+        formik.setFieldValue("address", hit.address);
+        formik.setFieldValue("latitude", hit.lat.toFixed(6));
+        formik.setFieldValue("longitude", hit.lng.toFixed(6));
+        formik.setFieldTouched("address", true);
+        formik.setFieldTouched("latitude", true);
+        formik.setFieldTouched("longitude", true);
+        setAddressApproximate(hit.approximate);
+        setAddressQuery("");
+        setIsAddressOpen(false);
+    };
+
     const fieldError = (name: keyof typeof formik.values) =>
         formik.touched[name] ? (formik.errors[name] as string | undefined) : undefined;
 
@@ -189,7 +217,6 @@ function LocationForm({ location, isFetchingDetail, loading, onSubmit, onClose }
         name:
             | "name"
             | "description"
-            | "address"
             | "latitude"
             | "longitude"
             | "phoneNumber"
@@ -211,15 +238,107 @@ function LocationForm({ location, isFetchingDetail, loading, onSubmit, onClose }
         </FormField>
     );
 
+    /**
+     * Ô address có gợi ý từ Photon. Gõ tới đâu gợi ý tới đó; chọn một gợi ý thì ghi đè
+     * address + điền lat/lng. Ô lat/lng vẫn sửa tay được để admin tinh chỉnh.
+     */
+    const addressField = () => {
+        const hits = addressHits ?? [];
+        const showDropdown = isAddressOpen && debouncedAddress.length >= 3;
+        return (
+            <FormField
+                label={t("admin.form.address")}
+                htmlFor="address"
+                required
+                error={fieldError("address")}
+                helper={addressApproximate ? t("admin.form.addressApproximate") : undefined}
+            >
+                <div className="relative">
+                    <Input
+                        id="address"
+                        name="address"
+                        value={formik.values.address}
+                        onChange={(event) => {
+                            formik.handleChange(event);
+                            setAddressQuery(event.target.value);
+                            setAddressApproximate(false);
+                            setIsAddressOpen(true);
+                        }}
+                        onFocus={() => setIsAddressOpen(true)}
+                        onBlur={() => {
+                            formik.handleBlur({ target: { name: "address" } });
+                            // Trễ để cú click vào gợi ý kịp chạy trước khi dropdown đóng.
+                            setTimeout(() => setIsAddressOpen(false), 200);
+                        }}
+                        placeholder={t("admin.form.addressPlaceholder")}
+                        autoComplete="off"
+                        aria-invalid={formik.touched.address && !!formik.errors.address}
+                        aria-expanded={showDropdown}
+                        aria-controls="address-suggestions"
+                        trailing={isSearchingAddress ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined}
+                    />
+
+                    {showDropdown && (
+                        <div
+                            id="address-suggestions"
+                            className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-xl border border-border bg-card p-1.5 shadow-lg"
+                        >
+                            {isSearchingAddress && hits.length === 0 && (
+                                <p className="flex items-center gap-2 p-2.5 text-xs text-muted-foreground">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    {t("admin.form.addressSearching")}
+                                </p>
+                            )}
+                            {isAddressError && (
+                                <p role="alert" className="p-2.5 text-xs text-destructive">
+                                    {t("admin.form.addressError")}
+                                </p>
+                            )}
+                            {!isSearchingAddress && !isAddressError && hits.length === 0 && (
+                                <p className="p-2.5 text-xs text-muted-foreground">
+                                    {t("admin.form.addressEmpty")}
+                                </p>
+                            )}
+                            {hits.map((hit, index) => (
+                                <button
+                                    key={`${hit.lat},${hit.lng},${index}`}
+                                    type="button"
+                                    onMouseDown={(event) => {
+                                        event.preventDefault();
+                                        pickAddress(hit);
+                                    }}
+                                    className="flex w-full items-start justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-dark transition-colors hover:bg-vegan-green/10"
+                                >
+                                    <span className="min-w-0">
+                                        <span className="block font-medium">{hit.address}</span>
+                                        <span className="block text-xs tabular-nums text-muted-foreground">
+                                            {hit.lat.toFixed(6)}, {hit.lng.toFixed(6)}
+                                        </span>
+                                    </span>
+                                    {hit.approximate && (
+                                        <Badge variant="outline" size="sm" className="shrink-0 text-[10px]">
+                                            {t("admin.form.addressApproxBadge")}
+                                        </Badge>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </FormField>
+        );
+    };
+
     return (
         <form onSubmit={formik.handleSubmit} noValidate className="space-y-4">
             {textField("name", t("admin.form.name"), true)}
             {textField("description", t("admin.form.description"))}
-            {textField("address", t("admin.form.address"), true)}
+            {addressField()}
             <div className="grid grid-cols-2 gap-4">
                 {textField("latitude", t("admin.form.latitude"), true)}
                 {textField("longitude", t("admin.form.longitude"), true)}
             </div>
+            <p className="-mt-2 text-xs text-muted-foreground">{t("admin.form.coordinatesHelper")}</p>
             <div className="grid grid-cols-2 gap-4">
                 {textField("rating", t("admin.form.rating"))}
                 {textField("priceLevel", t("admin.form.price"))}

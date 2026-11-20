@@ -6,7 +6,7 @@ import { useAuthStore } from "@/shared/auth/authStore";
 import { CommentThread } from "../CommentThread";
 import type { PostCommentThread } from "../../types";
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 const { updateComment, deleteComment, reportComment, createComment, removeLocalComment } = vi.hoisted(() => ({
     updateComment: vi.fn(),

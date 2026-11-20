@@ -68,12 +68,17 @@ Lý do từ chối hiện **chỉ** nằm trong `RejectPostDialog` (bắt buộc
 qua body `{reason}`; tác giả đọc lại qua `rejectionReason` khi `status === "unpublished"`.
 
 Kèm theo, từ **V56/V57/V58** (xem `DOCS/frontend-api-changes-post-status-flag.md`):
-`hidden` **đã bị xoá khỏi backend**; state machine còn `drafted|processing|published|unpublished`.
+`hidden` **đã bị xoá khỏi backend (V56)**. Từ **V61 / ADR-029** state machine có **5** trạng thái:
+`drafted|processing|pending|published|unpublished` — `processing` = filter còn đang chạy (flag
+luôn `null`), `pending` = verdict đã có, **chờ admin quyết** (hàng chờ duyệt thật; dashboard
+`pendingPosts` và `?status=pending` đều đếm cái này). DB ràng buộc
+`status <> 'processing' OR flag IS NULL`.
 `flag` đổi vocab thành `FILTER_PASSED|FILTER_FAILED|SIMILAR_CONTENT|FILTER_SKIPPED|null`, sống
 sót qua publish/approve/reject, và **chỉ trả ở admin endpoint** — `PostListResponse` của member
 không còn `flag`/`flagDetail`. `flagDetail` là object `{kind, outcome?, score?, threshold?,
 postId?, similarity?, cause?}`. `publish: true` chỉ **gửi duyệt** (bài về `processing`), filter
-chạy async mới flip `published`.
+chạy async mới flip `pending`/`published`; bài có media đậu ở `pending` dù text đã pass
+(vì filter không đọc media).
 `PATCH /api/posts/{id}/visibility` **đã bị xoá** → 404.
 
 ## Tổng quan
@@ -281,9 +286,9 @@ admin list là chấp nhận được — `name` lọc ở server, không cần 
 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
-| GET /api/admin/posts | ✅ `getPosts` | PostsPage. BE có `status`/`flag`/`userId`/`categoryId`/`createdFrom`/`createdTo`/`sort` — **nhưng swagger chỉ hiện `page`/`size`**, xem ⚠️ dưới. `flag` mặc định **`all`** (V56). Dòng trả kèm `flagDetail` |
-| GET /api/admin/posts/{id} | ❌ | `AdminPostDetailResponse` = `id, title, content, status, flag, flagDetail, contentScore, **recipes[]**, **names[]**, userId, displayName, email`. Mỗi phần tử `ComponentSummary` = `{id, type, name, moderationStatus, score}`. Duyệt theo từng tên |
-| POST /api/admin/posts/{id}/approve | ✅ `approvePost` | `{reason?}` ≤1000. Trả **`AdminPostDetailResponse`** (không phải void). 400 nếu bài `drafted` hoặc chưa có category; 404 nếu không có / xoá mềm. **Duyệt luôn các component PENDING**; **`flag` giữ nguyên** (admin duyệt đè máy) |
+| GET /api/admin/posts | ✅ `getPosts` | PostsPage. `status` ∈ `drafted\|processing\|pending\|published\|unpublished`; **hàng chờ duyệt = `?status=pending`** (V61/ADR-029). `flag` mặc định `all`. Dòng trả kèm `flagDetail` |
+| GET /api/admin/posts/{id} | ✅ `getAdminPostDetail` | `AdminPostDetailResponse` = `id, title, content, status, flag, flagDetail, contentScore, **recipes[]**, **names[]**, userId, displayName, email`. Mỗi phần tử `ComponentSummary` = `{id, type, name, moderationStatus}` (`score` đã bỏ, ADR-026). PostsPage gọi khi mở dialog preview để hiện `recipes[]` dạng button → mở dialog recipe read-only; `names[]` (dish + ingredient) cố ý không hiện |
+| POST /api/admin/posts/{id}/approve | ✅ `approvePost` | `{reason?}` ≤1000. Trả **`AdminPostDetailResponse`** (không phải void). 400 nếu bài `drafted` hoặc chưa có category; 404 nếu không có / xoá mềm. Chấp nhận cả `processing` (quyết sớm, verdict tới sau bị bỏ) lẫn `pending`. **Duyệt luôn các component PENDING**; **`flag` giữ nguyên** (admin duyệt đè máy) |
 | POST /api/admin/posts/{id}/reject | ✅ `rejectPost` | `{reason?}` ≤1000. Trả `AdminPostDetailResponse`. 400 nếu bài `drafted`; 404. **Chỉ từ chối các component còn `PENDING`**; `flag`/`flagDetail` giữ nguyên |
 | ~~POST /api/admin/posts/{id}/moderate~~ | 🟢 **đã xoá khỏi backend** | `moderatePost` đã xoá khỏi `features/posts/api.ts`. Xem mục đầu file |
 | ~~PATCH /api/posts/{id}/visibility~~ | 🟢 **đã xoá khỏi backend (V56)** → 404 | Thay bằng: admin `POST /api/admin/posts/{id}/reject`; tác giả `PATCH /api/posts/{id}` `{publish: false}` (→ `drafted`) |
@@ -324,7 +329,8 @@ BE tối đa 100). Chỉ MIME video được liệt kê (`image/*` bị bỏ); *
 | POST /api/admin/recipes/{id}/reject | ✅ `rejectRecipe` | `{reason?}` → dialog `RejectRecipeDialog` nhập lý do (bắt buộc ở UI, lưu `moderation_log`). Không xoá gì; tên bị chặn tạo lại |
 
 Route `/admin/recipes`. Phân trang thật ở server (`page`/`size`/`sort` + lọc `userId`,
-`categoryId`, `moderationStatus`, `createdFrom`, `createdTo`). Backend trả **cả** recipe đã
+`categoryId`, `moderationStatus`, `createdFrom`, `createdTo`). Sort cố định `createdAt,desc`
+(2026-11-20 bỏ `<Select>` chọn sort). Backend trả **cả** recipe đã
 xoá mềm với `status: "DELETED"` và **không** có tham số lọc theo status hay tìm theo tên —
 `q` lọc client-side trên trang hiện tại (xem `ponytail:` trong `features/recipes/adminApi.ts`).
 
@@ -396,8 +402,21 @@ Shape response:
 - `AdminDishCreateRequest` = `name, description, imageUrl, cuisineType`
 - `AdminIngredientCreateRequest` = `name` (bắt buộc, ≤100), `unit` (≤30), 5 giá trị dinh dưỡng — (**không** `pieceGrams` — đã bỏ). Gửi 1–4 giá trị → 400; có dinh dưỡng mà không có `unit` → 400
 
-**Dish — vẫn chưa có trang.** 4 endpoint `/api/admin/dishes` chưa nối. Duyệt tên món đi
-đường tắt: `approveDish()` từ dialog chi tiết recipe.
+**Dish — route `/admin/dishes`, đã nối 4/7 endpoint** (`features/recipes/adminApi.ts` +
+`pages/AdminDishesPage/`):
+
+| Endpoint | Hàm | UI |
+|---|---|---|
+| GET `/api/admin/dishes` | ✅ `getAdminDishes` | `page`/`size`/`name`/`moderationStatus`; sort cố định `createdAt,desc` |
+| POST | ✅ `createAdminDish` | `DishFormDialog` — tạo tay, `APPROVED` ngay. 409 trùng tên |
+| PATCH | ✅ `updateAdminDish` | Cùng dialog; chỉ gửi field đã đổi |
+| DELETE | ✅ `deleteAdminDish` | `ConfirmDialog` nói rõ xoá mềm, không restore |
+| GET `/{dishId}` | ❌ | Row list đủ field |
+| POST `/{dishId}/approve` \| `/reject` | ❌ **cố ý bỏ** | `approveDish()` vẫn dùng ở dialog chi tiết recipe; trang dish không có cột duyệt |
+| 4 endpoint `/{dishId}/ingredients` | ❌ | Chưa làm |
+
+⚠️ `AdminDishResponse` **không có** `status`/`deletedAt` → không phân biệt được món đã xoá mềm,
+nên trang **không lọc được** row đã xoá (khác recipe có `status: DELETED`).
 
 **Dish ⇄ ingredient (curation, 4 endpoint riêng, chưa nối)**:
 
@@ -627,13 +646,15 @@ chỉ hiện công thức của chính mình. Chưa gán recipe vào bài:
 | POST /api/media/upload | ✅ `createUploadGrant` | `components/common/ImageUploader` |
 | (upload thẳng provider) | ✅ `uploadFileToProvider` | |
 | POST /api/media/{id}/confirm | ✅ `confirmUpload` | |
-| GET /api/media/{id} | ✅ `getMedia` | chưa nơi nào gọi |
-| POST /api/posts/{postId}/media | ❌ | `{mediaIds[]}` — gắn media có sẵn vào bài |
+| GET /api/media/{id} | ✅ `getMedia` | PostDetailPage (`PostVideo` cho video cũ) |
+| POST /api/posts/{postId}/media | ✅ `attachPostMedia` | PostComposerDialog — gom `mediaId` của node video trong `rawContent`; thay thế toàn bộ nên gửi kèm video cũ chưa nằm trong nội dung |
 
 ⚠️ `PostCreateRequest` / `PostUpdateRequest` **không** có `type`, `videoUrl`, `mediaId`.
-`buildPatch` vẫn gửi `videoUrl` khi type = video ([payload.ts:36](src/features/posts/components/composer/payload.ts#L36))
-→ backend bỏ qua. Post type được suy từ media gắn vào, không phải field nhập tay.
-`PostListResponse` cũng đã bỏ `type`/`videoUrl` (thay bằng `recipeIds`).
+Video nằm **trong nội dung**: node TipTap `video` (`components/editor/VideoNode.ts`) giữ
+`mediaId` + `src`; lúc lưu composer gom `mediaId` qua `collectVideoMediaIds(doc)` và gửi
+`POST /api/posts/{id}/media`. `mediaIds` vì thế là nguồn sự thật phía BE; `src` chỉ để render.
+Bài cũ có video ngoài nội dung vẫn hiện qua `PostVideo` ở `PostDetailPage`.
+`PostListResponse` đã bỏ `type`/`videoUrl` (thay bằng `recipeIds`/`mediaIds`).
 
 Soạn bài là **một dialog** (`PostComposerDialog`, mở bằng `useUiStore().openComposer(postId?)`, mount một lần ở `Layout`) — không còn route `/posts/create` hay `/posts/:id/edit`. Một màn hình: tiêu đề trần → hàng meta (ảnh bìa compact / summary / dropdown danh mục) → editor cao hết khung → dải chip công thức; rail phải = readiness checklist (suy từ form) + preview card; footer cố định = Cancel / Save Draft / Publish.
 
@@ -688,28 +709,38 @@ Bản đồ: react-leaflet (`features/locations/components/PlaceMap.tsx`).
 Muốn hiện plan name ở trang kết quả: hoặc `GET /api/subscriptions/me/history?page=0` tìm theo
 `paymentId`, hoặc bỏ hẳn dòng plan (khuyến nghị — response không cam kết có).
 
-## 26. Admin payments / plans / settings — ❌ chưa làm
+## 26. Admin payments / plans / settings
 
 | Endpoint | Ghi chú |
 |---|---|
+| GET /api/admin/settings | ✅ `getAdminSettings` (`features/admin/settingsApi.ts`). Trả `SettingGroupResponse[]` = `[{category, items:[{key, value, updatedAt}]}]`, sắp category rồi key. **Không có type** — kiểu/biên ở `features/admin/settingsSchema.ts` (bản sao `SettingKey.java`: `media` ×4, `content` ×3, `ai` ×1) |
+| PATCH /api/admin/settings | ✅ `updateAdminSettings`. Body `{settings: Record<string,string>}` (≥1 key), partial — thiếu key = giữ nguyên. Trả **toàn bộ** danh sách. 400: key lạ, sai kiểu/biên (INT `1–100`/`1–1024`, DECIMAL `0–1`, STRING_LIST phải là MIME trong whitelist), hoặc `reject >= accept` |
 | GET /api/admin/payments | `AdminPaymentListRequest` = `page,size,userId,status,createdFrom,createdTo`. Row = `PaymentHistoryItemResponse{id,amount,currency,status,provider,txnRef,paidAt,createdAt,userId}` — 🟢 **live KHÔNG có `subscription`/`plan`** (khác doc cũ mô tả). Pure ledger read, sort `createdAt desc` |
 | GET /api/admin/plans | Trả mảng. Row live `AdminPlanResponse` = `{id, code, name, description, **requestQuota**, priceAmount, priceCurrency, active, sortOrder, createdAt, updatedAt}` |
 | POST /api/admin/plans | `AdminPlanCreateRequest` = `code,name,description,requestQuota,priceAmount,priceCurrency,active,sortOrder`. `code` bất biến, tự uppercase; 409 nếu trùng |
 | PATCH /api/admin/plans/{planId} | 400 khi không gửi field nào; 404; 409 khi tắt `active` của plan FREE |
 | DELETE /api/admin/plans/{planId} | Thực chất là deactivate. 409 với FREE |
-| GET /api/admin/settings | Trả nhóm `{category, items[{key, value, updatedAt}]}` |
-| PATCH /api/admin/settings | `{settings}` — mỗi thay đổi ghi `moderation_log` |
 
 Plan FREE **không bao giờ** tắt được (`PATCH .../active=false` lẫn `DELETE` đều 409) — nó là
 fallback mặc định của BR-SUBS-003.
 
-## 27. Admin dashboard — ❌ còn mock
+## 27. Admin dashboard — ✅ đã nối (2026-11-20, BE PR #211)
 
 | Endpoint | Trạng thái |
 |---|---|
-| GET /api/admin/dashboard | ❌ **backend đã có** (verify live 2026-11-06). Response `DashboardResponse` = `{range{type,from,to}, users{total,newInRange,activeInRange}, content{totalPosts,newPosts,totalRecipes,newRecipes,totalComments,newComments}, engagement{votesInRange,commentsInRange}, moderationQueue{pendingPosts,pendingRecipes,reportedComments}}` |
+| GET /api/admin/dashboard | ✅ lifetime snapshot, **không** tham số. `{meta{generatedAt,currency}, users{total,emailVerified,activatedEver,suspended,deactivated,activationRate}, content{totalPosts,totalRecipes,totalComments}, engagement{totalVotes,votesUp,votesDown,totalSaves,savedPosts,savedRecipes}, moderationQueue{pendingPosts,pendingRecipes,reportedComments,oldestPendingAgeHours,filterSkippedPosts}, money{revenueTotal,transactionsTotal,payingUsersTotal,averageOrderValue,arpu,freeGrantsTotal,payerConversionRate,pendingStaleCount}}`. Cache 5 phút. |
+| GET /api/admin/dashboard/charts | ✅ `?range=day\|week\|month` (khác → 400). **2 series sau khi BE rút gọn (2026-11-20):** `revenueByPlan{items[].purchases}` và `publishedPosts{points[].published}`. `revenueTrend`/`paymentHealth`/`growth` đã bị BE bỏ. Cache 15 phút theo range. |
 
-`features/admin/dashboardApi.ts` vẫn trả số giả — **xoá được ngay**, shape khớp 1:1.
+Spec cũ (4 series, 2026-11-20 sáng): `DOCS/frontend-api-changes-admin-dashboard-split.md` — phần charts trong đó **không còn đúng**.
+
+**Đã xoá khỏi backend, không có thay thế** (UI đã bỏ hẳn, đừng dựng lại):
+`users.newInRange`/`activeInRange` (→ `growth.points[].newUsers` chỉ cover phần "mới"),
+`content.newPosts/newRecipes/newComments`, `engagement.votesInRange/commentsInRange`,
+`range=day|week|month|custom` ở summary, `custom` range nói chung.
+
+**Bẫy khi sửa trang này:** tiền là đồng nguyên (không chia 100); `arpu` chia theo **payer**
+(nhãn "revenue per paying user"); `revenueTotal` là gross; bucket theo UTC (00:00 UTC = 07:00 VN);
+bucket cuối luôn thiếu giờ.
 
 ---
 
@@ -725,7 +756,7 @@ fallback mặc định của BR-SUBS-003.
 5. 🔴 **Recipe V49/V50** — xoá 5 field dinh dưỡng khỏi schema/payload; `unit` optional +
    giới hạn `g/ml/piece`; render 5 tổng + `nutritionResolved` (§19b). Plan chi tiết:
    `DOCS/PLAN-INGREDIENT-NUTRITION.md`.
-6. **Dashboard thật** — `GET /api/admin/dashboard` đã có, bỏ mock `dashboardApi.ts`.
+6. ~~**Dashboard thật**~~ — ✅ xong 2026-11-20 (2 endpoint, xem §27).
 7. **Bỏ `mockAuthors`** — `PostListResponse` đã trả `userId`/`displayName`/`avatarUrl` (§17).
 8. **Comment** — còn: mở UI trả lời (`parentId`), sửa/xoá comment.
 9. **Upload video thật** — thay ô nhập tay `videoUrl` bằng grant → upload → confirm →
@@ -749,8 +780,7 @@ fallback mặc định của BR-SUBS-003.
 
 | File | Dùng bởi | Thay bằng |
 |---|---|---|
-| `src/features/admin/dashboardApi.ts` | `AdminDashboardPage` | `GET /api/admin/dashboard` |
 | `src/features/posts/mockAuthors.ts` | `features/posts/api.ts` | 🟢 **`displayName`/`avatarUrl`/`userId` của `PostListResponse`** — không cần `GET /api/profile/{userId}` nữa |
 | `src/features/posts/mockEnrichment.ts` | `features/posts/api.ts` (`enrichListItem`, `getMockActivity` — cấp card) | `GET /api/posts/{id}/related`, `/votes`. Phần tác giả xoá được ngay |
-| `src/features/categories/mocks.ts` | `features/admin/dashboardApi.ts` | xoá cùng dashboard mock |
-| `src/shared/utils/delay.ts` | `features/admin/dashboardApi.ts`, `src/test/fakeLocationService.ts` | — |
+| `src/features/categories/mocks.ts` | hiện **không ai dùng** (dashboard đã bỏ) — xoá được | — |
+| `src/shared/utils/delay.ts` | `src/test/fakeLocationService.ts` | — |

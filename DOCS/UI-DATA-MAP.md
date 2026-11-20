@@ -26,7 +26,7 @@ Ký hiệu: **[R]** field thật từ API · **[M]** mock/hardcode · **[D]** su
 | AuthLayout | "10,000+ Plant Recipes", "4.2" model rating, ảnh Unsplash cứng | `auth/AuthLayout.tsx` |
 | CreatePost (dialog) | `summary` (không gửi lên BE), 2 pill tĩnh "Draft autosaved" + "Plant Verified" | `posts/components/composer/PostComposerDialog.tsx` |
 | CreateRecipe | `UNIT_SUGGESTIONS`, servings mặc định `"2"` | `CreateRecipePage/IngredientEditor.tsx`, `schema.ts` |
-| Admin dashboard | **toàn bộ** số liệu — không HTTP, tính từ seed categories | `admin/dashboardApi.ts` |
+| Admin dashboard | `GET /api/admin/dashboard` (lifetime) + `GET /api/admin/dashboard/charts` (theo range) | — |
 | Categories | `contentCount` fake | `categories/mocks.ts` |
 | MealRow | ~~render `dish.id` raw~~ — đã bỏ | `menus/components/MealRow.tsx` |
 | Videos | badge "Sample video (mock data)" | `admin:preview.sample` |
@@ -153,7 +153,7 @@ gộp thành `"tiêu đề — thân"` mỗi bước một dòng trước khi g�
 
 | Page | Endpoint | Ghi chú |
 |---|---|---|
-| Dashboard `/admin/dashboard` | **không có** — `dashboardApi.ts` mock | |
+| Dashboard `/admin/dashboard` | `GET /api/admin/dashboard`, `GET /api/admin/dashboard/charts?range=` | `range` chỉ còn ý nghĩa ở charts; summary không tham số |
 | Posts `/admin/posts` | `GET /api/admin/posts`, `DELETE /api/posts/{id}` | 🔴 nút duyệt còn gọi `POST /api/admin/posts/{id}/moderate` — endpoint **BE đã xoá (ADR-016)** → 404/405 |
 | Videos `/admin/videos` | `GET /api/media?type=video` | BE **không** trả `title` (lấy `description`); kéo size 100 rồi lọc client |
 | Categories `/admin/categories` | `GET /api/categories` (public) | `deletedAt` hardcode `null`; badge "Active" tĩnh; metric "Active" chỉ đếm dòng trang hiện tại |
@@ -180,7 +180,7 @@ gộp thành `"tiêu đề — thân"` mỗi bước một dòng trước khi g�
    sang `approve` / `reject` (ADR-016). `PATCH /api/posts/{id}/visibility` cũng đã xoá (V56);
    FE không có UI ẩn/hiện bài.
 2. `getUsers` gửi `page` verbatim (mọi service khác tự trừ 1) — sai là lệch trang.
-3. `getMyPosts` / `getVideos` / `exportCategoriesCsv` đều kéo `size=100` rồi lọc/cắt ở
+3. `getMyPosts` / `getVideos` đều kéo `size=100` rồi lọc/cắt ở
    client — đừng vẽ UI phân trang giả trên đó.
 4. `LocationDetail` fetch 100 rồi `.find()` — ponytail có chủ ý, không "sửa".
 5. `CategoriesPage`, `VideosPage`, `AdminRecipesPage` có filter/sort/search chạy trên trang

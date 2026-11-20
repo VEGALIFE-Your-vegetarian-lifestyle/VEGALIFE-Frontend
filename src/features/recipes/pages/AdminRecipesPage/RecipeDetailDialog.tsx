@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { RejectionReason } from "@/components/common/RejectionReason";
 import { formatDateLocale } from "@/shared/utils/formatDate";
+import { FALLBACK_IMAGE, showFallbackImage } from "@/shared/utils/display";
 import { MODERATION_VARIANT } from "../../constants";
+import { nutritionTotals } from "../../nutrition";
 import type { AdminRecipe, ModerationStatus } from "../../types";
 
 interface RecipeDetailDialogProps {
@@ -15,15 +17,22 @@ interface RecipeDetailDialogProps {
     /** Đang gọi approve/reject — khoá nút. */
     loading: boolean;
     /** Báo lên page mở ConfirmDialog; dialog chi tiết vẫn mở. */
-    onApprove: (recipe: AdminRecipe) => void;
-    onReject: (recipe: AdminRecipe) => void;
+    onApprove?: (recipe: AdminRecipe) => void;
+    onReject?: (recipe: AdminRecipe) => void;
     /** Duyệt tên món dùng chung — tách khỏi duyệt recipe (backend cũng tách). */
-    onApproveDish: (recipe: AdminRecipe) => void;
+    onApproveDish?: (recipe: AdminRecipe) => void;
     /** Mở form sửa 7 field văn bản/số (ingredients + dish không sửa được). */
-    onEdit: (recipe: AdminRecipe) => void;
+    onEdit?: (recipe: AdminRecipe) => void;
     /** Mở ConfirmDialog xoá mềm — không có endpoint khôi phục. */
-    onDelete: (recipe: AdminRecipe) => void;
+    onDelete?: (recipe: AdminRecipe) => void;
     onClose: () => void;
+    /**
+     * Mở từ màn khác (vd duyệt bài) → chỉ đọc: ẩn duyệt/từ chối/sửa/xoá,
+     * footer còn đúng nút quay lại. Cha không phải truyền handler rỗng.
+     */
+    readOnly?: boolean;
+    /** Nhãn nút footer khi `readOnly` — mặc định "Close". */
+    closeLabel?: ReactNode;
 }
 
 /** Nhãn + giá trị một dòng meta. `min-w-0`: giá trị co lại thay vì đẩy `extra` tràn khỏi card. */
@@ -50,6 +59,43 @@ function ModerationBadge({ status, size }: { status: ModerationStatus; size?: "s
     );
 }
 
+/** `nutritionResolved === false` → 5 field đều null; hiện một dòng thay vì 5 ô trống. */
+function NutritionBlock({ recipe }: { recipe: AdminRecipe }) {
+    const { t } = useTranslation("recipe");
+    const totals = nutritionTotals(recipe);
+
+    if (!totals) {
+        return (
+            <p className="rounded-xl bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                {t("myRecipes.meta.nutritionMissing")}
+            </p>
+        );
+    }
+
+    const grams = (value: number) => (Number.isInteger(value) ? `${value} g` : `${value.toFixed(1)} g`);
+    const cells = [
+        { label: t("nutrition.kcal"), value: `${Math.round(totals.kcal)} kcal` },
+        { label: t("nutrition.protein"), value: grams(totals.proteinG) },
+        { label: t("nutrition.carbohydrate"), value: grams(totals.carbohydrateG) },
+        { label: t("nutrition.fat"), value: grams(totals.fatG) },
+        { label: t("nutrition.fiber"), value: grams(totals.fiberG) },
+    ];
+
+    return (
+        <section>
+            <h3 className="mb-2 text-sm font-semibold text-dark">{t("nutrition.title")}</h3>
+            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {cells.map((cell) => (
+                    <div key={cell.label} className="min-w-0 rounded-xl bg-muted/40 px-3 py-2">
+                        <dt className="text-xs text-muted-foreground">{cell.label}</dt>
+                        <dd className="text-sm font-semibold tabular-nums text-dark">{cell.value}</dd>
+                    </div>
+                ))}
+            </dl>
+        </section>
+    );
+}
+
 export function RecipeDetailDialog({
     recipe,
     categoryNames,
@@ -60,6 +106,8 @@ export function RecipeDetailDialog({
     onEdit,
     onDelete,
     onClose,
+    readOnly = false,
+    closeLabel,
 }: RecipeDetailDialogProps) {
     const { t } = useTranslation(["admin", "common", "recipe"]);
 
@@ -73,7 +121,17 @@ export function RecipeDetailDialog({
         >
             {recipe && (
                 <div className="space-y-5">
-                    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {/* Ảnh thuộc dish dùng chung, không phải của recipe — chỉ đọc. */}
+                    <div className="flex items-start gap-4">
+                        <img
+                            src={recipe.imageUrl ?? FALLBACK_IMAGE}
+                            alt={recipe.dishName ?? recipe.name}
+                            loading="lazy"
+                            onError={showFallbackImage()}
+                            className="h-24 w-24 shrink-0 rounded-xl border border-border object-cover"
+                        />
+                        <div className="min-w-0 flex-1">
+                            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         <Meta
                             label={t("recipes.column.dish")}
                             value={recipe.dishName ?? "—"}
@@ -82,12 +140,12 @@ export function RecipeDetailDialog({
                                     <ModerationBadge status={recipe.dishModerationStatus} size="sm" />
                                     {/* Duyệt recipe không duyệt dish → phải có nút riêng, không thì
                                         món không bao giờ xuất hiện ở ô chọn món của thực đơn. */}
-                                    {recipe.dishModerationStatus === "PENDING" && recipe.dishId && (
+                                    {!readOnly && recipe.dishModerationStatus === "PENDING" && recipe.dishId && (
                                         <Button
                                             variant="ghost"
                                             size="xs"
                                             disabled={loading}
-                                            onClick={() => onApproveDish(recipe)}
+                                            onClick={() => onApproveDish?.(recipe)}
                                         >
                                             {t("recipes.moderation.approveDish")}
                                         </Button>
@@ -121,6 +179,8 @@ export function RecipeDetailDialog({
                         <Meta label={t("recipes.column.creator")} value={recipe.displayName} />
                         <Meta label={t("recipes.detail.email")} value={recipe.email} />
                     </dl>
+                        </div>
+                    </div>
 
                     <div className="flex flex-wrap items-center gap-2">
                         <ModerationBadge status={recipe.moderationStatus} />
@@ -156,6 +216,8 @@ export function RecipeDetailDialog({
                             })}
                         </p>
                     )}
+
+                    <NutritionBlock recipe={recipe} />
 
                     <section>
                         <h3 className="mb-2 text-sm font-semibold text-dark">
@@ -193,38 +255,42 @@ export function RecipeDetailDialog({
 
                     <div className="flex flex-wrap justify-end gap-2">
                         <Button variant="outline" onClick={onClose}>
-                            {t("common:close")}
+                            {closeLabel ?? t("common:close")}
                         </Button>
-                        {/* Xoá mềm, không khôi phục được → tách khỏi cụm duyệt/từ chối. */}
-                        {recipe.status === "ACTIVE" && (
-                            <Button
-                                variant="outline"
-                                className="text-destructive"
-                                disabled={loading}
-                                onClick={() => onDelete(recipe)}
-                            >
-                                {t("recipes.delete.action")}
-                            </Button>
-                        )}
-                        {recipe.status === "ACTIVE" && (
-                            <Button variant="outline" disabled={loading} onClick={() => onEdit(recipe)}>
-                                {t("recipes.edit.action")}
-                            </Button>
-                        )}
-                        {recipe.moderationStatus !== "REJECTED" && (
-                            <Button
-                                variant="outline"
-                                className="text-terracotta"
-                                disabled={loading}
-                                onClick={() => onReject(recipe)}
-                            >
-                                {t("recipes.moderation.reject")}
-                            </Button>
-                        )}
-                        {recipe.moderationStatus !== "APPROVED" && (
-                            <Button disabled={loading} onClick={() => onApprove(recipe)}>
-                                {t("recipes.moderation.approve")}
-                            </Button>
+                        {!readOnly && (
+                            <>
+                                {/* Xoá mềm, không khôi phục được → tách khỏi cụm duyệt/từ chối. */}
+                                {recipe.status === "ACTIVE" && (
+                                    <Button
+                                        variant="outline"
+                                        className="text-destructive"
+                                        disabled={loading}
+                                        onClick={() => onDelete?.(recipe)}
+                                    >
+                                        {t("recipes.delete.action")}
+                                    </Button>
+                                )}
+                                {recipe.status === "ACTIVE" && (
+                                    <Button variant="outline" disabled={loading} onClick={() => onEdit?.(recipe)}>
+                                        {t("recipes.edit.action")}
+                                    </Button>
+                                )}
+                                {recipe.moderationStatus !== "REJECTED" && (
+                                    <Button
+                                        variant="outline"
+                                        className="text-terracotta"
+                                        disabled={loading}
+                                        onClick={() => onReject?.(recipe)}
+                                    >
+                                        {t("recipes.moderation.reject")}
+                                    </Button>
+                                )}
+                                {recipe.moderationStatus !== "APPROVED" && (
+                                    <Button disabled={loading} onClick={() => onApprove?.(recipe)}>
+                                        {t("recipes.moderation.approve")}
+                                    </Button>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
