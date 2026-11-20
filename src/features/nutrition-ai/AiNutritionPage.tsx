@@ -1,12 +1,8 @@
-import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Activity, Calculator, MessageSquare, Plus, ShieldCheck, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { MessageSquare, Plus, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { useAuth } from "@/features/auth/useAuth";
 import { useAcquirePlan, useSubscriptionHistory } from "@/features/subscription/useBilling";
 import { useAiChat } from "./useAiChat";
@@ -17,13 +13,6 @@ import { ChatPanel } from "./ChatPanel";
 import { DishPicker } from "./DishPicker";
 import type { Dish } from "@/features/recipes/types";
 
-const ACTIVITY_FACTORS: Record<string, number> = {
-    sedentary: 0.8,
-    light: 1.0,
-    moderate: 1.2,
-    active: 1.4,
-};
-
 /**
  * AI Nutrition Assistant — V48 Request Allowance Release
  * POST /api/ai/messages, GET /api/ai/conversations[/{id}], GET /api/subscriptions/me.
@@ -33,10 +22,6 @@ export default function AiNutritionPage() {
     const { t: tSub } = useTranslation("subscription");
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
-
-    const [height, setHeight] = useState("175");
-    const [weight, setWeight] = useState("67");
-    const [activity, setActivity] = useState("moderate");
 
     // Mọi endpoint AI đều cần JWT → khách chưa đăng nhập thì đừng gọi.
     const chat = useAiChat(isAuthenticated);
@@ -91,21 +76,6 @@ export default function AiNutritionPage() {
         const lines = dishes.map((dish) => `- ${dish.name}`).join("\n");
         ask(t("dishPicker.prompt", { dishes: lines }));
     };
-
-    const bmi = useMemo(() => {
-        const h = Number(height) / 100;
-        const w = Number(weight);
-        if (!h || !w) return null;
-        return w / (h * h);
-    }, [height, weight]);
-
-    const proteinTarget = useMemo(() => {
-        const w = Number(weight);
-        if (!w) return null;
-        const factor = ACTIVITY_FACTORS[activity] ?? 1.0;
-        const min = Math.round(w * factor);
-        return { min, max: min + 12 };
-    }, [weight, activity]);
 
     return (
         <div className="mx-auto max-w-app px-4 py-8 sm:px-6 lg:px-8">
@@ -207,65 +177,6 @@ export default function AiNutritionPage() {
                         </section>
                     )}
 
-                    <section className="rounded-2xl border border-border bg-card p-5">
-                        <div className="flex items-center justify-between">
-                            <h2 className="flex items-center gap-2 font-bold text-dark">
-                                <Calculator className="h-4 w-4 text-vegan-green" aria-hidden="true" />
-                                {t("bmi.title")}
-                            </h2>
-                            <Badge variant="outline" size="sm">
-                                {t("bmi.tool")}
-                            </Badge>
-                        </div>
-
-                        <div className="mt-4 grid grid-cols-2 gap-3">
-                            <label className="block">
-                                <span className="mb-1 block text-xs font-medium text-muted-foreground">{t("bmi.height")}</span>
-                                <Input type="number" value={height} onChange={(event) => setHeight(event.target.value)} />
-                            </label>
-                            <label className="block">
-                                <span className="mb-1 block text-xs font-medium text-muted-foreground">{t("bmi.weight")}</span>
-                                <Input type="number" value={weight} onChange={(event) => setWeight(event.target.value)} />
-                            </label>
-                        </div>
-
-                        <label className="mt-3 block">
-                            <span className="mb-1 block text-xs font-medium text-muted-foreground">{t("bmi.activity")}</span>
-                            <Select value={activity} onChange={(event) => setActivity(event.target.value)}>
-                                {(["sedentary", "light", "moderate", "active"] as const).map((key) => (
-                                    <option key={key} value={key}>
-                                        {t(`bmi.activityOptions.${key}`)}
-                                    </option>
-                                ))}
-                            </Select>
-                        </label>
-
-                        <div className="mt-4 rounded-xl bg-vegan-green-light p-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-muted-foreground">{t("bmi.estimated")}</span>
-                                <span className="text-xs font-semibold text-vegan-green">{t("bmi.healthyRange")} 18.5 – 24.9</span>
-                            </div>
-                            <p className="mt-1 text-3xl font-extrabold text-vegan-green">
-                                {bmi ? bmi.toFixed(1) : t("bmi.empty")}
-                            </p>
-                            <p className="mt-2 text-xs text-muted-foreground">{t("bmi.dailyTarget")}</p>
-                            <div className="mt-1 flex items-center justify-between gap-2">
-                                <span className="font-bold text-dark">
-                                    {proteinTarget
-                                        ? t("bmi.perDay", { value: `${proteinTarget.min} – ${proteinTarget.max}` })
-                                        : t("bmi.empty")}
-                                </span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => ask(t("bmi.chatPlanPrompt"))}
-                                >
-                                    <Activity className="h-3.5 w-3.5" aria-hidden="true" />
-                                    {t("bmi.chatPlan")}
-                                </Button>
-                            </div>
-                        </div>
-                    </section>
                 </aside>
             </div>
         </div>

@@ -67,26 +67,6 @@
         "BMI & protein targets for a 65kg vegan runner?",
         "Quick high-protein dinner under 500 kcal with tofu and greens?"
     ],
-    "bmi": {
-        "title": "BMI & Protein Target",
-        "tool": "Quick Tool",
-        "height": "Height (cm)",
-        "weight": "Weight (kg)",
-        "activity": "Activity Level",
-        "activityOptions": {
-            "sedentary": "Sedentary (desk job)",
-            "light": "Light (1-2 days/week)",
-            "moderate": "Moderate (3-4 days/week)",
-            "active": "Active (5+ days/week)"
-        },
-        "estimated": "Estimated BMI",
-        "healthyRange": "Healthy range",
-        "dailyTarget": "Daily plant protein target",
-        "perDay": "{{value}} g / day",
-        "chatPlan": "Request Plan",
-        "chatPlanPrompt": "Create a daily plant protein plan for me based on my BMI and activity level.",
-        "empty": "—"
-    },
     "dishPicker": {
         "title": "Pick Dishes",
         "subtitle": "Select dishes you want in your plan — the assistant receives their names.",

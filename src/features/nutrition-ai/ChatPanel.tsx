@@ -91,7 +91,7 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
     }
 
     return (
-        <section className="flex flex-col rounded-2xl border border-border bg-card">
+        <section className="flex flex-col self-start rounded-2xl border border-border bg-card">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
                 <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-vegan-green text-white">
@@ -108,7 +108,7 @@ export function ChatPanel({ chat, onRequireLogin }: ChatPanelProps) {
                 </Button>
             </div>
 
-            <div ref={logRef} className="max-h-[560px] min-h-[420px] flex-1 space-y-4 overflow-y-auto p-5">
+            <div ref={logRef} className="max-h-[560px] flex-1 space-y-4 overflow-y-auto p-5">
                 {chat.historyLoading && (
                     <p className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
