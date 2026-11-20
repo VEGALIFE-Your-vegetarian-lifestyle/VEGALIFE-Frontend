@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { RecipeNutritionLine } from "@/features/recipes/components/RecipeNutritionLine";
 import { SaveRecipeButton } from "@/features/saved/components/SaveButton";
 import { cn } from "@/shared/utils/cn";
+import { showFallbackImage } from "@/shared/utils/display";
 import type { Recipe } from "@/features/recipes/types";
 
 const DIFFICULTY_VARIANT = {
@@ -15,8 +16,8 @@ const DIFFICULTY_VARIANT = {
 /**
  * Card công thức trong feed Explore — bấm vào mở `RecipeDetailDialog`.
  *
- * `Recipe` không có ảnh bìa lẫn tên tác giả (chỉ `userId`), nên hero là nền gradient +
- * icon thay ảnh (cùng mẹo HomePage dùng cho địa điểm).
+ * `Recipe.imageUrl` là ảnh của **dish dùng chung** (đọc-only, `null` khi admin chưa đặt).
+ * Chưa có ảnh thì hero là gradient + icon. Không có tên tác giả (`Recipe` chỉ có `userId`).
  *
  * Card KHÔNG bọc cả thẻ trong `<button>`: nút Save nằm đè lên vùng bấm mở dialog, lồng
  * button trong button là HTML không hợp lệ. Vùng "mở chi tiết" là một `<button>` phủ toàn
@@ -38,8 +39,18 @@ export function RecipeFeedCard({ recipe, onOpen }: { recipe: Recipe; onOpen: () 
                 aria-label={recipe.name}
                 className="flex w-full flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vegan-green focus-visible:ring-offset-2"
             >
-                <div className="relative flex h-36 items-center justify-center bg-gradient-to-br from-vegan-green-light via-vegan-green-subtle to-cream">
-                    <ChefHat className="h-10 w-10 text-vegan-green-muted" aria-hidden="true" />
+                <div className="relative flex h-36 items-center justify-center overflow-hidden bg-gradient-to-br from-vegan-green-light via-vegan-green-subtle to-cream">
+                    {recipe.imageUrl ? (
+                        <img
+                            src={recipe.imageUrl}
+                            alt={recipe.name}
+                            loading="lazy"
+                            onError={showFallbackImage()}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <ChefHat className="h-10 w-10 text-vegan-green-muted" aria-hidden="true" />
+                    )}
                     <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-bold text-vegan-green shadow-sm backdrop-blur-md">
                         <Leaf className="h-3 w-3" aria-hidden="true" />
                         {t("explore:card.recipe")}

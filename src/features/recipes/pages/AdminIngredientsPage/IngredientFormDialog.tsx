@@ -75,6 +75,17 @@ function Form({
                         </option>
                     ))}
                 </Select>
+                {/* Đổi unit làm BE đọc lại mọi `amount` của nguyên liệu này theo đơn vị mới
+                    (200 g gạo → 200 ml gạo) và tính lại mọi recipe trong cùng transaction.
+                    BE không hỏi xác nhận → cảnh báo phải ở đây. */}
+                {ingredient?.unit && values.unit && values.unit !== ingredient.unit && (
+                    <p role="alert" className="mt-2 rounded-xl bg-amber-soft px-3 py-2 text-sm text-amber-strong">
+                        {t("ingredients.form.unitChangeWarning", {
+                            from: t(`ingredients.unit.${ingredient.unit}`),
+                            to: t(`ingredients.unit.${values.unit}`),
+                        })}
+                    </p>
+                )}
             </FormField>
 
             <fieldset>

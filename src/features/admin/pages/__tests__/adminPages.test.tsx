@@ -47,7 +47,7 @@ describe("Trang admin — chưa đăng nhập", () => {
         expect(screen.getByRole("heading", { name: "Category Management" })).toBeInTheDocument();
         expect(screen.getByLabelText("Search by name or UUID")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /Create Category/ })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Export CSV/ })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /Export CSV/ })).not.toBeInTheDocument();
     });
 
     it("CategoriesPage hiện bảng danh mục thật từ backend", async () => {

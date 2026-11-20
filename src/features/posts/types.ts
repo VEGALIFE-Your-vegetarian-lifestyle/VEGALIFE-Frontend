@@ -22,15 +22,22 @@ export type FlagDetail = {
     cause?: "DISABLED" | "SWEPT" | "UNAVAILABLE"; // FILTER_SKIPPED
 };
 
-/** Một dòng trong bảng kiểm duyệt — `GET /api/admin/posts`. */
+/**
+ * Một dòng trong bảng kiểm duyệt — `GET /api/admin/posts`.
+ * Từ PR #214: superset của shape member (`PostListResponse`) + 3 field duyệt bài.
+ */
 export interface AdminPost {
     id: string;
     title: string;
     /** Text thuần, BE giữ lại để admin đọc duyệt. */
     content: string;
+    /** ProseMirror doc gốc — render qua editor để duyệt đúng như tác giả viết. */
+    rawContent?: JSONContent | null;
     featuredImageUrl: string | null;
     categoryIds: string[];
     mediaIds: string[];
+    /** Recipe còn sống đang gắn vào bài. Member feed luôn `[]`; admin list mới có. */
+    recipeIds: string[];
     status: PostStatus;
     flag: PostFlag | null;
     /** Bằng chứng của `flag` — `null` khi chưa có verdict. */
@@ -43,7 +50,30 @@ export interface AdminPost {
     userId: string;
     /** Tên hiển thị của tác giả — BE trả `displayName` (không có `username`). */
     displayName: string;
+    /** Avatar tác giả — `null` khi chưa có profile (BR-PROFILE-003). */
+    avatarUrl: string | null;
     email: string;
+}
+
+/** Một tên dùng chung gắn với bài (dish / ingredient / recipe) — chỉ `GET /api/admin/posts/{id}` trả. */
+export interface AdminPostComponent {
+    id: string;
+    type: "RECIPE" | "DISH" | "INGREDIENT";
+    name: string;
+    moderationStatus: "PENDING" | "APPROVED" | "REJECTED";
+}
+
+/**
+ * `GET /api/admin/posts/{postId}` — chi tiết để duyệt.
+ * Từ PR #214 là **superset của `AdminPost`** (19 field list + 22 field detail),
+ * nên `extends` là đúng: BE có integration test giữ ràng buộc này.
+ */
+export interface AdminPostDetail extends AdminPost {
+    /** `null` = chưa từng chấm (provider lỗi, không phải điểm thấp). */
+    contentScore: number | null;
+    /** Component đính kèm (recipe / dish / ingredient) + trạng thái duyệt của từng cái. */
+    recipes: AdminPostComponent[];
+    names: AdminPostComponent[];
 }
 
 /* ------------------------------------------------------------------ *

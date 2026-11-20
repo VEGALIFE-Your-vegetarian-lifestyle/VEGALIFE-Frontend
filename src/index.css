@@ -216,6 +216,14 @@
         height: auto;
     }
 
+    .vega-prose video {
+        border-radius: var(--radius-lg);
+        max-width: 100%;
+        height: auto;
+        width: 100%;
+        background: var(--color-dark);
+    }
+
     .vega-prose hr {
         border-top: 1px solid var(--color-border);
         margin: 2rem 0;

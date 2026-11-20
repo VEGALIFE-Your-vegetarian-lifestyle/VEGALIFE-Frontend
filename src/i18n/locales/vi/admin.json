@@ -110,6 +110,7 @@
             "categories": "Danh mục",
             "locations": "Địa điểm",
             "recipes": "Công thức",
+            "dishes": "Tên món",
             "profile": "Hồ sơ",
             "ingredients": "Nguyên liệu",
             "settings": "Cài đặt"
@@ -124,7 +125,6 @@
         "title": "Quản lý danh mục",
         "description": "Danh mục đang được dùng chỉ có thể ngừng sử dụng, không xóa hẳn.",
         "createCategory": "Tạo danh mục",
-        "exportCsv": "Export CSV",
         "tabs": {
             "all": "Tất cả",
             "active": "Đang hoạt động",
@@ -137,7 +137,6 @@
             "content": "Số nội dung"
         },
         "columns": {
-            "uuid": "Mã UUID",
             "name": "Tên",
             "description": "Mô tả",
             "content": "Nội dung",
@@ -174,8 +173,6 @@
             "retired": "Đã ngừng sử dụng danh mục",
             "restored": "Đã khôi phục danh mục",
             "deleted": "Đã xóa vĩnh viễn danh mục",
-            "copied": "Đã sao chép mã danh mục",
-            "exported": "Đã xuất CSV",
             "failed": "Thao tác thất bại. Vui lòng thử lại."
         }
     },
@@ -210,15 +207,11 @@
             "dropzoneHint": "PNG hoặc JPG. Ảnh ngang tỉ lệ 16:9 là đẹp nhất; giới hạn dung lượng do quản trị viên đặt.",
             "saveChanges": "Lưu thay đổi",
             "addCover": "Thêm ảnh",
-            "videoUpload": "Tải video lên",
             "videoFailed": "Tải video thất bại",
             "videoInvalidType": "Vui lòng chọn file video",
-            "videoRemove": "Xóa video",
-            "videoDropzoneTitle": "Kéo thả file video vào đây",
-            "videoDropzoneHint": "MP4 hoặc WebM. Giới hạn dung lượng do quản trị viên đặt.",
-            "videoSourceRequired": "Vui lòng tải file video lên",
-            "coverLabel": "Ảnh bìa",
-            "videoLabel": "Video đính kèm"
+            "compressingVideo": "Đang nén video...",
+            "uploadingVideoPercent": "Đang tải video... {{percent}}%",
+            "coverLabel": "Ảnh bìa"
         },
         "toast": {
             "created": "Đã tạo bài viết",
@@ -266,6 +259,13 @@
                 "deleteDescription": "Bài viết \"{{title}}\" sẽ bị xóa và không còn hiển thị công khai.",
                 "deleteConfirm": "Xóa bài viết"
             }
+        },
+        "preview": {
+            "recipes": "Công thức đính kèm",
+            "media": "Media đính kèm",
+            "backToPost": "Quay lại bài viết",
+            "loadingRecipe": "Đang tải công thức",
+            "recipeFailed": "Không tải được công thức"
         },
         "reject": {
             "title": "Từ chối bài viết",
@@ -385,12 +385,6 @@
         "searchPlaceholder": "Tìm theo tên công thức hoặc người tạo",
         "searchLabel": "Tìm công thức",
         "minutes": "{{count}} phút",
-        "sortLabel": "Sắp xếp công thức",
-        "sort": {
-            "newest": "Mới nhất",
-            "updated": "Vừa cập nhật",
-            "name": "Tên A-Z"
-        },
         "filters": {
             "fromDate": "Tạo từ ngày",
             "toDate": "Tạo đến ngày",
@@ -534,6 +528,55 @@
             "restoreFailed": "Mở khóa tài khoản thất bại. Vui lòng thử lại."
         }
     },
+    "dishes": {
+        "title": "Quản lý tên món",
+        "description": "Tên món dùng chung cho công thức và thực đơn tuần. Tổng cộng {{count}} món.",
+        "searchPlaceholder": "Tìm món theo tên",
+        "filterStatus": "Lọc theo trạng thái duyệt",
+        "filterStatusAll": "Mọi trạng thái",
+        "create": "Thêm món",
+        "column": {
+            "image": "Ảnh",
+            "name": "Tên món",
+            "cuisine": "Kiểu ẩm thực",
+            "moderation": "Duyệt",
+            "actions": "Thao tác"
+        },
+        "action": {
+            "edit": "Sửa",
+            "delete": "Xoá"
+        },
+        "form": {
+            "nameLabel": "Tên",
+            "namePlaceholder": "vd: đậu hũ kho",
+            "cuisineLabel": "Kiểu ẩm thực",
+            "cuisinePlaceholder": "vd: Việt Nam",
+            "descriptionLabel": "Mô tả",
+            "imageLabel": "Ảnh",
+            "createTitle": "Thêm món",
+            "create": "Tạo món",
+            "editTitle": "Sửa món",
+            "editSubtitle": "Cập nhật tên, mô tả, kiểu ẩm thực và ảnh của “{{name}}”.",
+            "submit": "Lưu thay đổi"
+        },
+        "delete": {
+            "title": "Xoá món?",
+            "body": "“{{name}}” sẽ bị xoá mềm. Không có endpoint khôi phục.",
+            "confirm": "Xoá món"
+        },
+        "toast": {
+            "created": "Đã tạo món",
+            "updated": "Đã cập nhật món",
+            "deleted": "Đã xoá món",
+            "failed": "Thao tác thất bại. Vui lòng thử lại."
+        },
+        "empty": {
+            "title": "Không có món",
+            "filtered": "Không món nào khớp bộ lọc.",
+            "all": "Chưa có món nào.",
+            "reload": "Tải lại"
+        }
+    },
     "ingredients": {
         "title": "Quản lý nguyên liệu",
         "description": "Tên nguyên liệu dùng chung. Tổng cộng {{count}} nguyên liệu.",
@@ -570,6 +613,7 @@
             "unitLabel": "Đơn vị",
             "unitNone": "Chưa có đơn vị",
             "unitHelper": "Cả 5 giá trị dinh dưỡng bên dưới tính trên MỘT đơn vị này.",
+            "unitChangeWarning": "Đổi đơn vị từ {{from}} sang {{to}} sẽ đọc lại toàn bộ khối lượng công thức dùng nguyên liệu này (200 g gạo thành 200 ml gạo) và tính lại các công thức đó ngay lập tức. Không thể hoàn tác.",
             "nutritionLegend": "Dinh dưỡng trên một đơn vị",
             "nutritionHelper": "Điền đủ cả 5 hoặc để trống hết — nhập thiếu sẽ bị từ chối.",
             "createTitle": "Thêm nguyên liệu",

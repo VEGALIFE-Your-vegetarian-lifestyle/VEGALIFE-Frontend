@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { cn } from "@/shared/utils/cn";
 import { estimateReadMinutes } from "@/shared/utils/formatDate";
 import { EditorToolbar } from "./EditorToolbar";
+import { VideoNode } from "./VideoNode";
 import { EMPTY_DOC, editorJsonToText } from "./editorContent";
 
 interface RichTextEditorProps {
@@ -19,6 +20,8 @@ interface RichTextEditorProps {
     placeholder?: string;
     /** Ảnh chèn trong bài dùng lại luồng upload sẵn có. */
     onRequestImage?: () => void;
+    /** Video chèn trong bài — cùng luồng upload, khác định dạng. */
+    onRequestVideo?: () => void;
     /** Đưa instance ra ngoài để chỗ gọi chèn ảnh sau khi upload xong. */
     onReady?: (editor: Editor) => void;
     disabled?: boolean;
@@ -43,6 +46,7 @@ export function RichTextEditor({
     onChange,
     placeholder,
     onRequestImage,
+    onRequestVideo,
     onReady,
     disabled,
     error,
@@ -66,6 +70,7 @@ export function RichTextEditor({
                 protocols: ["http", "https"],
             }),
             Image.configure({ inline: false, allowBase64: false }),
+            VideoNode,
             Placeholder.configure({ placeholder: placeholder ?? "" }),
             Table.configure({ resizable: true }),
             TableRow,
@@ -125,6 +130,7 @@ export function RichTextEditor({
             <EditorToolbar
                 editor={editor}
                 onRequestImage={onRequestImage}
+                onRequestVideo={onRequestVideo}
                 disabled={disabled}
                 /* Mockup screen05 đặt "~2 min read" cuối hàng toolbar, đếm từ ở header khối. */
                 trailing={

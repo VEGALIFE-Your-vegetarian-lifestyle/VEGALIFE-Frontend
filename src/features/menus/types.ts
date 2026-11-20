@@ -35,6 +35,8 @@ export interface RecommendedRecipe {
     id: string;
     name: string;
     description: string | null;
+    /** Ảnh dish cha — thường trùng `meal.dish.imageUrl`, đừng render cả hai. */
+    imageUrl: string | null;
     prepTimeMinutes: number | null;
     cookTimeMinutes: number | null;
     servings: number;

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { useListParams } from "@/shared/hooks/useListParams";
+import { RefreshButton } from "@/components/common/RefreshButton";
 import { getUsers, restoreUser, suspendUser } from "../../api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ export default function UsersPage() {
     const { page, q, status, debouncedQ, setQ, setStatus, setPage, clearFilters } = useListParams();
     const [confirm, setConfirm] = useState<{ type: "suspend" | "restore"; user: AdminUser } | null>(null);
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
         queryKey: ["admin-users", page - 1, debouncedQ, status],
         queryFn: () =>
             getUsers({
@@ -89,6 +90,7 @@ export default function UsersPage() {
                 breadcrumb={[t("common:admin"), t("users.title")]}
                 title={t("users.title")}
                 description={t("users.description")}
+                action={<RefreshButton onRefresh={() => void refetch()} isRefreshing={isFetching} />}
             />
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row">

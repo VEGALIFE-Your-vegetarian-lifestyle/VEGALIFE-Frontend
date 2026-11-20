@@ -4,6 +4,7 @@ import { parseStoredContent } from "./components/editor/editorContent";
 import type { ApiResponse, ListParams, PageResponse, Paginated } from "@/shared/types/common";
 import type {
     AdminPost,
+    AdminPostDetail,
     ApiComment,
     CreateCommentRequest,
     CreatePostRequest,
@@ -520,16 +521,20 @@ export const getMyPosts = async ({
     q,
     status,
     categoryId,
-}: ListParams<PostStatus> & { categoryId?: string }): Promise<MyPostsPage> => {
+    createdFrom,
+    createdTo,
+}: ListParams<PostStatus> & { categoryId?: string; createdFrom?: string; createdTo?: string }): Promise<MyPostsPage> => {
     // GET /api/posts/me (JWT) — bài của chính mình, mọi status, sort createdAt desc.
     // `/api/posts` giờ là feed public nên KHÔNG dùng được ở đây (trả bài người khác → xoá 404).
-    // `status`/`categoryId` lọc ở server; backend **không có** `keyword` → `q` vẫn lọc client.
+    // `status`/`categoryId`/khoảng ngày lọc ở server; backend **không có** `keyword` → `q` lọc client.
     const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts/me", {
         params: {
             page: Math.max(page - 1, 0),
             size,
             ...(status ? { status } : {}),
             ...(categoryId ? { categoryId } : {}),
+            ...(createdFrom ? { createdFrom } : {}),
+            ...(createdTo ? { createdTo } : {}),
         },
     });
 
@@ -569,6 +574,15 @@ export const getMyPostsCounts = async (): Promise<MyPostsCounts> => {
         withMedia: all.filter((post) => post.mediaIds.length > 0).length,
         views: all.reduce((sum, post) => sum + post.viewCount, 0),
     };
+};
+
+/**
+ * GET /api/admin/posts/{postId} — chi tiết để duyệt: kèm `recipes[]` + `names[]`
+ * (danh sách row ở `GET /api/admin/posts` không có). Duyệt theo từng tên là endpoint riêng.
+ */
+export const getAdminPostDetail = async (id: string): Promise<AdminPostDetail> => {
+    const { data } = await api.get<ApiResponse<AdminPostDetail>>(`/api/admin/posts/${id}`);
+    return data.data;
 };
 
 /**

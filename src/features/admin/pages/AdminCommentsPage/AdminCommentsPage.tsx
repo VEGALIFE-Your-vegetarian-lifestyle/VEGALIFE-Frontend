@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ExternalLink, Flag, MessageSquare, Search, ShieldAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -19,7 +19,9 @@ import { Pagination } from "@/components/common/Pagination";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
+import { RefreshButton } from "@/components/common/RefreshButton";
 import { getAdminComments, moderateComment } from "../../commentApi";
+import { getPostDetail } from "@/features/posts/api";
 import { ModerateCommentDialog } from "./ModerateCommentDialog";
 import type { AdminComment, AdminCommentSort, CommentStatus } from "../../types";
 
@@ -34,7 +36,7 @@ export default function AdminCommentsPage() {
     const [sort, setSort] = useState<AdminCommentSort>("createdAt");
     const [moderatingComment, setModeratingComment] = useState<AdminComment | null>(null);
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
         queryKey: ["admin-comments", page, debouncedQ, status, sort],
         queryFn: () =>
             getAdminComments({
@@ -70,12 +72,30 @@ export default function AdminCommentsPage() {
     const comments = data?.data ?? [];
     const hasFilter = q !== "" || status !== "";
 
+    /**
+     * ponytail: `GET /api/admin/comments` không trả postTitle → gọi detail từng bài (N+1,
+     * tối đa `PAGE_SIZE` request/trang, cache vĩnh viễn theo postId). Nếu backend thêm
+     * `postTitle` vào row thì bỏ khối này.
+     */
+    const postIds = [...new Set(comments.map((c) => c.postId))];
+    const postQueries = useQueries({
+        queries: postIds.map((postId) => ({
+            queryKey: ["post-detail", postId],
+            queryFn: () => getPostDetail(postId),
+            staleTime: Infinity,
+            retry: false,
+        })),
+    });
+    const postTitles = new Map<string, string | null>();
+    postIds.forEach((postId, i) => postTitles.set(postId, postQueries[i].data?.title ?? null));
+
     return (
         <div className="space-y-6">
             <PageHeader
                 breadcrumb={[t("dashboard.adminLabel"), t("comments.title")]}
                 title={t("comments.title")}
                 description={t("comments.description")}
+                action={<RefreshButton onRefresh={() => void refetch()} isRefreshing={isFetching} />}
             />
 
             {/* Filter controls */}
@@ -160,16 +180,13 @@ export default function AdminCommentsPage() {
                                             <TableCell>
                                                 <div className="flex items-center gap-2.5">
                                                     <Avatar
-                                                        name={comment.username || "User"}
+                                                        name={comment.displayName || "User"}
                                                         src={comment.avatarUrl ?? undefined}
                                                         size="sm"
                                                     />
                                                     <div className="min-w-0">
                                                         <p className="font-semibold text-dark truncate">
-                                                            {comment.username || t("comments.deletedAuthor")}
-                                                        </p>
-                                                        <p className="text-[11px] text-muted-foreground truncate font-mono">
-                                                            {comment.userId.slice(0, 8)}...
+                                                            {comment.displayName || t("comments.deletedAuthor")}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -205,8 +222,10 @@ export default function AdminCommentsPage() {
                                                     rel="noreferrer"
                                                     className="inline-flex items-center gap-1 text-xs font-semibold text-vegan-green hover:underline"
                                                 >
-                                                    <span className="font-mono">{comment.postId.slice(0, 8)}</span>
-                                                    <ExternalLink className="h-3 w-3" />
+                                                    <span className="line-clamp-1 max-w-[220px]">
+                                                        {postTitles.get(comment.postId) ?? comment.postId.slice(0, 8)}
+                                                    </span>
+                                                    <ExternalLink className="h-3 w-3 shrink-0" />
                                                 </Link>
                                             </TableCell>
 

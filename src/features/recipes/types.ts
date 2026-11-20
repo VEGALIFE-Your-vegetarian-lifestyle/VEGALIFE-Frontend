@@ -197,3 +197,42 @@ export interface AdminIngredientCreateRequest {
 
 /** `PATCH /api/admin/ingredients/{id}` — y hệt create, mọi field optional; vắng = giữ nguyên. */
 export type AdminIngredientUpdateRequest = Partial<AdminIngredientCreateRequest>;
+
+/** Một nguyên liệu gợi ý gắn với món — `GET /api/admin/dishes/{dishId}/ingredients`. */
+export interface AdminDishIngredient {
+    ingredientId: string;
+    name: string;
+    moderationStatus: ModerationStatus;
+    required: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+/**
+ * `GET /api/admin/dishes` — row quản lý món.
+ *
+ * Không có field `status`/`deletedAt`: response **không phân biệt** được món đã xoá mềm,
+ * nên FE không lọc được — muốn ẩn thì phải chờ BE thêm field.
+ */
+export interface AdminDish {
+    id: string;
+    name: string;
+    description: string | null;
+    imageUrl: string | null;
+    cuisineType: string | null;
+    moderationStatus: ModerationStatus;
+    suggestedIngredients: AdminDishIngredient[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+/** `POST /api/admin/dishes` — chỉ `name` bắt buộc; tạo tay vào thẳng `APPROVED`. */
+export interface AdminDishCreateRequest {
+    name: string;
+    description?: string;
+    imageUrl?: string;
+    cuisineType?: string;
+}
+
+/** `PATCH /api/admin/dishes/{dishId}` — partial; vắng khoá = giữ nguyên. */
+export type AdminDishUpdateRequest = Partial<AdminDishCreateRequest>;

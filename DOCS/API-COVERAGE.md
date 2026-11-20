@@ -287,7 +287,7 @@ admin list là chấp nhận được — `name` lọc ở server, không cần 
 | Endpoint | Trạng thái | Ghi chú |
 |---|---|---|
 | GET /api/admin/posts | ✅ `getPosts` | PostsPage. `status` ∈ `drafted\|processing\|pending\|published\|unpublished`; **hàng chờ duyệt = `?status=pending`** (V61/ADR-029). `flag` mặc định `all`. Dòng trả kèm `flagDetail` |
-| GET /api/admin/posts/{id} | ❌ | `AdminPostDetailResponse` = `id, title, content, status, flag, flagDetail, contentScore, **recipes[]**, **names[]**, userId, displayName, email`. Mỗi phần tử `ComponentSummary` = `{id, type, name, moderationStatus, score}`. Duyệt theo từng tên |
+| GET /api/admin/posts/{id} | ✅ `getAdminPostDetail` | `AdminPostDetailResponse` = `id, title, content, status, flag, flagDetail, contentScore, **recipes[]**, **names[]**, userId, displayName, email`. Mỗi phần tử `ComponentSummary` = `{id, type, name, moderationStatus}` (`score` đã bỏ, ADR-026). PostsPage gọi khi mở dialog preview để hiện `recipes[]` dạng button → mở dialog recipe read-only; `names[]` (dish + ingredient) cố ý không hiện |
 | POST /api/admin/posts/{id}/approve | ✅ `approvePost` | `{reason?}` ≤1000. Trả **`AdminPostDetailResponse`** (không phải void). 400 nếu bài `drafted` hoặc chưa có category; 404 nếu không có / xoá mềm. Chấp nhận cả `processing` (quyết sớm, verdict tới sau bị bỏ) lẫn `pending`. **Duyệt luôn các component PENDING**; **`flag` giữ nguyên** (admin duyệt đè máy) |
 | POST /api/admin/posts/{id}/reject | ✅ `rejectPost` | `{reason?}` ≤1000. Trả `AdminPostDetailResponse`. 400 nếu bài `drafted`; 404. **Chỉ từ chối các component còn `PENDING`**; `flag`/`flagDetail` giữ nguyên |
 | ~~POST /api/admin/posts/{id}/moderate~~ | 🟢 **đã xoá khỏi backend** | `moderatePost` đã xoá khỏi `features/posts/api.ts`. Xem mục đầu file |
@@ -329,7 +329,8 @@ BE tối đa 100). Chỉ MIME video được liệt kê (`image/*` bị bỏ); *
 | POST /api/admin/recipes/{id}/reject | ✅ `rejectRecipe` | `{reason?}` → dialog `RejectRecipeDialog` nhập lý do (bắt buộc ở UI, lưu `moderation_log`). Không xoá gì; tên bị chặn tạo lại |
 
 Route `/admin/recipes`. Phân trang thật ở server (`page`/`size`/`sort` + lọc `userId`,
-`categoryId`, `moderationStatus`, `createdFrom`, `createdTo`). Backend trả **cả** recipe đã
+`categoryId`, `moderationStatus`, `createdFrom`, `createdTo`). Sort cố định `createdAt,desc`
+(2026-11-20 bỏ `<Select>` chọn sort). Backend trả **cả** recipe đã
 xoá mềm với `status: "DELETED"` và **không** có tham số lọc theo status hay tìm theo tên —
 `q` lọc client-side trên trang hiện tại (xem `ponytail:` trong `features/recipes/adminApi.ts`).
 
@@ -401,8 +402,21 @@ Shape response:
 - `AdminDishCreateRequest` = `name, description, imageUrl, cuisineType`
 - `AdminIngredientCreateRequest` = `name` (bắt buộc, ≤100), `unit` (≤30), 5 giá trị dinh dưỡng — (**không** `pieceGrams` — đã bỏ). Gửi 1–4 giá trị → 400; có dinh dưỡng mà không có `unit` → 400
 
-**Dish — vẫn chưa có trang.** 4 endpoint `/api/admin/dishes` chưa nối. Duyệt tên món đi
-đường tắt: `approveDish()` từ dialog chi tiết recipe.
+**Dish — route `/admin/dishes`, đã nối 4/7 endpoint** (`features/recipes/adminApi.ts` +
+`pages/AdminDishesPage/`):
+
+| Endpoint | Hàm | UI |
+|---|---|---|
+| GET `/api/admin/dishes` | ✅ `getAdminDishes` | `page`/`size`/`name`/`moderationStatus`; sort cố định `createdAt,desc` |
+| POST | ✅ `createAdminDish` | `DishFormDialog` — tạo tay, `APPROVED` ngay. 409 trùng tên |
+| PATCH | ✅ `updateAdminDish` | Cùng dialog; chỉ gửi field đã đổi |
+| DELETE | ✅ `deleteAdminDish` | `ConfirmDialog` nói rõ xoá mềm, không restore |
+| GET `/{dishId}` | ❌ | Row list đủ field |
+| POST `/{dishId}/approve` \| `/reject` | ❌ **cố ý bỏ** | `approveDish()` vẫn dùng ở dialog chi tiết recipe; trang dish không có cột duyệt |
+| 4 endpoint `/{dishId}/ingredients` | ❌ | Chưa làm |
+
+⚠️ `AdminDishResponse` **không có** `status`/`deletedAt` → không phân biệt được món đã xoá mềm,
+nên trang **không lọc được** row đã xoá (khác recipe có `status: DELETED`).
 
 **Dish ⇄ ingredient (curation, 4 endpoint riêng, chưa nối)**:
 
@@ -632,13 +646,15 @@ chỉ hiện công thức của chính mình. Chưa gán recipe vào bài:
 | POST /api/media/upload | ✅ `createUploadGrant` | `components/common/ImageUploader` |
 | (upload thẳng provider) | ✅ `uploadFileToProvider` | |
 | POST /api/media/{id}/confirm | ✅ `confirmUpload` | |
-| GET /api/media/{id} | ✅ `getMedia` | chưa nơi nào gọi |
-| POST /api/posts/{postId}/media | ❌ | `{mediaIds[]}` — gắn media có sẵn vào bài |
+| GET /api/media/{id} | ✅ `getMedia` | PostDetailPage (`PostVideo` cho video cũ) |
+| POST /api/posts/{postId}/media | ✅ `attachPostMedia` | PostComposerDialog — gom `mediaId` của node video trong `rawContent`; thay thế toàn bộ nên gửi kèm video cũ chưa nằm trong nội dung |
 
 ⚠️ `PostCreateRequest` / `PostUpdateRequest` **không** có `type`, `videoUrl`, `mediaId`.
-`buildPatch` vẫn gửi `videoUrl` khi type = video ([payload.ts:36](src/features/posts/components/composer/payload.ts#L36))
-→ backend bỏ qua. Post type được suy từ media gắn vào, không phải field nhập tay.
-`PostListResponse` cũng đã bỏ `type`/`videoUrl` (thay bằng `recipeIds`).
+Video nằm **trong nội dung**: node TipTap `video` (`components/editor/VideoNode.ts`) giữ
+`mediaId` + `src`; lúc lưu composer gom `mediaId` qua `collectVideoMediaIds(doc)` và gửi
+`POST /api/posts/{id}/media`. `mediaIds` vì thế là nguồn sự thật phía BE; `src` chỉ để render.
+Bài cũ có video ngoài nội dung vẫn hiện qua `PostVideo` ở `PostDetailPage`.
+`PostListResponse` đã bỏ `type`/`videoUrl` (thay bằng `recipeIds`/`mediaIds`).
 
 Soạn bài là **một dialog** (`PostComposerDialog`, mở bằng `useUiStore().openComposer(postId?)`, mount một lần ở `Layout`) — không còn route `/posts/create` hay `/posts/:id/edit`. Một màn hình: tiêu đề trần → hàng meta (ảnh bìa compact / summary / dropdown danh mục) → editor cao hết khung → dải chip công thức; rail phải = readiness checklist (suy từ form) + preview card; footer cố định = Cancel / Save Draft / Publish.
 

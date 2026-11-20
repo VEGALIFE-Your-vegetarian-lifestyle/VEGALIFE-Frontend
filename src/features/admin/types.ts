@@ -130,7 +130,8 @@ export interface AdminComment {
     id: string;
     postId: string;
     userId: string;
-    username: string;
+    /** BE trả `displayName` (không có `username`) — xem DOCS/API-COVERAGE.md §12. */
+    displayName: string | null;
     avatarUrl: string | null;
     content: string;
     parentId: string | null;
@@ -147,7 +148,7 @@ export interface AdminCommentListParams {
     /** 1-based trong UI, map sang 0-based khi gọi API. */
     page: number;
     size: number;
-    /** Lọc từ khoá client-side theo nội dung hoặc username. */
+    /** Lọc từ khoá client-side theo nội dung, displayName hoặc id. */
     q?: string;
     /** "all" = không gửi param status (lấy cả 2 trạng thái). */
     status?: CommentStatus | "all";

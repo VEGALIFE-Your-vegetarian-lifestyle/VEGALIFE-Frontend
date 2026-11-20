@@ -2,9 +2,16 @@
 
 Copy-paste trực tiếp vào form khi demo toàn dự án. Không mock gì — mọi thứ dưới đây là dữ liệu bạn tự nhập vào app thật.
 
-**Toàn bộ dữ liệu trong file đã được đối chiếu với validate của FE và ràng buộc của backend** (đọc 2026-11-06) — nhập đúng như dưới sẽ **không bị 400**.
+**Toàn bộ dữ liệu trong file đã được đối chiếu với validate của FE và ràng buộc của backend** (đọc lại 2026-11-20) — nhập đúng như dưới sẽ **không bị 400**.
 
 Thứ tự demo gợi ý: **Đăng ký → Hồ sơ → Công thức → Thực đơn tuần → Bài viết → Bình luận → Gói AI → Admin → Unhappy case (§10)**.
+
+> **Ba form chính giờ là DIALOG, không còn route riêng** (2026-11-20):
+> - **Công thức** — `RecipeComposerDialog`, mở bằng nút **Create New Recipe** ở `/recipes` (hoặc empty state).
+> - **Thực đơn tuần** — `MealPlanComposerDialog`, mở bằng nút **Create** ở `/meal-plan`.
+> - **Bài viết** — `PostComposerDialog`, mở bằng **+ New post** trên navbar / **Create** ở `/my-posts`.
+>
+> Cả ba mount một lần ở `Layout`, đóng bằng Esc / bấm nền (có ConfirmDialog nếu đã nhập).
 
 > Hướng dẫn bấm từng bước nằm ở `DOCS/DEMO-SCRIPT.md`. File này chỉ chứa **dữ liệu để dán**.
 
@@ -111,7 +118,12 @@ Ràng buộc đang chạy:
 
 ---
 
-## 3. Công thức (`/recipes/create`)
+## 3. Công thức (`/recipes` → nút **Create New Recipe**)
+
+> **Không còn route `/recipes/create`** — form là dialog `RecipeComposerDialog`, mở từ `/recipes`.
+> Bố cục: trái là 4 khối form cuộn được (tổng quan → nguyên liệu → bước nấu → khẩu phần & thời gian),
+> phải là **thẻ xem trước** + checklist tiến độ + 2 nút Cancel / Create Recipe.
+> Sidebar phải **ẩn dưới `lg`** — màn hẹp chỉ thấy form.
 
 > **ĐƠN VỊ CHỈ ĐƯỢC LÀ `g` · `ml` · `piece` (chữ thường).**
 > Gõ `củ`, `quả`, `thìa`, `bó`, `kg`, `tbsp`, `cup` → **400 ngay**. Bảng dưới đã quy đổi sẵn.
@@ -119,14 +131,15 @@ Ràng buộc đang chạy:
 
 Ràng buộc chung cho cả 3 công thức:
 - Tên công thức / tên món ≤ **255** ký tự, bắt buộc.
-- Tên nguyên liệu ≤ **100** ký tự, **không trùng nhau** trong cùng công thức (trùng → tô đỏ, chặn gửi).
+- Tên nguyên liệu ≤ **100** ký tự, **không trùng nhau** trong cùng công thức (trùng → tô đỏ + toast `Mỗi nguyên liệu chỉ được xuất hiện một lần`, chặn gửi).
 - Số lượng: số **> 0**, tối đa 3 chữ số thập phân (`0.5` ok, `0.125` ok, `1/2` ✗).
 - Tối đa **50** nguyên liệu.
-- Khẩu phần: số nguyên **≥ 1**.
+- Khẩu phần: số nguyên **≥ 1**, mặc định `2` trong form.
 - Chuẩn bị / nấu: số nguyên phút, **được để trống**.
 - Độ khó: `EASY` · `MEDIUM` · `HARD` (hoặc để trống).
-- Mỗi bước nấu = 1 ô tiêu đề + 1 ô thân. Có tiêu đề thì **thân phải có chữ**. Cần ≥ 1 bước.
+- Mỗi bước nấu = 1 ô tiêu đề + 1 ô thân; đổi thứ tự bằng nút lên/xuống. Có tiêu đề thì **thân phải có chữ**. Cần ≥ 1 bước.
 - **Không có ô dinh dưỡng** — form không nhập, backend tự tính (V49/V50). Đừng hứa "nhập calories" khi demo.
+- **Không có ô ảnh bìa** — endpoint không nhận. Ảnh của món là ảnh của **dish dùng chung**, admin đặt ở `/admin/dishes`.
 - Công thức mới luôn ở trạng thái `PENDING` — phải vào `/admin/recipes` duyệt mới hiện công khai.
 
 ### 3.1 Bún chả chay
@@ -232,18 +245,28 @@ Ràng buộc chung cho cả 3 công thức:
 
 ### 3.4 Sau khi tạo — vòng duyệt
 
-1. Tạo 3.1 → vào `/recipes` → tab **Pending**, thấy badge vàng.
-2. Đăng nhập admin, mở `/admin/recipes` → lọc `PENDING` → mở dialog chi tiết → **Approve**.
-3. Quay lại `/recipes` tab **Approved** → badge xanh.
+1. Tạo 3.1 → vào `/recipes` → tab **Under Review** (`PENDING`), thấy badge vàng.
+2. Đăng nhập admin, mở `/admin/recipes` → mặc định đã lọc `PENDING` → mở dialog chi tiết → **Approve**.
+3. Quay lại `/recipes` tab **Published** (`APPROVED`) → badge xanh.
 4. Tạo 3.2 rồi **Reject** ở admin với lý do (≤ 1000 ký tự), ví dụ:
    `Thiếu định lượng cho phần nước dùng, bổ sung rồi gửi lại giúp mình nhé.`
-   → `/recipes` tab **Rejected** hiện đúng lý do đó (component `RejectionReason`).
+   → `/recipes` tab **Needs Changes** (`REJECTED`) hiện đúng lý do đó (component `RejectionReason`).
 
-> Duyệt recipe **không** duyệt dish/nguyên liệu của nó. Muốn nguyên liệu mới có dinh dưỡng thì admin phải vào riêng — xem §8.2.
+> Duyệt recipe **không** duyệt dish/nguyên liệu của nó. Muốn món hiện ở ô **Tìm món** của thực đơn
+> thì phải duyệt riêng tên món — nút **Approve dish** trong dialog chi tiết recipe (§8.3).
+> Muốn nguyên liệu mới có dinh dưỡng thì điền ở `/admin/ingredients` (§8.2).
+
+> Xoá công thức của mình: `/recipes` → thẻ công thức → **Delete** (ConfirmDialog). Xoá **mềm**,
+> không restore. `404` khi xoá lại được coi là thành công (idempotent).
 
 ---
 
-## 4. Thực đơn tuần (`/meal-plan/create`)
+## 4. Thực đơn tuần (`/meal-plan` → nút **Create**)
+
+> **Không còn route `/meal-plan/create`** — form là dialog `MealPlanComposerDialog`, mở từ `/meal-plan`
+> (nút **Create** ở header hoặc trong empty state). Dialog mở đúng tuần đang xem (`?from=`).
+> **Ngày bắt đầu là thứ mấy cũng được** — backend chỉ đòi đúng 7 ngày liền kề `startDate..startDate+6`,
+> không kiểm Thứ 2. Ngày trong quá khứ bị kẹp về hôm nay kèm toast.
 
 **Món phải chọn từ ô tìm kiếm** (gọi `GET /api/dishes`, cần JWT) — **không gõ tay được**. Bảng dưới cố định **cấu trúc ô**; A→G là 7 món thật bạn gán khi demo. Form **không hỏi số khẩu phần** — gửi ngầm `servings: 1` vì thực đơn là của cá nhân.
 
@@ -279,16 +302,23 @@ Ràng buộc đang chạy (validate client + backend, sai là **400 cả tuần*
 **Vòng đời trạng thái** (`MenuActions` trên thẻ menu, `POST /api/menus/{id}/status`):
 
 ```
-drafted ──► scheduled ──► completed
+drafted ──► scheduled
    │            │
    └────────────┴──► cancelled
 ```
 
+Backend còn nhận `scheduled → completed` nhưng **UI không có nút đó** (bỏ 2026-11-13).
+
 - Menu tạo ra **luôn là `drafted`**.
-- `cancelled` và `completed` là **trạng thái cuối** — hết nút.
-- **Không có endpoint xoá.** `cancelled` là đường bỏ duy nhất.
+- `drafted` có **2 nút**: **Lên lịch** (→ `scheduled`) và **Huỷ** (→ `cancelled`).
+- `scheduled` **chỉ còn Huỷ** — UI **không có nút "hoàn thành"** (bỏ 2026-11-13 theo yêu cầu), dù backend
+  vẫn nhận `scheduled → completed` nếu gọi API trực tiếp.
+- `cancelled` / `completed` là **trạng thái cuối** — chỉ còn nút **Xoá**.
+- **Xoá được ở MỌI trạng thái**: `DELETE /api/menus/{menuId}` (nút **Xoá** trong `MenuActions`,
+  xác nhận qua `ConfirmDialog`). Xoá hẳn, không phải đổi trạng thái.
 - `drafted → scheduled` có thể trả **409** nếu trùng tuần đã có menu khác — FE hiện nguyên văn message của backend.
 - `/meal-plan` mặc định chỉ hiện `scheduled`; đổi qua `PillTabs` + `?status=`. Lọc chạy client-side vì endpoint không nhận `status`.
+- Cửa sổ xem là **7 ngày trượt** từ `?from=` (thứ mấy cũng được, mặc định hôm nay); `WeekNavigator` dịch ±7 ngày.
 
 ---
 
@@ -307,11 +337,14 @@ Bỏ qua `test categories 1` — category rác do seed. Dùng `Soups` cho 5.1, `
 
 Ràng buộc trong composer:
 - **Tiêu đề ≤ 90 ký tự** (BE cho 255 nhưng FE chặn 90 để vừa thẻ feed).
-- **Ảnh bìa = upload file**, không phải dán URL. Bấm ô ảnh → chọn file ảnh ≤ **5 MB**. Ảnh chèn trong bài cũng đi qua luồng upload 3 bước.
+- **Tóm tắt ≤ 180 ký tự** — chỉ để preview card trong dialog, **không gửi lên BE**.
+- **Ảnh bìa = upload file**, không phải dán URL. Bấm ô ảnh → chọn file ảnh. Ảnh chèn trong bài cũng đi qua luồng upload 3 bước.
+- **Video chèn trong bài = upload file** (nút video trên toolbar) — FE nén trước khi upload, rồi chèn node `video` vào nội dung. `mediaIds` gửi qua `POST /api/posts/{id}/media`.
 - **Publish bắt buộc**: ≥ 1 danh mục **và** nội dung không rỗng. Thiếu → lỗi ngay dưới ô, không gửi.
 - **Save draft** thì không cần gì cả.
-- **Không có ô chọn loại Blog/Video.** `POST /api/posts` không nhận `type` → **không tạo được bài video từ UI**. Đừng hứa.
-- Gắn công thức: chip **Attach recipe** → dialog chọn (đã ẩn recipe `REJECTED`). Mặc định không bắt buộc.
+- **Không có ô chọn loại Blog/Video.** `POST /api/posts` không nhận `type` → bài không có "loại"; video là media **bên trong nội dung**.
+- Gắn công thức: chip **Attach recipe** → dialog chọn (gộp công thức của mình + đã lưu, đã ẩn recipe `REJECTED`). Không bắt buộc.
+- Đóng dialog khi đã nhập → ConfirmDialog `Bỏ bài viết này?` (Esc / bấm nền / X đều hỏi).
 
 ### 5.1 Bài thường — đã đăng
 
@@ -319,7 +352,7 @@ Ràng buộc trong composer:
 |---|---|
 | Tiêu đề | `Nước dùng chay trong 4 giờ: rang gừng trước khi ninh` |
 | Danh mục | `Soups` |
-| Ảnh bìa | chọn 1 file ảnh bất kỳ ≤ 5 MB (hoặc để trống) |
+| Ảnh bìa | chọn 1 file ảnh bất kỳ (hạn mức do setting admin, mặc định 5 MB) hoặc để trống |
 | Công thức gắn kèm | `Bún chả chay` (nếu đã duyệt ở §3.4) |
 
 **Nội dung** (dán vào editor)
@@ -342,7 +375,10 @@ Tiêu đề 51 ký tự — vừa giới hạn 90.
 
 **Bấm Publish ngay trong dialog.** KHÔNG có bước "vào `/my-posts` bấm Đăng" — `/my-posts` chỉ có **Sửa** và **Xoá**.
 
-> `POST /api/posts` chỉ tạo `created` (draft); FE gọi tiếp `PATCH {publish: true}` + gắn category + gắn recipe. Nếu bài chưa lên feed ngay nghĩa là backend đang chờ duyệt — mở `/admin/posts` → **Approve**.
+> `POST /api/posts` chỉ tạo `drafted`; FE gọi tiếp `PATCH {publish: true}` + gắn category + gắn recipe.
+> `publish: true` chỉ **gửi duyệt** — bài về `processing`, filter async mới flip `pending` (có verdict, chờ admin)
+> hoặc `published`. Bài có media luôn đậu ở `pending` dù text đã pass (filter không đọc media).
+> Chưa lên feed nghĩa là đang chờ — mở `/admin/posts` → **Approve**.
 
 ### 5.2 Bài nháp — dùng demo sửa/xoá
 
@@ -366,9 +402,9 @@ Chiên ngập dầu ở 170°C. Không lật sớm — chờ mặt dưới vàng
 Để ráo dầu trên giá, không để trên giấy, hơi nước sẽ làm vỏ mềm lại.
 ```
 
-Bấm **Save draft** (không Publish) → bài nằm ở `created`.
+Bấm **Save draft** (không Publish) → bài nằm ở `drafted`.
 
-Demo trên `/my-posts`: **Sửa** → đổi tiêu đề → Save draft → **Xoá** (ConfirmDialog) → biến khỏi danh sách. Đây là dữ liệu cho cả 2 thao tác ghi.
+Demo trên `/my-posts`: tab **Draft** → **Sửa** → đổi tiêu đề → Save draft → **Xoá** (ConfirmDialog) → biến khỏi danh sách. Đây là dữ liệu cho cả 2 thao tác ghi.
 
 ### 5.3 Bài dài — kiểm tra thời gian đọc
 
@@ -421,7 +457,11 @@ Ba là, đừng quên sắt và B12. Đạm thực vật thường kèm phytate 
 Mình không phải bác sĩ. Đây chỉ là ghi chép cá nhân.
 ```
 
-Bấm **Publish**. Sau đó vào `/explore` → bật bộ lọc **Reading time → In-depth (> 10 min)** → bài này phải hiện.
+Bấm **Publish**. Sau đó vào `/explore` → tab **Posts** → tìm theo từ khoá `đạm` → bài này phải hiện,
+và card hiện **thời gian đọc ≥ 10 phút** (`estimateReadMinutes`).
+
+> Explore **không có** bộ lọc "Reading time" — chỉ có ô tìm kiếm + danh mục (tab Posts) và
+> độ khó + thời gian nấu tối đa (tab Recipes). Đừng hứa lọc theo thời gian đọc.
 
 ### 5.4 Bình luận (dán vào `/posts/{id}` của bài 5.1)
 
@@ -444,10 +484,11 @@ Nội dung quảng cáo sản phẩm ngoài chủ đề bài viết.
 ```
 
 Các thao tác comment cần demo:
-- **Sửa** comment của chính mình (chỉ hiện trên comment của mình) → PATCH.
+- **Reply** → nút **Reply** dưới comment mở composer ngay dưới (lồng cấp con, có `@tên` người được trả lời).
+- **Sửa** comment của chính mình (chỉ hiện trên comment của mình) → PATCH, BE set `edited: true`.
 - **Xoá** → nội dung thành `[deleted]`, nhánh reply **giữ nguyên** (soft delete).
-- **Report** → gửi lý do; admin xử lý ở `/admin/comments`.
-- Vote: bấm **▲** lần 1 = upvote, bấm lần 2 = bỏ vote (toggle 2 chiều, optimistic).
+- **Report** → gửi lý do (optional, ≤ 500 ký tự); admin xử lý ở `/admin/comments`.
+- Vote: bấm **▲** lần 1 = upvote, bấm lần 2 = bỏ vote (toggle 2 chiều, optimistic). Vote **chỉ có trên card ở `/explore`** — Post Detail cố ý không có.
 
 ---
 
@@ -455,8 +496,12 @@ Các thao tác comment cần demo:
 
 Vào từ rail tài khoản **Subscription**, hoặc trực tiếp `/subscription` (link công khai).
 
-1. Bấm **Claim 5 free requests** (gói miễn phí) → toast "đã nhận". Bấm lại → toast "đã claim rồi" (409 được xử lý riêng).
-2. Bấm **Mua** ở gói trả phí → backend tạo payment → chuyển sang cổng VNPay.
+> Mua và nhận gói dùng **một** endpoint: `POST /api/subscriptions/acquire {planCode}`.
+> Response có `action`: `CLAIMED` (gói FREE đã nhận, không đi thanh toán) hoặc
+> `CHECKOUT_CREATED` (có `paymentUrl` để redirect VNPay). Không còn `checkout`/`cancel`/`eligibility`.
+
+1. Bấm **Claim** ở gói miễn phí → `action: CLAIMED` → toast "đã nhận". Bấm lại → **409** → toast "đã claim rồi" (xử lý riêng, không phải lỗi đỏ).
+2. Bấm **Mua** ở gói trả phí → `action: CHECKOUT_CREATED` → chuyển sang cổng VNPay.
 3. Thẻ test VNPay (sandbox):
 
 | Trường | Giá trị |
@@ -469,6 +514,7 @@ Vào từ rail tài khoản **Subscription**, hoặc trực tiếp `/subscriptio
 4. Thanh toán xong VNPay redirect về `/payment/result/{paymentId}`; trang poll **3 giây/lần** khi `status === "pending"`.
 
 > **IPN là nguồn sự thật**, redirect chỉ để hiển thị. Trang kết quả còn `pending` quá lâu nghĩa là backend chưa nhận IPN — **không phải lỗi FE**.
+> `GET /api/subscriptions/me` chỉ trả **`{ remainingUsage }`** — không có `tier`/`currentPlan`/`renewalDate`.
 > Tab **Lịch sử mua** và **Thanh toán** ở `/account/subscription` là 2 `PillTabs` gọi 2 endpoint khác nhau.
 
 **AI chat** (`/ai-nutrition`) — quota tính theo số lượt còn lại:
@@ -478,15 +524,17 @@ Gợi ý thực đơn chay 1 ngày đủ 60 g đạm cho người 61 kg, ưu ti�
 ```
 
 - Mỗi tin nhắn ≤ **4000** ký tự. Gửi text thuần, `POST /api/ai/messages`.
-- Hết lượt → banner "0 requests" → bấm **Claim 5 free** hoặc mua gói.
+- Hết lượt → banner claim/mua → bấm **Claim** (gọi cùng `acquire`) hoặc **Mua**.
 - **Dish Picker** gửi **tên món** (không gửi `dishId`) — `GET /api/dishes` cần JWT.
-- Số lượt còn lại hiện ngay header: `<Plan> · Còn N câu hỏi`.
+- Số lượt còn lại hiện ngay header: `Còn N câu hỏi`.
 
 ---
 
 ## 7. Tìm địa điểm (`/nearby`)
 
-**Trang này KHÔNG có ô tìm theo tên quán** — backend chỉ có `GET /api/locations/nearby?lat&lng&radius` và `GET /api/locations?placeType&minRating&maxPriceLevel`. Đừng hứa "gõ tên quán".
+Trang có **ô tìm theo tên quán** (gọi `GET /api/locations?keyword=`); khi ô đó trống thì dùng
+`GET /api/locations/nearby?lat&lng&radius`. **Không có pill lọc theo loại quán** (backend có
+`placeType` nhưng UI chưa nối).
 
 Toạ độ để giả lập GPS (DevTools → Sensors → Location):
 
@@ -494,21 +542,27 @@ Toạ độ để giả lập GPS (DevTools → Sensors → Location):
 10.7769, 106.7009   (Quận 1, TP.HCM)
 ```
 
-- Chọn **quận** ở dropdown thay cho GPS: `Quận 1` (mặc định), `Quận 3`, `Quận 4`, `Quận 5`, `Quận 7`, `Bình Thạnh`, `Phú Nhuận`, `Tân Bình`, `Thủ Đức`…
-- Bán kính cố định **10 km**.
-- Pill lọc: `All` · `100% Vegan Restaurant` · `Vegetarian Cafe` · `Organic Grocery` · `Vegan Market` — số đếm trên pill khớp kết quả.
-- Sort: **Closest first** ↔ **Highest rated**.
+- Chọn **quận** ở dropdown thay cho GPS: `district1` (mặc định), `district3`, `district4`, `district5`,
+  `district6`, `district7`, `district8`, `district10`, `district11`, `district12`, `binhThanh`, `goVap`,
+  `phuNhuan`, `tanBinh`, `tanPhu`, `binhTan`, `thuDuc`, `binhChanh`, `nhaBe`, `hocMon`.
+- Bán kính cố định **10 km** (`RADIUS_KM`).
+- Sort: **Khoảng cách gần nhất** ↔ **Đánh giá cao nhất** (lọc client-side trên kết quả đã tải).
 - Chế độ xem: **Split / List / Map**.
-- **View Details** → `/nearby/:id` — **cần đăng nhập** (`/nearby` thì public).
-- **Get Directions** mở Google Maps, điểm xuất phát là GPS nếu đã cho phép.
+- **Xem chi tiết** → `/nearby/:id` — **cần đăng nhập** (`/nearby` thì public).
+- **Chỉ đường** mở Google Maps, điểm xuất phát là GPS nếu đã cho phép.
 
 ---
 
 ## 8. Dữ liệu cho khu admin
 
+Sidebar admin có **11 mục**: Dashboard · Users · Posts · Videos · Comments · Categories · Recipes ·
+**Dishes** · Ingredients · Locations · Settings (+ Profile ở avatar). Tất cả list đều sort cố định
+**mới nhất trước** (`createdAt,desc`) trừ Comments (có dropdown `createdAt`/`updatedAt`).
+
 ### 8.1 Bài chờ duyệt (`/admin/posts`)
 
-Lọc `status=created` → mở preview → **Approve** (publish bài + duyệt component PENDING) hoặc **Reject** kèm lý do.
+Lọc `status=pending` (hàng chờ duyệt thật; `processing` = filter còn đang chạy) → mở preview →
+**Approve** (publish bài + duyệt component PENDING) hoặc **Reject** kèm lý do.
 
 Lý do từ chối mẫu (≤ **1000** ký tự):
 
@@ -516,7 +570,8 @@ Lý do từ chối mẫu (≤ **1000** ký tự):
 Bài chưa có danh mục phù hợp và phần mở đầu trùng lặp với bài đã đăng trước đó. Bổ sung nguồn tham khảo rồi gửi lại.
 ```
 
-Nút **Xoá** (soft delete) có ConfirmDialog.
+Nút **Xoá** (soft delete) có ConfirmDialog. Bài đã `published` **không còn nút Ngừng đăng** —
+ADR-016 không để lại endpoint admin nào bỏ bài xuống; chủ bài tự rút bằng `PATCH {publish: false}`.
 
 ### 8.2 Nguyên liệu (`/admin/ingredients`)
 
@@ -535,13 +590,39 @@ Tạo nguyên liệu mới — **5 ô dinh dưỡng phải điền đủ cả 5 
 > Đơn vị ở đây dùng **`G` / `ML` / `PIECE`** (chữ HOA) — khác với `g/ml/piece` của form member. Đó là 2 enum khác nhau, đừng nhầm.
 > Điền 4/5 ô → lỗi `partialNutrition`. Điền đủ 5 mà bỏ trống đơn vị → lỗi `unitRequired`. **Không sửa được** đơn vị về rỗng, cũng không xoá trắng cả 5 ô dinh dưỡng (PATCH chỉ gửi field đã đổi).
 > Lọc theo đơn vị có mục **`Chưa có đơn vị`** = `unit: null`.
+> Trang **không có cột Duyệt** và **không lọc `moderationStatus`** — cố ý (chủ dự án yêu cầu không đưa
+> approve/reject lên UI cho ingredient). Đây chỉ là nơi điền `unit` + dinh dưỡng.
+> Danh sách sort cố định **mới nhất trước** (`createdAt,desc`), không có dropdown sort.
+> Badge `PENDING` cạnh mục "Nguyên liệu" ở sidebar = số nguyên liệu member gõ mà chưa điền.
+
+### 8.2b Tên món — Dishes (`/admin/dishes`)
+
+Trang CRUD thuần cho **tên món dùng chung** (thực đơn và công thức đều tham chiếu tới nó).
+
+| Ô | Giá trị |
+|---|---|
+| Tên | `Nộm rau` |
+| Kiểu ẩm thực | `Việt Nam` |
+| Mô tả | `Nộm rau củ thái sợi, sốt mè rang.` |
+| Ảnh | upload 1 file ảnh bất kỳ (hoặc để trống) |
+
+- Lọc **tên** (server) + **trạng thái duyệt** (server); sort cố định `createdAt,desc`.
+- Tạo tay → `moderationStatus: APPROVED` **ngay**, món hiện được ở ô **Tìm món** của thực đơn.
+- **409** nếu trùng tên (kể cả tên đã xoá mềm — tên không được giải phóng).
+- **Xoá = xoá mềm, không restore.** ConfirmDialog nói rõ.
+- `AdminDishResponse` **không có** `status`/`deletedAt` → trang **không lọc được** món đã xoá (khác recipe).
+- Trang này **không có** nút approve/reject và **không** quản lý nguyên liệu của món.
 
 ### 8.3 Duyệt công thức (`/admin/recipes`)
 
 - Lọc `moderationStatus` (mặc định `PENDING`), thêm `userId`, `categoryId`, khoảng ngày.
-- Sort whitelist: `createdAt,desc` · `updatedAt,desc` · `name,asc`.
+- Sort cố định `createdAt,desc` — **không có dropdown sort** (bỏ 2026-11-20).
 - Duyệt/từ chối **chỉ trong dialog chi tiết**. Lý do từ chối ≤ 1000 ký tự.
-- Không có sửa/xoá recipe.
+- Trong dialog có **Sửa** (`EditRecipeDialog` — chỉ 7 field văn bản/số, không đụng nguyên liệu/dish)
+  và **Xoá** (xoá mềm một chiều, ConfirmDialog).
+- Recipe còn `missingRequiredIngredients` → dialog duyệt liệt kê từng tên để điền `unit` + 5 dinh dưỡng
+  **trước khi** gọi approve; để trống = bỏ qua, điền sau ở `/admin/ingredients`.
+- **Approve dish** riêng trong dialog — duyệt recipe **không** duyệt tên món của nó.
 
 ### 8.4 Bình luận (`/admin/comments`)
 
@@ -560,7 +641,7 @@ Bình luận chứa link quảng cáo và không liên quan nội dung bài vi�
 | Name | `Fermented` |
 | Description | `Món lên men thực vật: tempeh, kimchi chay, dưa muối.` |
 
-Giới hạn: name ≤ **100**, description ≤ **500**. Trang có thẻ đếm All/Active, tìm theo tên/UUID, sort `newest`/`name`, phân trang, **retire** (soft delete), export CSV. **Không** restore, **không** xoá vĩnh viễn.
+Giới hạn: name ≤ **100**, description ≤ **500**. Trang có 2 thẻ đếm All/Active, tìm theo tên/UUID, sort `newest`/`name`, phân trang, **retire** (soft delete). **Không** restore, **không** xoá vĩnh viễn, **không** export CSV. Danh sách dùng tạm `GET /api/categories` nên **không thấy được category đã retire**.
 
 ### 8.6 Người dùng (`/admin/users`)
 
@@ -599,7 +680,21 @@ Ràng buộc: tên/địa chỉ ≤ **255**, điện thoại ≤ **20**, vĩ đ�
 
 ### 8.9 Dashboard (`/admin/dashboard`)
 
-**Số liệu còn là mock** (`src/features/admin/dashboardApi.ts` derive từ `categoriesSeed`). Backend **đã có** `GET /api/admin/dashboard` (verify live 2026-11-06, xem `DOCS/API-COVERAGE.md` §27) với `DashboardResponse` khớp shape 1:1 — chỉ còn thiếu bước nối hook. Nói đúng như vậy khi demo: "endpoint đã có, FE chưa nối".
+**Đã nối API thật** (2026-11-20, BE PR #211): `GET /api/admin/dashboard` (snapshot lifetime, cache 5 phút)
++ `GET /api/admin/dashboard/charts?range=day|week|month` (cache 15 phút). Không còn mock.
+
+**Bẫy khi demo số liệu:** tiền là **đồng nguyên** (không chia 100); `arpu` chia theo **payer**
+(nhãn "revenue per paying user"); `revenueTotal` là gross; bucket theo **UTC** (00:00 UTC = 07:00 VN);
+bucket cuối luôn thiếu giờ. Charts chỉ còn **2 series** (`revenueByPlan`, `publishedPosts`) —
+`revenueTrend`/`paymentHealth`/`growth` đã bị BE bỏ, đừng hứa.
+
+### 8.10 Cài đặt (`/admin/settings`)
+
+8 key / 3 nhóm (`ai`, `media`, `content`) từ `GET /api/admin/settings`; `PATCH` partial, trả lại cả danh sách.
+Response **không có type** — kiểu + biên ở `features/admin/settingsSchema.ts`.
+
+Demo: đổi `max_image_upload_mb` xuống `1` → Save → quay lại upload ảnh 2 MB ở composer → BE trả
+`File exceeds the 1 MB limit` (chứng minh giới hạn đến từ setting, không hard-code ở client).
 
 ---
 
@@ -607,13 +702,14 @@ Ràng buộc: tên/địa chỉ ≤ **255**, điện thoại ≤ **20**, vĩ đ�
 
 | Luồng | Đường dẫn | Dữ liệu / thao tác |
 |---|---|---|
-| Tổng quan tài khoản | `/account` | Thẻ thống kê (published / draft / recipes), task "Cần bạn", lưới `x / 21` ô, chip dị ứng màu đỏ |
-| Công thức của tôi | `/recipes` | `PillTabs` All / Approved / Pending / Rejected, tìm theo tên **hoặc tên nguyên liệu**, lọc độ khó, sort |
-| Thực đơn | `/meal-plan` | `PillTabs` theo `?status=`, nút đổi trạng thái trên `MenuCard` |
-| Bài của tôi | `/my-posts` | `PillTabs` All / Published / Draft / Unpublished, **chỉ Sửa + Xoá** |
-| Đổi ngôn ngữ | navbar | EN ↔ VI — cả 14 namespace đều có đủ 2 locale |
-| Trang chi tiết bài | `/posts/:id` | Nội dung, công thức đính kèm, bài liên quan, comment |
-| Khám phá bộ lọc | `/explore` | Tab All/Recipe/Blog, checkbox category có số đếm, Format, Reading time, sort Popular/Recent |
+| Tổng quan tài khoản | `/account` | 4 thẻ thống kê (published / views / pending recipes / meals), task "Cần bạn" (recipe PENDING, menu drafted, bài nháp), lưới **7 ngày × 3 bữa = 21 ô**, chip dị ứng màu đỏ |
+| Công thức của tôi | `/recipes` | `PillTabs` All / Published / Under Review / Needs Changes, tìm theo tên **hoặc tên món / tên nguyên liệu**, lọc độ khó, sort (Recently modified / Recently created / Name A–Z), nút Create New Recipe mở dialog |
+| Thực đơn | `/meal-plan` | `PillTabs` theo `?status=` (mặc định `scheduled`), `WeekNavigator` ±7 ngày, nút đổi trạng thái + Xoá trên `MenuCard` |
+| Bài của tôi | `/my-posts` | `PillTabs` All / Published / Pending review / Drafts / Rejected, **chỉ Sửa + Xoá** |
+| Đã lưu | `/saved` | 2 tab Posts / Recipes, phân trang server, nút "Viết bài từ công thức này" |
+| Đổi ngôn ngữ | navbar | EN ↔ VI — cả **15 namespace** đều có đủ 2 locale |
+| Trang chi tiết bài | `/posts/:id` | Nội dung, công thức đính kèm, bài liên quan, comment + reply (không có thanh vote — vote chỉ ở `/explore`) |
+| Khám phá | `/explore` | 2 tab **Posts / Recipes**; tab Posts lọc theo từ khoá + 1 danh mục; tab Recipes lọc độ khó + thời gian nấu tối đa (`≤15/30/60` phút) + từ khoá |
 
 ---
 
@@ -676,6 +772,7 @@ Mỗi case ghi rõ: **nhập gì** → **ai chặn** → **thấy gì trên màn
 | Xoá hết bước nấu | FE | Rail **Danh sách kiểm** tụt %, dòng *Các bước nấu* thành `Còn thiếu`. Bấm Create thì Yup chặn (`Vui lòng nhập trường này`) — nút không bị disable, chỉ không gửi |
 | Tên công thức > 255 ký tự | FE | `Tối đa 255 ký tự` |
 | Tên nguyên liệu > 100 ký tự | FE | `Tối đa 100 ký tự` |
+| Đóng dialog công thức khi đã nhập | FE | ConfirmDialog `Bỏ công thức này?` — Esc / bấm nền / X đều hỏi |
 
 ### 10.4 Thực đơn tuần
 
@@ -689,10 +786,13 @@ Mỗi case ghi rõ: **nhập gì** → **ai chặn** → **thấy gì trên màn
 | Tìm món vừa tạo (chưa duyệt) trong ô **Tìm món** | BE | Không xuất hiện — `GET /api/dishes` chỉ trả món `moderation_status = APPROVED`. Demo: tạo recipe → chưa duyệt → picker không thấy |
 | Chọn món rồi **huỷ chọn** | FE | Ô trở về trống, món đó không bị tính vào số lần lặp |
 | Bấm **Lên lịch** cho tuần đã có menu `scheduled` | BE | **409** `MenuOverlapException` — toast hiện nguyên văn message backend. (Tạo menu `drafted` cùng tuần thì **không** lỗi) |
-| Muốn đưa `scheduled` → `drafted` | FE | **Không có nút lùi** — bảng `NEXT_ACTIONS` chỉ có `scheduled → completed\|cancelled`. Nói rõ khi demo |
-| Bấm đổi trạng thái menu đã `cancelled` / `completed` | FE | Không có nút nào để bấm (không render rồi disable) |
+| Muốn đưa `scheduled` → `drafted` | FE | **Không có nút lùi** — bảng `NEXT_ACTIONS` chỉ có `scheduled → cancelled`. Nói rõ khi demo |
+| Bấm đổi trạng thái menu đã `cancelled` / `completed` | FE | Không có nút đổi trạng thái nào (chỉ còn nút **Xoá**) |
+| Bấm **Xoá** menu | FE | `ConfirmDialog` → `DELETE /api/menus/{id}` xoá hẳn, biến khỏi danh sách |
+| Chọn ngày bắt đầu trong quá khứ | FE | Toast `Ngày bắt đầu phải sau hôm nay. Chọn từ ngày mai trở đi.`, ngày bị kẹp về hôm nay |
 
-> Case hay bị hỏi: **"xoá menu được không?"** → Không. Không có endpoint delete. `cancelled` là đường duy nhất.
+> Case hay bị hỏi: **"xoá menu được không?"** → **Được**, nút **Xoá** có ở mọi trạng thái (2026-11-12).
+> Case khác: **"đánh dấu hoàn thành được không?"** → Từ UI thì **không** (nút đã bỏ 2026-11-13), backend vẫn nhận.
 
 ### 10.5 Bài viết (composer)
 
@@ -703,8 +803,10 @@ Mỗi case ghi rõ: **nhập gì** → **ai chặn** → **thấy gì trên màn
 | Tiêu đề 91 ký tự | FE | `Tối đa 90 ký tự` |
 | Tóm tắt 181 ký tự | FE | `maxLength={180}` cắt tại 180, bộ đếm `180 / 180` — không phải lỗi đỏ |
 | Tải ảnh `.pdf` lên ô ảnh bìa | FE | Toast `Vui lòng chọn file ảnh` |
-| Tải ảnh 6 MB | FE | Toast `Ảnh không được vượt quá 5MB` |
+| Tải ảnh vượt hạn mức setting | BE | Toast hiện **nguyên văn** message backend, vd `File exceeds the 5 MB limit`. Client **không** chặn trước — hạn mức là setting admin sửa được |
 | Tải ảnh bìa khi **mất mạng** giữa luồng upload | FE | Toast `Tải ảnh thất bại`, ô ảnh vẫn trống |
+| Tải video sai định dạng | FE | Toast `Vui lòng chọn file video` |
+| Tải video vượt hạn mức setting | BE | Toast hiện nguyên văn message backend. FE **nén trước** khi upload (clip 4K 50 MB → ~6 MB) |
 | Đóng dialog khi có thay đổi chưa lưu | FE | ConfirmDialog `Bỏ bài viết này?` — bấm ngoài / Esc / X đều hỏi |
 | Save draft không nhập gì | FE | **Được** — draft không có điều kiện |
 | Sửa bài rồi Publish khi thiếu danh mục | FE | Như trên, chặn tại form |
@@ -739,6 +841,9 @@ Mỗi case ghi rõ: **nhập gì** → **ai chặn** → **thấy gì trên màn
 | Tạo nguyên liệu điền **4/5** ô dinh dưỡng | FE | `Điền đủ 5 giá trị dinh dưỡng hoặc để trống hết.` |
 | Tạo nguyên liệu điền đủ 5 ô nhưng **bỏ trống đơn vị** | FE | `Có dinh dưỡng thì phải có đơn vị.` |
 | Nhập calories `-5` | FE | `Giá trị dinh dưỡng phải là số lớn hơn hoặc bằng 0.` |
+| Tạo món trùng tên (kể cả tên đã xoá mềm) | BE | **409** — toast hiện nguyên văn message backend. Tên không được giải phóng |
+| Sửa món không đổi field nào rồi bấm Save | FE | Dialog **đóng luôn**, không gọi API (PATCH rỗng bị chặn ở client) |
+| Xoá món | FE | ConfirmDialog `Xoá mềm, không có endpoint khôi phục` |
 | Tạo danh mục chỉ có khoảng trắng | FE | Chuỗi `trim()` → rỗng → `Vui lòng nhập trường này` |
 | Danh mục tên 101 ký tự | FE | `Tối đa 100 ký tự` |
 | Danh mục mô tả 501 ký tự | FE | `Tối đa 500 ký tự` |
@@ -758,7 +863,7 @@ Mỗi case ghi rõ: **nhập gì** → **ai chặn** → **thấy gì trên màn
 
 | Nhập gì | Ai chặn | Kết quả |
 |---|---|---|
-| Bấm **Claim 5 free** lần 2 | BE | **409** → toast **`Bạn đã nhận gói miễn phí trước đó rồi.`** (FE xử lý riêng, không phải lỗi đỏ) |
+| Bấm **Claim** gói free lần 2 | BE | **409** → toast **`Bạn đã nhận gói miễn phí trước đó rồi.`** (FE xử lý riêng, không phải lỗi đỏ) |
 | Hỏi AI khi còn 0 lượt | BE | **429** → banner `Bạn đang có 0 câu hỏi AI khả dụng` + 2 nút Nhận 5 câu hỏi miễn phí / Mua gói câu hỏi |
 | Gửi tin nhắn 4001 ký tự | FE | `maxLength` cắt tại 4000 (bộ đếm `4000/4000`), không gõ thêm |
 | Bấm Gửi khi ô trống | FE | Nút **khoá** (`!draft.trim()`) |
@@ -775,12 +880,13 @@ Mỗi case ghi rõ: **nhập gì** → **ai chặn** → **thấy gì trên màn
 |---|---|
 | Từ chối quyền GPS ở `/nearby` | Không sập — hiện `Bạn đã từ chối quyền vị trí. Hãy chọn một khu vực bên dưới.` và rơi về toạ độ tâm quận đang chọn |
 | Chọn quận không có quán nào | `EmptyState` **`Không có địa điểm trong mục này`** + nút `Hiện tất cả địa điểm` (không phải "xoá bộ lọc") |
+| Gõ từ khoá không khớp quán nào | Chuyển sang `GET /api/locations?keyword=` → `EmptyState` như trên |
 | Bấm **View Details** khi chưa đăng nhập | `ProtectedRoute` → `/login` kèm `state.from` → đăng nhập xong quay lại đúng `/nearby/:id` |
 | Bản đồ không tải được tile OSM | Tự chuyển nguồn tile Esri; cả 2 hỏng thì hiện `Không tải được nền bản đồ. Danh sách địa điểm vẫn hiển thị bên cạnh; …` |
 | Backend Render đang ngủ (cold start) | Skeleton quá lâu → `ErrorState`: `Đã có lỗi xảy ra` / `Không thể tải nội dung. Vui lòng kiểm tra kết nối và thử lại.` + nút `Thử lại`. Đánh thức `/api/health` trước khi demo |
 | Mất mạng giữa trang | Cùng `ErrorState` trên, không màn hình trắng |
 | Truy cập `/admin/*` bằng tài khoản USER | `AdminRoute` chặn → `Navigate to="/"` (về Home, **không** hiện thông báo) |
-| Truy cập `/my-posts`, `/recipes`, `/meal-plan` khi chưa đăng nhập | `ProtectedRoute` → `/login` |
+| Truy cập `/my-posts`, `/recipes`, `/meal-plan`, `/saved` khi chưa đăng nhập | `ProtectedRoute` → `/login` |
 | Đã đăng nhập rồi mở `/login` | `PublicRoute` → admin về `/admin/dashboard`, user về `/` |
 
 ### 10.10 Bảng chọn nhanh — case đáng demo nhất
@@ -794,22 +900,24 @@ Chỉ chọn **3–4 case**, đừng dàn trải. Ưu tiên case chứng minh h�
 | Chọn 4 món → nút Lưu khoá | Luật nghiệp vụ (BR-MENU-005) chạy ở client **và** server |
 | Publish thiếu danh mục → chặn tại form | Điều kiện publish được kiểm trước khi gọi API |
 | Claim free lần 2 → 409 xử lý riêng | Phân biệt được lỗi nghiệp vụ với lỗi hệ thống |
-| Hết lượt AI → 429 + banner | Quota là dữ liệu thật từ server, không hard-code |
+| Hết lượt AI → banner claim/mua | Quota là dữ liệu thật từ server, không hard-code |
 | Chọn món chưa duyệt ở **Tìm món** → không có trong danh sách | `GET /api/dishes` lọc `APPROVED` ở server, không phải ẩn ở UI |
+| Đổi `max_image_upload_mb` = 1 ở `/admin/settings` rồi upload ảnh 2 MB | Giới hạn đến từ setting server, client không hard-code |
 
 ---
 
 ## 11. Checklist trước khi demo
 
 - [ ] Tài khoản demo đã `activated` và **đăng nhập được bằng email** (không phải display name)
-- [ ] Đã lưu Hồ sơ → rail `/account` hiện đúng tên + avatar + 3 số đếm
-- [ ] Có ít nhất **1 công thức `PENDING`** (demo badge chờ duyệt + mục "Cần bạn" ở `/account`)
+- [ ] Đã lưu Hồ sơ → rail `/account` hiện đúng tên + avatar + 4 thẻ thống kê
+- [ ] Có ít nhất **1 công thức `PENDING`** (demo badge chờ duyệt + task "Cần bạn" ở `/account`)
 - [ ] Có ít nhất **1 công thức `APPROVED`** để gắn vào bài viết
-- [ ] Có **1 bài `published`** + **1 bài `created`** (demo 2 badge trạng thái)
-- [ ] Có **1 thực đơn `drafted`** trong tuần hiện tại (demo thanh "x / 21 ô")
+- [ ] Có **1 bài `published`** + **1 bài `drafted`** (demo 2 badge trạng thái)
+- [ ] Có **1 thực đơn `drafted`** trong tuần hiện tại (demo lưới 21 ô ở `/account`)
 - [ ] Đã đăng nhập **tài khoản ADMIN** ở tab khác nếu demo `/admin`
-- [ ] Đã **claim gói FREE** ở `/ai-nutrition` (5 lượt) — không thì flow AI đứng ở banner 0
+- [ ] Đã **claim gói FREE** ở `/ai-nutrition` hoặc `/subscription` — không thì flow AI đứng ở banner 0
 - [ ] Trình duyệt đã **cho phép vị trí**, hoặc nhớ chọn quận từ dropdown ở `/nearby`
 - [ ] Backend đang thức (Render free tier ngủ sau 15 phút — mở `/api/health` trước 1 phút)
 - [ ] Đã chọn đủ **≥ 5 món khác nhau** trong form thực đơn (mục 4 — thực tế dùng **7 món**)
 - [ ] Mọi đơn vị nguyên liệu đã là **`g` / `ml` / `piece`** (mục 3) — đây là chỗ dễ 400 nhất
+- [ ] Tên món dùng cho thực đơn đã ở trạng thái `APPROVED` (tạo tay ở `/admin/dishes` hoặc **Approve dish** trong dialog recipe)

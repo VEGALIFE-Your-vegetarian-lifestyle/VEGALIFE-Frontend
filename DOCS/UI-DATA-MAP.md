@@ -180,7 +180,7 @@ gộp thành `"tiêu đề — thân"` mỗi bước một dòng trước khi g�
    sang `approve` / `reject` (ADR-016). `PATCH /api/posts/{id}/visibility` cũng đã xoá (V56);
    FE không có UI ẩn/hiện bài.
 2. `getUsers` gửi `page` verbatim (mọi service khác tự trừ 1) — sai là lệch trang.
-3. `getMyPosts` / `getVideos` / `exportCategoriesCsv` đều kéo `size=100` rồi lọc/cắt ở
+3. `getMyPosts` / `getVideos` đều kéo `size=100` rồi lọc/cắt ở
    client — đừng vẽ UI phân trang giả trên đó.
 4. `LocationDetail` fetch 100 rồi `.find()` — ponytail có chủ ý, không "sửa".
 5. `CategoriesPage`, `VideosPage`, `AdminRecipesPage` có filter/sort/search chạy trên trang

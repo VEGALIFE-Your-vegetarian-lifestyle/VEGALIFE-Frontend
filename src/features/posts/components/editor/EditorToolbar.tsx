@@ -16,12 +16,14 @@ import {
     Redo2,
     Table as TableIcon,
     Undo2,
+    Video as VideoIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 
 interface EditorToolbarProps {
     editor: Editor;
     onRequestImage?: () => void;
+    onRequestVideo?: () => void;
     disabled?: boolean;
     /** Nội dung đẩy về cuối hàng (mockup: "~2 min read"). */
     trailing?: ReactNode;
@@ -55,7 +57,7 @@ function ToolButton({ onClick, active, disabled, label, children }: ToolButtonPr
 }
 
 /** Thanh công cụ editor — mỗi nút chỉ gọi lệnh có sẵn của TipTap. */
-export function EditorToolbar({ editor, onRequestImage, disabled, trailing }: EditorToolbarProps) {
+export function EditorToolbar({ editor, onRequestImage, onRequestVideo, disabled, trailing }: EditorToolbarProps) {
     const { t } = useTranslation("common");
 
     const setLink = () => {
@@ -155,6 +157,13 @@ export function EditorToolbar({ editor, onRequestImage, disabled, trailing }: Ed
                 disabled={disabled || !onRequestImage}
             >
                 <ImagePlus className="h-4 w-4" />
+            </ToolButton>
+            <ToolButton
+                label={t("editor.video")}
+                onClick={() => onRequestVideo?.()}
+                disabled={disabled || !onRequestVideo}
+            >
+                <VideoIcon className="h-4 w-4" />
             </ToolButton>
             <ToolButton
                 label={t("editor.table")}

@@ -34,6 +34,7 @@ import { useDeleteRecipe } from "../../useDeleteRecipe";
 import { RecipeDetailDialog } from "../../components/RecipeDetailDialog";
 import { RecipeNutritionLine } from "../../components/RecipeNutritionLine";
 import { MODERATION_VARIANT } from "../../constants";
+import { showFallbackImage } from "@/shared/utils/display";
 import type { Difficulty, Recipe } from "../../types";
 import { PAGE_SIZE, matchesRecipe, recipeStats, sortRecipes } from "./filter";
 import type { SortKey, TabKey } from "./filter";
@@ -281,6 +282,17 @@ function RecipeManageCard({
 
     return (
         <article className="flex flex-col rounded-2xl border border-border bg-card p-4">
+            {/* Ảnh dish dùng chung — `null` thì bỏ hẳn dải ảnh thay vì chèn ảnh giả.
+                Kéo tràn padding của card (`-mx-4 -mt-4`) để ảnh chạm mép như card khác. */}
+            {recipe.imageUrl && (
+                <img
+                    src={recipe.imageUrl}
+                    alt={recipe.name}
+                    loading="lazy"
+                    onError={showFallbackImage()}
+                    className="-mx-4 -mt-4 mb-4 h-32 w-[calc(100%+2rem)] rounded-t-2xl object-cover"
+                />
+            )}
             <div className="flex flex-wrap items-center gap-1.5">
                 <Badge variant={MODERATION_VARIANT[recipe.moderationStatus]} size="md">
                     {t(`myRecipes.status.${recipe.moderationStatus}`)}

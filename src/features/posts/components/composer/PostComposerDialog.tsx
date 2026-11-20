@@ -11,11 +11,18 @@ import { Progress } from "@/components/ui/progress";
 import { CategorySelect } from "@/components/common/CategorySelect";
 import { ImageUploader } from "@/components/common/ImageUploader";
 import { RichTextEditor } from "../editor/RichTextEditor";
-import { EMPTY_DOC, isEditorEmpty, parseStoredContent, textToDoc } from "../editor/editorContent";
+import {
+    EMPTY_DOC,
+    collectVideoMediaIds,
+    isEditorEmpty,
+    parseStoredContent,
+    textToDoc,
+} from "../editor/editorContent";
 import { usePublicCategories } from "@/features/categories/usePublicCategories";
 import { useAttachableRecipes } from "@/features/saved/useSaved";
 import { attachPostMedia, attachPostRecipes, createPost, getPostDetail, updatePost } from "../../api";
 import { confirmUpload, createUploadGrant, uploadFileToProvider } from "@/shared/api/media";
+import { compressVideo } from "@/shared/utils/compressVideo";
 import { useUiStore } from "@/shared/ui/uiStore";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { cn } from "@/shared/utils/cn";
@@ -72,11 +79,14 @@ function Composer({
     const intentRef = useRef<SubmitIntent>("draft");
     const editorRef = useRef<Editor | null>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
     /** Handler nằm ngoài cây con của `<Dialog>` → tự tạo id thay vì đọc context. */
     const composerToastId = useId();
     const [isUploadingImage, setIsUploadingImage] = useState(false);
-    /** URL video đã upload — chỉ để hiện preview; `mediaId` nằm trong form (`videoMediaId`). */
-    const [videoUrl, setVideoUrl] = useState<string | null>(null);
+    const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+    /** `null` = chưa upload; 0–100 khi đang đẩy file lên provider. */
+    const [videoProgress, setVideoProgress] = useState<number | null>(null);
+    const [isCompressing, setIsCompressing] = useState(false);
     const [pickerOpen, setPickerOpen] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -102,6 +112,17 @@ function Composer({
 
     const validationSchema = useMemo(() => buildValidationSchema(t), [t]);
 
+    /**
+     * Video gắn trước khi video chuyển vào nội dung: có trong `mediaIds` nhưng KHÔNG có
+     * node tương ứng trong `rawContent` gốc. `attachPostMedia` thay thế toàn bộ nên phải
+     * cộng lại, không thì lần sửa đầu tiên xoá mất video cũ của bài.
+     */
+    const legacyMediaIds = useMemo(() => {
+        if (!existingPost) return [];
+        const embedded = new Set(collectVideoMediaIds(existingPost.contentJson));
+        return existingPost.mediaIds.filter((mediaId) => !embedded.has(mediaId));
+    }, [existingPost]);
+
     // POST /api/posts chỉ tạo draft; publish và gắn category/recipe phải gọi tiếp.
     const saveMutation = useMutation({
         mutationFn: async (values: FormValues) => {
@@ -113,8 +134,11 @@ function Composer({
                 const updated = await updatePost(postId as string, patch);
                 // Sửa: luôn đồng bộ (mảng rỗng = bỏ hết công thức đã gắn).
                 await attachPostRecipes(postId as string, values.recipeIds);
-                // Media cũng replace toàn bộ — gửi mảng rỗng để gỡ video.
-                await attachPostMedia(postId as string, values.videoMediaId ? [values.videoMediaId] : []);
+                // Media thay thế toàn bộ: mediaId trong nội dung + video cũ chưa nằm trong nội dung.
+                await attachPostMedia(postId as string, [
+                    ...collectVideoMediaIds(values.content),
+                    ...legacyMediaIds,
+                ]);
                 return updated;
             }
 
@@ -127,7 +151,8 @@ function Composer({
             });
             await updatePost(created.id, patch);
             if (values.recipeIds.length > 0) await attachPostRecipes(created.id, values.recipeIds);
-            if (values.videoMediaId) await attachPostMedia(created.id, [values.videoMediaId]);
+            const mediaIds = collectVideoMediaIds(values.content);
+            if (mediaIds.length > 0) await attachPostMedia(created.id, mediaIds);
             return created;
         },
         onSuccess: () => {
@@ -157,7 +182,6 @@ function Composer({
                 : EMPTY_DOC,
             rawContent: existingPost?.content ?? "",
             featuredImageUrl: existingPost?.featuredImageUrl ?? "",
-            videoMediaId: existingPost?.mediaIds?.[0] ?? "",
             categoryIds: existingPost?.categoryIds ?? [],
             recipeIds: existingPost?.recipeIds ?? initialRecipeIds ?? [],
         },
@@ -221,11 +245,57 @@ function Composer({
         }
     };
 
+    // Video chèn trong bài: cùng luồng upload 3 bước, nhưng node giữ `mediaId`
+    // để lúc lưu còn gắn được vào bài qua `attachPostMedia`.
+    const handleInsertVideo = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("video/")) {
+            toast.error(t("posts.form.videoInvalidType", { ns: "admin" }), { toasterId: composerToastId });
+            return;
+        }
+        // Không chặn theo MB phía client: hạn mức là setting admin sửa được và BE trả câu cụ thể.
+
+        setIsUploadingVideo(true);
+        setVideoProgress(null);
+        try {
+            // Nén trước: clip 4K 50 MB xuống ~6 MB, đổi lại chờ đúng bằng độ dài clip.
+            setIsCompressing(true);
+            const upload = await compressVideo(file);
+            setIsCompressing(false);
+
+            const grant = await createUploadGrant({
+                contentType: upload.type,
+                fileName: upload.name,
+                sizeBytes: upload.size,
+            });
+            await uploadFileToProvider(grant.upload.url, grant.upload.fields, upload, setVideoProgress);
+            const confirmed = await confirmUpload(grant.mediaId);
+            if (confirmed.mediaUrl) {
+                editorRef.current
+                    ?.chain()
+                    .focus()
+                    .insertContent({ type: "video", attrs: { mediaId: confirmed.mediaId, src: confirmed.mediaUrl } })
+                    .run();
+            }
+        } catch (error) {
+            toast.error(
+                getApiErrorMessage(error, t("posts.form.videoFailed", { ns: "admin" })),
+                { toasterId: composerToastId },
+            );
+        } finally {
+            setIsCompressing(false);
+            setIsUploadingVideo(false);
+            setVideoProgress(null);
+            if (videoInputRef.current) videoInputRef.current.value = "";
+        }
+    };
+
     const handleSubmit = (intent: SubmitIntent) => {
         intentRef.current = intent;
         void formik.submitForm();
     };
-
     // Esc / bấm nền / nút X / Cancel: có thay đổi chưa lưu thì hỏi trước.
     const handleBeforeClose = () => {
         if (saveMutation.isPending) return false;
@@ -297,6 +367,13 @@ function Composer({
                     onChange={handleInsertImage}
                     className="hidden"
                 />
+                <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    onChange={handleInsertVideo}
+                    className="hidden"
+                />
 
                 <div className="min-h-0 flex-1 overflow-y-auto lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:overflow-hidden">
                     <div className="flex min-h-0 min-w-0 flex-col lg:border-r lg:border-border">
@@ -336,25 +413,6 @@ function Composer({
                                     variant="compact"
                                     value={formik.values.featuredImageUrl || null}
                                     onChange={(url) => void formik.setFieldValue("featuredImageUrl", url ?? "")}
-                                    disabled={saveMutation.isPending}
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <span className="text-[10.5px] font-semibold text-dark">
-                                    {t("posts.form.videoLabel", { ns: "admin" })}{" "}
-                                    <span className="font-medium text-muted-foreground">
-                                        · {t("common:optional")}
-                                    </span>
-                                </span>
-                                <ImageUploader
-                                    kind="video"
-                                    variant="compact"
-                                    value={videoUrl}
-                                    onChange={(url) => setVideoUrl(url)}
-                                    onMediaChange={(media) => {
-                                        void formik.setFieldValue("videoMediaId", media?.mediaId ?? "");
-                                    }}
                                     disabled={saveMutation.isPending}
                                 />
                             </div>
@@ -407,6 +465,23 @@ function Composer({
                         </div>
 
                         <div className="flex min-h-0 flex-1 flex-col p-2 lg:p-3">
+                            {isUploadingVideo && (
+                                <div className="mb-2 flex flex-none items-center gap-2 rounded-lg border border-border bg-muted-bg px-2.5 py-1.5">
+                                    <Loader2 className="h-3.5 w-3.5 flex-none animate-spin text-vegan-green" aria-hidden="true" />
+                                    <span className="flex-none text-[11px] font-semibold text-dark">
+                                        {isCompressing || videoProgress === null
+                                            ? t("posts.form.compressingVideo", { ns: "admin" })
+                                            : t("posts.form.uploadingVideoPercent", {
+                                                  ns: "admin",
+                                                  percent: Math.round(videoProgress),
+                                              })}
+                                    </span>
+                                    <Progress
+                                        className="min-w-0 flex-1"
+                                        value={isCompressing || videoProgress === null ? 0 : videoProgress}
+                                    />
+                                </div>
+                            )}
                             <RichTextEditor
                                 fill
                                 className="max-lg:min-h-[320px] border-0 shadow-none"
@@ -414,10 +489,11 @@ function Composer({
                                 onChange={handleEditorChange}
                                 placeholder={t("common:editor.placeholder")}
                                 onRequestImage={() => imageInputRef.current?.click()}
+                                onRequestVideo={() => videoInputRef.current?.click()}
                                 onReady={(editor) => {
                                     editorRef.current = editor;
                                 }}
-                                disabled={saveMutation.isPending || isUploadingImage}
+                                disabled={saveMutation.isPending || isUploadingImage || isUploadingVideo}
                                 error={Boolean(contentError)}
                             />
                         </div>

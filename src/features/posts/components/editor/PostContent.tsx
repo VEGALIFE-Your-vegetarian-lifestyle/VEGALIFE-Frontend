@@ -6,6 +6,7 @@ import { Link } from "@tiptap/extension-link";
 // TipTap v3 gộp Table/Row/Cell/Header vào một package, chỉ có named export.
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import { cn } from "@/shared/utils/cn";
+import { VideoNode } from "./VideoNode";
 
 interface PostContentProps {
     /** JSON ProseMirror. */
@@ -29,6 +30,7 @@ export function PostContent({ doc, fallbackText, className }: PostContentProps) 
                 StarterKit.configure({ heading: { levels: [2, 3] }, codeBlock: false, link: false }),
                 Link.configure({ openOnClick: true, protocols: ["http", "https"] }),
                 Image.configure({ inline: false, allowBase64: false }),
+                VideoNode,
                 Table.configure({ resizable: false }),
                 TableRow,
                 TableHeader,

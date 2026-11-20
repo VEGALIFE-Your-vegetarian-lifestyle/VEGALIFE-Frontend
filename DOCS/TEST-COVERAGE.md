@@ -67,7 +67,7 @@ tiền tố. `readEnv` trong `e2eEnv.ts` thử `VITE_<key>` → `<key>` → `pro
 |---|---|---|
 | `auth/authApi.test.ts` | login/register/verifyEmail/forgotPassword/resendVerifyEmail/resetPassword/verifyPasswordReset | public + user |
 | `posts/postApi.test.ts` | `getFeedPosts`, `getPostDetail`, `getMyPosts`, `getPosts`, `approvePost`, `rejectPost` | public + user + admin + writes |
-| `categories/categoryApi.test.ts` | `getPublicCategories`, `getCategories`, `createCategory`, `updateCategory`, `retireCategory`, `exportCategoriesCsv` | public + admin + writes |
+| `categories/categoryApi.test.ts` | `getPublicCategories`, `getCategories`, `createCategory`, `updateCategory`, `retireCategory` | public + admin + writes |
 | `locations/locationApi.test.ts` | `features/locations/api` — mock `@/shared/api/client` | public |
 | `admin/adminServices.test.ts` | `admin/api` (getUsers/suspend/restore), `videos/api` (getVideos/deleteVideo), `admin/dashboardApi` (2 endpoint) | admin, gọi BE thật |
 | `nutrition-ai/aiApi.test.ts` | `nutrition-ai/api` + `subscriptionApi` — mock client | user |

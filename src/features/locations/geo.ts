@@ -77,3 +77,88 @@ export function buildDirectionsUrl(destination: Destination, origin?: Coordinate
 export function openDirections(destination: Destination, origin?: Coordinates | null) {
     window.open(buildDirectionsUrl(destination, origin), "_blank", "noopener,noreferrer");
 }
+
+/** Một gợi ý địa chỉ từ Photon — `address` đã ghép sẵn để hiện/ghi vào form. */
+export interface AddressSuggestion {
+    /** Dạng đọc được: "Số nhà Đường, Phường, Quận, Thành phố". */
+    address: string;
+    lat: number;
+    lng: number;
+    /**
+     * `true` khi kết quả là cấp đường/thành phố chứ không phải số nhà — OSM Việt Nam
+     * thường thiếu `housenumber`, admin phải tự xác nhận vị trí.
+     */
+    approximate: boolean;
+}
+
+/** Thứ tự ghép nhãn: số nhà trước tên đường, rồi phường/quận/tỉnh. */
+const ADDRESS_PARTS = [
+    "housenumber",
+    "street",
+    "locality",
+    "district",
+    "subdistrict",
+    "city",
+    "county",
+    "state",
+] as const;
+
+const joinAddress = (properties: Record<string, unknown>): string => {
+    const seen = new Set<string>();
+    const parts: string[] = [];
+    for (const key of ADDRESS_PARTS) {
+        const value = properties[key];
+        if (typeof value !== "string" || !value.trim()) continue;
+        const part = value.trim();
+        if (seen.has(part.toLowerCase())) continue;
+        seen.add(part.toLowerCase());
+        parts.push(part);
+    }
+    // Photon hay trả `name` là tên POI; có tên mà không có số nhà thì ghép lên đầu.
+    const name = typeof properties.name === "string" ? properties.name.trim() : "";
+    if (name && !seen.has(name.toLowerCase())) parts.unshift(name);
+    return parts.join(", ");
+};
+
+/**
+ * `https://photon.komoot.io` — Photon của Komoot: dữ liệu OSM, **không cần key**,
+ * cho phép gọi liên tục (khác Nominatim cấm autocomplete).
+ *
+ * ponytail: giới hạn bằng `countrycodes` không có trong API này — lọc client-side theo
+ * `properties.countrycode === "VN"`. Bỏ phần lọc khi cần tìm cả ngoài Việt Nam.
+ */
+export async function searchAddresses(query: string, limit = 5): Promise<AddressSuggestion[]> {
+    const trimmed = query.trim();
+    if (trimmed.length < 3) return [];
+
+    const url = new URL("https://photon.komoot.io/api/");
+    url.searchParams.set("q", trimmed);
+    url.searchParams.set("limit", String(limit * 3)); // lọc VN xong có thể còn ít hơn `limit`
+    url.searchParams.set("lang", "en");
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Photon ${response.status}`);
+
+    const payload = (await response.json()) as {
+        features?: {
+            properties?: Record<string, unknown>;
+            geometry?: { coordinates?: [number, number] };
+        }[];
+    };
+
+    return (payload.features ?? [])
+        .filter((feature) => feature.properties?.countrycode === "VN")
+        .map((feature) => {
+            // GeoJSON trả `[lng, lat]` — đúng thứ tự này, đừng đảo.
+            const [lng, lat] = feature.geometry?.coordinates ?? [NaN, NaN];
+            const properties = feature.properties ?? {};
+            return {
+                address: joinAddress(properties),
+                lat,
+                lng,
+                approximate: properties.type !== "house",
+            };
+        })
+        .filter((item) => item.address !== "" && Number.isFinite(item.lat) && Number.isFinite(item.lng))
+        .slice(0, limit);
+}

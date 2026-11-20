@@ -17,15 +17,22 @@ interface RecipeDetailDialogProps {
     /** Đang gọi approve/reject — khoá nút. */
     loading: boolean;
     /** Báo lên page mở ConfirmDialog; dialog chi tiết vẫn mở. */
-    onApprove: (recipe: AdminRecipe) => void;
-    onReject: (recipe: AdminRecipe) => void;
+    onApprove?: (recipe: AdminRecipe) => void;
+    onReject?: (recipe: AdminRecipe) => void;
     /** Duyệt tên món dùng chung — tách khỏi duyệt recipe (backend cũng tách). */
-    onApproveDish: (recipe: AdminRecipe) => void;
+    onApproveDish?: (recipe: AdminRecipe) => void;
     /** Mở form sửa 7 field văn bản/số (ingredients + dish không sửa được). */
-    onEdit: (recipe: AdminRecipe) => void;
+    onEdit?: (recipe: AdminRecipe) => void;
     /** Mở ConfirmDialog xoá mềm — không có endpoint khôi phục. */
-    onDelete: (recipe: AdminRecipe) => void;
+    onDelete?: (recipe: AdminRecipe) => void;
     onClose: () => void;
+    /**
+     * Mở từ màn khác (vd duyệt bài) → chỉ đọc: ẩn duyệt/từ chối/sửa/xoá,
+     * footer còn đúng nút quay lại. Cha không phải truyền handler rỗng.
+     */
+    readOnly?: boolean;
+    /** Nhãn nút footer khi `readOnly` — mặc định "Close". */
+    closeLabel?: ReactNode;
 }
 
 /** Nhãn + giá trị một dòng meta. `min-w-0`: giá trị co lại thay vì đẩy `extra` tràn khỏi card. */
@@ -99,6 +106,8 @@ export function RecipeDetailDialog({
     onEdit,
     onDelete,
     onClose,
+    readOnly = false,
+    closeLabel,
 }: RecipeDetailDialogProps) {
     const { t } = useTranslation(["admin", "common", "recipe"]);
 
@@ -131,12 +140,12 @@ export function RecipeDetailDialog({
                                     <ModerationBadge status={recipe.dishModerationStatus} size="sm" />
                                     {/* Duyệt recipe không duyệt dish → phải có nút riêng, không thì
                                         món không bao giờ xuất hiện ở ô chọn món của thực đơn. */}
-                                    {recipe.dishModerationStatus === "PENDING" && recipe.dishId && (
+                                    {!readOnly && recipe.dishModerationStatus === "PENDING" && recipe.dishId && (
                                         <Button
                                             variant="ghost"
                                             size="xs"
                                             disabled={loading}
-                                            onClick={() => onApproveDish(recipe)}
+                                            onClick={() => onApproveDish?.(recipe)}
                                         >
                                             {t("recipes.moderation.approveDish")}
                                         </Button>
@@ -246,38 +255,42 @@ export function RecipeDetailDialog({
 
                     <div className="flex flex-wrap justify-end gap-2">
                         <Button variant="outline" onClick={onClose}>
-                            {t("common:close")}
+                            {closeLabel ?? t("common:close")}
                         </Button>
-                        {/* Xoá mềm, không khôi phục được → tách khỏi cụm duyệt/từ chối. */}
-                        {recipe.status === "ACTIVE" && (
-                            <Button
-                                variant="outline"
-                                className="text-destructive"
-                                disabled={loading}
-                                onClick={() => onDelete(recipe)}
-                            >
-                                {t("recipes.delete.action")}
-                            </Button>
-                        )}
-                        {recipe.status === "ACTIVE" && (
-                            <Button variant="outline" disabled={loading} onClick={() => onEdit(recipe)}>
-                                {t("recipes.edit.action")}
-                            </Button>
-                        )}
-                        {recipe.moderationStatus !== "REJECTED" && (
-                            <Button
-                                variant="outline"
-                                className="text-terracotta"
-                                disabled={loading}
-                                onClick={() => onReject(recipe)}
-                            >
-                                {t("recipes.moderation.reject")}
-                            </Button>
-                        )}
-                        {recipe.moderationStatus !== "APPROVED" && (
-                            <Button disabled={loading} onClick={() => onApprove(recipe)}>
-                                {t("recipes.moderation.approve")}
-                            </Button>
+                        {!readOnly && (
+                            <>
+                                {/* Xoá mềm, không khôi phục được → tách khỏi cụm duyệt/từ chối. */}
+                                {recipe.status === "ACTIVE" && (
+                                    <Button
+                                        variant="outline"
+                                        className="text-destructive"
+                                        disabled={loading}
+                                        onClick={() => onDelete?.(recipe)}
+                                    >
+                                        {t("recipes.delete.action")}
+                                    </Button>
+                                )}
+                                {recipe.status === "ACTIVE" && (
+                                    <Button variant="outline" disabled={loading} onClick={() => onEdit?.(recipe)}>
+                                        {t("recipes.edit.action")}
+                                    </Button>
+                                )}
+                                {recipe.moderationStatus !== "REJECTED" && (
+                                    <Button
+                                        variant="outline"
+                                        className="text-terracotta"
+                                        disabled={loading}
+                                        onClick={() => onReject?.(recipe)}
+                                    >
+                                        {t("recipes.moderation.reject")}
+                                    </Button>
+                                )}
+                                {recipe.moderationStatus !== "APPROVED" && (
+                                    <Button disabled={loading} onClick={() => onApprove?.(recipe)}>
+                                        {t("recipes.moderation.approve")}
+                                    </Button>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>

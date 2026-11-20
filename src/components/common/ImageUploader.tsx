@@ -1,25 +1,17 @@
 import { useState, useRef, type ChangeEvent, type DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Film, ImagePlus, Loader2, Upload, X } from "lucide-react";
+import { ImagePlus, Loader2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDialogToastId } from "@/components/ui/dialog";
 import { confirmUpload, createUploadGrant, uploadFileToProvider } from "@/shared/api/media";
-import type { Media } from "@/shared/types/media";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { cn } from "@/shared/utils/cn";
 
 interface ImageUploaderProps {
     value: string | null;
     onChange: (url: string | null) => void;
-    /**
-     * Bản ghi media đầy đủ sau khi confirm — cần cho video vì `attachPostMedia` đòi `mediaId`,
-     * mà `mediaId` không nằm trong `mediaUrl`. Không truyền thì chỉ có `onChange` như cũ.
-     */
-    onMediaChange?: (media: Media | null) => void;
     disabled?: boolean;
-    /** `video` dùng cùng luồng upload 3 bước, chỉ khác định dạng và nhãn. */
-    kind?: "image" | "video";
     /**
      * `compact` thu về một ô thumbnail thấp — cho chỗ chật (dialog soạn bài),
      * nơi ảnh bìa chỉ có một và không đáng chiếm cả khối kéo-thả.
@@ -27,32 +19,20 @@ interface ImageUploaderProps {
     variant?: "default" | "compact";
 }
 
-/** Nhãn i18n theo loại tệp — ảnh giữ nguyên key cũ để không phải đổi chỗ gọi nào khác. */
+/** Nhãn i18n — ảnh giữ nguyên key cũ để không phải đổi chỗ gọi nào khác. */
 const LABELS = {
-    image: {
-        invalidType: "posts.form.invalidImageType",
-        failed: "posts.form.uploadFailed",
-        remove: "posts.form.removeImage",
-        dropzoneTitle: "posts.form.dropzoneTitle",
-        dropzoneHint: "posts.form.dropzoneHint",
-        upload: "posts.form.uploadImage",
-    },
-    video: {
-        invalidType: "posts.form.videoInvalidType",
-        failed: "posts.form.videoFailed",
-        remove: "posts.form.videoRemove",
-        dropzoneTitle: "posts.form.videoDropzoneTitle",
-        dropzoneHint: "posts.form.videoDropzoneHint",
-        upload: "posts.form.videoUpload",
-    },
+    invalidType: "posts.form.invalidImageType",
+    failed: "posts.form.uploadFailed",
+    remove: "posts.form.removeImage",
+    dropzoneTitle: "posts.form.dropzoneTitle",
+    dropzoneHint: "posts.form.dropzoneHint",
+    upload: "posts.form.uploadImage",
 } as const;
 
 export function ImageUploader({
     value,
     onChange,
-    onMediaChange,
     disabled,
-    kind = "image",
     variant = "default",
 }: ImageUploaderProps) {
     const { t } = useTranslation("admin");
@@ -61,14 +41,13 @@ export function ImageUploader({
     const [isDragging, setIsDragging] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const isVideo = kind === "video";
     const compact = variant === "compact";
-    const label = LABELS[kind];
+    const label = LABELS;
     /** Lỗi hiện trong top layer của dialog nếu có — Toaster toàn cục bị `showModal()` che. */
     const notifyError = (message: string) => toast.error(message, { toasterId });
 
     const upload = async (file: File) => {
-        if (!file.type.startsWith(`${kind}/`)) {
+        if (!file.type.startsWith("image/")) {
             notifyError(t(label.invalidType));
             return;
         }
@@ -92,7 +71,6 @@ export function ImageUploader({
             const confirmed = await confirmUpload(grant.mediaId);
 
             if (confirmed.mediaUrl) {
-                onMediaChange?.(confirmed);
                 onChange(confirmed.mediaUrl);
             } else {
                 throw new Error("Media upload confirmation returned no URL");
@@ -124,9 +102,8 @@ export function ImageUploader({
 
     const pick = () => inputRef.current?.click();
 
-    /** Xoá khỏi form — báo cả URL lẫn media record để chỗ gọi bỏ được `mediaId`. */
+    /** Xoá khỏi form. */
     const remove = () => {
-        onMediaChange?.(null);
         onChange(null);
     };
 
@@ -135,7 +112,7 @@ export function ImageUploader({
             <input
                 ref={inputRef}
                 type="file"
-                accept={isVideo ? "video/*" : "image/*"}
+                accept="image/*"
                 onChange={handleFileChange}
                 disabled={disabled || isUploading}
                 className="hidden"
@@ -152,11 +129,7 @@ export function ImageUploader({
                         onDragLeave={() => setIsDragging(false)}
                         onDrop={handleDrop}
                     >
-                        {isVideo ? (
-                            <video src={value} className="h-full w-full object-cover" muted />
-                        ) : (
-                            <img src={value} alt="Cover" className="h-full w-full object-cover" />
-                        )}
+                        <img src={value} alt="Cover" className="h-full w-full object-cover" />
                         <button
                             type="button"
                             onClick={pick}
@@ -204,15 +177,11 @@ export function ImageUploader({
                 )
             ) : value ? (
                 <div className="relative inline-block">
-                    {isVideo ? (
-                        <video src={value} controls className="w-full rounded-xl border border-border" />
-                    ) : (
-                        <img
-                            src={value}
-                            alt="Preview"
-                            className="h-40 w-full rounded-xl border border-border object-cover"
-                        />
-                    )}
+                    <img
+                        src={value}
+                        alt="Preview"
+                        className="h-40 w-full rounded-xl border border-border object-cover"
+                    />
                     <button
                         type="button"
                         onClick={() => remove()}
@@ -240,8 +209,6 @@ export function ImageUploader({
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-vegan-green-light text-vegan-green">
                         {isUploading ? (
                             <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-                        ) : isVideo ? (
-                            <Film className="h-5 w-5" aria-hidden="true" />
                         ) : (
                             <ImagePlus className="h-5 w-5" aria-hidden="true" />
                         )}

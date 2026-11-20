@@ -110,6 +110,7 @@
             "categories": "Categories",
             "locations": "Locations",
             "recipes": "Recipes",
+            "dishes": "Dishes",
             "profile": "Profile",
             "ingredients": "Ingredients",
             "settings": "Settings"
@@ -124,7 +125,6 @@
         "title": "Category Management",
         "description": "Active categories can only be retired, not permanently deleted.",
         "createCategory": "Create Category",
-        "exportCsv": "Export CSV",
         "tabs": {
             "all": "All",
             "active": "Active",
@@ -137,7 +137,6 @@
             "content": "Content count"
         },
         "columns": {
-            "uuid": "UUID",
             "name": "Name",
             "description": "Description",
             "content": "Content",
@@ -174,8 +173,6 @@
             "retired": "Category retired",
             "restored": "Category restored",
             "deleted": "Category permanently deleted",
-            "copied": "Category UUID copied",
-            "exported": "CSV exported",
             "failed": "Action failed. Please try again."
         }
     },
@@ -210,15 +207,11 @@
             "dropzoneHint": "PNG or JPG. A landscape 16:9 shot works best; the size limit is set by the platform admin.",
             "saveChanges": "Save Changes",
             "addCover": "Add cover",
-            "videoUpload": "Upload video",
             "videoFailed": "Video upload failed",
             "videoInvalidType": "Please select a video file",
-            "videoRemove": "Remove video",
-            "videoDropzoneTitle": "Drop your video file here",
-            "videoDropzoneHint": "MP4 or WebM. The size limit is set by the platform admin.",
-            "videoSourceRequired": "Please upload a video file",
-            "coverLabel": "Cover",
-            "videoLabel": "Attached video"
+            "compressingVideo": "Compressing video...",
+            "uploadingVideoPercent": "Uploading video... {{percent}}%",
+            "coverLabel": "Cover"
         },
         "toast": {
             "created": "Post created successfully",
@@ -267,10 +260,16 @@
                 "deleteConfirm": "Delete post"
             }
         },
+        "preview": {
+            "recipes": "Attached recipes",
+            "media": "Attached media",
+            "backToPost": "Back to post",
+            "loadingRecipe": "Loading recipe",
+            "recipeFailed": "Couldn't load recipe"
+        },
         "reject": {
             "title": "Reject post",
-            "postLabel": "Post: {{title}}",
-            "reasonLabel": "Rejection reason",
+            "postLabel": "Post: {{title}}",            "reasonLabel": "Rejection reason",
             "reasonPlaceholder": "Enter the reason for rejecting this post",
             "reasonHelper": "The reason is stored in the moderation log.",
             "reasonRequired": "Please enter a rejection reason",
@@ -385,12 +384,6 @@
         "searchPlaceholder": "Search by recipe or creator name",
         "searchLabel": "Search recipes",
         "minutes": "{{count}} min",
-        "sortLabel": "Sort recipes",
-        "sort": {
-            "newest": "Newest first",
-            "updated": "Recently updated",
-            "name": "Name A-Z"
-        },
         "filters": {
             "fromDate": "Created from",
             "toDate": "Created to",
@@ -534,6 +527,55 @@
             "restoreFailed": "Failed to unlock account. Please try again."
         }
     },
+    "dishes": {
+        "title": "Dish Management",
+        "description": "Shared dish names used by recipes and weekly menus. {{count}} dishes in total.",
+        "searchPlaceholder": "Search dishes by name",
+        "filterStatus": "Filter by review state",
+        "filterStatusAll": "All states",
+        "create": "New dish",
+        "column": {
+            "image": "Image",
+            "name": "Dish",
+            "cuisine": "Cuisine",
+            "moderation": "Review",
+            "actions": "Actions"
+        },
+        "action": {
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "form": {
+            "nameLabel": "Name",
+            "namePlaceholder": "e.g. braised tofu",
+            "cuisineLabel": "Cuisine type",
+            "cuisinePlaceholder": "e.g. Vietnamese",
+            "descriptionLabel": "Description",
+            "imageLabel": "Image",
+            "createTitle": "New dish",
+            "create": "Create dish",
+            "editTitle": "Edit dish",
+            "editSubtitle": "Update the name, description, cuisine and image of “{{name}}”.",
+            "submit": "Save changes"
+        },
+        "delete": {
+            "title": "Delete dish?",
+            "body": "“{{name}}” will be soft-deleted. There is no restore endpoint.",
+            "confirm": "Delete dish"
+        },
+        "toast": {
+            "created": "Dish created",
+            "updated": "Dish updated",
+            "deleted": "Dish deleted",
+            "failed": "Action failed. Please try again."
+        },
+        "empty": {
+            "title": "No dishes found",
+            "filtered": "No dishes match the current filters.",
+            "all": "No dishes yet.",
+            "reload": "Reload"
+        }
+    },
     "ingredients": {
         "title": "Ingredient Management",
         "description": "Shared ingredient names. {{count}} ingredients in total.",
@@ -570,6 +612,7 @@
             "unitLabel": "Unit",
             "unitNone": "No unit yet",
             "unitHelper": "All five nutrition values below are per ONE of this unit.",
+            "unitChangeWarning": "Changing the unit from {{from}} to {{to}} reinterprets every recipe amount using this ingredient (200 g of rice becomes 200 ml of rice) and recalculates those recipes immediately. This cannot be undone.",
             "nutritionLegend": "Nutrition per unit",
             "nutritionHelper": "Either fill all five or leave all blank — a partial set is rejected.",
             "createTitle": "New ingredient",
