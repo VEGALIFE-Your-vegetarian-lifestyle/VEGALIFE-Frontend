@@ -127,7 +127,6 @@ export default function AdminRecipesPage() {
             setDetail(null);
             invalidate();
             void queryClient.invalidateQueries({ queryKey: ["admin-ingredients"] });
-            void queryClient.invalidateQueries({ queryKey: ["admin-ingredients-pending-count"] });
         },
         onError,
     });

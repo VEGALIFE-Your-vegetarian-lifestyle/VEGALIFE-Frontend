@@ -67,26 +67,6 @@
         "Mục tiêu BMI & protein cho người chạy chay 65kg?",
         "Bữa tối nhanh giàu protein dưới 500 kcal với đậu hũ và rau?"
     ],
-    "bmi": {
-        "title": "BMI & Mục tiêu protein",
-        "tool": "Công cụ nhỏ",
-        "height": "Chiều cao (cm)",
-        "weight": "Cân nặng (kg)",
-        "activity": "Mức vận động",
-        "activityOptions": {
-            "sedentary": "Ít vận động (làm việc bàn giấy)",
-            "light": "Nhẹ (1-2 buổi/tuần)",
-            "moderate": "Trung bình (3-4 buổi/tuần)",
-            "active": "Năng động (5+ buổi/tuần)"
-        },
-        "estimated": "BMI ước tính",
-        "healthyRange": "Ngưỡng khoẻ mạnh",
-        "dailyTarget": "Mục tiêu protein thực vật mỗi ngày",
-        "perDay": "{{value}} g / ngày",
-        "chatPlan": "Hỏi kế hoạch",
-        "chatPlanPrompt": "Lập cho tôi kế hoạch protein thực vật hằng ngày theo BMI và mức vận động.",
-        "empty": "—"
-    },
     "dishPicker": {
         "title": "Chọn món",
         "subtitle": "Chọn những món bạn muốn đưa vào thực đơn — trợ lý nhận tên của từng món.",

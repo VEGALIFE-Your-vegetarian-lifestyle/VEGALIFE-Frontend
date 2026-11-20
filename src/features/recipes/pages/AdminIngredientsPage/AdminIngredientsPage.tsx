@@ -70,8 +70,6 @@ export default function AdminIngredientsPage() {
 
     const invalidate = () => {
         void queryClient.invalidateQueries({ queryKey: ["admin-ingredients"] });
-        // Badge sidebar + dialog duyệt recipe đọc chung nguồn này.
-        void queryClient.invalidateQueries({ queryKey: ["admin-ingredients-pending-count"] });
     };
 
     const onError = (error: unknown) => {
