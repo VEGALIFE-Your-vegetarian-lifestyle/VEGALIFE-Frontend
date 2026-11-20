@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { useListParams } from "@/shared/hooks/useListParams";
+import { RefreshButton } from "@/components/common/RefreshButton";
 import { getUsers, restoreUser, suspendUser } from "../../api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,12 +31,13 @@ export default function UsersPage() {
     const { page, q, status, debouncedQ, setQ, setStatus, setPage, clearFilters } = useListParams();
     const [confirm, setConfirm] = useState<{ type: "suspend" | "restore"; user: AdminUser } | null>(null);
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
         queryKey: ["admin-users", page - 1, debouncedQ, status],
         queryFn: () =>
             getUsers({
                 page: page - 1,
                 size: PAGE_SIZE,
+                q: debouncedQ,
                 status: status || undefined,
             }),
         placeholderData: keepPreviousData,
@@ -74,12 +76,8 @@ export default function UsersPage() {
         else restoreMutation.mutate(confirm.user.id);
     };
 
-    const filteredUsers =
-        data?.data.filter(
-            (user) =>
-                (user.displayName ?? "").toLowerCase().includes(debouncedQ.toLowerCase()) ||
-                user.email.toLowerCase().includes(debouncedQ.toLowerCase()),
-        ) ?? [];
+    // BE lọc + phân trang theo `keyword` rồi, không lọc lại ở client.
+    const users = data?.data ?? [];
 
     const hasFilter = q !== "" || status !== "";
 
@@ -89,6 +87,7 @@ export default function UsersPage() {
                 breadcrumb={[t("common:admin"), t("users.title")]}
                 title={t("users.title")}
                 description={t("users.description")}
+                action={<RefreshButton onRefresh={() => void refetch()} isRefreshing={isFetching} />}
             />
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row">
@@ -131,7 +130,7 @@ export default function UsersPage() {
                             {isLoading ? (
                                 <TableSkeleton columns={6} />
                             ) : (
-                                filteredUsers.map((user) => (
+                                users.map((user) => (
                                     <TableRow key={user.id}>
                                         <TableCell className="font-medium">{user.displayName}</TableCell>
                                         <TableCell>{user.email}</TableCell>
@@ -170,7 +169,7 @@ export default function UsersPage() {
                         </TableBody>
                     </Table>
 
-                    {!isLoading && filteredUsers.length === 0 && (
+                    {!isLoading && users.length === 0 && (
                         <EmptyState
                             icon={User}
                             title={t("users.empty.title")}

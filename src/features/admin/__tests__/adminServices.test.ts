@@ -3,7 +3,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getUsers, restoreUser, suspendUser } from "../api";
 import { deleteVideo, getVideos } from "@/features/videos/api";
-import { getDashboardStats } from "../dashboardApi";
+import { getAdminDashboard, getAdminDashboardCharts } from "../dashboardApi";
 import { E2E_ADMIN, E2E_ALLOW_WRITES, HAS_ADMIN, REMOTE_TIMEOUT_MS, httpStatus, signInAs, signOut } from "@/test/e2eEnv";
 
 const MISSING_UUID = "00000000-0000-0000-0000-000000000000";
@@ -85,6 +85,16 @@ describe.skipIf(!HAS_ADMIN)("adminUserService — cần JWT admin (E2E_ADMIN_*)"
             const page = await getUsers({ page: 0, size: 20, role: "ADMIN" });
 
             for (const user of page.data) expect(user.role).toBe("ADMIN");
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
+    it(
+        "getUsers tìm keyword ở server — từ khoá không khớp trả rỗng",
+        async () => {
+            const page = await getUsers({ page: 0, size: 10, q: "zzz-khong-user-nao-khop-zzz" });
+
+            expect(page.data).toHaveLength(0);
         },
         REMOTE_TIMEOUT_MS,
     );
@@ -198,14 +208,48 @@ describe.skipIf(!HAS_ADMIN)("videoService — cần JWT admin (E2E_ADMIN_*)", ()
     );
 });
 
-describe("dashboardService — dữ liệu mock cục bộ (chưa có endpoint)", () => {
-    it("getDashboardStats trả đủ 4 metric và active + softDeleted = total", async () => {
-        const stats = await getDashboardStats();
+describe("dashboardService — chặn khi chưa đăng nhập", () => {
+    it(
+        "getAdminDashboard không có token bị từ chối 401/403",
+        async () => {
+            const error = await getAdminDashboard().catch((e) => e);
+            expect([401, 403]).toContain(httpStatus(error));
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+});
 
-        expect(stats.totalCategories).toBeGreaterThanOrEqual(0);
-        expect(stats.activeCategories + stats.softDeletedCategories).toBe(stats.totalCategories);
-        expect(stats.associatedContent).toBeGreaterThanOrEqual(0);
-    });
+describe.skipIf(!HAS_ADMIN)("dashboardService — cần JWT admin", () => {
+    it(
+        "getAdminDashboard trả đủ meta, users, content, engagement, moderationQueue, money",
+        async () => {
+            const data = await getAdminDashboard();
+            expect(data.meta.currency).toBe("VND");
+            expect(data.users.total).toBeGreaterThanOrEqual(0);
+            expect(data.users.activationRate).toBeGreaterThanOrEqual(0);
+            expect(data.content.totalPosts).toBeGreaterThanOrEqual(0);
+            expect(data.engagement.totalVotes).toBeGreaterThanOrEqual(0);
+            expect(data.moderationQueue.pendingPosts).toBeGreaterThanOrEqual(0);
+            expect(data.money.revenueTotal).toBeGreaterThanOrEqual(0);
+        },
+        REMOTE_TIMEOUT_MS,
+    );
+
+    it(
+        "getAdminDashboardCharts trả 2 series đủ độ dài bucket theo range",
+        async () => {
+            const data = await getAdminDashboardCharts({ range: "week" });
+            expect(data.meta.range).toBe("week");
+            expect(data.meta.interval).toBe("day");
+            expect(data.publishedPosts.points).toHaveLength(7);
+
+            for (const item of data.revenueByPlan.items) {
+                expect(item.amount).toBeGreaterThanOrEqual(0);
+                expect(item.purchases).toBeGreaterThanOrEqual(0);
+            }
+        },
+        REMOTE_TIMEOUT_MS,
+    );
 });
 
 describe.skipIf(!HAS_ADMIN || !E2E_ALLOW_WRITES)("adminUserService/videoService — ghi dữ liệu thật", () => {

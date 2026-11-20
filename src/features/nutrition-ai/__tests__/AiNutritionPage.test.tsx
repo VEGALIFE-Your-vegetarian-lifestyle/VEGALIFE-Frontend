@@ -4,6 +4,7 @@ import { renderWithProviders } from "@/test/renderWithProviders";
 import AiNutritionPage from "../AiNutritionPage";
 import * as authHook from "@/features/auth/useAuth";
 import * as subApi from "../subscriptionApi";
+import * as billingApi from "@/features/subscription/api";
 import * as aiApi from "../api";
 import type { User } from "@/shared/types/user";
 
@@ -21,6 +22,10 @@ vi.mock("../api", () => ({
     sendAiMessage: vi.fn(),
 }));
 
+vi.mock("@/features/subscription/api", () => ({
+    getSubscriptionHistory: vi.fn(),
+}));
+
 const mockUser: User = {
     id: "u1",
     username: "testuser",
@@ -33,6 +38,15 @@ describe("AiNutritionPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(aiApi.getAiConversations).mockResolvedValue([]);
+        vi.mocked(billingApi.getSubscriptionHistory).mockResolvedValue({
+            content: [],
+            page: 0,
+            size: 10,
+            totalElements: 0,
+            totalPages: 0,
+            first: true,
+            last: true,
+        });
     });
 
     it("chưa đăng nhập: render giao diện khoá và lời mời đăng nhập, không sập", async () => {
@@ -76,7 +90,52 @@ describe("AiNutritionPage", () => {
         renderWithProviders(<AiNutritionPage />);
 
         expect(await screen.findByText(/Trợ lý AI Dinh dưỡng|Nutrition AI Assistant/i)).toBeInTheDocument();
-        expect(await screen.findByText(/Còn 15 câu hỏi/i)).toBeInTheDocument();
+        expect(await screen.findByText(/Còn 15 câu hỏi|15 AI requests remaining/i)).toBeInTheDocument();
+        // Chưa từng mua → có nhãn "Miễn phí"/"Free" cạnh số dư.
+        expect(screen.getByText(/Miễn phí|Free/i)).toBeInTheDocument();
+    });
+
+    it("đã mua gói (history có PURCHASE succeeded): bỏ chữ Free, chỉ hiện số request còn lại", async () => {
+        vi.mocked(authHook.useAuth).mockReturnValue({
+            isAuthenticated: true,
+            isAdmin: false,
+            user: mockUser,
+            profile: null,
+            accessToken: "mock-token",
+            rememberMe: false,
+            setAuth: vi.fn(),
+            clearAuth: vi.fn(),
+            setAccessToken: vi.fn(),
+            setProfile: vi.fn(),
+        });
+
+        vi.mocked(subApi.getMySubscription).mockResolvedValue({ remainingUsage: 40 });
+        vi.mocked(billingApi.getSubscriptionHistory).mockResolvedValue({
+            content: [
+                {
+                    planCode: "PRO",
+                    planName: "Pro",
+                    source: "PURCHASE",
+                    grantedAt: "2026-11-01T00:00:00Z",
+                    paymentId: "p1",
+                    amount: 99000,
+                    currency: "VND",
+                    status: "succeeded",
+                    createdAt: "2026-11-01T00:00:00Z",
+                },
+            ],
+            page: 0,
+            size: 10,
+            totalElements: 1,
+            totalPages: 1,
+            first: true,
+            last: true,
+        });
+
+        renderWithProviders(<AiNutritionPage />);
+
+        expect(await screen.findByText(/Còn 40 câu hỏi|40 AI requests remaining/i)).toBeInTheDocument();
+        expect(screen.queryByText(/Miễn phí|Free/i)).not.toBeInTheDocument();
     });
 
     it("đã đăng nhập nhưng subscription chưa có gói: fallback an toàn và render đầy đủ", async () => {

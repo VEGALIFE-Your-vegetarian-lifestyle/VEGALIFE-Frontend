@@ -8,6 +8,7 @@ function makeRecipe(overrides: Partial<Recipe> = {}): Recipe {
         userId: "u1",
         dishId: "d1",
         dishName: "canh chua",
+        imageUrl: null,
         name: "Canh chua chay",
         description: null,
         instructions: "Nấu nước.",

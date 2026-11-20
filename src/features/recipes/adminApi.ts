@@ -1,6 +1,9 @@
 import { api } from "@/shared/api/client";
 import type { ApiResponse, PageResponse, Paginated } from "@/shared/types/common";
 import type {
+    AdminDish,
+    AdminDishCreateRequest,
+    AdminDishUpdateRequest,
     AdminIngredient,
     AdminIngredientCreateRequest,
     AdminIngredientUpdateRequest,
@@ -14,6 +17,8 @@ export interface AdminRecipeListParams {
     /** 1-based như mọi trang admin khác; hàm này tự trừ 1 khi gửi lên wire. */
     page: number;
     size: number;
+    /** BE tìm substring theo `keyword` (lọc + phân trang ở server). */
+    q?: string;
     sort?: RecipeSort;
     /** Bỏ trống = cả 3 trạng thái. `PENDING` là hàng đợi duyệt. */
     moderationStatus?: ModerationStatus;
@@ -29,10 +34,7 @@ export interface AdminRecipeListParams {
 /**
  * GET /api/admin/recipes — ADMIN-only, phân trang thật ở server.
  * Trả **cả** recipe đã xoá mềm với `status: "DELETED"`; không có tham số lọc status.
- *
- * ponytail: backend chưa có tham số tìm kiếm theo tên → `q` lọc client-side ở
- * `AdminRecipesPage` trên đúng trang đang hiển thị. Thay bằng param `name`/`q` khi
- * backend mở.
+ * Tìm kiếm: BE lọc + phân trang theo `keyword`.
  */
 export async function getAdminRecipes(params: AdminRecipeListParams): Promise<Paginated<AdminRecipe>> {
     const queryParams = new URLSearchParams();
@@ -40,6 +42,7 @@ export async function getAdminRecipes(params: AdminRecipeListParams): Promise<Pa
     queryParams.set("size", String(params.size));
     queryParams.set("sort", params.sort ?? "createdAt,desc");
 
+    if (params.q?.trim()) queryParams.set("keyword", params.q.trim());
     if (params.moderationStatus) queryParams.set("moderationStatus", params.moderationStatus);
     if (params.userId) queryParams.set("userId", params.userId);
     if (params.categoryId) queryParams.set("categoryId", params.categoryId);
@@ -126,9 +129,7 @@ export interface AdminIngredientListParams {
 /**
  * GET /api/admin/ingredients — phân trang thật, có `name` + `moderationStatus`.
  *
- * ponytail: không gửi `sort` — spec live chỉ khai `sort: string`, không có whitelist để
- * đối chiếu nên gửi bừa dễ 400. Thứ tự hiện theo mặc định Spring. Thêm `sort` khi có
- * danh sách giá trị hợp lệ.
+ * Sort cố định `createdAt,desc` — không có UI chọn sort.
  */
 export async function getAdminIngredients(
     params: AdminIngredientListParams,
@@ -136,6 +137,7 @@ export async function getAdminIngredients(
     const queryParams = new URLSearchParams();
     queryParams.set("page", String(Math.max(params.page - 1, 0)));
     queryParams.set("size", String(params.size));
+    queryParams.set("sort", "createdAt,desc");
     if (params.name) queryParams.set("name", params.name);
     if (params.moderationStatus) queryParams.set("moderationStatus", params.moderationStatus);
 
@@ -196,4 +198,69 @@ export async function deleteAdminIngredient(id: string): Promise<void> {
  */
 export async function approveDish(dishId: string): Promise<void> {
     await api.post(`/api/admin/dishes/${dishId}/approve`, {});
+}
+
+/**
+ * POST /api/admin/dishes/{id}/reject — từ chối **vĩnh viễn** tên món với member: KHÔNG tạo lại
+ * được tên đó (BR-DISH-001). Không xoá gì, chỉ đổi `moderationStatus`.
+ */
+export async function rejectDish(dishId: string): Promise<void> {
+    await api.post(`/api/admin/dishes/${dishId}/reject`, {});
+}
+
+export interface AdminDishListParams {
+    /** 1-based; hàm này tự trừ 1 khi gửi lên wire. */
+    page: number;
+    size: number;
+    /** Backend lọc substring theo tên. */
+    name?: string;
+    /** Bỏ trống = cả 3 trạng thái. */
+    moderationStatus?: ModerationStatus;
+}
+
+/**
+ * GET /api/admin/dishes — phân trang thật, lọc `name` ở server.
+ *
+ * `AdminDishResponse` **không có** field `status`/`deletedAt` → không phân biệt được món đã
+ * xoá mềm, nên trang không lọc được. Mở lại khi BE thêm field.
+ *
+ * Sort cố định `createdAt,desc` — không có UI chọn sort.
+ */
+export async function getAdminDishes(params: AdminDishListParams): Promise<Paginated<AdminDish>> {
+    const queryParams = new URLSearchParams();
+    queryParams.set("page", String(Math.max(params.page - 1, 0)));
+    queryParams.set("size", String(params.size));
+    queryParams.set("sort", "createdAt,desc");
+    if (params.name) queryParams.set("name", params.name);
+    if (params.moderationStatus) queryParams.set("moderationStatus", params.moderationStatus);
+
+    const response = await api.get<ApiResponse<PageResponse<AdminDish>>>(
+        `/api/admin/dishes?${queryParams.toString()}`,
+    );
+    const page = response.data.data;
+
+    return {
+        data: page.content,
+        total: Number(page.totalElements),
+        page: page.page + 1,
+        size: page.size,
+        totalPages: page.totalPages,
+    };
+}
+
+/** POST /api/admin/dishes — tạo tay, vào thẳng `APPROVED`. 409 nếu trùng tên. */
+export async function createAdminDish(request: AdminDishCreateRequest): Promise<AdminDish> {
+    const { data } = await api.post<ApiResponse<AdminDish>>("/api/admin/dishes", request);
+    return data.data;
+}
+
+/** PATCH /api/admin/dishes/{dishId} — vắng khoá = giữ nguyên. */
+export async function updateAdminDish(id: string, request: AdminDishUpdateRequest): Promise<AdminDish> {
+    const { data } = await api.patch<ApiResponse<AdminDish>>(`/api/admin/dishes/${id}`, request);
+    return data.data;
+}
+
+/** DELETE /api/admin/dishes/{dishId} — **xoá mềm**, không có endpoint khôi phục. */
+export async function deleteAdminDish(id: string): Promise<void> {
+    await api.delete(`/api/admin/dishes/${id}`);
 }

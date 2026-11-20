@@ -15,7 +15,6 @@ function makeValues(overrides: Partial<FormValues> = {}): FormValues {
         content: { type: "doc", content: [{ type: "paragraph" }] },
         rawContent: "  Pho chay  ",
         featuredImageUrl: "https://x.test/cover.png",
-        videoMediaId: "",
         categoryIds: [],
         recipeIds: [],
         ...overrides,

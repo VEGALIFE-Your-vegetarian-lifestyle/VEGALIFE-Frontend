@@ -5,7 +5,7 @@ import { renderWithProviders } from "@/test/renderWithProviders";
 import AdminCommentsPage from "../AdminCommentsPage";
 import type { AdminComment } from "../../../types";
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 const { getAdminComments, moderateComment } = vi.hoisted(() => ({
     getAdminComments: vi.fn(),
@@ -17,12 +17,16 @@ vi.mock("../../../commentApi", () => ({
     moderateComment,
 }));
 
+const { getPostDetail } = vi.hoisted(() => ({ getPostDetail: vi.fn() }));
+
+vi.mock("@/features/posts/api", () => ({ getPostDetail }));
+
 const MOCK_ADMIN_COMMENTS: AdminComment[] = [
     {
         id: "c-1",
         postId: "post-1111",
         userId: "user-2222",
-        username: "SpamBot",
+        displayName: "SpamBot",
         avatarUrl: null,
         content: "Spam link http://spam.example.com",
         parentId: null,
@@ -36,7 +40,7 @@ const MOCK_ADMIN_COMMENTS: AdminComment[] = [
         id: "c-2",
         postId: "post-1111",
         userId: "user-3333",
-        username: "NiceUser",
+        displayName: "NiceUser",
         avatarUrl: null,
         content: "Binh luan da bi go",
         parentId: null,
@@ -58,6 +62,7 @@ beforeEach(() => {
         totalPages: 1,
     });
     moderateComment.mockResolvedValue(undefined);
+    getPostDetail.mockResolvedValue({ id: "post-1111", title: "Vegan Pho Guide" });
 });
 
 describe("AdminCommentsPage", () => {
@@ -74,6 +79,7 @@ describe("AdminCommentsPage", () => {
 
         await waitFor(() => {
             expect(screen.getByText("SpamBot")).toBeInTheDocument();
+            expect(screen.getAllByText("Vegan Pho Guide").length).toBeGreaterThanOrEqual(1);
             expect(screen.getByText("Spam link http://spam.example.com")).toBeInTheDocument();
             expect(screen.getByText("3 reports")).toBeInTheDocument();
             expect(screen.getAllByText("Active").length).toBeGreaterThanOrEqual(1);

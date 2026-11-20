@@ -185,7 +185,7 @@ describe.skipIf(!HAS_ADMIN)("postService — cần JWT admin (E2E_ADMIN_*)", () 
     );
 
     it(
-        "getPosts lọc q ở client — từ khoá không khớp trả rỗng nhưng không lỗi",
+        "getPosts lọc q ở server — từ khoá không khớp trả rỗng nhưng không lỗi",
         async () => {
             const page = await getPosts({ page: 1, size: 10, q: "zzz-khong-bai-nao-khop-zzz" });
 

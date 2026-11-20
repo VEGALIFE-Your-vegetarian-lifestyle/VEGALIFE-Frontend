@@ -14,7 +14,7 @@ interface PillTabsProps<T extends string> {
 }
 
 /**
- * Tabs dạng pill có count — dùng chung cho Explore / My Posts / Nearby / Create Post.
+ * Tabs dạng pill có count — dùng chung cho Explore / My Posts / Restaurants / Create Post.
  * ponytail: gộp 4 bản chép tay trước đây về một chỗ.
  */
 export function PillTabs<T extends string>({ items, value, onChange, className }: PillTabsProps<T>) {

@@ -18,6 +18,7 @@ const recommended = {
     id: "r1",
     name: "Phở chay",
     description: "Phở chay description",
+    imageUrl: null,
     prepTimeMinutes: 35,
     cookTimeMinutes: 25,
     servings: 4,

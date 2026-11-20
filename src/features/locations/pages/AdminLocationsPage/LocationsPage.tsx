@@ -13,13 +13,13 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Pagination } from "@/components/common/Pagination";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
+import { RefreshButton } from "@/components/common/RefreshButton";
 import { type LocationItem, type LocationPayload } from "../../types";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { LocationFormDialog } from "./LocationFormDialog";
 
 const PAGE_SIZE = 8;
-const RATING_FILTERS = ["", "3", "4", "4.5"] as const;
 
 export default function LocationsPage() {
     const { t } = useTranslation(["location", "common"]);
@@ -32,7 +32,7 @@ export default function LocationsPage() {
 
     const debouncedKeyword = useDebounce(keyword.trim(), 300);
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
         queryKey: ["admin-locations", page, debouncedKeyword],
         queryFn: () =>
             getLocations({
@@ -42,12 +42,12 @@ export default function LocationsPage() {
             }),
     });
 
-    // Xóa mềm xong thì Nearby cũng phải bỏ địa điểm đó, nên làm mới cả hai query.
+    // Xóa mềm xong thì trang Nhà hàng cũng phải bỏ địa điểm đó, nên làm mới cả hai query.
     const invalidate = () => {
         queryClient.invalidateQueries({ queryKey: ["admin-locations"] });
-        queryClient.invalidateQueries({ queryKey: ["nearby-locations"] });
+        queryClient.invalidateQueries({ queryKey: ["restaurants-nearby"] });
         queryClient.invalidateQueries({ queryKey: ["restaurants-search"] });
-        queryClient.invalidateQueries({ queryKey: ["nearby-place"] });
+        queryClient.invalidateQueries({ queryKey: ["restaurant-place"] });
         queryClient.removeQueries({ queryKey: ["restaurant-detail-form"] });
     };
     const onError = (error: unknown) => {
@@ -105,10 +105,13 @@ export default function LocationsPage() {
                 title={t("admin.title")}
                 description={t("admin.description")}
                 action={
-                    <Button onClick={openCreate}>
-                        <Plus className="h-4 w-4" />
-                        {t("admin.create")}
-                    </Button>
+                    <div className="flex gap-2">
+                        <RefreshButton onRefresh={() => void refetch()} isRefreshing={isFetching} />
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            {t("admin.create")}
+                        </Button>
+                    </div>
                 }
             />
 

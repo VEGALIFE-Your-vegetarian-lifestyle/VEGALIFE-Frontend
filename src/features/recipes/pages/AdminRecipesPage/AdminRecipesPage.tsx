@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Check, Salad, Search, Trash2, XCircle } from "lucide-react";
@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Pagination } from "@/components/common/Pagination";
+import { RefreshButton } from "@/components/common/RefreshButton";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
 import { useListParams } from "@/shared/hooks/useListParams";
 import { useCategoryNames } from "@/features/categories/usePublicCategories";
@@ -20,20 +21,13 @@ import { formatDateLocale } from "@/shared/utils/formatDate";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
 import { approveDish, approveRecipe, deleteAdminRecipe, getAdminRecipes, rejectRecipe, updateAdminIngredient, updateAdminRecipe } from "../../adminApi";
 import { MODERATION_VARIANT } from "../../constants";
-import type { AdminIngredientUpdateRequest, AdminRecipe, AdminRecipeUpdateRequest, Difficulty, ModerationStatus, RecipeSort, RecipeStatus } from "../../types";
+import type { AdminIngredientUpdateRequest, AdminRecipe, AdminRecipeUpdateRequest, Difficulty, ModerationStatus, RecipeStatus } from "../../types";
 import { RecipeDetailDialog } from "./RecipeDetailDialog";
 import { ApproveRecipeDialog } from "./ApproveRecipeDialog";
 import { EditRecipeDialog } from "./EditRecipeDialog";
 import { RejectRecipeDialog } from "./RejectRecipeDialog";
 
 const PAGE_SIZE = 10;
-
-/** Whitelist `sort` của backend — giá trị khác sẽ bị 400. */
-const SORT_OPTIONS: { value: RecipeSort; labelKey: "newest" | "updated" | "name" }[] = [
-    { value: "createdAt,desc", labelKey: "newest" },
-    { value: "updatedAt,desc", labelKey: "updated" },
-    { value: "name,asc", labelKey: "name" },
-];
 
 /** Hàng đợi duyệt là màn hình mặc định — bỏ trống param thì backend trả cả 3 trạng thái. */
 const DEFAULT_MODERATION: ModerationStatus = "PENDING";
@@ -62,7 +56,6 @@ export default function AdminRecipesPage() {
     const { t } = useTranslation(["admin", "common", "recipe"]);
     const queryClient = useQueryClient();
     const { page, q, status, debouncedQ, setQ, setStatus, setPage } = useListParams();
-    const [sort, setSort] = useState<RecipeSort>("createdAt,desc");
     const [from, setFrom] = useState("");
     const [to, setTo] = useState("");
     const [detail, setDetail] = useState<AdminRecipe | null>(null);
@@ -89,13 +82,13 @@ export default function AdminRecipesPage() {
     // không thì PENDING và ALL dùng chung cache.
     const moderationFilter = allStates ? "ALL" : moderationStatus;
 
-    const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ["admin-recipes", page, sort, createdFrom, createdTo, moderationFilter],
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
+        queryKey: ["admin-recipes", page, debouncedQ, createdFrom, createdTo, moderationFilter],
         queryFn: () =>
             getAdminRecipes({
                 page,
                 size: PAGE_SIZE,
-                sort,
+                q: debouncedQ,
                 createdFrom,
                 createdTo,
                 moderationStatus: allStates ? undefined : moderationStatus,
@@ -196,19 +189,8 @@ export default function AdminRecipesPage() {
         updateMutation.isPending ||
         deleteMutation.isPending;
 
-    // Không gọi lại API khi gõ tìm kiếm — backend chưa có tham số tên (xem `adminApi.ts`).
-    const recipes = useMemo(() => {
-        const keyword = debouncedQ.trim().toLowerCase();
-        const rows = data?.data ?? [];
-        if (!keyword) return rows;
-        return rows.filter(
-            (recipe) =>
-                recipe.name.toLowerCase().includes(keyword) ||
-                (recipe.dishName ?? "").toLowerCase().includes(keyword) ||
-                (recipe.displayName ?? "").toLowerCase().includes(keyword) ||
-                recipe.email.toLowerCase().includes(keyword),
-        );
-    }, [data, debouncedQ]);
+    // BE lọc + phân trang theo `keyword` rồi, không lọc lại ở client.
+    const recipes = data?.data ?? [];
 
     const total = data?.total ?? 0;
     // Hàng đợi PENDING mặc định cũng là bộ lọc — rỗng nghĩa là "không có gì chờ duyệt",
@@ -231,6 +213,7 @@ export default function AdminRecipesPage() {
                 breadcrumb={[t("common:admin"), t("recipes.title")]}
                 title={t("recipes.title")}
                 description={t("recipes.description", { count: total })}
+                action={<RefreshButton onRefresh={() => void refetch()} isRefreshing={isFetching} />}
             />
 
             <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:flex-wrap">
@@ -255,22 +238,6 @@ export default function AdminRecipesPage() {
                     <option value="APPROVED">{t("recipes.moderation.status.APPROVED")}</option>
                     <option value="REJECTED">{t("recipes.moderation.status.REJECTED")}</option>
                     <option value="ALL">{t("recipes.moderation.filterAll")}</option>
-                </Select>
-
-                <Select
-                    className="xl:w-52"
-                    aria-label={t("recipes.sortLabel")}
-                    value={sort}
-                    onChange={(event) => {
-                        setSort(event.target.value as RecipeSort);
-                        resetPage();
-                    }}
-                >
-                    {SORT_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                            {t(`recipes.sort.${option.labelKey}`)}
-                        </option>
-                    ))}
                 </Select>
 
                 <div className="flex flex-wrap items-center gap-2">

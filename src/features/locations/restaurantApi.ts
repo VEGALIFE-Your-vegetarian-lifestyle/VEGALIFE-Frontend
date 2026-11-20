@@ -1,9 +1,9 @@
 import { getLocationById } from "./api";
-import type { NearbyPlaceDetail } from "./nearbyTypes";
+import type { RestaurantPlaceDetail } from "./restaurantTypes";
 import { formatOpeningHours, isOpenNow } from "./openingHours";
 
 /** GET location detail — dữ liệu thật từ `locationService`, thêm giờ mở cửa đã định dạng. */
-export async function getNearbyPlaceDetail(id: string): Promise<NearbyPlaceDetail> {
+export async function getRestaurantPlaceDetail(id: string): Promise<RestaurantPlaceDetail> {
     const location = await getLocationById(id);
     return {
         ...location,

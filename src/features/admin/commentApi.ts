@@ -40,7 +40,7 @@ export async function getAdminComments({
         items = items.filter(
             (c) =>
                 c.content.toLowerCase().includes(keyword) ||
-                c.username?.toLowerCase().includes(keyword) ||
+                c.displayName?.toLowerCase().includes(keyword) ||
                 c.userId.toLowerCase().includes(keyword) ||
                 c.postId.toLowerCase().includes(keyword),
         );

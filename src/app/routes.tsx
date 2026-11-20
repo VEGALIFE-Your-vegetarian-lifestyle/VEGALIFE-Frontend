@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { Layout } from "@/app/layout/Layout";
 import { AdminShell } from "@/features/admin/AdminShell";
 import { AccountLayout } from "@/features/account/AccountLayout";
@@ -9,17 +9,19 @@ import { PublicRoute } from "@/app/guards/PublicRoute";
 import CategoriesPage from "@/features/categories/CategoriesPage";
 import PostsPage from "@/features/admin/pages/PostsPage/PostsPage";
 import AdminCommentsPage from "@/features/admin/pages/AdminCommentsPage/AdminCommentsPage";
+import AdminSettingsPage from "@/features/admin/pages/AdminSettingsPage/AdminSettingsPage";
 import UsersPage from "@/features/admin/pages/UsersPage/UsersPage";
 import VideosPage from "@/features/videos/VideosPage";
 import AdminDashboardPage from "@/features/admin/pages/AdminDashboardPage/AdminDashboardPage";
 import AiNutritionPage from "@/features/nutrition-ai/AiNutritionPage";
 import MyRecipesPage from "@/features/recipes/pages/MyRecipesPage/MyRecipesPage";
 import AdminRecipesPage from "@/features/recipes/pages/AdminRecipesPage/AdminRecipesPage";
+import AdminDishesPage from "@/features/recipes/pages/AdminDishesPage/AdminDishesPage";
 import AdminIngredientsPage from "@/features/recipes/pages/AdminIngredientsPage/AdminIngredientsPage";
 import ExplorePage from "@/features/posts/pages/ExplorePage/ExplorePage";
 import LocationsPage from "@/features/locations/pages/AdminLocationsPage/LocationsPage";
 import LocationDetailPage from "@/features/locations/pages/LocationDetailPage";
-import NearbyPage from "@/features/locations/pages/NearbyPage";
+import RestaurantsPage from "@/features/locations/pages/RestaurantsPage";
 import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage/ForgotPasswordPage";
 import LoginPage from "@/features/auth/pages/LoginPage/LoginPage";
 import RegisterPage from "@/features/auth/pages/RegisterPage/RegisterPage";
@@ -34,21 +36,30 @@ import PaymentResultPage from "@/features/subscription/pages/PaymentResultPage/P
 import SubscriptionPage from "@/features/subscription/pages/SubscriptionPage/SubscriptionPage";
 import MealPlanPage from "@/features/menus/pages/MealPlanPage";
 
+/** Link cũ `/nearby/:id` → `/restaurants/:id` (giữ id). */
+function LegacyPlaceRedirect() {
+    const { id = "" } = useParams();
+    return <Navigate to={`/restaurants/${id}`} replace />;
+}
+
 export default function AppRoutes() {
     return (
         <Routes>
             <Route element={<Layout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/explore" element={<ExplorePage />} />
-                <Route path="/nearby" element={<NearbyPage />} />
+                <Route path="/restaurants" element={<RestaurantsPage />} />
+                {/* Link cũ `/nearby` — giữ redirect để bookmark không chết. */}
+                <Route path="/nearby" element={<Navigate to="/restaurants" replace />} />
                 <Route
-                    path="/nearby/:id"
+                    path="/restaurants/:id"
                     element={
                         <ProtectedRoute>
                             <LocationDetailPage />
                         </ProtectedRoute>
                     }
                 />
+                <Route path="/nearby/:id" element={<LegacyPlaceRedirect />} />
                 <Route path="/ai-nutrition" element={<AiNutritionPage />} />
                 <Route path="/subscription" element={<SubscriptionPage />} />
                 <Route
@@ -128,9 +139,11 @@ export default function AppRoutes() {
                 <Route path="comments" element={<AdminCommentsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="recipes" element={<AdminRecipesPage />} />
+                <Route path="dishes" element={<AdminDishesPage />} />
                 <Route path="ingredients" element={<AdminIngredientsPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="locations" element={<LocationsPage />} />
+                <Route path="settings" element={<AdminSettingsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
             </Route>
 

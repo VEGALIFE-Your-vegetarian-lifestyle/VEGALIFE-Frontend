@@ -22,10 +22,15 @@ function normalizeFieldValue(value: string | string[] | number): string {
     return value;
 }
 
-export async function uploadFileToProvider(
+/**
+ * PUT/POST thẳng lên provider. Dùng `XMLHttpRequest` thay `fetch` chỉ vì nó có
+ * `upload.onprogress` — file 50 MB mất vài phút, không có % thì người dùng tưởng treo.
+ */
+export function uploadFileToProvider(
     url: string,
     fields: Record<string, string | string[] | number>,
     file: File,
+    onProgress?: (percent: number) => void,
 ): Promise<void> {
     const signedKeys = Object.keys(fields).filter((key) => key !== "api_key" && key !== "signature" && key !== "max_file_size");
     const orderedKeys = [...signedKeys].sort((a, b) => a.localeCompare(b));
@@ -38,15 +43,27 @@ export async function uploadFileToProvider(
     if (fields.signature) formData.append("signature", normalizeFieldValue(fields.signature));
     formData.append("file", file);
 
-    const response = await fetch(url, {
-        method: "POST",
-        body: formData,
-    });
+    return new Promise<void>((resolve, reject) => {
+        const request = new XMLHttpRequest();
+        request.open("POST", url);
 
-    if (!response.ok) {
-        const text = await response.text().catch(() => "");
-        throw new Error(`Upload to provider failed: ${response.status} ${response.statusText} - ${text}`);
-    }
+        request.upload.onprogress = (event) => {
+            if (event.lengthComputable) onProgress?.((event.loaded / event.total) * 100);
+        };
+
+        request.onload = () => {
+            if (request.status >= 200 && request.status < 300) {
+                onProgress?.(100);
+                resolve();
+                return;
+            }
+            reject(new Error(`Upload to provider failed: ${request.status} ${request.statusText} - ${request.responseText}`));
+        };
+        request.onerror = () => reject(new Error("Upload to provider failed: network error"));
+        request.onabort = () => reject(new Error("Upload to provider aborted"));
+
+        request.send(formData);
+    });
 }
 
 export async function confirmUpload(mediaId: string): Promise<ConfirmUploadResponse> {

@@ -1,18 +1,25 @@
-import { categoriesSeed } from "@/features/categories/mocks";
-import type { DashboardStats } from "./types";
-import { delay } from "@/shared/utils/delay";
+import { api } from "@/shared/api/client";
+import type { ApiResponse } from "@/shared/types/common";
+import type { DashboardChartsParams, DashboardChartsResponse, DashboardResponse } from "./types";
 
-export async function getDashboardStats(): Promise<DashboardStats> {
-    await delay();
-    const total = categoriesSeed.length;
-    const softDeleted = categoriesSeed.filter((category) => category.deletedAt !== null).length;
-    const active = total - softDeleted;
-    const associatedContent = categoriesSeed.reduce((sum, category) => sum + (category.contentCount ?? 0), 0);
+/**
+ * `GET /api/admin/dashboard` — ảnh chụp lifetime/trạng thái hiện tại, KHÔNG có tham số thời gian.
+ * Cache 5 phút, một entry dùng chung cho mọi admin; `meta.generatedAt` là mốc dữ liệu.
+ */
+export async function getAdminDashboard(): Promise<DashboardResponse> {
+    const { data } = await api.get<ApiResponse<DashboardResponse>>("/api/admin/dashboard");
+    return data.data;
+}
 
-    return {
-        totalCategories: total,
-        activeCategories: active,
-        softDeletedCategories: softDeleted,
-        associatedContent,
-    };
+/**
+ * `GET /api/admin/dashboard/charts` — các series theo thời gian, `range` chỉ nhận
+ * `day|week|month` (giá trị khác → 400). Cache 15 phút theo từng range.
+ */
+export async function getAdminDashboardCharts(
+    params: DashboardChartsParams = {},
+): Promise<DashboardChartsResponse> {
+    const { data } = await api.get<ApiResponse<DashboardChartsResponse>>("/api/admin/dashboard/charts", {
+        params,
+    });
+    return data.data;
 }

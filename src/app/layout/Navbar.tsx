@@ -12,7 +12,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 const navLinks = [
     { labelKey: "home", href: "/" },
     { labelKey: "explore", href: "/explore" },
-    { labelKey: "nearby", href: "/nearby" },
+    { labelKey: "restaurants", href: "/restaurants" },
     { labelKey: "aiNutrition", href: "/ai-nutrition" },
     { labelKey: "mealPlan", href: "/meal-plan" },
 ];

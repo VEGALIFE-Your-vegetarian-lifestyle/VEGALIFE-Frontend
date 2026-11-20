@@ -4,6 +4,7 @@ import { parseStoredContent } from "./components/editor/editorContent";
 import type { ApiResponse, ListParams, PageResponse, Paginated } from "@/shared/types/common";
 import type {
     AdminPost,
+    AdminPostDetail,
     ApiComment,
     CreateCommentRequest,
     CreatePostRequest,
@@ -433,7 +434,7 @@ export async function getMyActivity(seed: string): Promise<PostActivity[]> {
 export interface AdminPostListParams {
     page: number;
     size: number;
-    /** `q` lọc client-side — BE chưa có tham số tìm kiếm. */
+    /** BE tìm substring (tiêu đề / tên / email tác giả) qua `keyword`. */
     q?: string;
     status?: PostStatus;
     /** Mặc định `all` — khớp default mới của BE (V56). */
@@ -474,22 +475,12 @@ export const getPosts = async ({
     if (categoryId) params.categoryId = categoryId;
     if (createdFrom) params.createdFrom = createdFrom;
     if (createdTo) params.createdTo = createdTo;
+    if (q?.trim()) params.keyword = q.trim();
 
     const { data } = await api.get<ApiResponse<PageResponse<AdminPost>>>("/api/admin/posts", { params });
 
-    const keyword = q?.trim().toLowerCase() ?? "";
-    // ponytail: BE chưa có tham số `q` — lọc trong trang hiện tại, phân trang vẫn theo server.
-    const filtered = keyword
-        ? data.data.content.filter(
-              (post) =>
-                  post.title.toLowerCase().includes(keyword) ||
-                  (post.displayName ?? "").toLowerCase().includes(keyword) ||
-                  post.email.toLowerCase().includes(keyword),
-          )
-        : data.data.content;
-
     return {
-        data: filtered,
+        data: data.data.content,
         total: Number(data.data.totalElements),
         page,
         size: data.data.size,
@@ -501,7 +492,10 @@ export const getPosts = async ({
 export interface MyPostsCounts {
     all: number;
     published: number;
+    /** Filter còn đang chạy — vài giây, tự flip. Không hiện thành chip. */
     processing: number;
+    /** Verdict đã có, chờ admin quyết — "chờ duyệt" mà user thật sự thấy (ADR-029). */
+    pending: number;
     draft: number;
     unpublished: number;
     /** Số bài có media đính kèm — backend bỏ `type`, giờ suy từ `mediaIds`. */
@@ -517,16 +511,20 @@ export const getMyPosts = async ({
     q,
     status,
     categoryId,
-}: ListParams<PostStatus> & { categoryId?: string }): Promise<MyPostsPage> => {
+    createdFrom,
+    createdTo,
+}: ListParams<PostStatus> & { categoryId?: string; createdFrom?: string; createdTo?: string }): Promise<MyPostsPage> => {
     // GET /api/posts/me (JWT) — bài của chính mình, mọi status, sort createdAt desc.
     // `/api/posts` giờ là feed public nên KHÔNG dùng được ở đây (trả bài người khác → xoá 404).
-    // `status`/`categoryId` lọc ở server; backend **không có** `keyword` → `q` vẫn lọc client.
+    // `status`/`categoryId`/khoảng ngày lọc ở server; backend **không có** `keyword` → `q` lọc client.
     const { data } = await api.get<ApiResponse<PageResponse<PostListResponse>>>("/api/posts/me", {
         params: {
             page: Math.max(page - 1, 0),
             size,
             ...(status ? { status } : {}),
             ...(categoryId ? { categoryId } : {}),
+            ...(createdFrom ? { createdFrom } : {}),
+            ...(createdTo ? { createdTo } : {}),
         },
     });
 
@@ -560,11 +558,21 @@ export const getMyPostsCounts = async (): Promise<MyPostsCounts> => {
         all: data.data.totalElements,
         published: all.filter((post) => post.status === "published").length,
         processing: all.filter((post) => post.status === "processing").length,
+        pending: all.filter((post) => post.status === "pending").length,
         draft: all.filter((post) => post.status === "drafted").length,
         unpublished: all.filter((post) => post.status === "unpublished").length,
         withMedia: all.filter((post) => post.mediaIds.length > 0).length,
         views: all.reduce((sum, post) => sum + post.viewCount, 0),
     };
+};
+
+/**
+ * GET /api/admin/posts/{postId} — chi tiết để duyệt: kèm `recipes[]` + `names[]`
+ * (danh sách row ở `GET /api/admin/posts` không có). Duyệt theo từng tên là endpoint riêng.
+ */
+export const getAdminPostDetail = async (id: string): Promise<AdminPostDetail> => {
+    const { data } = await api.get<ApiResponse<AdminPostDetail>>(`/api/admin/posts/${id}`);
+    return data.data;
 };
 
 /**

@@ -189,11 +189,11 @@ Có `ponytail:` tại chỗ; gỡ khi backend bổ sung endpoint.
 | `mocks.ts` | `MOCK_AREAS` — toạ độ tâm các quận TP.HCM để chọn khi chưa cấp GPS |
 | `types.ts` | `LocationItem`, `LocationType`, `OpeningHours`, payload, params |
 | `components/PlaceMap.tsx` | react-leaflet, divIcon, marker địa điểm |
-| `pages/NearbyPage.tsx` | tìm địa điểm theo vị trí |
+| `pages/RestaurantsPage.tsx` | tìm nhà hàng theo vị trí |
 | `pages/LocationDetailPage.tsx` | chi tiết địa điểm + chỉ đường |
 | `pages/AdminLocationsPage/` | `LocationsPage.tsx`, `LocationFormDialog.tsx` |
 | `__tests__/` | `distance`, `maps`, `openingHours`, `locationApi` |
-| `pages/__tests__/` | `NearbyPage`, `LocationDetailPage` |
+| `pages/__tests__/` | `RestaurantsPage`, `LocationDetailPage` |
 | `pages/AdminLocationsPage/__tests__/` | `LocationsPage` |
 
 ### 3.5 `features/nutrition-ai/`

@@ -8,6 +8,7 @@ import { createTestQueryClient } from "@/test/renderWithProviders";
 
 vi.mock("sonner", () => ({
     toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
+    Toaster: () => null,
 }));
 function renderRegister() {
     return render(

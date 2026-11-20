@@ -11,6 +11,7 @@ vi.mock("sonner", () => ({
         error: vi.fn(),
         info: vi.fn(),
     },
+    Toaster: () => null,
 }));
 
 const { POST_ID, getPostVotes, setPostVote, mockAuth } = vi.hoisted(() => ({

@@ -2,18 +2,19 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, Download, Pencil, Plus, Search, Tags } from "lucide-react";
+import { Archive, Pencil, Plus, Search, Tags } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { createCategory, exportCategoriesCsv, getCategories, retireCategory, updateCategory } from "./api";
+import { createCategory, getCategories, retireCategory, updateCategory } from "./api";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Pagination } from "@/components/common/Pagination";
+import { RefreshButton } from "@/components/common/RefreshButton";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
 import type { Category, CategoryPayload } from "./types";
 import { formatDateLocale } from "@/shared/utils/formatDate";
@@ -32,7 +33,7 @@ export default function CategoriesPage() {
     const [editing, setEditing] = useState<Category | null>(null);
     const [retiring, setRetiring] = useState<Category | null>(null);
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
         queryKey: ["admin-categories", page, keyword, sort],
         queryFn: () => getCategories({ page, size: PAGE_SIZE, q: keyword, sort }),
     });
@@ -72,23 +73,6 @@ export default function CategoriesPage() {
         onError,
     });
 
-    const exportMutation = useMutation({
-        mutationFn: exportCategoriesCsv,
-        onSuccess: (csv) => {
-            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `categories-${new Date().toISOString().slice(0, 10)}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            toast.success(t("categories.toast.exported"));
-        },
-        onError,
-    });
-
     const openCreate = () => {
         setEditing(null);
         setFormOpen(true);
@@ -109,11 +93,6 @@ export default function CategoriesPage() {
         setPage(1);
     };
 
-    const copyId = (id: string) => {
-        navigator.clipboard.writeText(id);
-        toast.success(t("categories.toast.copied"));
-    };
-
     const categories = data?.data ?? [];
     const totalPages = data?.totalPages ?? 1;
     const total = data?.total ?? 0;
@@ -125,11 +104,8 @@ export default function CategoriesPage() {
                 title={t("categories.title")}
                 description={t("categories.description")}
                 action={
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={() => exportMutation.mutate()} disabled={exportMutation.isPending}>
-                            <Download className="h-4 w-4" />
-                            {t("categories.exportCsv")}
-                        </Button>
+                    <div className="flex gap-2">
+                        <RefreshButton onRefresh={() => void refetch()} isRefreshing={isFetching} />
                         <Button onClick={openCreate}>
                             <Plus className="h-4 w-4" />
                             {t("categories.createCategory")}
@@ -185,7 +161,6 @@ export default function CategoriesPage() {
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
-                                <TableHead className="w-32">{t("categories.columns.uuid")}</TableHead>
                                 <TableHead>{t("categories.columns.name")}</TableHead>
                                 <TableHead>{t("categories.columns.description")}</TableHead>
                                 <TableHead>{t("categories.columns.status")}</TableHead>
@@ -195,20 +170,10 @@ export default function CategoriesPage() {
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableSkeleton columns={6} />
+                                <TableSkeleton columns={5} />
                             ) : (
                                 categories.map((category: Category) => (
                                     <TableRow key={category.id}>
-                                        <TableCell>
-                                            <button
-                                                type="button"
-                                                onClick={() => copyId(category.id)}
-                                                className="font-mono text-xs text-muted-foreground hover:text-vegan-green"
-                                                title={t("categories.toast.copied")}
-                                            >
-                                                {category.id.slice(0, 8)}...
-                                            </button>
-                                        </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-vegan-green-light text-vegan-green">

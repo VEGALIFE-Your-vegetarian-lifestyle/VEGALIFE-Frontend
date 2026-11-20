@@ -11,6 +11,7 @@ import { E2E_USER, HAS_USER, REMOTE_TIMEOUT_MS } from "@/test/e2eEnv";
 
 vi.mock("sonner", () => ({
     toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
+    Toaster: () => null,
 }));
 
 /** Route đích chỉ là sentinel — khẳng định đã điều hướng mà không render cả trang. */

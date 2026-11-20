@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Pagination } from "@/components/common/Pagination";
+import { RefreshButton } from "@/components/common/RefreshButton";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
 import { useListParams } from "@/shared/hooks/useListParams";
 import { getApiErrorMessage } from "@/shared/utils/apiError";
@@ -56,7 +57,7 @@ export default function AdminIngredientsPage() {
     const [form, setForm] = useState<{ ingredient: AdminIngredient | null } | null>(null);
     const [deleting, setDeleting] = useState<AdminIngredient | null>(null);
 
-    const { data, isLoading, isError, refetch } = useQuery({
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
         queryKey: ["admin-ingredients", page, debouncedQ],
         queryFn: () =>
             getAdminIngredients({
@@ -136,10 +137,13 @@ export default function AdminIngredientsPage() {
                 title={t("ingredients.title")}
                 description={t("ingredients.description", { count: total })}
                 action={
-                    <Button onClick={() => setForm({ ingredient: null })}>
-                        <Plus className="h-4 w-4" />
-                        {t("ingredients.create")}
-                    </Button>
+                    <div className="flex gap-2">
+                        <RefreshButton onRefresh={() => void refetch()} isRefreshing={isFetching} />
+                        <Button onClick={() => setForm({ ingredient: null })}>
+                            <Plus className="h-4 w-4" />
+                            {t("ingredients.create")}
+                        </Button>
+                    </div>
                 }
             />
 

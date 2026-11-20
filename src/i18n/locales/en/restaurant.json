@@ -1,6 +1,6 @@
 {
     "directoryLabel": "Local Plant Community Directory / Ho Chi Minh City",
-    "title": "Nearby Vegan Places",
+    "title": "Vegan Restaurants",
     "subtitle": "Discover 100% plant-based restaurants, organic cafes, and vegan specialty shops near you.",
     "changeLocation": "Use my location",
     "gpsRefresh": "GPS Refresh",
@@ -32,9 +32,9 @@
         "description": "Try another filter or widen your search radius.",
         "action": "Show all places"
     },
-    "error": "Unable to load nearby places. Please try again.",
+    "error": "Unable to load restaurants. Please try again.",
     "detail": {
-        "back": "Back to Nearby Vegan Places",
+        "back": "Back to Vegan Restaurants",
         "farmDirect": "Farm Direct",
         "getDirections": "Get Directions",
         "saveToFavorites": "Save to Favorites",
@@ -81,7 +81,7 @@
         "notFound": {
             "title": "Location not found",
             "description": "This place does not exist in our directory.",
-            "action": "Back to Nearby"
+            "action": "Back to Restaurants"
         },
         "error": "Unable to load this location. Please try again.",
         "daily": "Every day"

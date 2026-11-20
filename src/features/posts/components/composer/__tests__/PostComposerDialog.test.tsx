@@ -6,7 +6,7 @@ import { useUiStore } from "@/shared/ui/uiStore";
 import { PostComposerDialog } from "../PostComposerDialog";
 import { createPost, updatePost } from "../../../api";
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 vi.mock("@/features/categories/usePublicCategories", () => ({
     usePublicCategories: () => ({

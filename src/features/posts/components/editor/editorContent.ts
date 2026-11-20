@@ -34,7 +34,29 @@ export function editorJsonToText(doc: JSONContent | null | undefined): string {
 
 /** Editor rỗng vẫn là một doc hợp lệ — Yup `required` sẽ cho qua nếu không kiểm riêng. */
 export function isEditorEmpty(doc: JSONContent | null | undefined): boolean {
-    return editorJsonToText(doc).length === 0;
+    // Một bài chỉ có video vẫn là bài có nội dung.
+    return editorJsonToText(doc).length === 0 && collectVideoMediaIds(doc).length === 0;
+}
+
+/**
+ * Gom `mediaId` của mọi node video trong doc, giữ thứ tự xuất hiện.
+ * `attachPostMedia` nhận cả mảng nên một bài nhiều video không cần gọi nhiều lần.
+ */
+export function collectVideoMediaIds(doc: JSONContent | null | undefined): string[] {
+    const ids: string[] = [];
+
+    const walk = (node: JSONContent) => {
+        if (node.type === "video") {
+            const mediaId = node.attrs?.mediaId;
+            if (typeof mediaId === "string" && mediaId && !ids.includes(mediaId)) ids.push(mediaId);
+            return;
+        }
+        node.content?.forEach(walk);
+    };
+
+    if (doc) walk(doc);
+
+    return ids;
 }
 
 /** Doc rỗng chuẩn, dùng làm giá trị khởi tạo. */

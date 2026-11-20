@@ -7,6 +7,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { RejectionReason } from "@/components/common/RejectionReason";
 import { SaveRecipeButton } from "@/features/saved/components/SaveButton";
 import { useUiStore } from "@/shared/ui/uiStore";
+import { showFallbackImage } from "@/shared/utils/display";
 import { formatDateLocale } from "@/shared/utils/formatDate";
 import { MODERATION_VARIANT } from "../constants";
 import { nutritionTotals } from "../nutrition";
@@ -159,6 +160,18 @@ export function RecipeDetailDialog({
         >
             {recipe && (
                 <>
+                    {/* Ảnh dish dùng chung — chỉ đọc, `null` khi admin chưa đặt. Chỉ hiện khi có
+                        thật: ảnh dự phòng ở đây sẽ khiến công thức trông như có ảnh riêng. */}
+                    {recipe.imageUrl && (
+                        <img
+                            src={recipe.imageUrl}
+                            alt={recipe.name}
+                            loading="lazy"
+                            onError={showFallbackImage()}
+                            className="h-56 w-full border-b border-border object-cover"
+                        />
+                    )}
+
                     {/* Duyệt recipe không duyệt tên món dùng chung — nói rõ để không tưởng đã lên sóng. */}
                     {recipe.dishModerationStatus === "PENDING" && recipe.moderationStatus === "APPROVED" && (
                         <p className="mx-6 mt-5 rounded-xl border border-amber-strong/20 bg-amber-soft px-3.5 py-2.5 text-[13.5px] text-amber-strong">

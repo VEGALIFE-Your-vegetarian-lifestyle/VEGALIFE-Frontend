@@ -35,6 +35,8 @@ export interface RecommendedRecipe {
     id: string;
     name: string;
     description: string | null;
+    /** Ảnh dish cha — thường trùng `meal.dish.imageUrl`, đừng render cả hai. */
+    imageUrl: string | null;
     prepTimeMinutes: number | null;
     cookTimeMinutes: number | null;
     servings: number;
@@ -98,7 +100,14 @@ export interface CreateMenuRequest {
 export interface MenuWriteResult extends Omit<MenuDetail, "days"> {
     days: {
         date: string;
-        meals: { mealType: MealType; dishId: string; dishName: string; servings: number }[];
+        meals: {
+            mealType: MealType;
+            dishId: string;
+            dishName: string;
+            /** Ảnh dish, đi kèm `dishName` để row bữa ăn khỏi đọc lại. `null` nếu chưa có. */
+            imageUrl: string | null;
+            servings: number;
+        }[];
     }[];
 }
 

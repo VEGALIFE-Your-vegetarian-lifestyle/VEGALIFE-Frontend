@@ -10,7 +10,7 @@ import CategoriesPage from "@/features/categories/CategoriesPage";
 import UsersPage from "../UsersPage/UsersPage";
 import VideosPage from "@/features/videos/VideosPage";
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() }, Toaster: () => null }));
 
 /**
  * Các trang admin gọi API thật cần JWT. Chưa đăng nhập thì query lỗi và trang
@@ -47,7 +47,7 @@ describe("Trang admin — chưa đăng nhập", () => {
         expect(screen.getByRole("heading", { name: "Category Management" })).toBeInTheDocument();
         expect(screen.getByLabelText("Search by name or UUID")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /Create Category/ })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Export CSV/ })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /Export CSV/ })).not.toBeInTheDocument();
     });
 
     it("CategoriesPage hiện bảng danh mục thật từ backend", async () => {

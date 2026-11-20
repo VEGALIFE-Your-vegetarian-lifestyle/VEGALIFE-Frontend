@@ -10,7 +10,7 @@ React SPA cho nền tảng VEGALIFE (lối sống thực vật). File này là *
 - **State**: Zustand (auth, ui) + TanStack React Query 5 (server state)
 - **Forms**: Formik + Yup
 - **HTTP**: Axios, interceptor 401/refresh trong `src/shared/api/client.ts`
-- **i18n**: i18next + react-i18next — **15 namespace**: `common`, `auth`, `admin`, `validation`, `profile`, `home`, `explore`, `post`, `nearby`, `aiNutrition`, `location`, `subscription`, `recipe`, `menu`, `saved`
+- **i18n**: i18next + react-i18next — **15 namespace**: `common`, `auth`, `admin`, `validation`, `profile`, `home`, `explore`, `post`, `restaurant`, `aiNutrition`, `location`, `subscription`, `recipe`, `menu`, `saved`
 - **Editor**: TipTap 3 (`src/features/posts/components/editor/`)
 - **Map**: react-leaflet + leaflet (`src/features/locations/components/PlaceMap.tsx`)
 - **Toast**: sonner · **Icons**: lucide-react · **Port dev**: 5173
@@ -37,7 +37,7 @@ React SPA cho nền tảng VEGALIFE (lối sống thực vật). File này là *
 | Validate + payload form soạn bài | `src/features/posts/components/composer/{schema,payload}.ts` |
 | Validate + payload form soạn recipe | `src/features/recipes/pages/CreateRecipePage/{schema,payload}.ts` |
 | Validate + payload form tạo thực đơn tuần | `src/features/menus/create/{schema,validate,payload}.ts` |
-| Service theo domain | `src/features/<feature>/api.ts` — `auth`, `posts`, `categories`, `videos`, `locations` (+`nearbyApi`), `profile`, `admin` (+`dashboardApi`), `nutrition-ai` (+`subscriptionApi`), `recipes` (+`adminApi`), `menus`, `subscription`, `saved` |
+| Service theo domain | `src/features/<feature>/api.ts` — `auth`, `posts`, `categories`, `videos`, `locations` (+`restaurantApi`), `profile`, `admin` (+`dashboardApi`), `nutrition-ai` (+`subscriptionApi`), `recipes` (+`adminApi`), `menus`, `subscription`, `saved` |
 | Lưu bài / công thức (bookmark) | `src/features/saved/` — `api.ts` (6 endpoint), `useSaved.ts` (`useSavePost`, `useSaveRecipe`, `useAttachableRecipes`), `components/{SaveButton,SavedCards}.tsx` |
 | Gói AI + thanh toán VNPay (hook) | `src/features/subscription/useBilling.ts` |
 | Tìm món (`GET /api/dishes`) — dùng chung 3 feature | `src/shared/api/dishes.ts` → `searchDishes` |
@@ -62,12 +62,12 @@ src/
     ui/             # 11 primitive UI (xem bảng trên)
     common/         # 10 component dùng chung (xem bảng trên)
   features/
-    admin/          # AdminShell, api, dashboardApi (mock), types,
-                    # pages/{AdminDashboardPage,PostsPage,UsersPage}
+    admin/          # AdminShell, api, dashboardApi (2 endpoint thật), dashboardFormat, types,
+                    # pages/{AdminDashboardPage (+DashboardCharts), PostsPage, UsersPage}
     auth/           # api, useAuth, AuthLayout, pages/{Login,Register,VerifyEmail,ForgotPassword}
     categories/     # CategoriesPage, CategoryFormDialog, api, usePublicCategories, types, mocks
-    locations/      # api, nearbyApi, geo, openingHours, types, mocks,
-                    # components/PlaceMap, pages/{NearbyPage,LocationDetailPage,AdminLocationsPage}
+    locations/      # api, restaurantApi, geo, openingHours, types, mocks,
+                    # components/PlaceMap, pages/{RestaurantsPage,LocationDetailPage,AdminLocationsPage}
     menus/          # api, useMealPlans, week.ts (tính tuần local), types,
                     # create/ (schema, validate, payload — không có UI),
                     # components/{MealPlanComposerDialog, MealPlanMatrix,
@@ -84,7 +84,8 @@ src/
                     # components/RecipeDetailDialog (tờ công thức, MyRecipesPage dùng),
                     # pages/CreateRecipePage/ (schema, payload, IngredientEditor,
                     #   StepEditor, AutocompleteField, RecipeSidebar, RecipePreviewCard),
-                    # pages/AdminRecipesPage/ (AdminRecipesPage, RecipeDetailDialog)
+                    # pages/AdminRecipesPage/ (AdminRecipesPage, RecipeDetailDialog),
+                    # pages/AdminDishesPage/ (AdminDishesPage, DishFormDialog, dishForm)
     saved/          # api (6 endpoint /api/saved/*), types, useSaved (useSavePost,
                     # useSaveRecipe, useAttachableRecipes, useRemoveSaved),
                     # components/{SaveButton, SavedCards}, SavedPage (2 tab)
@@ -140,8 +141,8 @@ mount một lần ở `Layout`.
 |---|---|
 | `/` | Home |
 | `/explore` | Danh sách bài viết |
-| `/nearby` | Tìm theo vị trí (API thật) — public |
-| `/nearby/:id` | Chi tiết địa điểm — cần đăng nhập (`ProtectedRoute`) |
+| `/restaurants` | Danh sách nhà hàng theo vị trí (API thật) — public; `/nearby` redirect sang đây |
+| `/restaurants/:id` | Chi tiết địa điểm — cần đăng nhập (`ProtectedRoute`) |
 | `/ai-nutrition` | Chatbot dinh dưỡng (API thật) |
 | `/posts/:id` | Chi tiết bài — public |
 | `/recipes` | `MyRecipesPage` — công thức của tôi (lọc/sort client-side) — cần đăng nhập |
@@ -152,14 +153,16 @@ mount một lần ở `Layout`.
 | `/subscription`, `/payment/result/:paymentId` | Gói AI + thanh toán VNPay — `subscription` feature |
 | `/login`, `/register`, `/verify-email`, `/forgot-password` | Public |
 | `/admin` → `/admin/dashboard` | Admin |
-| `/admin/dashboard\|posts\|videos\|comments\|categories\|recipes\|ingredients\|users\|locations\|profile` | Admin |
+| `/admin/dashboard\|posts\|videos\|comments\|categories\|recipes\|dishes\|ingredients\|users\|locations\|settings\|profile` | Admin |
 
-Sidebar admin khai báo ở `src/features/admin/AdminShell.tsx` (`navItems`; cờ `ready` hiện **bật cho cả 10 mục**).
+Sidebar admin khai báo ở `src/features/admin/AdminShell.tsx` (`navItems`; cờ `ready` hiện **bật cho cả 12 mục**).
 
 ## Thật vs mock
 
-- **Gọi API thật**: auth, posts, categories, profile (kể cả 5 field dietary), media, videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`, `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus (`GET /api/menus/details`, `POST /api/menus`, `POST /api/menus/{id}/status`), saved (`/api/saved/{posts,recipes}` × GET/POST/DELETE).
-- **Còn mock**: `src/features/admin/dashboardApi.ts` (endpoint `GET /api/admin/dashboard` **đã có** ở backend 2026-11-06, FE chưa nối — shape khớp 1:1); `src/features/posts/{mockEnrichment,mockAuthors}.ts` (field hiển thị BE chưa trả).
+- **Gọi API thật**: auth, posts, categories, profile (kể cả 5 field dietary), media, videos, admin users, locations, AI chatbot, recipes (`POST /api/recipes`, `GET /api/dishes`, `GET /api/ingredients`, `GET /api/admin/recipes`), menus (`GET /api/menus/details`, `POST /api/menus`, `POST /api/menus/{id}/status`), saved (`/api/saved/{posts,recipes}` × GET/POST/DELETE), admin dashboard (`GET /api/admin/dashboard` + `/charts`), admin settings (`GET`/`PATCH /api/admin/settings`).
+- **Upload ảnh/video** chỉ có 2 chỗ: `components/common/ImageUploader.tsx` (ảnh bìa / video đính kèm / avatar) và ảnh chèn trong bài ở `posts/components/composer/PostComposerDialog.tsx` (`handleInsertImage`). **Không chặn dung lượng phía client** — giới hạn là setting admin sửa được (`max_image_upload_mb` / `max_video_upload_mb`, mặc định 5 / 50) và BE trả 400 kèm câu cụ thể (`File exceeds the 50 MB limit`). Lỗi phải đọc bằng `getApiErrorMessage`, không phải `error.message` (axios chỉ cho "Request failed with status code 400").
+- **Toast trong dialog**: `<dialog showModal()>` nằm ở top layer nên Toaster toàn cục (`main.tsx`) bị che. `components/ui/dialog.tsx` mount Toaster riêng trong dialog; con đọc id qua `useDialogToastId()`, hoặc cha tự `useId()` rồi truyền prop `toasterId` khi handler nằm ngoài cây con (composer).
+- **Còn mock**: `src/features/posts/{mockEnrichment,mockAuthors}.ts` (field hiển thị BE chưa trả).
 - `src/features/locations/mocks.ts` **không phải** mock API — chỉ là toạ độ tâm các quận TP.HCM.
 - Trạng thái chi tiết từng endpoint: `DOCS/API-COVERAGE.md`.
 
@@ -177,9 +180,10 @@ Sidebar admin khai báo ở `src/features/admin/AdminShell.tsx` (`navItems`; c�
 
 - **Đừng thêm dependency mới** nếu thư viện hiện có giải quyết được.
 - Verify nhanh bằng `npm run typecheck` (`tsc -b --pretty false`) thay vì `npm run build`; test bằng `npm test` (gọi backend thật, tự skip khi thiếu env).
-- `CategoriesPage` hiện có: thẻ đếm All/Active, tìm kiếm theo tên/UUID, sort `newest`/`name`, phân trang, retire (soft delete), export CSV. **Không** có restore hay permanent delete.
+- `CategoriesPage` hiện có: thẻ đếm All/Active, tìm kiếm theo tên/UUID, sort `newest`/`name`, phân trang, retire (soft delete). **Không** có restore, permanent delete hay export CSV.
 - `AdminRecipesPage`: đọc (`GET /api/admin/recipes`) + duyệt/từ chối (`POST .../approve|reject`). Lọc `moderationStatus` (mặc định `PENDING` qua `?status=`), `userId`/`categoryId`/khoảng ngày, sort whitelist `createdAt,desc` · `updatedAt,desc` · `name,asc`. Nút duyệt nằm trong dialog chi tiết, xác nhận qua `ConfirmDialog`. Không có sửa/xoá recipe. Duyệt recipe **không** duyệt dish/ingredient của nó. `GET`/`PATCH`/`DELETE /api/admin/recipes/{id}` **backend đã có** nhưng FE cố ý không gọi — row trong list đủ field cho dialog, gọi thêm là request thừa.
-- Comment moderation đã dựng xong ở `src/features/admin/pages/AdminCommentsPage/` (sidebar `ready: true`): `GET /api/admin/comments` nhận `page`/`size`/`status`/`userId`/`postId`/`sort`; `POST .../moderate` `{reason}` bắt buộc ≤1000 ký tự.
+- `AdminDishesPage` (route `/admin/dishes`): CRUD thuần `GET`/`POST`/`PATCH`/`DELETE /api/admin/dishes`. Lọc `name` (server) + `moderationStatus` (server); **không** có cột duyệt, **không** đụng nguyên liệu của món. `AdminDishResponse` không có `status`/`deletedAt` → không phân biệt được món đã xoá mềm. Xoá mềm, không restore.
+- Comment moderation đã dựng xong ở `src/features/admin/pages/AdminCommentsPage/` (sidebar `ready: true`): `GET /api/admin/comments` nhận `page`/`size`/`status`/`userId`/`postId`/`sort`; `POST .../moderate` `{reason}` bắt buộc ≤1000 ký tự.- Admin settings ở `src/features/admin/pages/AdminSettingsPage/` (route `/admin/settings`): `GET`/`PATCH /api/admin/settings`. Response chỉ có `{category, key, value, updatedAt}` — **không có type**, nên kiểu + biên nằm ở `src/features/admin/settingsSchema.ts` (bản sao `SettingKey.java`). 8 key / 3 nhóm; PATCH partial, trả lại cả danh sách. Luật `reject < accept` kiểm trên giá trị đã merge (`validateSettings`), không phải từng ô. Bố cục: 2 cột `items-start` — trái là card mảnh `ai` (icon + tiêu đề, mô tả key ngay dưới, switch bên phải) chồng trên `media`; phải là `content`. Mỗi card có Discard/Save riêng bên trong.
 - `subscription` feature (route `/subscription` + `/payment/result/:paymentId`) **đã dựng xong**, không phải mock: 7 hàm trong `api.ts`, 6 hook trong `useBilling.ts`, namespace i18n `subscription`. `usePayment` poll 3s khi `status === "pending"`; `useBuyPlan` kiểm tra eligibility rồi mới checkout. IPN là nguồn sự thật, redirect chỉ để hiển thị.
 - `CreateRecipePage`: 4 khối đánh số (tổng quan → nguyên liệu → bước nấu → khẩu phần & thời gian). Cả 4 dùng `SectionCard` với `inlineHeader` (badge số nằm **cạnh** tiêu đề + đường kẻ xám phân cách body) — cờ này opt-in nên Create Post / Post Detail không đổi. 5 ô dinh dưỡng **đã bỏ khỏi UI** 2026-10-30 (mockup không có) nhưng `schema.ts`/`payload.ts` vẫn validate + gửi được. Nút Cancel/Create Recipe nằm ở prop `actions` của `RecipeSidebar` (dưới checklist), không ở header. `instructions` là `TEXT` thuần → form nhập **mỗi bước một ô** (`steps: {title, body}[]`), `joinSteps()` gộp thành `"tiêu đề — thân"` mỗi bước một dòng khi gửi; **không** dùng `RichTextEditor`. Không có field ảnh bìa (endpoint không nhận). Chưa có trang danh sách/chi tiết recipe công khai (thiếu `GET /api/recipes`).
 - `MealPlanComposerDialog` (thay page `/meal-plan/create`): ma trận 7 ngày × 3 bữa là surface duy nhất — bấm ô (hoặc nhãn bữa) mở `DishAssignPopover` để gán 1 món cho nhiều ngày; chọn checkbox theo `MAX_DISH_REPEATS`. Ô trống không gửi. **Không có ô số khẩu phần** — form luôn gửi `servings: 1` (`DEFAULT_SERVINGS` trong `payload.ts`). `validate.ts` thuần (không Yup) vì luật BR-MENU-005 là quan hệ giữa các ô: **≥5 món khác nhau**, **≤3 lần/món**. Nút Lưu khoá tới khi hết lỗi. **Ngày bắt đầu là thứ mấy cũng được** (2026-11-13): backend chỉ đòi đúng 7 ngày liền kề `startDate..startDate+6`, không kiểm thứ 2, nên FE không còn snap về Thứ 2; trang xem lọc theo cửa sổ 7 ngày trượt (`?from=`), nút trước/sau dịch 7 ngày. Nút "Chép tuần trước" đã bỏ. Chỉ tạo `drafted`; đổi trạng thái bằng nút trên `MenuCard` (`MenuActions`) qua `POST /api/menus/{id}/status`. Xoá hẳn bằng `DELETE /api/menus/{id}` (`deleteMenu`) — nút Xoá trong `MenuActions` hiện cho **mọi** trạng thái, xác nhận qua `ConfirmDialog`.
