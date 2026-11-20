@@ -215,6 +215,19 @@ export default function AdminDashboardPage() {
                 </div>
             ) : null}
 
+            {/* Charts theo thời gian — range chỉ còn ý nghĩa ở đây */}
+            <Suspense fallback={<Skeleton className="h-96 rounded-2xl" />}>
+                <DashboardCharts
+                    data={charts.data}
+                    isLoading={charts.isLoading}
+                    isError={charts.isError}
+                    onRetry={() => void charts.refetch()}
+                    range={range}
+                    onRangeChange={setRange}
+                    language={language}
+                />
+            </Suspense>
+
             {/* Hàng chờ kiểm duyệt */}
             <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
                 <div className="border-b border-border pb-4">
@@ -463,18 +476,6 @@ export default function AdminDashboardPage() {
                 </SectionCard>
             )}
 
-            {/* Charts theo thời gian — range chỉ còn ý nghĩa ở đây */}
-            <Suspense fallback={<Skeleton className="h-96 rounded-2xl" />}>
-                <DashboardCharts
-                    data={charts.data}
-                    isLoading={charts.isLoading}
-                    isError={charts.isError}
-                    onRetry={() => void charts.refetch()}
-                    range={range}
-                    onRangeChange={setRange}
-                    language={language}
-                />
-            </Suspense>
         </div>
     );
 }
